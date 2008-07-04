@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Name:      XmlScriptClient.xsd
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+-->
+
+
+<xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<xsd:complexType name="EmptyType">
+   <xsd:complexContent>
+      <xsd:restriction base="xsd:anyType"/>
+   </xsd:complexContent>
+</xsd:complexType>
+
+<xsd:complexType name="EchoInputType">
+   <xsd:complexContent>
+      <xsd:extension base="xsd:anyType">
+      <xsd:attribute name="message" type="xsd:string" use="optional"/>
+   </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+<xsd:complexType name="WaitType">
+   <xsd:complexContent>
+      <xsd:extension base="EchoInputType">
+      <xsd:attribute name="delay" type="xsd:long" use="optional"/>
+      <xsd:attribute name="updates" type="xsd:int" use="optional"/>
+   </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+<xsd:complexType name="ContentType">
+   <xsd:complexContent>
+       <xsd:extension base="xsd:anyType">
+       <xsd:attribute name="size" type="xsd:long"/>
+       <xsd:attribute name="encoding" type="xsd:string" default="base64" use="optional"/>
+       <xsd:attribute name="type" type="xsd:string" default="byte[]" use="optional"/>
+       <xsd:attribute name="link" type="xsd:string" use="optional"/>
+   </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+<xsd:simpleType name="TypeType">
+   <xsd:restriction base="xsd:string">
+       <xsd:enumeration value="String"/>
+       <xsd:enumeration value="byte[]"/>
+       <xsd:enumeration value="boolean"/>
+       <xsd:enumeration value="byte"/>
+       <xsd:enumeration value="double"/>
+       <xsd:enumeration value="float"/>
+       <xsd:enumeration value="int"/>
+       <xsd:enumeration value="short"/>
+       <xsd:enumeration value="long"/>
+       <xsd:enumeration value="null"/>
+   </xsd:restriction>
+</xsd:simpleType>
+
+<xsd:simpleType name="EncodingType">
+   <xsd:restriction base="xsd:string">
+       <xsd:enumeration value="base64"/>
+       <xsd:enumeration value="forcePlain"/>
+       <xsd:enumeration value="quoted-printable"/>
+   </xsd:restriction>
+</xsd:simpleType>
+
+<xsd:complexType name="EncodableDataType">
+   <xsd:complexContent>
+       <xsd:extension base="xsd:anyType">
+          <xsd:attribute name="oid" type="xsd:string"/>
+          <xsd:attribute name="contentMime" type="xsd:string" use="optional"/>
+          <xsd:attribute name="contentMimeExtended" type="xsd:string" use="optional"/>
+          <xsd:attribute name="domain" type="xsd:string" use="optional"/>
+       </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+<xsd:complexType name="MsgKeyType">
+   <xsd:complexContent>
+      <xsd:extension base="xsd:anyType">
+      <xsd:attribute name="name" type="xsd:long"/>
+      <xsd:attribute name="size" type="xsd:string" default="0"/>
+      <xsd:attribute name="type" type="TypeType" default="String"/>
+      <xsd:attribute name="encoding" type="EncodingType" use="optional"/>
+      <xsd:attribute name="charset" type="xsd:string" use="optional"/>
+   </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+<xsd:simpleType name="PriorityType">
+   <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="0"/>
+      <xsd:enumeration value="1"/>
+      <xsd:enumeration value="2"/>
+      <xsd:enumeration value="3"/>
+      <xsd:enumeration value="4"/>
+      <xsd:enumeration value="5"/>
+      <xsd:enumeration value="6"/>
+      <xsd:enumeration value="7"/>
+      <xsd:enumeration value="8"/>
+      <xsd:enumeration value="9"/>
+      <xsd:enumeration value="MIN"/>
+      <xsd:enumeration value="LOW"/>
+      <xsd:enumeration value="NORM"/>
+      <xsd:enumeration value="HIGH"/>
+      <xsd:enumeration value="MAX"/>
+   </xsd:restriction>
+</xsd:simpleType>
+
+
+<xsd:complexType name="RouteInfoType">
+   <xsd:complexContent>
+      <xsd:extension base="EmptyType">
+         <xsd:attribute name="id" type="xsd:string"/>
+         <xsd:attribute name="stratum" type="xsd:string"/>
+         <xsd:attribute name="timestamp" type="xsd:string"/>
+         <xsd:attribute name="dirtyRead" type="xsd:boolean"/>
+      </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+
+<xsd:complexType name="AddressType" mixed="true">
+   <!-- <xsd:all> -->
+   <xsd:sequence>
+      <xsd:element name="burstMode" minOccurs="0">
+         <xsd:complexType>
+            <xsd:complexContent>
+               <xsd:extension base="EmptyType">
+                  <xsd:attribute name="collectTime" type="xsd:long" use="optional"/>
+                  <xsd:attribute name="maxEntries" type="xsd:long" use="optional"/>
+                  <xsd:attribute name="maxBytes" type="xsd:long" use="optional"/>
+               </xsd:extension>
+            </xsd:complexContent>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="compress" minOccurs="0">
+         <xsd:complexType>
+            <xsd:complexContent>
+               <xsd:extension base="EmptyType">
+                  <xsd:attribute name="type" type="xsd:string" use="optional"/>
+               </xsd:extension>
+            </xsd:complexContent>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ptp" type="xsd:boolean" default="true"/>
+      
+      <xsd:element name="clientProperty" type="EncodableDataType" minOccurs="0" maxOccurs="unbounded"/>
+   </xsd:sequence>
+   <xsd:attribute name="version" type="xsd:string" use="optional"/>
+   <xsd:attribute name="bootstrapHostname" type="xsd:string" use="optional"/>
+   <xsd:attribute name="bootstrapPort" type="xsd:string" use="optional"/>
+   <xsd:attribute name="sessionId" type="xsd:string" use="optional"/>
+   <xsd:attribute name="pingInterval" type="xsd:string" use="optional"/>
+   <xsd:attribute name="retries" type="xsd:string" use="optional"/>
+   <xsd:attribute name="delay" type="xsd:string" use="optional"/>
+   <xsd:attribute name="oneway" type="xsd:string" use="optional"/>
+   <xsd:attribute name="dispatcherActive" type="xsd:string" use="optional"/>
+   <xsd:attribute name="useForSubjectQueue" type="xsd:string" use="optional"/>
+   <xsd:attribute name="dispatchPlugin" type="xsd:string" use="optional"/>
+   <xsd:attribute name="stallOnPingTimeout" type="xsd:string" use="optional"/>
+</xsd:complexType>
+
+
+<xsd:complexType name="QueuePropertyType">
+   <xsd:sequence>
+      <xsd:element name="address" type="AddressType" minOccurs="0" maxOccurs="unbounded">
+      <!--  <xsd:element name="callback" type="AddressType" minOccurs="0" maxOccurs="unbounded"> -->
+      </xsd:element>
+   </xsd:sequence>
+   <xsd:attribute name="debug" type="xsd:string" use="optional"/>
+   <xsd:attribute name="relating" type="xsd:string" use="optional"/>
+   <xsd:attribute name="version" type="xsd:boolean" use="optional"/>
+   <xsd:attribute name="maxEntries" type="xsd:long" use="optional"/>
+   <xsd:attribute name="maxEntriesCache" type="xsd:long" use="optional"/>
+   <xsd:attribute name="maxBytes" type="xsd:long" use="optional"/>
+   <xsd:attribute name="maxBytesCache" type="xsd:long" use="optional"/>
+   <!--  the following are currently deactivated  -->
+   <xsd:attribute name="storeSwapLevel" type="xsd:long" use="optional"/>
+   <xsd:attribute name="storeSwapBytes" type="xsd:long" use="optional"/>
+   <xsd:attribute name="reloadSwapLevel" type="xsd:long" use="optional"/>
+   <xsd:attribute name="reloadSwapBytes" type="xsd:long" use="optional"/>
+
+   <xsd:attribute name="onOverflow" type="xsd:string" use="optional"/>
+   <xsd:attribute name="onFailure" type="xsd:string" use="optional"/>
+</xsd:complexType>
+
+
+<xsd:complexType name="TopicPropertyType">
+   <xsd:all>
+      <xsd:element name="msgDistributor">
+         <xsd:complexType>
+            <xsd:complexContent>
+               <xsd:extension base="EmptyType">
+                  <xsd:attribute name="typeVersion" type="xsd:string"/>
+               </xsd:extension>
+            </xsd:complexContent>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="persistence" type="QueuePropertyType" minOccurs="0"/> 
+      <xsd:element name="queue" type="QueuePropertyType" minOccurs="0"/> 
+   </xsd:all>
+   <xsd:attribute name="readonly" type="xsd:boolean" use="optional"/>
+   <xsd:attribute name="destroyDelay" type="xsd:long" use="optional"/>
+   <xsd:attribute name="createDomEntry" type="xsd:boolean" use="optional"/>
+</xsd:complexType>
+
+
+<xsd:complexType name="DestinationType" mixed="true">
+   <xsd:attribute name="queryType" type="xsd:string" use="optional"/>
+   <xsd:attribute name="forceQueuing" type="xsd:boolean" use="optional"/>
+   <xsd:attribute name="createDomEntry" type="xsd:boolean" use="optional"/>
+</xsd:complexType>
+
+
+
+<xsd:complexType name="MsgQosType">
+<!-- <xsd:all>   -->
+<xsd:sequence>
+   <xsd:element name="state" minOccurs="0">
+      <xsd:complexType>
+         <xsd:complexContent>
+            <xsd:extension base="EmptyType">
+               <xsd:attribute name="id" type="xsd:string"/>
+               <xsd:attribute name="info" type="xsd:string"/>
+            </xsd:extension>
+         </xsd:complexContent>
+      </xsd:complexType>
+   </xsd:element>
+   
+   <xsd:element name="subscribable" type="xsd:boolean" default="true" minOccurs="0"/>
+   <!--  many occurrances of this type -->
+   <xsd:element name="destination" type="DestinationType" minOccurs="0"/>
+   <xsd:element name="sender" type="xsd:string" minOccurs="0" />
+   <xsd:element name="priority" type="PriorityType" default="NORM" minOccurs="0" />
+   <xsd:element name="subscribe" minOccurs="0">
+      <xsd:complexType>
+         <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+               <xsd:attribute name="id" use="optional">
+                  <xsd:annotation>
+                     <xsd:documentation>Can contain XPath with ' or "</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:attribute>
+            </xsd:extension>
+         </xsd:simpleContent>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:element name="expiration" minOccurs="0">
+      <xsd:complexType>
+         <xsd:complexContent>
+            <xsd:extension base="EmptyType">
+               <xsd:attribute name="lifeTime" type="xsd:long" use="optional"/>
+               <xsd:attribute name="remainingLife" type="xsd:long" use="optional"/>
+               <xsd:attribute name="forceDestroy" type="xsd:boolean" use="optional"/>
+            </xsd:extension>
+         </xsd:complexContent>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:element name="rcvTimestamp" minOccurs="0">
+      <xsd:complexType>
+         <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+               <xsd:attribute name="nanos" type="xsd:long"/>
+            </xsd:extension>
+         </xsd:simpleContent>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:element name="queue" minOccurs="0">
+      <xsd:complexType>
+          <xsd:complexContent>
+             <xsd:extension base="EmptyType">
+                <xsd:attribute name="index" type="xsd:long"/>
+                <xsd:attribute name="size" type="xsd:long"/>
+             </xsd:extension>
+          </xsd:complexContent>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:element name="administrative" type="xsd:boolean" default="true" minOccurs="0"/>
+   <xsd:element name="persistent" type="xsd:boolean" default="true" minOccurs="0"/>
+   <xsd:element name="forceUpdate" type="xsd:boolean" default="true" minOccurs="0"/>
+   <xsd:element name="redeliver" type="xsd:int" default="0" minOccurs="0"/>
+
+   <xsd:element name="route" minOccurs="0">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="node" type="RouteInfoType" minOccurs="0" maxOccurs="unbounded"/>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:choice>
+      <xsd:element name="isPublish" type="EmptyType" minOccurs="0"/>
+      <xsd:element name="isUpdate" type="EmptyType" minOccurs="0"/>
+      <xsd:element name="isGet" type="EmptyType" minOccurs="0"/>
+   </xsd:choice>
+
+   <xsd:element name="topic" type="TopicPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+   <xsd:element name="clientProperty" type="EncodableDataType" minOccurs="0" maxOccurs="unbounded"/>
+
+</xsd:sequence>
+</xsd:complexType>
+
+
+<xsd:complexType name="StatusQosType">
+   <!-- <xsd:all>   -->
+   <xsd:sequence>
+      <xsd:element name="state" minOccurs="0">
+         <xsd:complexType>
+            <xsd:complexContent>
+               <xsd:extension base="EmptyType">
+                  <xsd:attribute name="id" type="xsd:string"/>
+                  <xsd:attribute name="info" type="xsd:string"/>
+               </xsd:extension>
+            </xsd:complexContent>
+         </xsd:complexType>
+      </xsd:element>
+      
+      <xsd:element name="subscribe" minOccurs="0">
+         <xsd:complexType>
+            <xsd:attribute name="id" use="optional"/>
+         </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="key" minOccurs="0">
+         <xsd:complexType>
+            <xsd:attribute name="oid" type="xsd:string" use="required"/>
+         </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="rcvTimestamp" minOccurs="0">
+         <xsd:complexType>
+            <xsd:simpleContent>
+               <xsd:extension base="xsd:string">
+                  <xsd:attribute name="nanos" type="xsd:long"/>
+               </xsd:extension>
+            </xsd:simpleContent>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:choice>
+         <xsd:element name="isErase" type="EmptyType" minOccurs="0"/>
+         <xsd:element name="isPublish" type="EmptyType" minOccurs="0"/>
+         <xsd:element name="isSubscribe" type="EmptyType" minOccurs="0"/>
+         <xsd:element name="isUnSubscribe" type="EmptyType" minOccurs="0"/>
+         <xsd:element name="isUpdate" type="EmptyType" minOccurs="0"/>
+      </xsd:choice>
+   </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="QueryRefinementType" mixed="true">
+   <xsd:attribute name="type" type="xsd:boolean" use="optional"/>
+   <xsd:attribute name="version" type="xsd:long" use="optional"/>
+</xsd:complexType>
+
+<xsd:complexType name="HistoryQosType">
+   <xsd:attribute name="numEntries" type="xsd:long" use="optional"/>
+   <xsd:attribute name="newestFirst" type="xsd:boolean" use="optional"/>
+</xsd:complexType>
+
+
+<xsd:complexType name="QueryQosType">
+   <!-- <xsd:all>   -->
+   <xsd:sequence>
+      <xsd:element name="subscribe" minOccurs="0">
+         <xsd:complexType>
+            <xsd:attribute name="id" use="optional"/>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="erase" minOccurs="0">
+         <xsd:complexType>
+            <xsd:attribute name="forceDestroy" type="xsd:boolean" use="optional"/>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="meta" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="content" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="multiSubscribe" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="local" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="initialUpdate" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="updateOneway" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="notify" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="peristent" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="filter" type="QueryRefinementType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="querySpec" type="QueryRefinementType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="history" type="HistoryQosType" minOccurs="0"/>
+      <xsd:element name="querySpec" type="QueryRefinementType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:choice>
+         <xsd:element name="isErase" type="EmptyType"/>
+         <xsd:element name="isGet" type="EmptyType"/>
+         <xsd:element name="isSubscribe" type="EmptyType"/>
+         <xsd:element name="isUnSubscribe" type="EmptyType"/>
+      </xsd:choice>
+   </xsd:sequence>
+</xsd:complexType>
+
+
+<xsd:complexType name="QueryKeyType">
+   <xsd:complexContent>
+      <xsd:extension base="MsgKeyType">
+         <xsd:attribute name="queryType" type="xsd:string"/>
+      </xsd:extension>
+   </xsd:complexContent>
+</xsd:complexType>
+
+
+<xsd:complexType name="ConnectQosType">
+   <xsd:sequence>
+      <xsd:any>
+         <xsd:annotation>
+            <xsd:documentation>
+               Here the notation of each implementation of the security qos comes.
+               Each implementor should provide the schema which defines this qos
+            </xsd:documentation>
+         </xsd:annotation>
+      </xsd:any>
+
+      <xsd:element name="ptp" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="clusterNode" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="refreshSession" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="duplicateUpdates" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="reconnected" type="xsd:boolean" default="true" minOccurs="0"/>
+      <xsd:element name="persistent" type="xsd:boolean" default="true" minOccurs="0"/>
+      
+      <!-- client queue and subject queue and cb queue -->
+      <xsd:element name="queue" type="QueuePropertyType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xsd:element name="serverRef">
+         <xsd:complexType mixed="true">
+            <xsd:attribute name="type" use="required"/>
+         </xsd:complexType>
+      </xsd:element>
+      
+      <xsd:element name="clientProperty" type="EncodableDataType" minOccurs="0" maxOccurs="unbounded"/>
+      
+   </xsd:sequence>
+</xsd:complexType>
+
+
+<xsd:complexType name="QueryMsgType">
+   <xsd:all>
+      <xsd:element name="key" type="QueryKeyType" minOccurs="0"/>
+      <xsd:element name="qos" type="QueryQosType" minOccurs="0"/>
+   </xsd:all>
+</xsd:complexType>
+
+<xsd:complexType name="ConnectType">
+   <xsd:all>
+      <xsd:element name="qos" type="QueryQosType" minOccurs="0"/>
+   </xsd:all>
+</xsd:complexType>
+
+<xsd:complexType name="MsgMsgType">
+   <xsd:all>
+      <xsd:element name="key" type="MsgKeyType" minOccurs="0"/>
+      <xsd:element name="content" type="ContentType" minOccurs="0"/>
+      <xsd:element name="qos" type="MsgQosType" minOccurs="0"/>
+   </xsd:all>
+</xsd:complexType>
+
+<xsd:complexType name="PingType">
+   <xsd:all>
+      <xsd:element name="qos" type="MsgQosType" minOccurs="0"/>
+   </xsd:all>
+</xsd:complexType>
+
+<xsd:complexType name="XmlBlasterType">
+   <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="replaceTokens" type="EmptyType"/>
+      <xsd:element name="replaceKeyTokens" type="EmptyType"/>
+      <xsd:element name="replaceQosTokens" type="EmptyType"/>
+      <xsd:element name="replaceContentTokens" type="EmptyType"/>
+      <xsd:element name="property" type="EncodableDataType"/>
+      <xsd:element name="echo" type="EchoInputType"/>
+      <xsd:element name="input" type="EchoInputType"/>
+      <xsd:element name="wait" type="WaitType"/>
+      <xsd:element name="connect" type="ConnectType"/>
+      <xsd:element name="disconnect" type="ConnectType"/>
+      <xsd:element name="get" type="QueryMsgType"/>
+      <xsd:element name="subscribe" type="QueryMsgType"/>
+      <xsd:element name="unsubscribe" type="QueryMsgType"/>
+      <xsd:element name="erase" type="QueryMsgType"/>
+      <xsd:element name="publish" type="MsgMsgType"/>
+      <xsd:element name="publishArr" type="MsgMsgType"/>
+      <xsd:element name="publishOneway" type="MsgMsgType"/>
+      <xsd:element name="ping" type="PingType"/>
+   </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="ResponseType">
+   <xsd:sequence>
+      <xsd:element name="qos" type="StatusQosType"/>
+   </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="UpdateType">
+   <xsd:sequence>
+      <xsd:element name="sessionId" type="xsd:string"/>
+      <xsd:element name="key" type="MsgKeyType"/>
+      <xsd:element name="content" type="ContentType"/>
+      <xsd:element name="qos" type="MsgQosType"/>
+   </xsd:sequence>
+</xsd:complexType>
+
+
+<xsd:complexType name="ExceptionType">
+    <xsd:sequence>
+       <xsd:element name="class" type="xsd:string"/>
+       <xsd:element name="isServerSide" type="xsd:boolean"/>
+       <xsd:element name="node" type="xsd:string"/>
+       <xsd:element name="location" type="xsd:string"/>
+       <xsd:element name="lang" type="xsd:string"/>
+       <xsd:element name="message" type="xsd:string"/>
+       <xsd:element name="versionInfo" type="xsd:string"/>
+       <xsd:element name="timestamp" type="xsd:string"/>
+       <xsd:element name="stackTrace" type="xsd:string"/>
+       <xsd:element name="embeddedMessage" type="xsd:string"/>
+       <xsd:element name="transactionInfo" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="errorCode" type="xsd:string"/>
+</xsd:complexType>
+
+<xsd:complexType name="XmlBlasterResponseType">
+   <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <!--  all commands -->
+      <xsd:element name="connect" type="ConnectType"/>
+      <xsd:element name="disconnect" type="ConnectType"/>
+      
+      <xsd:element name="get">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="message" type="MsgMsgType" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
+      
+      <xsd:element name="subscribe" type="ResponseType"/>
+      <xsd:element name="unsubscribe" type="ResponseType"/>
+      <xsd:element name="erase" type="ResponseType"/>
+      <xsd:element name="publish" type="ResponseType"/>
+      
+      <xsd:element name="publishArr">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="message" type="StatusQosType" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="update" type="UpdateType"/>
+      <xsd:element name="updateOneway" type="UpdateType"/>
+      <xsd:element name="exception" type="ExceptionType"/>
+      <xsd:element name="ping" type="PingType"/>
+   </xsd:choice>
+</xsd:complexType>
+
+
+<xsd:element name="xmlBlaster" type="XmlBlasterType"/>
+<xsd:element name="xmlBlasterResponse" type="XmlBlasterResponseType"/>
+
+
+</xsd:schema>
