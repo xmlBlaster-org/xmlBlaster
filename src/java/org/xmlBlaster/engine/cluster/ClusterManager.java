@@ -750,6 +750,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
 
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
+    * @param publisherSession can be null
     * @param destination For PtP, else null
     * @return null if local node, otherwise access other node with <code>nodeMasterInfo.getClusterNode().getI_XmlBlasterAccess()</code>
     */
