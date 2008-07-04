@@ -63,7 +63,7 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
          else {
             log.warning(ME+": Default error handling: Message '" + entries[i].getEmbeddedType() + "' '" +
                        entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage() +
-                       ". You can add your own client side error handler with I_XmlBlasterAccess.setClientErrorHandler() if desired.");
+                       ". You can add your own client side error handler with I_XmlBlasterAccess.setClientErrorHandler() if desired or intercept the message with xmlBlasterAccess.registerPostSendListener().");
          }
       }
 
