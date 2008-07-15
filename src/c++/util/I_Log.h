@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _ORG_XMLBLASTER_UTIL_I_LOG_H
 
 #include <util/xmlBlasterDef.h>
+#include <cstdlib> // exit()
 #include <string>
 #include <iostream>
 

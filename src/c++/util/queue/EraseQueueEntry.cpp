@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/queue/EraseQueueEntry.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
+#include <cstring> // memset()
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -53,7 +54,7 @@ MsgQueueEntry *EraseQueueEntry::getClone() const
 }
 
 bool EraseQueueEntry::isErase() const {
-	return true;
+        return true;
 }
 
 // this should actually be in another interface but since it is an only method we put it here.

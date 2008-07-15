@@ -13,6 +13,7 @@ Comment:   Handling one client property of QosData
 #include <util/Base64.h>
 #include <util/Constants.h>
 #include <util/lexical_cast.h>
+#include <cstring> // strlen()
 
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util;

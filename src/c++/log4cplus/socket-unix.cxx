@@ -71,6 +71,8 @@
 
 #include <algorithm>
 
+#include <cstring> // memcpy()
+
 using namespace log4cplus;
 using namespace log4cplus::helpers;
 

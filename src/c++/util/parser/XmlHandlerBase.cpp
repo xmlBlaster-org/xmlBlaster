@@ -20,6 +20,8 @@ Comment:   Default handling of Sax callbacks
 #include <util/lexical_cast.h>
 #include <iostream>
 #include <util/parser/ParserFactory.h>
+#include <climits> // LONG_MAX
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace parser {
 
@@ -319,12 +321,30 @@ long XmlHandlerBase::getLongValue(const string &value) const
 {
    if (value.length() < 1) return 0l;
    try {
+      long long llvalue = lexical_cast<long long>(value);
+      if ( llvalue > LONG_MAX ) {
+         cerr << "XmlHandlerBase:: Conversion from " << value << " to long failed, using " << LONG_MAX << endl;
+         return LONG_MAX;
+      }
+      else if ( llvalue < LONG_MIN ) {
+         cerr << "XmlHandlerBase:: Conversion from " << value << " to long failed, using " << LONG_MIN << endl;
+         return LONG_MIN;
+      }
+      return (long)llvalue; //lexical_cast<long long>(value);
+   }
+   catch (...) {
+      cerr << "XmlHandlerBase:: Conversion from " << value << " to long failed, using 0L" << endl;
+   }
+   return 0l;
+   /*
+   try {
       return lexical_cast<long>(value);
    }
    catch (...) {
       cerr << "XmlHandlerBase:: Conversion from " << value << " to long failed" << endl;
    }
    return 0l;
+   */
 }
 
 /**

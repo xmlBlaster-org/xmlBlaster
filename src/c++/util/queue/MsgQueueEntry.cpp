@@ -13,6 +13,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <cstddef> //<stddef.h>
 #include <util/msgUtil.h> // from xmlBlaster C library
 #include <socket/xmlBlasterSocket.h> // from xmlBlaster C library ::encodeMsgUnit(&msgUnit, debug);
+#include <cstring> // memset()
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -206,23 +207,23 @@ string MsgQueueEntry::getMethodName() const
 
 
 bool MsgQueueEntry::isConnect() const {
-	return false;
+        return false;
 }
 
 bool MsgQueueEntry::isPublish() const {
-	return false; // set to true by derived class PublishQueueEntry
+        return false; // set to true by derived class PublishQueueEntry
 }
 
 bool MsgQueueEntry::isSubscribe() const {
-	return false;
+        return false;
 }
 
 bool MsgQueueEntry::isUnSubscribe() const {
-	return false;
+        return false;
 }
 
 bool MsgQueueEntry::isErase() const {
-	return false;
+        return false;
 }
 
 const void* MsgQueueEntry::getEmbeddedObject() const

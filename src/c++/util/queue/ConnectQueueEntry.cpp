@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/I_ConnectionsHandler.h>
 #include <util/msgUtil.h> // from xmlBlaster C library
 #include <socket/xmlBlasterSocket.h> // from xmlBlaster C library ::encodeMsgUnit(&msgUnit, debug);
+#include <cstring> // memset()
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -56,7 +57,7 @@ ConnectQueueEntry::~ConnectQueueEntry() {
 }
 
 bool ConnectQueueEntry::isConnect() const {
-	return true;
+        return true;
 }
 
 const void* ConnectQueueEntry::getEmbeddedObject() const

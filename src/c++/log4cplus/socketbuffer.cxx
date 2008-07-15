@@ -33,6 +33,8 @@
 #include <log4cplus/helpers/socketbuffer.h>
 #include <log4cplus/helpers/loglog.h>
 
+#include <cstring> // memcpy()
+
 #if !defined(_WIN32)
 #  include <netdb.h>
 #else

@@ -41,6 +41,7 @@
 #include <log4cplus/spi/loggingevent.h>
 
 #include <iostream>
+#include <cstdlib> // atoi()
 
 using namespace std;
 using namespace log4cplus;

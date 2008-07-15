@@ -10,7 +10,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Timestamp.h>
 #include <util/dispatch/DispatchManager.h>
 #include <util/parser/ParserFactory.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 #if defined(_WINDOWS)
 #   ifdef WIN32_LEAN_AND_MEAN
 #      undef WIN32_LEAN_AND_MEAN

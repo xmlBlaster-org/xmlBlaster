@@ -52,6 +52,7 @@
 
 #include <log4cplus/helpers/property.h>
 #include <log4cplus/fstreams.h>
+#include <cstring> // strlen()
 
 using namespace std;
 using namespace log4cplus;

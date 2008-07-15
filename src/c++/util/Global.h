@@ -53,7 +53,7 @@ typedef struct ArgsStruct {
    char **argv;
 } ArgsStruct_T;
 
-class org::xmlBlaster::util::Global;
+//class org::xmlBlaster::util::Global;
 typedef org::xmlBlaster::util::ReferenceHolder<org::xmlBlaster::util::Global> GlobalRef;
 
 /**

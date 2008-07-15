@@ -14,6 +14,7 @@ Comment:   Holding a message
  
 #include <string>
 #include <vector>
+#include <cstring> // memcpy()
 #include <util/Log.h>
 #include <util/MessageUnit.h>
 
