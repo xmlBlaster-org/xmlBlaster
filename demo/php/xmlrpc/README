@@ -49,3 +49,7 @@ CHANGES :
           shortcomings I noticed. PB
 2005-01-13 laghi@swissinfo.org
         - added publish
+2008-07-16 mr @marcelruff.info
+        - Ported to PHP 5 and phpxmlrpc 2.2.1 http://phpxmlrpc.sourceforge.net/
+        - Some fixes
+        
