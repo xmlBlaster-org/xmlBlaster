@@ -147,7 +147,7 @@ if ($xb->isConnected()) {
 <table>
 <tr>
 <td class="title"><a href="http://xmlBlaster.org/"><img src="logo_xmlBlaster_2.gif" border="0"></a></td>
-<td class="title"><a href="http://xmlBlaster.org/">xmlBlaster</a> client for <a href="http://php.net/">php</a>,<br>using <a href="http://xml-rpc.org/">xml-rpc</a> protocol</td>
+<td class="title"><a href="http://xmlBlaster.org/">xmlBlaster</a> client for <a href="http://php.net/">php</a>,<br>using <a href="http://phpxmlrpc.sourceforge.net/">xml-rpc</a> protocol</td>
 </tr>
 </table>
 
