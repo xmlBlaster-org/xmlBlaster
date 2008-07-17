@@ -1,20 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <?php
 
+
 /**
  *	look at xmlBlanster.inc to know more
  *
  *	08/07/02 21:51 cyrille@ktaland.com 
  */
 
-
 // ===============
-$DEBUG = 1 ;
-function dbgprint( $str ){
-	global $DEBUG ;
-	if( isset($DEBUG) && $DEBUG >0 )
-		error_log( "[DBG] $str" , 0 );
-}//dbgprint
+$DEBUG = 1;
+function dbgprint($str) {
+	global $DEBUG;
+	if (isset ($DEBUG) && $DEBUG > 0)
+		error_log("[DBG] $str", 0);
+} //dbgprint
 function svar_dump($data) {
 	// like var_dump, but no print !
 	ob_start();
@@ -25,40 +25,40 @@ function svar_dump($data) {
 }
 // ===============
 
-include( 'xmlBlaster.inc' );
+include ('xmlBlaster.inc');
 
 $server = getHttpVar('server', 'localhost');
 $port = getHttpVar('port', 8080);
 $user = getHttpVar('user', 'joe');
-$password = getHttpVar('password','secret');
-$securityPlugin = getHttpVar('securityPlugin','htpasswd');
+$password = getHttpVar('password', 'secret');
+$securityPlugin = getHttpVar('securityPlugin', 'htpasswd');
 $xpathQuery = getHttpVar('xpathQuery', '//key');
 $xbMethod = getHttpVar('xbMethod');
-$publishKey     = getHttpVar('publishKey');
-$publishQos     = getHttpVar('publishQos');
+$publishKey = getHttpVar('publishKey');
+$publishQos = getHttpVar('publishQos');
 $publishContent = getHttpVar('publishContent');
-$publishRes     = getHttpVar('publishRes');
+$publishRes = getHttpVar('publishRes');
 
-if ($xpathQuery != "") { 
-    $xpathQuery = preg_replace("/\\\'/", "'", $xpathQuery);
+if ($xpathQuery != "") {
+	$xpathQuery = preg_replace("/\\\'/", "'", $xpathQuery);
 }
 
-if ($publishKey != "") { 
-    $publishKey = preg_replace("/\\\'/", "'", $publishKey);
+if ($publishKey != "") {
+	$publishKey = preg_replace("/\\\'/", "'", $publishKey);
 }
-if ($publishQos != "") { 
-    $publishQos = preg_replace("/\\\'/", "'", $publishQos);
+if ($publishQos != "") {
+	$publishQos = preg_replace("/\\\'/", "'", $publishQos);
 }
 
 /*
  *	Create a xmlBlaster object and connect it to xmlBlaster server
  */
 
-$xb = new xmlBlaster( $server, $port, $user, $password );
+$xb = new xmlBlaster($server, $port, $user, $password);
 $xb->securityService_type = $securityPlugin;
 
 $res = $xb->connect();
-if( $res[0] != 'OK' ){
+if ($res[0] != 'OK') {
 	$error_message = $res[1];
 }
 
@@ -66,38 +66,45 @@ if( $res[0] != 'OK' ){
  *	get some server's information
  */
 
-$sysInternal = array() ;
-if( $xb->isConnected() ){
+$sysInternal = array ();
+if ($xb->isConnected()) {
 
-	$sysInternalVariables = array( 'nodeId','version','uptime','totalMem','usedMem','freeMem','clientList' );
+	$sysInternalVariables = array (
+		'nodeId',
+		'version',
+		'uptime',
+		'totalMem',
+		'usedMem',
+		'freeMem',
+		'clientList'
+	);
 	//$sysInternalVariables = array( 'uptime' );
 	//$sysInternalVariables = array( 'freeMem','syspropList','toto' );
 
-	foreach( $sysInternalVariables as $sysVar ){
+	foreach ($sysInternalVariables as $sysVar) {
 
-		$res = $xb->get( "<key oid='__cmd:?$sysVar' />" );
+		$res = $xb->get("<key oid='__cmd:?$sysVar' />");
 
 		// pre-define content because used later for echo in html ...
-		$sysInternal[ $sysVar ] = '?' ;
+		$sysInternal[$sysVar] = '?';
 
-		if( $res[0] != 'OK' ){
+		if ($res[0] != 'OK') {
 			$error_message = $res[1];
 
-			$sysInternal[ $sysVar ] = $error_message ;
+			$sysInternal[$sysVar] = $error_message;
 
-		}else{
-			$messages = $res[1] ;
-			$message_count = count( $messages );
+		} else {
+			$messages = $res[1];
+			$message_count = count($messages);
 			// should be only one because it's admin value
 
-			foreach( $messages as $msg ){
-				dbgPrint( "MSG:" .$msg->content() );
-				$sysInternal[ $sysVar ] = $msg->content() ;
+			foreach ($messages as $msg) {
+				dbgPrint("MSG:" . $msg->content());
+				$sysInternal[$sysVar] = $msg->content();
 			}
 		}
-        }
+	}
 }
-
 ?>
 
 <html>
@@ -165,13 +172,9 @@ ERROR : <?php echo $error_message; ?>
    <td class="text" rowspan="4">
 
 	<table>
-	<?php
-	foreach( $sysInternal as $k=>$v ){
-	?>
+	<?php foreach ($sysInternal as $k => $v) {?>
 	<tr><td class="text"> &nbsp; <?php echo htmlentities($k); ?></td><td class="text"><?php echo htmlentities($v); ?></td></tr>
-	<?php
-	}
-	?>
+	<?php } ?>
 	</table>
 
    </td>
@@ -200,39 +203,46 @@ ERROR : <?php echo $error_message; ?>
   <tr><td><input type="submit" value=" Query "></td></tr>
 
 <?php
-if( $xb->isConnected() && isset($xpathQuery) && ($xbMethod == 'get')){
+
+
+if ($xb->isConnected() && isset ($xpathQuery) && ($xbMethod == 'get')) {
 
 	// $key = "<key oid='' queryType='XPATH'>/xmlBlaster/key[starts-with(\@oid,'myHel')]</key>" ;
-	$res = $xb->get( "<key oid='' queryType='XPATH'>$xpathQuery</key>" );
+	$res = $xb->get("<key oid='' queryType='XPATH'>$xpathQuery</key>");
 
-	if( $res[0] != 'OK' ){
+	if ($res[0] != 'OK') {
 		$error_message = $res[1];
-		?>
+?>
 		<tr><td>
 			<?php echo $error_message; ?>
 		</td></tr>
 		<?php
 
-	}else{
-		$messages = $res[1] ;
 
-		foreach( $messages as $msg ){
+	} else {
+		$messages = $res[1];
+
+		foreach ($messages as $msg) {
 			//dbgPrint( "MSG.type:" .gettype($msg) );
-			dbgPrint( "MSG:" .svar_dump($msg) );
-			if( $msg == 0 ){
-				?>
+			dbgPrint("MSG:" . svar_dump($msg));
+			if ($msg == 0) {
+?>
 				<tr><td>
 					No Result.
 				</td></tr>
 				<?php
-			}else{
-				?>
+
+
+			} else {
+?>
 				<tr><td>
 					<?php echo htmlentities($msg->keyOid()); ?>
 					<br>
 					<?php echo htmlentities($msg->content()); ?>
 				</td></tr>
 				<?php
+
+
 			}
 		}
 	}
@@ -248,13 +258,14 @@ if( $xb->isConnected() && isset($xpathQuery) && ($xbMethod == 'get')){
 <div class="text">A Publish Test :</div>
  <input type="hidden" name="xbMethod" value="publish">
 <?php
-  if ($xbMethod == 'publish') {
-     $arr = $xb->publish($publishKey, $publishContent, $publishQos);
-     $okstr = $arr[0];
-     $publishReturnQos = $arr[1];
-     $publishRes = $publishReturnQos->state();
-     dbgprint("PublishReturnQos::state=" . $publishRes);
-  }
+
+if ($xbMethod == 'publish') {
+	$arr = $xb->publish($publishKey, $publishContent, $publishQos);
+	$okstr = $arr[0];
+	$publishReturnQos = $arr[1];
+	$publishRes = $publishReturnQos->state();
+	dbgprint("PublishReturnQos::state=" . $publishRes);
+}
 ?> 
 
   <input type="hidden" name="server" value="<?php echo $server; ?>"><input type="hidden" name="port" value="<?php echo $port; ?>">
@@ -277,26 +288,23 @@ if( $xb->isConnected() && isset($xpathQuery) && ($xbMethod == 'get')){
 </body>
 </html>
 
-<?php
-
-$xb->logout();
-?>
+<?php $xb->logout(); ?>
 
 <?php
-// ============
-function getHttpVar( $name, $defaultVal=null ){
+
+
+function getHttpVar($name, $defaultVal = null) {
 	// 04/06/02 mad@ktaland.com
 	//global $HTTP_GET_VARS, $HTTP_POST_VARS, $HTTP_SERVER_VARS ;
-	if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
-		if( isset($_POST[$name]) ){
-			return $_POST[$name] ;
+	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+		if (isset ($_POST[$name])) {
+			return $_POST[$name];
 		}
-	}else{
-		if( isset($_GET[$name]) ){
-			return $_GET[$name] ;
+	} else {
+		if (isset ($_GET[$name])) {
+			return $_GET[$name];
 		}
 	}
-	return $defaultVal ;
+	return $defaultVal;
 }
-
 ?>
