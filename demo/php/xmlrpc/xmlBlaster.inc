@@ -162,11 +162,9 @@ class xmlBlaster {
 	} //logout
 
 	// =================
-	function get($key) {
+	function get($key, $qos='<qos></qos>' ) {
 
 		dbgprint("xmlBlaster::get(" . $key . ")");
-
-		$qos = '<qos></qos>';
 
 		//my $messages = $self->{'server'}->call( 'xmlBlaster.get', $self->{'sessionId'}, $key ,$qos );
 		$rpcmsg = new xmlrpcmsg("xmlBlaster.get", array (
