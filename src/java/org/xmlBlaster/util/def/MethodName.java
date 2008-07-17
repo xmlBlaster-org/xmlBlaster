@@ -95,6 +95,46 @@ public final class MethodName implements java.io.Serializable, Comparable
    public String getMethodName() {
       return this.methodName;
    }
+   
+   public boolean isConnect() {
+	   return this == MethodName.CONNECT || this.methodName.equals(MethodName.CONNECT);
+   }
+
+   public boolean isDisconnect() {
+	   return this == MethodName.DISCONNECT || this.methodName.equals(MethodName.DISCONNECT);
+   }
+
+   public boolean isPublish() {
+	   return this == MethodName.PUBLISH || this.methodName.equals(MethodName.PUBLISH);
+   }
+
+   public boolean isPublishOnway() {
+	   return this == MethodName.PUBLISH_ONEWAY || this.methodName.equals(MethodName.PUBLISH_ONEWAY);
+   }
+
+   public boolean isPublishArray() {
+	   return this == MethodName.PUBLISH_ARR || this.methodName.equals(MethodName.PUBLISH_ARR);
+   }
+
+   public boolean isPublishType() {
+	   return isPublishOnway() || isPublish() || isPublishArray();
+   }
+   
+   public boolean isSubscribe() {
+	   return this == MethodName.SUBSCRIBE || this.methodName.equals(MethodName.SUBSCRIBE);
+   }
+
+   public boolean isUnSubscribe() {
+	   return this == MethodName.UNSUBSCRIBE || this.methodName.equals(MethodName.UNSUBSCRIBE);
+   }
+
+   public boolean isGet() {
+	   return this == MethodName.GET || this.methodName.equals(MethodName.GET);
+   }
+
+   public boolean isErase() {
+	   return this == MethodName.ERASE || this.methodName.equals(MethodName.ERASE);
+   }
 
    /**
     * When you compare two methodName with == and they are
