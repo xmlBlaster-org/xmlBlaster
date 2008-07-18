@@ -381,7 +381,7 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 					String errTxt = "You must choose one of 'xmlScriptBase64' and 'xmlScriptPlain' since you choosed 'xmlScript'";
 					throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "AjaxServlet", errTxt);
 				}
-				if (newBrowser && !xmlScript.contains("<connect"))
+				if (newBrowser && xmlScript.indexOf("<connect")==-1)
 					throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "AjaxServlet", "The first call must contain a connect markup");
 				blasterInstance.execute(raw, xmlScript, out);
 				return;
