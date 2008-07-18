@@ -709,7 +709,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
             // blanks are not allowed, thanks to zhang zhi wei
             mappingKey = ReplaceVariable.replaceAll(mappingKey, " ", "");
-            if (mappingKey.contains("Firebird")) {
+            if (mappingKey.indexOf("Firebird")!=-1) {
             	//Firebird2.1/WI-V2.1.0.17798Firebird2.1/tcp(computername)/P10
             	mappingKey = "Firebird";
             }
