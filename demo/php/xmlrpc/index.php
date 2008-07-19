@@ -261,10 +261,15 @@ if ($xb->isConnected() && isset ($xpathQuery) && ($xbMethod == 'get')) {
 
 if ($xbMethod == 'publish') {
 	$arr = $xb->publish($publishKey, $publishContent, $publishQos);
-	$okstr = $arr[0];
-	$publishReturnQos = $arr[1];
-	$publishRes = $publishReturnQos->state();
-	dbgprint("PublishReturnQos::state=" . $publishRes);
+	if ($arr[0] == "OK") {
+		$publishReturnQos = $arr[1];
+		$publishRes = $publishReturnQos->state();
+		dbgprint("PublishReturnQos::state=" . $publishRes);
+	}
+	else {
+		$publishRes = $arr[1];
+		dbgprint("PublishReturnQos::failed=" . $arr[1]);
+	}
 }
 ?> 
 
