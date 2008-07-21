@@ -2712,20 +2712,22 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          out.write(("\n\nSummary:" + sb.toString()).getBytes("UTF-8"));
       }
       catch (Throwable e) {
-     	 e.printStackTrace();
-    	 out.write(e.toString().getBytes("UTF-8"));
+         e.printStackTrace();
+         try {
+           out.write(e.toString().getBytes("UTF-8"));
+         }
+         catch (Throwable t) {}
       }
-      finally {
-    	  try {
-              out.write(("\n</report>").getBytes("UTF-8"));
-    		  out.close();
-    	  }
-    	  catch (IOException e) {
-    	  }
-          if (fileName != null)
-             return "Reported memory overview to '" + fileName + "'";
-          return out.toString();
+      
+      try {
+         out.write(("\n</report>").getBytes("UTF-8"));
+         out.close();
       }
+    	catch (IOException e) {}
+    	  
+      if (fileName != null)
+         return "Reported memory overview to '" + fileName + "'";
+      return out.toString();
    }
 
 
