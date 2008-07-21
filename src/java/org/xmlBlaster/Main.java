@@ -6,31 +6,31 @@ Comment:   Main class to invoke the xmlBlaster server
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
-import java.util.logging.Logger;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.*;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.admin.extern.JmxWrapper;
-import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.I_SignalListener;
 import org.xmlBlaster.util.I_XmlBlasterExceptionHandler;
 import org.xmlBlaster.util.ReplaceVariable;
-import org.xmlBlaster.util.ThreadLister;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
-import org.xmlBlaster.util.I_SignalListener;
+import org.xmlBlaster.util.ThreadLister;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.util.property.Property;
-import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
-import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-import org.xmlBlaster.protocol.I_Driver;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
 
 /**
  * Main class to invoke the xmlBlaster server.
@@ -70,6 +70,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    private RunlevelManager runlevelManager = null;
 
    private boolean showUsage = false;
+   
+   /** Incarnation time of this object instance in millis */
+   private long startupTime;
 
    private boolean inShutdownProcess = false;
    private SignalCatcher signalCatcher;
@@ -162,6 +165,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
 
    public final void init(ServerScope glob)
    {
+      this.startupTime = System.currentTimeMillis();
+
       this.glob = glob;
 
       this.ME = "Main" + glob.getLogPrefixDashed();
@@ -439,6 +444,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
          //      glob.setUniqueNodeIdName(createNodeId());
          //}
          if (to == RunlevelManager.RUNLEVEL_HALTED_POST) {
+            this.startupTime = System.currentTimeMillis();
             boolean useSignalCatcher = glob.getProperty().get("useSignalCatcher", true);
             if (useSignalCatcher) {
                try {
@@ -470,6 +476,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
          }
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
             log.info(Global.getMemoryStatistic());
+            String duration = Timestamp.millisToNice(System.currentTimeMillis() - this.startupTime);
             if (controlPanel == null) {
                if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.BLACK_GREEN);
                final String bound = "|";
@@ -483,17 +490,17 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
                System.out.println(ver + sh.charChain(' ', width-ver.length()-1) + bound);
                boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
                if (useKeyboard) {
-                 String help = bound + " READY - press <enter> for options";
+                 String help = bound + " READY " + duration + " - press <enter> for options";
                  System.out.println(help + sh.charChain(' ', width-help.length()-1) + bound);
                } else {
-                 String help = bound + " READY - no keyboard input available";
+                 String help = bound + " READY " + duration + " - no keyboard input available";
                  System.out.println(help + sh.charChain(' ', width-help.length()-1) + bound);
                }
                System.out.println(" "+line+" ");
                if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.ESC);
             }
             else
-               log.info("xmlBlaster is ready for requests");
+               log.info("xmlBlaster is ready for requests " + duration);
          }
       }
       if (to <= from) { // shutdown
