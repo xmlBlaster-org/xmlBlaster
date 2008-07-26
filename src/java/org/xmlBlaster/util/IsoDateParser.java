@@ -55,6 +55,22 @@ public class IsoDateParser {
    }
 
    /**
+    * @return The ISO 8601 UTC-time string
+    * "2006-02-21"
+    */
+   public static String getCurrentUTCDate() {
+      return getUTCTimestamp(new Date()).substring(0, 10);
+   }
+
+   /**
+    * @return The ISO 8601 UTC-time string
+    * "2006-02-21"
+    */
+   public static String getCurrentUTCTime() {
+      return getUTCTimestamp(new Date()).substring(11);
+   }
+
+   /**
     * @return The ISO 8601 UTC-time string, precision is currently millis (three fraction digits)
     * "2006-02-21 14:05:51.703Z"
     */
