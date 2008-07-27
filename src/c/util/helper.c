@@ -104,7 +104,7 @@ Dll_Export char *getStackTrace(int maxNumOfLines)
       Perhaps a reference to the addr2line program can be added here.  It
       can be used to retrieve symbols even if the -rdynamic flag wasn't
       passed to the linker, and it should work on non-ELF targets as well.
-      o  Under linux, gcc interprets it by setting the 
+      o  Under linux, gcc interprets it by setting the
          "-export-dynamic" option for ld, which has that effect, according
          to the linux ld manpage.
 
@@ -137,15 +137,15 @@ Dll_Export char *getStackTrace(int maxNumOfLines)
 #endif
 }
 
-#ifndef XMLBLASTER_SLEEP_FALLBACK 
+#ifndef XMLBLASTER_SLEEP_FALLBACK
 #  define  XMLBLASTER_SLEEP_FALLBACK 0 /* Initialize to make icc happy */
 #endif
 #ifndef XMLBLASTER_SLEEP_NANO
 #  define XMLBLASTER_SLEEP_NANO 0
-#endif 
+#endif
 
 /**
- * Sleep for given milliseconds, on none real time systems expect ~ 10 millisecs tolerance. 
+ * Sleep for given milliseconds, on none real time systems expect ~ 10 millisecs tolerance.
  */
 Dll_Export void sleepMillis(long millisecs)
 {
@@ -175,7 +175,7 @@ Dll_Export void sleepMillis(long millisecs)
           while( goal >=  clock())
                   ;
    }
-   */   
+   */
 #else
    fd_set dummy;
    struct timeval toWait;
@@ -193,7 +193,7 @@ Dll_Export void sleepMillis(long millisecs)
 }
 
 /**
- * Create a timestamp in nano seconds elapsed since 1970-01-01. 
+ * Create a timestamp in nano seconds elapsed since 1970-01-01.
  * The timestamp is guaranteed to be ascending and unique.
  */
 Dll_Export int64_t getTimestamp() {
@@ -202,7 +202,7 @@ Dll_Export int64_t getTimestamp() {
    static int64_t lastNanos=0;
 
    getAbsoluteTime(0L, &abstime);
-   
+
    timestamp = (int64_t)abstime.tv_sec * NANO_SECS_PER_SECOND;
    timestamp += abstime.tv_nsec;
    if (timestamp <= lastNanos) {
@@ -215,7 +215,7 @@ Dll_Export int64_t getTimestamp() {
 
 #include <wchar.h>
 /**
- * Converts the given wide char pwcs to multibyte argv. 
+ * Converts the given wide char pwcs to multibyte argv.
  * <p>Call freeWcsArgv() to free the memory again.</p>
  * @param pwcs In parameter: Wide char command line arguments
  * @param argc The number of strings in pwcs
@@ -242,7 +242,7 @@ Dll_Export char **convertWcsArgv(wchar_t **argv_wcs, int argc) {
 }
 
 /**
- * Frees the allocated argv from convertWcsArgv(). 
+ * Frees the allocated argv from convertWcsArgv().
  * @param argv The main(argv)
  * @param argc The number of strings in argv
  */
@@ -355,7 +355,7 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 }
 
 /**
- * Allocates the string with malloc for you. 
+ * Allocates the string with malloc for you.
  * You need to free it with free()
  * @param src The text to copy
  * @return The allocated string or NULL if out of memory
@@ -378,13 +378,16 @@ Dll_Export char *strcpyAlloc(const char *src)
  */
 Dll_Export char *strcatAlloc(char **dest, const char *src)
 {
+   size_t lenSrc;
    size_t len;
    assert(dest != 0);
    if (src == 0) return (char *)0;
-   len = strlen(src)+strlen(*dest)+1;
+   lenSrc = strlen(src);
+   len = lenSrc+strlen(*dest)+1;
    (*dest) = (char *)realloc(*dest, len*sizeof(char));
    if ((*dest) == 0) return 0;
-   strncat0((*dest), src, len);
+   char *ret=strncat((*dest), src, lenSrc);
+   *((*dest)+len-1) = '\0';
    return (*dest);
 }
 
@@ -402,7 +405,7 @@ Dll_Export char *strcpyRealloc(char **dest, const char *src)
 }
 
 /**
- * Allocates the string with malloc for you, it is always ended with 0. 
+ * Allocates the string with malloc for you, it is always ended with 0.
  * NOTE: If your given blob or len is 0 an empty string of size 1 is returned
  * @return The string, never null.
  *         You need to free it with free()
@@ -429,7 +432,7 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
 
 
 /**
- * Convert the errnum to a human readable errnoStr. 
+ * Convert the errnum to a human readable errnoStr.
  * @param errnoStr Out parameter holding the string
  * @param sizeInBytes Size of the buffer
  * @param errnum The error number (errno)
@@ -438,7 +441,7 @@ Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
    snprintf0(errnoStr, sizeInBytes, "%d", errnum); /* default if string lookup fails */
 #  if defined(WINCE)
 #  elif _MSC_VER >= 1400
-      strerror_s(errnoStr, sizeInBytes, errnum);  
+      strerror_s(errnoStr, sizeInBytes, errnum);
 #  elif defined(_LINUX)
       strerror_r(errnum, errnoStr, sizeInBytes-1); /* glibc > 2. returns a char*, but should return an int */
 #  else
@@ -491,7 +494,7 @@ Dll_Export char *strncpy0(char * const to, const char * const from, const size_t
 Dll_Export char *strncat0(char * const to, const char * const from, const size_t max)
 {
 #  if _MSC_VER >= 1400 && !defined(WINCE)
-      /* buffersize of 'to' in bytes */ 
+      /* buffersize of 'to' in bytes */
       size_t bufferSizeInBytes = strlen(to) + max;
       errno_t ee = strncat_s(to, bufferSizeInBytes, from, _TRUNCATE);
       return to;
@@ -542,7 +545,7 @@ Dll_Export void trim(char *s)
    size_t first=0;
    size_t len;
    int i;
-   
+
    if (s == (char *)0) return;
 
    len = strlen((char *) s);
@@ -577,7 +580,7 @@ Dll_Export void trimStart(char *s)
 {
    size_t first=0;
    size_t len;
-   
+
    if (s == (char *)0) return;
 
    len = strlen((char *) s);
@@ -641,7 +644,7 @@ Dll_Export char *toReadableDump(char *data, size_t len)
 
 #if defined(XB_USE_PTHREADS)
 /**
- * Cast the thread identifier to an long value. 
+ * Cast the thread identifier to an long value.
  * @param t The pthread_t type
  * @return A uniquue long, usually the pointer address
  */
@@ -656,7 +659,7 @@ long get_pthread_id(pthread_t t)
 #endif
 
 /**
- * Get a human readable time string for logging. 
+ * Get a human readable time string for logging.
  * @param timeStr out parameter, e.g. "2006-11-14 12:34:46"
  * @param bufSize The size of timeStr
  */
@@ -690,12 +693,12 @@ Dll_Export void getCurrentTimeStr(char *timeStr, int bufSize) {
 }
 
 /**
- * Default logging output is handled by this method: 
+ * Default logging output is handled by this method:
  * All logging is appended a time, the loglevel and the location string.
  * The logging output is to console.
  * <p>
  * If you have your own logging device you need to implement this method
- * yourself and register it with 
+ * yourself and register it with
  * </p>
  * <pre>
  * xa->log = myXmlBlasterLoggingHandler;
@@ -803,7 +806,7 @@ Dll_Export const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel)
 }
 
 /**
- * Check if logging is necessary. 
+ * Check if logging is necessary.
  * @param currLevel The actual log level of the client
  * @param level The level of this log entry
  * @return true If logging is desired
@@ -814,7 +817,7 @@ Dll_Export _INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LO
 }
 
 /**
- * Embed the given 'embed' into exception->message. 
+ * Embed the given 'embed' into exception->message.
  * <code>embed</code> and <code>exception</code> may point on the same instance
  * @param embed An original exception to embed, can be empty in which case it is ignored
  * @param exception Contains the new exception with embedded old exception errorCode/message
@@ -837,7 +840,7 @@ Dll_Export void embedException(ExceptionStruct *exception, const char *newErrorC
 }
 
 /**
- * Should be called on any ExceptionStruct before using it. 
+ * Should be called on any ExceptionStruct before using it.
  * Nulls all fields
  */
 Dll_Export void initializeExceptionStruct(ExceptionStruct *exception)
@@ -848,7 +851,7 @@ Dll_Export void initializeExceptionStruct(ExceptionStruct *exception)
 }
 
 /**
- * Convenience function which returns a formatted exception string. 
+ * Convenience function which returns a formatted exception string.
  * <pre>
  * </pre>
  * @param out The string where the exception is written into, you should allocate at least
@@ -865,7 +868,7 @@ Dll_Export const char *getExceptionStr(char *out, int outSize, const ExceptionSt
 }
 
 /**
- * Convert a 64 bit integer to a string. 
+ * Convert a 64 bit integer to a string.
  * This helper concentrates this conversion to one place to
  * simplify porting to compilers with no <code>int64_t = long long</code> support
  * @param buf You need to pass this buffer with at least INT64_STRLEN_MAX=22 bytes of size
@@ -881,7 +884,7 @@ Dll_Export const char* int64ToStr(char * const buf, int64_t val)
 }
 
 /**
- * Convert a string to a 64 bit integer. 
+ * Convert a string to a 64 bit integer.
  * This helper concentrates this conversion to one place to
  * simplify porting to compilers with no <code>long long</code> support
  * @param val Your <code>long long</code> which is filled from <code>str</code>
@@ -936,9 +939,9 @@ Dll_Export bool strToULong(unsigned long *val, const char * const str)
 
 
 /**
- * Allocates the string with malloc for you. 
+ * Allocates the string with malloc for you.
  * You need to free it with free()
- * @param blob If null it is malloc()'d for you, else the given blob is used to be filled. 
+ * @param blob If null it is malloc()'d for you, else the given blob is used to be filled.
  * @return The given blob (or a new malloc()'d if blob was NULL), the data is 0 terminated.
  *         We return NULL on out of memory.
  */
@@ -960,7 +963,7 @@ Dll_Export BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, size_t d
 }
 
 /**
- * free()'s the data in the given blob, does not free the blob itself. 
+ * free()'s the data in the given blob, does not free the blob itself.
  * @param blob if NULL we return NULL
  * @return The given blob
  */
@@ -992,7 +995,7 @@ Dll_Export void freeBlobDump(char *blobDump)
 }
 
 # ifdef HELPER_UTIL_MAIN
-/* 
+/*
  * gcc -g -Wall -DHELPER_UTIL_MAIN=1 -I../../ -o helper helper.c -I../
  */
 int main()
