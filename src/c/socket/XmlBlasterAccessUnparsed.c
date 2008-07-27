@@ -112,7 +112,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
 
    /* We shouldn't do much logging here, as the caller had no chance to redirect it up to now */
    if (xa->callbackMultiThreaded == true) {
-      if (xa->logLevel>=XMLBLASTER_LOG_DUMP) 
+      if (xa->logLevel>=XMLBLASTER_LOG_DUMP)
          xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_DUMP, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
       /*xa->callbackMultiThreaded = false;*/
    }
@@ -293,7 +293,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    /* Switch on compression? */
    compressType = xa->props->getString(xa->props, "plugin/socket/compress/type", "");
    compressType = xa->props->getString(xa->props, "dispatch/connection/plugin/socket/compress/type", compressType);
-         
+
    if (!strcmp(compressType, "zlib:stream")) {
       xa->connectionP->writeToSocket.writeToSocketFuncP = writenCompressed;
       xa->connectionP->writeToSocket.userP = xa;
@@ -385,11 +385,11 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
 
 /**
  * Callback from #XmlBlasterConnectionUnparsed just before a message is sent,
- * the msgRequestInfo contains the requestId used. 
+ * the msgRequestInfo contains the requestId used.
  * This is the clients calling thread.
  * @param msgRequestInfoP Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
- * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled. 
+ * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled.
  *         If msgRequestInfoP->blob.data was changed and malloc()'d by you, the caller will free() it.
  *         If you return NULL you need to call removeResponseListener() to avoid a memory leak.
  */
@@ -433,8 +433,8 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
 }
 
 /**
- * This function is called by the callback server when a response message arrived (after we send a request). 
- * The xa->responseBlob->data is malloc()'d with the response string, you need to free it. 
+ * This function is called by the callback server when a response message arrived (after we send a request).
+ * The xa->responseBlob->data is malloc()'d with the response string, you need to free it.
  * This method is executed by the callback server thread.
  * @param msgRequestInfoP May not be NULL
  * @param socketDataHolder is on the stack and does not need to be freed, the 'data' member is
@@ -471,7 +471,7 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
 }
 
 /**
- * Callback function (wait for response) called directly after a message is sent. 
+ * Callback function (wait for response) called directly after a message is sent.
  * @param msgRequestInfoP Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
  * @return The returned string from a request is written into msgRequestInfoP->data,
@@ -494,7 +494,7 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    }
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfoP->requestIdStr);
-   
+
    if ((retVal = pthread_cond_init(&msgRequestInfoP->responseCond, NULL)) != 0) {
       xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfoP->requestIdStr);
       strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
@@ -548,7 +548,7 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    }
 
    msgRequestInfoP->responseType = 0;
-   
+
    /* if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfoP->requestIdStr); */
    if (mutexUnlock(msgRequestInfoP, exception) == false)
       return (MsgRequestInfo *)0;
@@ -557,7 +557,7 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
 }
 
 /**
- * Free lock. 
+ * Free lock.
  * @param msgRequestInfoP Transporting data
  * @param exception The exception struct, can be null
  * @return false on error, the exception struct is filled in this case and the lock is not released
@@ -612,7 +612,7 @@ Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
                   "\n                       The time in millis to wait on a response, 0 is forever."
                   "\n   -logLevel           ERROR | WARN | INFO | TRACE | DUMP [WARN]"
                   );
-   
+
    return usage;
 }
 
@@ -643,7 +643,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    if (initialize(xa, clientUpdateFp, exception) == false) {
       return false;
    }
-   
+
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Invoking connect()");
 
    if (strstr(qos, "<callback") != 0) {
@@ -672,7 +672,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
          return false;
       }
       strncpy0(qos_, qos, pos-qos+1);
-      strncat0(qos_, callbackQos, SIZE);
+      strncat0(qos_, callbackQos, SIZE-strlen(qos_));
       strncat0(qos_, "</qos>", 8);
    }
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connecting with qos=%s", qos_);
@@ -703,7 +703,7 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * cons
 }
 
 /**
- * Publish a message to the server. 
+ * Publish a message to the server.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @see XmlBlasterConnectionUnparsed#publish() for a function documentation
@@ -717,7 +717,7 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, X
 }
 
 /**
- * Publish a message array in a bulk to the server. 
+ * Publish a message array in a bulk to the server.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @see XmlBlasterConnectionUnparsed#publishArr() for a function documentation
@@ -731,7 +731,7 @@ static QosArr *xmlBlasterPublishArr(XmlBlasterAccessUnparsed *xa, MsgUnitArr *ms
 }
 
 /**
- * Publish a message array in a bulk to the server, we don't receive an ACK. 
+ * Publish a message array in a bulk to the server, we don't receive an ACK.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @see XmlBlasterConnectionUnparsed#publishOneway() for a function documentation
@@ -743,7 +743,7 @@ static void xmlBlasterPublishOneway(XmlBlasterAccessUnparsed *xa, MsgUnitArr *ms
 }
 
 /**
- * Subscribe a message. 
+ * Subscribe a message.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
@@ -756,7 +756,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * cons
 }
 
 /**
- * UnSubscribe a message from the server. 
+ * UnSubscribe a message from the server.
  * @return The raw QoS XML strings returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free it with freeQosArr() after usage
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html
@@ -771,7 +771,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * 
 }
 
 /**
- * Erase a message from the server. 
+ * Erase a message from the server.
  * @return A struct holding the raw QoS XML strings returned from xmlBlaster,
  *         only NULL if an exception is thrown.
  *         You need to freeQosArr() it
@@ -787,7 +787,7 @@ static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const 
 }
 
 /**
- * Ping the server. 
+ * Ping the server.
  * @param xa The 'this' pointer
  * @param qos The QoS or 0
  * @param exception *errorCode!=0 on failure
@@ -804,7 +804,7 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos
 }
 
 /**
- * Get a message. 
+ * Get a message.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.get.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return NULL on error, please check exception in such a case
@@ -862,7 +862,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
 }
 
 /**
- * Run by the new created thread, calls the clients update method. 
+ * Run by the new created thread, calls the clients update method.
  * Leaving this pthread start routine does an implicit pthread_exit().
  * @param container Holding all necessary informations, we free it when we are done
  * @return 0 on success, 1 on error. The return value is the exit value returned by pthread_join()
@@ -897,7 +897,7 @@ static bool runUpdate(UpdateContainer *container)
 
 /**
  * Here we receive the callback messages from xmlBlaster, create a thread and dispatch
- * it to the clients update. 
+ * it to the clients update.
  * @see UpdateFp in CallbackServerUnparsed.h
  */
 static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
@@ -947,7 +947,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       pthread_attr_init(&attr);
       /* Cleanup all resources after ending the thread, instead of calling pthread_join() */
       pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-      
+
       container->xa = xa;
       container->msgUnitArrP = msgUnitArrP;
       container->userData = userData;
@@ -988,7 +988,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
          return;
       }
 
-      /* Is done already with above PTHREAD_CREATE_DETACHED 
+      /* Is done already with above PTHREAD_CREATE_DETACHED
          threadRet = pthread_detach(tid);
          if (threadRet != 0) {
             xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%d] Detaching thread failed with error number %d", __LINE__, threadRet);
@@ -1028,13 +1028,13 @@ static ssize_t writenPlain(void * userP, const int fd, const char *ptr, const si
    rc = pthread_mutex_unlock(&xa->writenMutex);
    if (rc != 0) /* EPERM */
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(writenMutex) returned %d.", rc);
-   
+
    return ret;
 
 }
 
 /**
- * Compress data and send to socket. 
+ * Compress data and send to socket.
  */
 static ssize_t writenCompressed(void *userP, const int fd, const char *ptr, const size_t nbytes) {
    int rc;
@@ -1073,12 +1073,12 @@ static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nb
 
    rc = pthread_mutex_unlock(&xa->readnMutex);
    if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);
-   
+
    return ret;
 }
 
 /**
- * Read data from socket, uncompress it if necessary. 
+ * Read data from socket, uncompress it if necessary.
  */
 static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
    int rc;
@@ -1147,7 +1147,7 @@ int main(int argc, char** argv)
       char *response = (char *)0;
       /*
        * callbackSessionId:
-       * Is created by the client and used to validate callback messages in update. 
+       * Is created by the client and used to validate callback messages in update.
        * This is sent on connect in ConnectQos.
        * (Is different from the xmlBlaster secret session ID)
        */
@@ -1209,7 +1209,7 @@ int main(int argc, char** argv)
          }
          else
             *callbackQos = '\0';
-         
+
          SNPRINTF(connectQos, 2048,
                 "<qos>"
                 " <securityService type='htpasswd' version='1.0'>"
