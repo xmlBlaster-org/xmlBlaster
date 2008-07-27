@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17049 C client library: Bugfix in strcatAlloc() which used wrong SIZE for strncat0()
+
  o r17036 PHP Client xmlBlaster/demo/php/xmlrpc/README
           Ported to PHP 5 and phpxmlrpc 2.2.1 http://phpxmlrpc.sourceforge.net/  
 
