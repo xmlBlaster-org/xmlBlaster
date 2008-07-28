@@ -386,7 +386,7 @@ Dll_Export char *strcatAlloc(char **dest, const char *src)
    len = lenSrc+strlen(*dest)+1;
    (*dest) = (char *)realloc(*dest, len*sizeof(char));
    if ((*dest) == 0) return 0;
-   char *ret=strncat((*dest), src, lenSrc);
+   strncat((*dest), src, lenSrc);
    *((*dest)+len-1) = '\0';
    return (*dest);
 }
