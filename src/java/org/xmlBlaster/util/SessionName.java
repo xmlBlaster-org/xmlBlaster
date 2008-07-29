@@ -73,6 +73,9 @@ public final class SessionName implements java.io.Serializable
    public SessionName(Global glob, NodeId nodeId, String subjectId, long pubSessionId) {
 	   this.glob = glob;
 	   this.nodeId = nodeId;
+	   if (nodeId != null) {
+		   this.nodeIdExplicitlyGiven = true;
+	   }
 	   this.subjectId = subjectId;
 	   this.pubSessionId = pubSessionId;
    }
