@@ -8,6 +8,8 @@ package org.xmlBlaster.util.error;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
@@ -42,6 +44,20 @@ public interface I_MsgErrorInfo
     * @return never null
     */
    XmlBlasterException getXmlBlasterException();
+   
+   
+   /**
+    * Access the sender.  
+    * @return null if not known
+    */
+   SessionName getSessionName();
+
+   /**
+    * Is not null for client calls into server like XmlBlasterImpl.publish()
+    * where no queue is involved.   
+    * @return null if not known
+    */
+   MsgUnit getMsgUnit();
 
    String toXml();
 

@@ -42,6 +42,9 @@ public final class ConnectQosServer
    private long persistenceUniqueId;
    /** The address information got from the protocol plugin. */
    private AddressServer addressServer;
+   
+   /** E.g. mobile phones don't know what to do with it */
+   private boolean allowExceptionsThrownToClient = true;;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
       this.connectQosData = connectQosData;
@@ -378,6 +381,18 @@ public final class ConnectQosServer
 
    public void setSessionLimitsPubSessionIdSpecific(boolean sessionLimitsPubSessionIdSpecific) {
 	  this.sessionLimitsPubSessionIdSpecific = sessionLimitsPubSessionIdSpecific;
+   }
+
+   public boolean allowExceptionsThrownToClient() {
+      return allowExceptionsThrownToClient;
+   }
+
+   /**
+    * Can be set by e.g. security plugins to false to protect clients to receive exception which they can't handle 
+    * @param allowExceptionsThrownToClient
+    */
+   public void setAllowExceptionsThrownToClient(boolean allowExceptionsThrownToClient) {
+      this.allowExceptionsThrownToClient = allowExceptionsThrownToClient;
    }
 }
 

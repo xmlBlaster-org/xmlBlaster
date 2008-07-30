@@ -9,6 +9,8 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
@@ -24,9 +26,32 @@ import org.xmlBlaster.util.def.Constants;
  */
 public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
 {
+   private static final long serialVersionUID = 1L;
+   private final Global glob;
+   private final SessionName sessionName;
+   private final MsgUnit msgUnit;
    private final MsgQueueEntry[] msgQueueEntries;
    private final DispatchManager dispatchManager;
    private final XmlBlasterException xmlBlasterException;
+   
+   /**
+    * Creates an error info instance from server side XmlBlasterImpl.publish failure (remote method invokation)
+    * without a queue involved 
+    * @param sessionName The sender client
+    * @param msgUnit the message to handle
+    * @param throwable Creates an error info instance with errorCode="internal.unknown" <br />
+    *        if throwable instanceof XmlBlasterException we use the given exception
+    */
+   public MsgErrorInfo(Global glob, SessionName sessionName, MsgUnit msgUnit, Throwable throwable) {
+      this.glob = glob;
+	  this.sessionName = sessionName;
+	  this.msgUnit = msgUnit;
+      this.msgQueueEntries = new MsgQueueEntry[0];
+      this.dispatchManager = null;
+	  this.xmlBlasterException = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
+             new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, 
+                "MsgErrorInfo.INTERNAL", (throwable==null) ? "NO INFO" : throwable.toString());
+   }
 
    /**
     * Creates an error info instance with errorCode="internal.unknown"
@@ -50,6 +75,9 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
          Thread.dumpStack();
          throw new IllegalArgumentException("MsgErrorInfo: xmlBlasterException may not be null");
       }
+      this.glob = glob;
+	  this.sessionName = (dispatchManager == null) ? null : dispatchManager.getSessionName();
+	  this.msgUnit = null;
       this.msgQueueEntries = (msgQueueEntries == null) ? (new MsgQueueEntry[0]) : msgQueueEntries;
       this.dispatchManager = dispatchManager;
       this.xmlBlasterException = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
@@ -118,6 +146,18 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
       sb.append(xmlBlasterException.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</MsgErrorInfo>");
       return sb.toString();
+   }
+
+   public Global getGlob() {
+      return glob;
+   }
+
+   public SessionName getSessionName() {
+     return sessionName;
+   }
+
+   public MsgUnit getMsgUnit() {
+      return msgUnit;
    }
 }
 

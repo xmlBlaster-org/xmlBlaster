@@ -573,47 +573,15 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                retArr[ii] = "PANIC";
                continue;
             }
-            try {
-               if (entry.getKeyOid().equals(Constants.OID_DEAD_LETTER)) {  // Check for recursion of dead letters
-                  log.severe("PANIC: Recursive dead message is lost, no recovery possible - dumping to file not yet coded: " +
-                                origMsgUnit.toXml() + ": " +
-                                ((reason != null) ? (": " + reason) : "") );
-                  retArr[ii] = entry.getKeyOid();
-                  Thread.dumpStack();
-                  continue;
-               }
-               // entry.getLogId()="callback:/node/heron/client/Subscriber/1/NORM/1196854278910000000/Hello"
-               String clientPropertyKey = "__isErrorHandled" + entry.getLogId();
-               if (origMsgUnit.getQosData().getClientProperties().get(clientPropertyKey) != null) {  // Check for recursion of dead letters
-                  log.warning("Recursive message '" + entry.getLogId() + "' is error handled already (sent as dead letter), we ignore it.");
-                  retArr[ii] = entry.getKeyOid();
-                  continue;
-               }
-               origMsgUnit.getQosData().addClientProperty(clientPropertyKey, true); // Mark the original to avoid looping if failed client is the dead message listener
-               String text = "Generating dead message '" + entry.getLogId() + "'" +
-                            " from publisher=" + entry.getSender() +
-                            " because delivery " +            // entry.getReceiver() is recognized in queueId
-                            ((queue == null) ? "" : "with queue '"+queue.getStorageId().toString()+"' ") + "failed" +
-                            ((reason != null) ? (": " + reason) : "");
-               log.warning(text);
-               PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
-               //publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
-               // null: use the content from origMsgUnit:
-               pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGKEY, origMsgUnit.getKey()); //"__key"
-               pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, origMsgUnit.getQos()); //"__qos"
-               pubQos.addClientProperty(Constants.CLIENTPROPERTY_OID, origMsgUnit.getKeyOid()); //"__oid"
-               pubQos.addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMP, origMsgUnit.getQosData().getRcvTimestamp()); //"__rcvTimestamp"
-               pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGREASON, text); //"__deadMessageReason"
-               if (entry.getReceiver() != null)
-                  pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGRECEIVER, entry.getReceiver().getAbsoluteName());
-               MsgUnit msgUnit = new MsgUnit(origMsgUnit, publishKey.getData(), null, pubQos.getData());
-               retArr[ii] = publish(unsecureSessionInfo, msgUnit);
-            }
-            catch(Throwable e) {
-               log.severe("PANIC: " + entry.getKeyOid() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml());
-               e.printStackTrace();
-               retArr[ii] = entry.getKeyOid();
-            }
+            // entry.getLogId()="callback:/node/heron/client/Subscriber/1/NORM/1196854278910000000/Hello"
+            String clientPropertyKey = "__isErrorHandled" + entry.getLogId();
+            String text = "Generating dead message '" + entry.getLogId() + "'" +
+                         " from publisher=" + entry.getSender() +
+                         " because delivery " +            // entry.getReceiver() is recognized in queueId
+                         ((queue == null) ? "" : "with queue '"+queue.getStorageId().toString()+"' ") + "failed" +
+                         ((reason != null) ? (": " + reason) : "");
+            log.warning(text);
+            retArr[ii] = publishDeadMessage(origMsgUnit, text, clientPropertyKey, entry.getReceiver());
          }
          return retArr;
       }
@@ -655,6 +623,43 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       }
 
       return new String[0];
+   }
+
+   public String publishDeadMessage(MsgUnit origMsgUnit, String text, String clientPropertyKey, SessionName receiver) throws XmlBlasterException {
+      try {
+         if (origMsgUnit.getKeyOid().equals(Constants.OID_DEAD_LETTER)) {  // Check for recursion of dead letters
+            log.severe("PANIC: Recursive dead message is lost, no recovery possible - dumping to file not yet coded: " +
+                         origMsgUnit.toXml() + ": " +
+                         ((text != null) ? (": " + text) : "") );
+            Thread.dumpStack();
+            return origMsgUnit.getKeyOid();
+         }
+         if (origMsgUnit.getQosData().getClientProperties().get(clientPropertyKey) != null) {  // Check for recursion of dead letters
+            log.warning("Recursive message '" + clientPropertyKey + "' is error handled already (sent as dead letter), we ignore it.");
+            return origMsgUnit.getKeyOid();
+         }
+         origMsgUnit.getQosData().addClientProperty(clientPropertyKey, true); // Mark the original to avoid looping if failed client is the dead message listener
+         PublishQos pubQos = new PublishQos(glob);
+         pubQos.setVolatile(true);
+         origMsgUnit.getQosData().addClientProperty(clientPropertyKey, true); // Mark the original to avoid looping if failed client is the dead message listener
+         PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
+         //publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
+         // null: use the content from origMsgUnit:
+         pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGKEY, origMsgUnit.getKey()); //"__key"
+         pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, origMsgUnit.getQos()); //"__qos"
+         pubQos.addClientProperty(Constants.CLIENTPROPERTY_OID, origMsgUnit.getKeyOid()); //"__oid"
+         pubQos.addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMP, origMsgUnit.getQosData().getRcvTimestamp()); //"__rcvTimestamp"
+         pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGREASON, text); //"__deadMessageReason"
+         if (receiver != null)
+            pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGRECEIVER, receiver.getAbsoluteName());
+         MsgUnit msgUnit = new MsgUnit(origMsgUnit, publishKey.getData(), null, pubQos.getData());
+         return publish(unsecureSessionInfo, msgUnit);
+      }
+      catch(Throwable e) {
+         log.severe("PANIC: " + origMsgUnit.getKeyOid() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml());
+         e.printStackTrace();
+         return origMsgUnit.getKeyOid();
+      }
    }
 
    public String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {

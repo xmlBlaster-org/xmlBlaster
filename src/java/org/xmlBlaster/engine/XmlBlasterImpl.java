@@ -6,23 +6,9 @@ Comment:   Native Interface to xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.AddressServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.QosData;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.dispatch.DispatchStatistic;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.plugins.CryptDataHolder;
@@ -30,6 +16,21 @@ import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.SessionHolder;
+import org.xmlBlaster.engine.qos.AddressServer;
+import org.xmlBlaster.engine.qos.EraseQosServer;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.error.MsgErrorInfo;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * This is the native implementation of the xmlBlaster interface.
@@ -156,22 +157,41 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering publish()");
 
+      SessionInfo sessionInfo = null;
       try {
          // authentication and authorization security checks
-         SessionInfo sessionInfo = authenticate.check(sessionId);
+         sessionInfo = authenticate.check(sessionId);
+      }
+      catch (Throwable e) {
+         throw this.availabilityChecker.checkException(MethodName.PUBLISH, e);
+      }
+      
+      return publish(addressServer, sessionInfo, msgUnitRaw, MethodName.PUBLISH);
+   }
 
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitRaw, MethodName.PUBLISH);
+   private final String publish(AddressServer addressServer, SessionInfo sessionInfo, MsgUnitRaw msgUnitRaw, MethodName methodName) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publish()");
+
+      MsgUnit msgUnit = null;
+      try {
+         msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitRaw, MethodName.PUBLISH);
 
          String ret = requestBroker.publish(sessionInfo, msgUnit);
 
          sessionInfo.getDispatchStatistic().incrNumPublish(1);
 
-         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH, new MsgUnitRaw(null, (byte[])null, ret));
+         CryptDataHolder dataHolder = new CryptDataHolder(methodName, new MsgUnitRaw(null, (byte[])null, ret));
          dataHolder.setReturnValue(true);
          return sessionInfo.getSecuritySession().exportMessage(dataHolder).getQos();
       }
       catch (Throwable e) {
-         throw this.availabilityChecker.checkException(MethodName.PUBLISH, e);
+         if (sessionInfo != null && !sessionInfo.getConnectQos().allowExceptionsThrownToClient()) {
+             if (msgUnit == null)
+                msgUnit = new MsgUnit(glob, msgUnitRaw, methodName);
+             return sessionInfo.getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, sessionInfo.getSessionName(), msgUnit, e));
+         }
+         throw this.availabilityChecker.checkException(methodName, e);
       }
    }
 
@@ -184,30 +204,23 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
                                     MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr()");
 
+      SessionInfo sessionInfo = null;
       try {
          // authentication and authorization security checks
-         SessionInfo sessionInfo = authenticate.check(sessionId);
-         I_Session sec = sessionInfo.getSecuritySession();
-
-         // How to guarantee complete transaction?
-         DispatchStatistic statistic = sessionInfo.getDispatchStatistic();
-         String[] returnArr = new String[msgUnitArr.length];
-         for (int ii=0; ii<msgUnitArr.length; ii++) {
-            // TODO: Implement native PUBLISH_ARR
-            MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitArr[ii], MethodName.PUBLISH);
-            String ret = requestBroker.publish(sessionInfo, msgUnit);
-            statistic.incrNumPublish(1);
-            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH_ARR, new MsgUnitRaw(null, (byte[])null, ret));
-            dataHolder.setReturnValue(true);
-            returnArr[ii] = sec.exportMessage(dataHolder).getQos();
-         }
-
-         return returnArr;
+         sessionInfo = authenticate.check(sessionId);
       }
       catch (Throwable e) {
          throw this.availabilityChecker.checkException(MethodName.PUBLISH_ARR, e);
       }
+      
+      // How to guarantee complete transaction? TODO: Implement native PUBLISH_ARR
+      String[] returnArr = new String[msgUnitArr.length];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         returnArr[ii] = publish(addressServer, sessionInfo, msgUnitArr[ii], MethodName.PUBLISH_ARR);
+      }
+      return returnArr;
    }
+   
 
    /**
     * Publish messages.

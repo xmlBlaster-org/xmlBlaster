@@ -52,6 +52,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
  *     &lt;attribute id='loginName'>_DeadMessageDumper&lt;/attribute>
  *     &lt;attribute id='password'>secret&lt;/attribute>
  *     &lt;attribute id='directoryName'>/tmp&lt;/attribute>
+ *     &lt;attribute id='receiverSubdir'>true&lt;/attribute>
  *     &lt;attribute id='forceBase64'>false&lt;/attribute>
  *  &lt;/plugin>
  * </pre>
@@ -85,6 +86,7 @@ public class DeadMessageDumper implements I_Plugin {
    private String password = "secret";
    /** forceBase64==false: ASCII dump for content if possible (XML embedable) */
    private boolean forceBase64 = false;
+   private boolean receiverSubdir = true;
 
    /**
     * Initializes the plugin
@@ -99,6 +101,8 @@ public class DeadMessageDumper implements I_Plugin {
       if (log.isLoggable(Level.FINER)) log.finer("init");
 
       String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tmp";
+
+      this.receiverSubdir = this.global.get("receiverSubdir", this.receiverSubdir, null, this.pluginInfo);
 
       this.directoryName = this.global.get("directoryName", defaultPath, null, this.pluginInfo);
       initDirectory(null, "directoryName", this.directoryName);
@@ -192,12 +196,22 @@ public class DeadMessageDumper implements I_Plugin {
          String qos = updateQos.getClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, "<qos/>"); //"__qos"
          String oid = updateQos.getClientProperty(Constants.CLIENTPROPERTY_OID, "");              //"__oid"
          String txt = updateQos.getClientProperty(Constants.CLIENTPROPERTY_DEADMSGREASON, "");    //"__deadMessageReason"
+         String receiver = updateQos.getClientProperty(Constants.CLIENTPROPERTY_DEADMSGRECEIVER, ""); // PtP absolute name
 
+         if (fn.length() == 0)
+        	 fn = new Timestamp().toString();
+         
          fn = Global.getStrippedString(fn); // Strip chars like ":" so that fn is usable as a file name
          fn = fn + ".xml";
 
-         initDirectory(null, "directoryName", this.directoryName); // In case somebody has removed it
-         File to_file = new File(this.directoryName, fn);
+         String dir = this.directoryName;
+         
+         if (receiver.length() > 0) {
+            dir += "" + File.separator + Global.getStrippedString(receiver); 
+         }
+
+         File dirFile = initDirectory(null, "directoryName", dir); // In case somebody has removed it
+         File to_file = new File(dirFile, fn);
 
          FileOutputStream to = new FileOutputStream(to_file);
          log.info("Dumping dead message to  '" + to_file.toString() + "'" );

@@ -38,10 +38,11 @@ public interface I_MsgErrorHandler
     * This method can throw an exception, the caller usually passes this back
     * the client code. 
     * </p>
+    * @return null or a useful message return qos
     * @exception XmlBlasterException To throw an XmlBlasterException makes sense
     * if we are in sync mode and want to pass the exception back to the caller.
     */
-   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException;
+   public String handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException;
    
    public void shutdown();
 }

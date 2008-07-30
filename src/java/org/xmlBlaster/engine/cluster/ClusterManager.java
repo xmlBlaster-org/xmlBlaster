@@ -384,6 +384,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
 
       if (destination.getDestination().getNodeId() == null)
          return null;
+      
+      //boolean TEST = true;
+      //if (TEST)
+      //    throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, "TEST ONLY");
 
       // First check if a specific not local nodeId is given
       ClusterNode clusterNode = getClusterNode(destination.getDestination().getNodeId());

@@ -9,10 +9,12 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
@@ -30,7 +32,7 @@ import java.util.ArrayList;
  */
 public final class MsgErrorHandler implements I_MsgErrorHandler
 {
-   private final String ME;
+   //private final String ME;
    private final long MAX_BYTES = 1000000L; // to avoid out of mem, max 1 MB during error handling
    
    private final ServerScope glob;
@@ -41,7 +43,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
     * @param sessionInfo Can be null (e.g. for Subject errors)
     */
    public MsgErrorHandler(ServerScope glob, SessionInfo sessionInfo) {
-      this.ME = "MsgErrorHandler-" + ((sessionInfo==null) ? "" : sessionInfo.getId());
+      //this.ME = "MsgErrorHandler-" + ((sessionInfo==null) ? "" : sessionInfo.getId());
       this.glob = glob;
 
       this.sessionInfo = sessionInfo;
@@ -192,10 +194,44 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
     * @exception XmlBlasterException is thrown if we are in sync mode and we have no COMMUNICATION problem,
     * the client shall handle it himself
     */
-   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+   public String handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+      if (msgErrorInfo.getMsgUnit() != null) {
+         // No queue involved, a XmlBlasterImpl.publish() has failed
+         // (a publish call from a client inside xmlBlaster server)
+         // We end up here if the client does not want to get exception back:
+         // ConnectQosServer.allowExcpetionsThrownToClient=false
+         SessionName sessionName = msgErrorInfo.getSessionName();
+         org.xmlBlaster.util.MsgUnit msgUnit = msgErrorInfo.getMsgUnit();
+         XmlBlasterException e = msgErrorInfo.getXmlBlasterException();
+         try {
+            if (msgUnit.getQosData().getRcvTimestamp() == null)
+               msgUnit.getQosData().touchRcvTimestamp();
+            String clientPropertyKey = "__isErrorHandled" + msgUnit.getLogId();
+            SessionName receiver = null; // !!!!! msgUnit.getQosData().getDestination();
+            if (msgUnit.getQosData() instanceof MsgQosData) {
+               MsgQosData mq = (MsgQosData)msgUnit.getQosData();
+               if (mq.getDestinationArr().length > 0) {
+                  receiver = mq.getDestinationArr()[0].getDestination();
+               }
+            }
+            String txt = (e == null) ? "" : e.toString();
+            String name = (sessionName == null) ? "" : sessionName.getAbsoluteName();
+            log.severe("Generating dead message '" + msgUnit.getLogId() + "'" +
+               " from publisher=" + name +
+               " because delivery failed and connectQosServer.allowExcpetionsThrownToClient=false: " + txt);
+            return glob.getRequestBroker().publishDeadMessage(msgUnit, txt, clientPropertyKey, receiver);
+		 }
+         catch (XmlBlasterException ex) {
+             ex.printStackTrace();
+             log.severe(ex.toString());
+             return null;
+         }
+      }
+	   
       if (log.isLoggable(Level.FINE)) log.fine("Unexpected sync error handling invocation, we try our best");
       //Thread.currentThread().dumpStack();
       handleError(msgErrorInfo);
+      return null;
    }
 
    public void shutdown() {

@@ -88,10 +88,10 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
     * @exception XmlBlasterException is thrown if we are in sync mode and we have no COMMUNICATION problem,
     * the client shall handle it himself
     */
-   public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+   public String handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
       if (msgErrorInfo.getXmlBlasterException().isCommunication()) {
          handleError(msgErrorInfo);
-         return;
+         return "";
       }
       throw msgErrorInfo.getXmlBlasterException(); // Throw back to client
    }
