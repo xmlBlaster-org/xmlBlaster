@@ -4,6 +4,12 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17054 MsgErrorHandler: Handles now incoming publish requests as well
+          if configured by ConnectQosServer.allowExcpetionsThrownToClient=false by security plugin
+	  Useful for dumb clients which can't handle exceptions (like mobile phones)
+	  API for I_MsgErrorHandler#handleErrorSync changed to return string
+	  DeadMessageDumper receiverSubdir=true: Creates now subdirectory with receiver name
+
  o r17049 C client library: Bugfix in strcatAlloc() which used wrong SIZE for strncat0()
 
  o r17036 PHP Client xmlBlaster/demo/php/xmlrpc/README
