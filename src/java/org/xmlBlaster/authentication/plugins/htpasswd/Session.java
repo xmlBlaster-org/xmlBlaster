@@ -46,7 +46,7 @@ import java.util.logging.Level;
  */
 public class Session implements I_Session, I_Subject {
 
-   private static final String ME = "Session";
+   private String ME = "Session";
    private final Global glob;
    private static Logger log = Logger.getLogger(Session.class.getName());
 
@@ -69,6 +69,8 @@ public class Session implements I_Session, I_Subject {
 
       this.secMgr = sm;
       this.secretSessionId = sessionId;
+      
+      this.ME = "Session-" + getManager().getType() + "," + getManager().getVersion();
 
       this.htpasswd = new HtPasswd(this.glob);
    }
