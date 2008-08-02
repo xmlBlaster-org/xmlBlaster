@@ -411,7 +411,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       try {
          String str = getPendingRequestList();
          if (str != null) {
-            log.warning(ME+" There are " + this.responseListenerMap.size() + " messages pending without a response, request IDs are '" + str + "', we remove them now.");
+            // Seems to happen during SSL SOCKET reconnect polling with connect()
+            log.info(ME+" There are " + this.responseListenerMap.size() + " messages pending without a response, request IDs are '" + str + "', we remove them now.");
             this.responseListenerMap.clear();
             this.responseListenerMapWasCleared = true;
          }
