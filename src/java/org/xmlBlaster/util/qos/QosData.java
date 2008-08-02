@@ -221,16 +221,27 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     *
     * -> "2002-02-10 10:52:40.879456789"
     * </pre>
+    * @return can be null if not touchRcvTimestamp() was called
     */
    public Timestamp getRcvTimestamp() {
       return rcvTimestamp;
    }
 
    /**
+    * @see #getRcvTimestamp
+    * @return Never null
+    */
+   public Timestamp getRcvTimestampNotNull() {
+      if (this.rcvTimestamp == null)
+         touchRcvTimestamp();
+      return this.rcvTimestamp;
+   }
+
+   /**
     * Set timestamp to current time.
     */
    public void touchRcvTimestamp() {
-      rcvTimestamp = new RcvTimestamp();
+      this.rcvTimestamp = new RcvTimestamp();
    }
 
    /**
