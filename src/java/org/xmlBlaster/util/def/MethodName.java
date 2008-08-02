@@ -144,6 +144,7 @@ public final class MethodName implements java.io.Serializable, Comparable
     */
    public boolean equals(MethodName other) {
       if (other == null) return false;
+      if (this == other) return true; // same classloader
       return getMethodName().equals(other.getMethodName());
       /*
          Class local = MethodName.class;
