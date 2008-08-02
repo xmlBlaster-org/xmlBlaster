@@ -5,7 +5,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/activation.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/backport-util-concurrent.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-lang-2.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-logging.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/concurrent.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/connector.jar"/>
@@ -39,5 +38,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.1.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz-all-1.6.0.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="output" path="classesEclipse"/>
 </classpath>

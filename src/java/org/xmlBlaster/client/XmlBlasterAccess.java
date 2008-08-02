@@ -1698,6 +1698,34 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                tmpList.add("  "+pe.getMsgUnit().getContentStr());
                tmpList.add("  "+pe.getMsgUnit().getQosData().toXml());
             }
+            else if (entry instanceof MsgQueueConnectEntry) {
+            	MsgQueueConnectEntry pe = (MsgQueueConnectEntry)entry;
+                tmpList.add("  "+pe.getConnectQosData().toXml());
+            }
+            else if (entry instanceof MsgQueueDisconnectEntry) {
+            	MsgQueueDisconnectEntry pe = (MsgQueueDisconnectEntry)entry;
+                tmpList.add("  "+pe.getDisconnectQos().toXml());
+            }
+            else if (entry instanceof MsgQueueEraseEntry) {
+            	MsgQueueEraseEntry pe = (MsgQueueEraseEntry)entry;
+                tmpList.add("  "+pe.getEraseKey().toXml());
+                tmpList.add("  "+pe.getEraseQos().toXml());
+            }
+            else if (entry instanceof MsgQueueGetEntry) {
+            	MsgQueueGetEntry pe = (MsgQueueGetEntry)entry;
+                tmpList.add("  "+pe.getGetKey().toXml());
+                tmpList.add("  "+pe.getGetQos().toXml());
+            }
+            else if (entry instanceof MsgQueueSubscribeEntry) {
+            	MsgQueueSubscribeEntry pe = (MsgQueueSubscribeEntry)entry;
+                tmpList.add("  "+pe.getSubscribeKeyData().toXml());
+                tmpList.add("  "+pe.getSubscribeQosData().toXml());
+            }
+            else if (entry instanceof MsgQueueUnSubscribeEntry) {
+            	MsgQueueUnSubscribeEntry pe = (MsgQueueUnSubscribeEntry)entry;
+                tmpList.add("  "+pe.getUnSubscribeKey().toXml());
+                tmpList.add("  "+pe.getUnSubscribeQos().toXml());
+            }
             else {
                tmpList.add("Unsupported message queue entry '" + entry.getClass().getName() + "'");
             }

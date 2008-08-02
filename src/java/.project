@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>xmlBlaster</name>
-	<comment>Open Source Messaging Middleware http://www.xmlBlaster.org</comment>
+	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>classes</name>
+			<type>2</type>
+			<locationURI>XMLBLASTER_HOME/build.tmp/classes</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

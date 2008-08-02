@@ -6,93 +6,93 @@ Comment:   Properties for xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.ReplaceVariable;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.util.checkpoint.I_Checkpoint;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.qos.address.Address;
+
+import javax.management.AttributeChangeNotification;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.PluginLoader;
-import org.xmlBlaster.util.key.I_MsgKeyFactory;
-import org.xmlBlaster.util.key.MsgKeySaxFactory;
-import org.xmlBlaster.util.key.I_QueryKeyFactory;
-import org.xmlBlaster.util.key.QueryKeySaxFactory;
-import org.xmlBlaster.util.log.XbFormatter;
-import org.xmlBlaster.util.qos.I_ConnectQosFactory;
-import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
-import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
-import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
-import org.xmlBlaster.util.qos.I_MsgQosFactory;
-import org.xmlBlaster.util.qos.MsgQosSaxFactory;
-import org.xmlBlaster.util.qos.I_QueryQosFactory;
-import org.xmlBlaster.util.qos.QueryQosSaxFactory;
-import org.xmlBlaster.util.qos.I_StatusQosFactory;
-import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
+import org.xmlBlaster.client.XmlBlasterAccess;
+import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
+import org.xmlBlaster.client.protocol.CbServerPluginManager;
+import org.xmlBlaster.client.protocol.ProtocolPluginManager;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
+import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
+import org.xmlBlaster.client.script.XmlScriptInterpreter;
+import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
-import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
-import org.xmlBlaster.util.dispatch.DispatchManager;
-import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
-import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
-import org.xmlBlaster.client.protocol.ProtocolPluginManager;
-import org.xmlBlaster.client.protocol.CbServerPluginManager;
-import org.xmlBlaster.util.http.HttpIORServer;
-import org.xmlBlaster.client.script.XmlScriptInterpreter;
-
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
+import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
+import org.xmlBlaster.util.http.HttpIORServer;
+import org.xmlBlaster.util.key.I_MsgKeyFactory;
+import org.xmlBlaster.util.key.I_QueryKeyFactory;
+import org.xmlBlaster.util.key.MsgKeySaxFactory;
+import org.xmlBlaster.util.key.QueryKeySaxFactory;
+import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginRegistry;
 import org.xmlBlaster.util.property.Property;
-import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.XmlBlasterAccess;
-import org.xmlBlaster.engine.ServerScope;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Hashtable;
-
-import java.net.Socket;
-
-import javax.management.ObjectName;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.Notification;
-import javax.management.AttributeChangeNotification;
-
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
-import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.qos.QueryQosSaxFactory;
+import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * Global variables to avoid singleton.
@@ -2220,6 +2220,32 @@ public class Global implements Cloneable
                pub.getMsgUnit(),
                "Try to publish again: java javaclients.script.XmlScript -prepareForPublish true -requestFile 'thisFileName'");
             tmpList.add(fn);
+         }
+         else if (entry instanceof MsgQueueConnectEntry) {
+            xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG, new MsgUnit(null, null, ((MsgQueueConnectEntry)entry).getConnectQosData()), "");
+            fn = MethodName.CONNECT.toString() + entry.getUniqueId() + ".xml";
+            tmpList.add(fn);
+         }
+         else if (entry instanceof MsgQueueDisconnectEntry) {
+            xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG, new MsgUnit(null, null, ((MsgQueueDisconnectEntry)entry).getDisconnectQos().getData()), "");
+            fn = MethodName.DISCONNECT.toString() + entry.getUniqueId() + ".xml";
+            tmpList.add(fn);
+         }
+         else if (entry instanceof MsgQueueEraseEntry) {
+            xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG, new MsgUnit(((MsgQueueEraseEntry)entry).getEraseKey().getData(), null, ((MsgQueueEraseEntry)entry).getEraseQos().getData()), "");
+            tmpList.add(fn);
+         }
+         else if (entry instanceof MsgQueueGetEntry) {
+             xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG, new MsgUnit(((MsgQueueGetEntry)entry).getGetKey().getData(), null, ((MsgQueueGetEntry)entry).getGetQos().getData()), "");
+             tmpList.add(fn);
+         }
+         else if (entry instanceof MsgQueueSubscribeEntry) {
+             xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG, new MsgUnit(((MsgQueueSubscribeEntry)entry).getSubscribeKeyData(), null, ((MsgQueueSubscribeEntry)entry).getSubscribeQosData()), "");
+             tmpList.add(fn);
+         }
+         else if (entry instanceof MsgQueueUnSubscribeEntry) {
+             xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG, new MsgUnit(((MsgQueueUnSubscribeEntry)entry).getUnSubscribeKey().getData(), null, ((MsgQueueUnSubscribeEntry)entry).getUnSubscribeQos().getData()), "");
+             tmpList.add(fn);
          }
          else { // TODO: Get a proper dump, here we only dump the queueEntry information but not the message itself
             StringBuffer sb = new StringBuffer(4096);
