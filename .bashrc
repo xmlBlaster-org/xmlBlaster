@@ -174,6 +174,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-java.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-logging.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/log4j.jar
 
    # apache's Base64 encoding (for XmlBlasterApplet) and utils (for token)
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-codec.jar
