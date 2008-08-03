@@ -1500,34 +1500,45 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             // clear sessionName="" prefix=""
         	String[] cmdArr = ReplaceVariable.toArray(str, " ");
         	String command = (cmdArr.length > 0) ? cmdArr[0] : "";
-            String sessionName = publishQos.getData().getClientProperty("__sessionName", (String)null);
-            SessionInfo otherSessionInfo = (sessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(new SessionName(glob, sessionName));
-            if (otherSessionInfo == null) {
-            	log.warning(msgKeyData.getOid() + " failed, sessionName not known: " + sessionName);
-            	return Constants.RET_WARN;
+        	boolean isForOtherClusterNode = false;
+            SessionName otherSessionName = publishQos.getFirstDestination();
+        	// __sessionName is deprecated, pls use PtP destination to name the session for remoteProperty changes
+            String __sessionNameStr = publishQos.getData().getClientProperty("__sessionName", (String)null);
+            if (__sessionNameStr != null) {
+                otherSessionName = new SessionName(glob, __sessionNameStr);
             }
-            if (sessionName != null) publishQos.getData().getClientProperties().remove("__sessionName");
-            String prefix = publishQos.getData().getClientProperty("__prefix", (String)null);
-            if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
-            if (log.isLoggable(Level.FINE)) log.fine("Processing " + msgKeyData.getOid() + " command=" + str + " on session=" + otherSessionInfo.getSessionName().getRelativeName());
-            if ("set".equals(command)) {
-               otherSessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+            if (glob.useCluster() && otherSessionName != null && otherSessionName.getNodeId() != null && !glob.getNodeId().equals(otherSessionName.getNodeId())) {
+               isForOtherClusterNode = true; // TODO: Create a PtP destination which routes to node
             }
-            else if ("clearLastError".equals(command)) {
-               clearLastError();
+            if (!isForOtherClusterNode) {
+               SessionInfo otherSessionInfo = (otherSessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(otherSessionName);
+               if (otherSessionInfo == null) {
+                  log.warning(msgKeyData.getOid() + " failed, sessionName not known: " + (otherSessionName == null ? "" : otherSessionName.getAbsoluteName()));
+                  return Constants.RET_WARN;
+               }
+               if (__sessionNameStr != null) publishQos.getData().getClientProperties().remove("__sessionName");
+               String prefix = publishQos.getData().getClientProperty("__prefix", (String)null);
+               if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
+               if (log.isLoggable(Level.FINE)) log.fine("Processing " + msgKeyData.getOid() + " command=" + str + " on session=" + otherSessionInfo.getSessionName().getRelativeName());
+               if ("set".equals(command)) {
+                  otherSessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+               }
+               else if ("clearLastError".equals(command)) {
+                  clearLastError();
+               }
+               else if ("clearLastWarning".equals(command)) {
+                  clearLastWarning();
+               }
+               else if ("clear".equals(command)) {
+                  otherSessionInfo.clearRemoteProperties(prefix);
+               }
+               else // "merge"
+                  otherSessionInfo.mergeRemoteProperties(publishQos.getData().getClientProperties());
+               I_RemotePropertiesListener[] arr = getRemotePropertiesListenerArr();
+               for (int i=0; i<arr.length; i++)
+                  arr[i].update(otherSessionInfo, publishQos.getData().getClientProperties());
+               return Constants.RET_OK;
             }
-            else if ("clearLastWarning".equals(command)) {
-               clearLastWarning();
-            }
-            else if ("clear".equals(command)) {
-               otherSessionInfo.clearRemoteProperties(prefix);
-            }
-            else // "merge"
-            	otherSessionInfo.mergeRemoteProperties(publishQos.getData().getClientProperties());
-            I_RemotePropertiesListener[] arr = getRemotePropertiesListenerArr();
-            for (int i=0; i<arr.length; i++)
-               arr[i].update(otherSessionInfo, publishQos.getData().getClientProperties());
-            return Constants.RET_OK;
          }
 
          if (msgKeyData.isRunlevelManager()) { // __sys__RunlevelManager
