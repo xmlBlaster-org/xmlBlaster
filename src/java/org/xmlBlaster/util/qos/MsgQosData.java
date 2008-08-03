@@ -547,7 +547,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @return The destinations in array form
+    * @return The destinations in array form, never null
     */
    public Destination[] getDestinationArr() {
       if (this.destinationArrCache == null) {
