@@ -154,8 +154,8 @@ TODO
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar"/>
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
    <property name="cp.orb" value="lib/miniJacorb.jar:lib/jacorb/idl.jar:lib/jacorb/jacorb.jar:lib/jacorb/logkit-1.2.jar:lib/jacorb/avalon-framework-4.1.5.jar"/>
-        <property name="cp.core" value="lib/backport-util-concurrent.jar:lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz-all-1.6.0.jar:lib/commons-collections-3.1.jar"/>
-   <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/jzlib.jar"/>
+   <property name="cp.core" value="lib/backport-util-concurrent.jar:lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz-all-1.6.0.jar:lib/commons-collections-3.1.jar"/>
+   <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/log4j.jar:lib/jzlib.jar"/>
    <property name="cp.db" value="lib/postgresql.jar:lib/hsqldb.jar:lib/mysql-connector-java-3.0.8-stable-bin.jar/"/>
    <property name="cp.xpath" value="lib/jaxen.jar"/>
    <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
@@ -1709,6 +1709,7 @@ TODO
       <unjar src="${lib.dir}/commons-codec.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/commons-lang-2.4.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/log4j.jar" dest="${dist-classes.dir}" />
 
       <switch value="${ADD_HSQLDB}">
          <case value="true">
@@ -1936,6 +1937,7 @@ TODO
       <unjar src="${lib.dir}/commons-codec.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/commons-lang-2.4.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/log4j.jar" dest="${dist-client.dir}/classes" />
 
       <switch value="${ADD_HSQLDB}">
          <case value="true">
