@@ -1513,8 +1513,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             if (!isForOtherClusterNode) {
                SessionInfo otherSessionInfo = (otherSessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(otherSessionName);
                if (otherSessionInfo == null) {
-                  log.warning(msgKeyData.getOid() + " failed, sessionName not known: " + (otherSessionName == null ? "" : otherSessionName.getAbsoluteName()));
-                  return Constants.RET_WARN;
+                  if ("clearLastError".equals(command) || "clearLastWarning".equals(command)) {
+                     otherSessionInfo = sessionInfo; // global action, just use the login sessionInf
+                  }
+                  else {
+                     log.warning(msgKeyData.getOid() + " failed, sessionName not known: " + (otherSessionName == null ? "" : otherSessionName.getAbsoluteName()));
+                     return Constants.RET_WARN;
+                  }
                }
                if (__sessionNameStr != null) publishQos.getData().getClientProperties().remove("__sessionName");
                String prefix = publishQos.getData().getClientProperty("__prefix", (String)null);
