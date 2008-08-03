@@ -3,8 +3,13 @@
  */
 package org.xmlBlaster.util.checkpoint;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+// apache.commons for Checkpoint logging
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
+
+// java.util for normal class logging
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
 
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
@@ -21,7 +26,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 /**
  * Plugin to trace the message flow into log files.
  * <p>
- * Currently there are 3 checkpoints defined inside the xmlBlaster core (see
+ * Currently there are 4 checkpoints defined inside the xmlBlaster core (see
  * I_Checkpoint.java).<br />
  * You can add a client property (e.g. "wfguid") to your PublishQos and register
  * this here with filterClientPropertyKey="wfguid". When such a marked message
@@ -76,9 +81,17 @@ public class Checkpoint implements I_Checkpoint {
    
    private ServerScope serverScope;
 
-   private static Logger log = Logger.getLogger(Checkpoint.class.getName());
+   /** Normal logging */
+   private static java.util.logging.Logger log = java.util.logging.Logger.getLogger(Checkpoint.class.getName());
 
-   protected Logger[] loggers = new Logger[I_Checkpoint.CP_NAMES.length];
+   /**
+    * Checkpoint logging
+    * <pre>
+    * fatal error warn info debug trace
+    * </pre>    
+    * @see http://commons.apache.org/logging/guide.html#Quick%20Start
+    */
+   protected org.apache.commons.logging.Log[] loggers = new org.apache.commons.logging.Log[I_Checkpoint.CP_NAMES.length];
 
    /** xmlBlasterPlugins.xml awareness */
    private PluginInfo pluginInfo;
@@ -104,6 +117,10 @@ public class Checkpoint implements I_Checkpoint {
    protected boolean showAllMessages;
 
    protected boolean xmlStyle = true;
+   
+   protected String log4jConfiguration = "log4j.properties"; // log4j.xml
+   
+   protected String logImpl = "org.apache.commons.logging.impl.Log4JLogger";
 
    /*
     * @see org.xmlBlaster.util.checkpoint.I_Checkpoint#passing
@@ -121,9 +138,10 @@ public class Checkpoint implements I_Checkpoint {
          if (msgUnit == null)
             return;
 
-         Logger l = loggers[checkpoint];
+         org.apache.commons.logging.Log l = loggers[checkpoint];
 
          boolean foundKey = false;
+         //System.out.println("XXXXXXX" + msgUnit.getQosData().toXml());
          for (int i=0; i<this.filterKeys.length; i++) {
             if (msgUnit.getQosData().getClientProperty(this.filterKeys[i])!=null) {
                foundKey = true;
@@ -132,8 +150,8 @@ public class Checkpoint implements I_Checkpoint {
          }
 
          if (showAllMessages || foundKey) {
-            boolean finest = l.isLoggable(Level.FINEST);
-            if (l.isLoggable(Level.INFO)) {
+            boolean finest = l.isTraceEnabled();
+            if (l.isInfoEnabled()) {
                StringBuffer buf = new StringBuffer(2048);
                append(buf, "cp", CP_NAMES[checkpoint]);
                append(buf, "topicId", msgUnit.getKeyOid());
@@ -169,7 +187,7 @@ public class Checkpoint implements I_Checkpoint {
                //   append(buf,"rcvTS", msgUnit.getQosData().getRcvTimestamp().toString());
                if (finest) {
                   buf.append(" ").append(msgUnit.toXml("", true));
-                  l.finest(buf.toString());
+                  l.trace(buf.toString());
                } else {
                   l.info(buf.toString());
                }
@@ -227,11 +245,43 @@ public class Checkpoint implements I_Checkpoint {
       this.showAllClientProperties = glob.get("showAllClientProperties",
             this.showAllClientProperties, null, this.pluginInfo);
 
+      // Default precedence:
+      //   org.apache.commons.logging.impl.Log4JLogger
+      //   org.apache.commons.logging.impl.Jdk14Logger
+      //   org.apache.commons.logging.impl.SimpleLog
+
+      // See http://commons.apache.org/logging/guide.html#Configuring%20Log4J
+      // or commons-logging.properties in the classpath
+      // TODO
+      this.logImpl = glob.get("org.apache.commons.logging.Log",
+                              this.logImpl, null, this.pluginInfo);
+      //org.apache.commons.logging.LogFactory.getFactory().
+      
+      // Using log4j?
+      this.log4jConfiguration = glob.get("log4j.configuration",
+    		  this.log4jConfiguration, null, this.pluginInfo);
+      if (this.log4jConfiguration != null && this.log4jConfiguration.trim().length() > 0) {
+         log.info("Using checkpoint logging configuration " + this.log4jConfiguration);
+         //System.setProperty("log4j.debug", ""+true);
+         //System.setProperty(this.log4jConfiguration, this.log4jConfiguration);
+         org.apache.log4j.PropertyConfigurator.configure(this.log4jConfiguration);
+         /*
+        org.apache.log4j.PropertyConfigurator.configure("log4j.properties"); // OK
+        org.apache.log4j.PropertyConfigurator.configure("file:log4j.properties"); // fail
+        org.apache.log4j.PropertyConfigurator.configure("file://log4j.properties"); // fail
+        org.apache.log4j.PropertyConfigurator.configure("file:///home/cpia/c/xmlBlaster/FwGwSecure/confTest/log4j.properties"); // fail
+        org.apache.log4j.PropertyConfigurator.configure("/home/cpia/c/xmlBlaster/FwGwSecure/confTest/log4j.properties"); // OK
+         org.apache.log4j.PropertyConfigurator.configure("log4j.xml"); // log4j: Could not find root logger information. Is this OK?
+         */
+      }
+      
       for (int i = 0; i < loggers.length; i++) {
          String loggerName = "xmlBlaster.checkpoint." + CP_NAMES[i];
-         loggers[i] = Logger.getLogger(loggerName);
+         loggers[i] = org.apache.commons.logging.LogFactory.getLog(loggerName);
          log.fine("Adding logger '" + loggerName + "'");
       }
+      //for (int i=0; i<100; i++)
+    //	  loggers[0].warn("HEEEEEEEEEEEEEEEEEEEELLLLLLLLLLO");
 
       // For JMX instanceName may not contain ","
       String vers = ("1.0".equals(getVersion())) ? "" : getVersion();
@@ -243,7 +293,7 @@ public class Checkpoint implements I_Checkpoint {
       // LoggerInformation.tryLevels(log);
 
       try {
-         if (log.isLoggable(Level.FINE))
+         if (log.isLoggable(java.util.logging.Level.FINE))
             log.fine("Using pluginInfo=" + this.pluginInfo.toString());
          activate();
       } catch (XmlBlasterException ex) {
@@ -288,6 +338,7 @@ public class Checkpoint implements I_Checkpoint {
     */
    public void shutdown() throws XmlBlasterException {
       this.shutdown = true;
+      org.apache.commons.logging.LogFactory.getFactory().release();
    }
 
    /*
