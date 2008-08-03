@@ -254,6 +254,16 @@ public final class PublishQosServer
    public long getRemainingLife() {
       return this.msgQosData.getRemainingLife();
    }
+   /**
+    * Currently xmlBlaster handles only one Destination
+    * @return The destination if PtP, else null
+    */
+   public SessionName getFirstDestination() {
+      Destination[] arr = this.msgQosData.getDestinationArr();
+      if (arr.length > 0)
+        return arr[0].getDestination();
+      return null;
+   }
 
    public ArrayList getDestinations() {
       return this.msgQosData.getDestinations();
