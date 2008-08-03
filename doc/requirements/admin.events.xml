@@ -516,8 +516,38 @@
 &lt;/node>
       </pre>
 
-      <p>It is possible to send remoteProperties on login with the ConnectQos clientProperties, see the
+      <p>
+      It is possible to send remoteProperties on login with the ConnectQos clientProperties, for details please consult the
       <a href="interface.connect.html#remoteProperty" target="others">interface.connect</a> requirement.
+      </p>
+
+      <p>
+      Remote properties can be administrated by messages send to topic '__sys__remoteProperties'. They
+      are routed in a cluster environment to the destination given in PublishQos. This example
+      clears all remote properties of client 'joe' from cluster node 'avalon':
+      </p>
+      <pre>
+java javaclients.HelloWorldPublish \
+   -dispatch/connection/plugin/socket/hostname heron \
+   -dispatch/connection/plugin/socket/port 7607 \
+   -queue/connection/defaultPlugin RAM,1.0 \
+   -plugin/socket/compress/type zlib:stream \
+   -Security.Client.DefaultPlugin "htpasswd,1.0" \
+   -session.name _remotePropResetter \
+   -passwd secret \
+   -oid __sys__remoteProperties \
+   -destination /node/avalon/client/joe/session/1 \
+   -content clear
+      </pre>
+      <p>
+      The message content contains the command, in this case 'clear'.
+      The destination routes the message to cluster node 'avalon', looks up
+      the session name 'joe/1' and removes its remote properties.
+      </p>
+      <p>
+      Other supported commands are 'set' to set all delivered client properties from this
+      PublishQos, 'clearLastError' and 'clearLastWarning' to clear the last log of the xmlBlaster
+      server itself (as seen in jconsole).
       </p>
    </example>
 
