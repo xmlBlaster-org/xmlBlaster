@@ -24,6 +24,7 @@ import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -176,6 +177,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       MsgUnit msgUnit = null;
       try {
          msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitRaw, MethodName.PUBLISH);
+         
+         I_Checkpoint cp = glob.getCheckpointPlugin();
+         if (cp != null) {
+               cp.passingBy(I_Checkpoint.CP_PUBLISH_ENTER, msgUnit,
+                     null, null);
+         }
 
          String ret = requestBroker.publish(sessionInfo, msgUnit);
 

@@ -69,7 +69,7 @@ logging.properties:
 #-----------------------------------------------------------------------------
 # Trace flow of messages
 # See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
-# Checkpoints: "publish.ack", "update.queue.add", "update.ack"
+# Checkpoints: "publish.enter", "publish.ack", "update.queue.add", "update.ack"
 # INFO dumps the most important data
 # FINEST dumps the complete message
 # OFF switches a checkpoint off
@@ -183,8 +183,8 @@ trace intensity.
          <tr>
             <td>Checkpoints</td>
             <td>---</td>
-            <td>Currently we have three checkpoints:<br />
-            <i>"publish.ack", "update.queue.add", "update.ack"</i> and additionally 
+            <td>Currently we have following checkpoints:<br />
+            <i>"publish.enter", "publish.ack", "update.queue.add", "update.ack"</i> and additionally 
             <i>"client.publish.ack"</i> in cluster environments.
             <br />
             In <code>logging.properties</code> you can choose the log level of each

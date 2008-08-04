@@ -11,30 +11,36 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 /**
  * Interface for plugins to handle messages passing checkpoints.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.checkpoint.html">The admin.checkpoint requirement</a>
  */
 public interface I_Checkpoint extends I_Plugin, CheckpointMBean {
    //public static final int CP_PUBLISH_IN = ; // on arriving
    //public static final int CP_PUBLISH_REJECT = ; // on exception
 
    /**
+    * A published messages is entering xmlBlaster via protocol plugin.
+    * Note: Internal and administrative messages are not reported
+    */
+   public static final int CP_PUBLISH_ENTER = 0;
+   /**
     * A published messages is successfully processed by the core (publish or publishOneway)
     * For none oneway the ACK is now returned to the publisher.
     * Note: Internal and administrative messages are not reported
     */
-   public static final int CP_PUBLISH_ACK = 0;
+   public static final int CP_PUBLISH_ACK = 1;
    /**
     * A messages is put to a clients callback queue
     */
-   public static final int CP_UPDATE_QUEUE_ADD = 1;
+   public static final int CP_UPDATE_QUEUE_ADD = 2;
    /**
     * A message was delivered to a client (update or updateOneway).
     * For none oneway messages after the client has returned its ACK.
     */
-   public static final int CP_UPDATE_ACK = 2;
+   public static final int CP_UPDATE_ACK = 3;
    
-   public static final int CP_CONNECTION_PUBLISH_ACK = 3;
+   public static final int CP_CONNECTION_PUBLISH_ACK = 4;
    
-   public static final String[] CP_NAMES = { "publish.ack", "update.queue.add", "update.ack", "client.publish.ack"};
+   public static final String[] CP_NAMES = { "publish.enter", "publish.ack", "update.queue.add", "update.ack", "client.publish.ack"};
 
    /**
     * A message is passing a checkpoint.
