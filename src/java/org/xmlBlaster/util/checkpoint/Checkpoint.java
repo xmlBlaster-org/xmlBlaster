@@ -22,6 +22,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
  * Plugin to trace the message flow into log files.
@@ -173,6 +174,14 @@ public class Checkpoint implements I_Checkpoint {
                SessionName sender = msgUnit.getQosData().getSender();
                if (sender != null)
                   append(buf, "sender", (isClusterEnvironment()) ? sender.getAbsoluteName() : sender.getRelativeName());
+               if (destination == null) {
+                   if (msgUnit.getQosData() instanceof MsgQosData) {
+                       MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
+                       destination = (msgQosData.getDestinationArr().length > 0) ? msgQosData
+                          .getDestinationArr()[0].getDestination()
+                          : null;
+                    }
+               }
                if (destination != null) {
                   append(buf, "destination", (isClusterEnvironment()) ? destination
                         .getAbsoluteName() : destination.getRelativeName());
