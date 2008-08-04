@@ -95,6 +95,8 @@ public final class MsgUnit implements java.io.Serializable
       else {
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, "MsgUnit", "Sorry method support for '" + methodName.toString() + "' is missing");
       }
+      if (this.qosData != null)
+         this.qosData.setMethod(methodName);
    }
 
    /**
