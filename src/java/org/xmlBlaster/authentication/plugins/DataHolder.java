@@ -83,7 +83,8 @@ public class DataHolder {
    public Destination getDestination() {
       final QosData qosData = getQosData();
       final MethodName m = qosData.getMethod();
-      if (MethodName.PUBLISH.equals(m) || MethodName.PUBLISH_ARR.equals(m) || MethodName.PUBLISH_ONEWAY.equals(m)) {
+      if (MethodName.PUBLISH.equals(m) || MethodName.PUBLISH_ARR.equals(m) || MethodName.PUBLISH_ONEWAY.equals(m)
+       || MethodName.UPDATE.equals(m) || MethodName.UPDATE_ONEWAY.equals(m)) {
          if (qosData instanceof MsgQosData) {
             MsgQosData msgQosData = (MsgQosData)qosData;
             return (msgQosData.getDestinationArr().length > 0) ? msgQosData
