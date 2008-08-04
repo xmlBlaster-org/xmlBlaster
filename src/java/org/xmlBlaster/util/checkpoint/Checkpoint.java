@@ -156,7 +156,7 @@ public class Checkpoint implements I_Checkpoint {
                append(buf, "cp", CP_NAMES[checkpoint]);
                append(buf, "topicId", msgUnit.getKeyOid());
                if (serverScope!=null && serverScope.isClusterManagerReady() && msgUnit.getDomain() != null && msgUnit.getDomain().length() > 0)
-            	   append(buf, "domain", msgUnit.getDomain());
+                   append(buf, "domain", msgUnit.getDomain());
                append(buf, "contentLen", ""+msgUnit.getContent().length);
                if (this.showAllClientProperties) {
                   ClientProperty[] props = msgUnit.getQosData().getClientPropertyArr();
@@ -259,20 +259,24 @@ public class Checkpoint implements I_Checkpoint {
       
       // Using log4j?
       this.log4jConfiguration = glob.get("log4j.configuration",
-    		  this.log4jConfiguration, null, this.pluginInfo);
+                  this.log4jConfiguration, null, this.pluginInfo);
       if (this.log4jConfiguration != null && this.log4jConfiguration.trim().length() > 0) {
          log.info("Using checkpoint logging configuration " + this.log4jConfiguration);
-         //System.setProperty("log4j.debug", ""+true);
          //System.setProperty(this.log4jConfiguration, this.log4jConfiguration);
          org.apache.log4j.PropertyConfigurator.configure(this.log4jConfiguration);
          /*
-        org.apache.log4j.PropertyConfigurator.configure("log4j.properties"); // OK
-        org.apache.log4j.PropertyConfigurator.configure("file:log4j.properties"); // fail
-        org.apache.log4j.PropertyConfigurator.configure("file://log4j.properties"); // fail
-        org.apache.log4j.PropertyConfigurator.configure("file:///home/cpia/c/xmlBlaster/FwGwSecure/confTest/log4j.properties"); // fail
-        org.apache.log4j.PropertyConfigurator.configure("/home/cpia/c/xmlBlaster/FwGwSecure/confTest/log4j.properties"); // OK
-         org.apache.log4j.PropertyConfigurator.configure("log4j.xml"); // log4j: Could not find root logger information. Is this OK?
+          configure("log4j.properties"); // OK
+          configure("file:log4j.properties"); // fail
+          configure("file://log4j.properties"); // fail
+          configure("file:///home/cpia/c/xmlBlaster/FwGwSecure/confTest/log4j.properties"); // fail
+          configure("/home/cpia/c/xmlBlaster/FwGwSecure/confTest/log4j.properties"); // OK
+          configure("log4j.xml"); // log4j: Could not find root logger information. Is this OK?
          */
+      }
+
+      boolean log4jDebug = glob.get("log4j.debug", false, null, this.pluginInfo);
+      if (log4jDebug) {
+         System.setProperty("log4j.debug", ""+true);
       }
       
       for (int i = 0; i < loggers.length; i++) {
@@ -280,8 +284,9 @@ public class Checkpoint implements I_Checkpoint {
          loggers[i] = org.apache.commons.logging.LogFactory.getLog(loggerName);
          log.fine("Adding logger '" + loggerName + "'");
       }
+
       //for (int i=0; i<100; i++)
-    //	  loggers[0].warn("HEEEEEEEEEEEEEEEEEEEELLLLLLLLLLO");
+      //  loggers[0].warn("TEST HELLO");
 
       // For JMX instanceName may not contain ","
       String vers = ("1.0".equals(getVersion())) ? "" : getVersion();
