@@ -202,6 +202,8 @@
       <attribute id='showAllMessages'>true</attribute>
       <attribute id='xmlStyle'>true</attribute>
       <attribute id='showAllClientProperties'>false</attribute>
+      <attribute id='log4j.configuration'>log4j.properties</attribute>
+      <attribute id='log4j.debug'>false</attribute>
    </plugin>
 
    <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
@@ -392,7 +394,7 @@
       <attribute id='filewriter.tmpDirectoryName'>${user.home}/writerDirName/tmp</attribute>
       <attribute id='filewriter.overwrite'>true</attribute>
       <attribute id='filewriter.lockExtention'>.lck</attribute>
-      <!--	<attribute id='__useNativeCfg'>false</attribute> -->
+      <!--      <attribute id='__useNativeCfg'>false</attribute> -->
       <action do='LOAD' onStartupRunlevel='9' sequence='4' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='8' sequence='6'/>
 </plugin>
