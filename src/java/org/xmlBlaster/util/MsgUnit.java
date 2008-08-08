@@ -65,7 +65,7 @@ public final class MsgUnit implements java.io.Serializable
    public MsgUnit(Global glob, String key, byte[] content, String qos, MethodName methodName) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
       setContent(content);
-      if (methodName == MethodName.PUBLISH) {
+      if (methodName == MethodName.PUBLISH || methodName == MethodName.PUBLISH_ARR || methodName == MethodName.PUBLISH_ONEWAY) {
          // The proper way, but then we need to import package engine.qos
          //PublishQosServer qos = new PublishQosServer(glob, qos); // sets timestamp etc.
          //this.qosData = qos.getData();
@@ -75,7 +75,7 @@ public final class MsgUnit implements java.io.Serializable
          //   this.qosData.touchRcvTimestamp();
          this.keyData = this.glob.getMsgKeyFactory().readObject(key);
       }
-      else if (methodName == MethodName.UPDATE) {
+      else if (methodName == MethodName.UPDATE || methodName == MethodName.UPDATE_ONEWAY) {
          this.qosData = this.glob.getMsgQosFactory().readObject(qos);
          this.keyData = this.glob.getMsgKeyFactory().readObject(key);
       }
