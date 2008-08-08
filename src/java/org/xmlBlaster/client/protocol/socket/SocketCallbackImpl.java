@@ -174,9 +174,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
             return ;
          }
 
-         ////////TODO!!!!!!!!
          if (useRemoteLoginAsTunnel) {
-            log.warning("We use the remote socket connection to tunnel our communication");
+            log.info("We use the remote socket connection to tunnel our communication");
             if (this.remoteLoginAsTunnelSocketExecutor != null)
                this.remoteLoginAsTunnelSocketExecutor.setRunning(true); // Fake that we are OK
             return;

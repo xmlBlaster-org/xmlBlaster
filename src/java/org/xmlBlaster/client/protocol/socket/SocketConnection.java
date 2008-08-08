@@ -193,7 +193,7 @@ public class SocketConnection implements I_XmlBlasterConnection
                this.sock = h.getSocket();
                // TODO: HandleClient.closeSocket() can set sock = null!
                if (this.sock != null) {
-                  log.warning(getType() + (ssl ? " SSL" : "") +
+                  log.info(getType() + (ssl ? " SSL" : "") +
                      " client is reusing existing SOCKET '"+this.sock.getInetAddress().getHostAddress() + "' configured was '" +
                      this.socketUrl.getUrl() +
                      "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
