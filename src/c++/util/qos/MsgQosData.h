@@ -50,6 +50,8 @@ private:
 
    mutable bool isExpired_; // = false; // cache the expired state for performance reasons
 
+   bool administrative_;
+
    org::xmlBlaster::util::qos::TopicProperty* topicProperty_;
 
    /**
@@ -123,6 +125,16 @@ public:
    MsgQosData& operator=(const MsgQosData& data);
 
    virtual ~MsgQosData();
+
+   /**
+    * @param administrative mark a message as administrative to configure the topic
+    */
+   void setAdministrative(bool administrative);
+
+   /**
+    * @return true/false
+    */
+   bool isAdministrative() const;
 
    /**
     * As a default setting you can subscribe on all messages (PtP or PubSub). 

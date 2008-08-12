@@ -78,6 +78,8 @@ private:
    string receiverName_;        // sender/receiver is here the same client
    ConnectReturnQos returnQos_;
    ReceiverCallback *cbReceiver;
+
+   GlobalRef globalReceiver_;
    XmlBlasterAccess receiver_;
 
    /**
@@ -88,9 +90,12 @@ private:
     */
  public:
    TestRequestResponse(int args, char *argc[], const string &senderName, const string &receiverName)
-      : TestSuite(args, argc, "TestRequestResponse"), returnQos_(global_),
-      receiver_(global_)
+      : TestSuite(args, argc, "TestRequestResponse"),
+        returnQos_(global_),
+        globalReceiver_(global_.createInstance("receiverGlobal")),
+	receiver_(globalReceiver_)
    {
+      globalReceiver_->initialize(args, argc);
       senderName_          = senderName;
       receiverName_        = receiverName;
       publishOid_          = "dummy";
@@ -123,7 +128,7 @@ private:
       }
 
       try {
-         ConnectQos connQos(global_, receiverName_);
+         ConnectQos connQos(receiver_.getGlobal(), receiverName_);
          returnQos_ = receiver_.connect(connQos, cbReceiver);
          log_.info(ME, string("connected '") + receiverName_ + "'");
       }
@@ -143,7 +148,7 @@ private:
    {
       log_.info(ME, "Cleaning up test");
       connection_.disconnect(DisconnectQos(global_));
-      receiver_.disconnect(DisconnectQos(global_));
+      receiver_.disconnect(DisconnectQos(receiver_.getGlobal()));
       TestSuite::tearDown();
    }
 
@@ -164,7 +169,7 @@ private:
 	 assertEquals(log_, ME, 1, replies.size(), "missing response");
          log_.info(ME, senderName_+": Got " + lexical_cast<string>(replies.size()) + " reply :\n" + replies[0].toXml());
          log_.info(ME, replies[0].getContentStr() + " size=" + lexical_cast<string>(replies[0].getContentLen()));
-	 assertEquals(log_, ME, "On doubt no ultimate truth, my dear.", replies[0].getContentStr(), "unexpected response from a wise man");
+	 assertEquals(log_, ME, "On doubt no ultimate truth, my dear.", replies[0].getContentStr(), "response from a wise man");
       }
       catch(XmlBlasterException &e) {
          log_.warn(ME, string("XmlBlasterException: ")+e.toXml());

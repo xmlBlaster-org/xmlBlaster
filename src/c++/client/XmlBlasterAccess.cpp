@@ -556,7 +556,7 @@ std::string XmlBlasterAccess::createTemporaryTopic(long destroyDelay, int histor
    topicProperty.setDestroyDelay(destroyDelay);
    topicProperty.setCreateDomEntry(false);
    topicProperty.setReadonly(false);
-   //pq.getData().setAdministrative(true); // TODO: add to PublishQos
+   pq.setAdministrative(true);
    if (historyMaxMsg >= 0L) {
       HistoryQueueProperty prop(global_, "");
       prop.setMaxEntries(historyMaxMsg);

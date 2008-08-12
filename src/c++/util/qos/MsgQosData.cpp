@@ -54,6 +54,7 @@ void MsgQosData::init()
    lifeTime_ = -1;
    remainingLifeStatic_ = -1;
    isExpired_ = false; // cache the expired state for performance reasons
+   administrative_ = false;
    maxLifeTime_ = global_.getProperty().getLongProperty("message.maxLifeTime", -1);
    receiveTimestampHumanReadable_ = global_.getProperty().getBoolProperty("cb.receiveTimestampHumanReadable", false);
    topicProperty_ = NULL; 
@@ -73,6 +74,7 @@ void MsgQosData::copy(const MsgQosData& data)
    lifeTime_ = data.lifeTime_;
    remainingLifeStatic_ = data.remainingLifeStatic_;
    isExpired_ = data.isExpired_;
+   administrative_ = data.administrative_;
    maxLifeTime_ = data.maxLifeTime_;
    receiveTimestampHumanReadable_ = data.receiveTimestampHumanReadable_;
    topicProperty_ = NULL;
@@ -163,6 +165,16 @@ void MsgQosData::setVolatile(bool volatileFlag)
 bool MsgQosData::isVolatile() const
 {
    return getLifeTime()==0L && isForceDestroy()==false;
+}
+
+void MsgQosData::setAdministrative(bool administrative)
+{
+   administrative_ = administrative;
+}
+
+bool MsgQosData::isAdministrative() const
+{
+   return administrative_;
 }
 
 /**
@@ -389,6 +401,9 @@ string MsgQosData::toXml(bool clearText, const string& extraOffset) const
 
    if (NORM_PRIORITY != priority_)
       ret += offset + " <priority>" + lexical_cast<std::string>(priority_) + "</priority>";
+
+   if (administrative_)
+      ret += offset + " <administrative>" + lexical_cast<std::string>(administrative_) + "</administrative>";
 
    if (!subscriptionId_.empty())
       ret += offset + " <subscribe id='" + subscriptionId_ + "'/>";

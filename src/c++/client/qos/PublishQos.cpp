@@ -116,6 +116,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       msgQosData_.setPersistent(persistent);
    }
 
+   void PublishQos::setAdministrative(bool administrative)
+   {
+      msgQosData_.setAdministrative(administrative);
+   }
+
    /**
     * The message expires after given milliseconds (message is erased).<p />
     * Clients will get a notify about expiration.<br />

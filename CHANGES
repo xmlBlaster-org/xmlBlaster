@@ -4,7 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o 17090 C++ client library: Implemented request/reply pattern, see xmlBlaster/testsuite/src/c++/TestRequestResponse.cpp
+ o 17093 C++ client library: Implemented request/reply pattern, see xmlBlaster/testsuite/src/c++/TestRequestResponse.cpp
+          Added administrative flag to PublishQos
 
  o 17082 CheckPoint new logging point "publish.enter"
 

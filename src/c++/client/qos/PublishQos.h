@@ -146,6 +146,13 @@ public:
    void setPersistent(bool persistent);
 
    /**
+    * Mark a message to be administrative only. 
+    * <p />
+    * It configures the topic and no message content is evaluated by server.
+    */
+   void setAdministrative(bool administrative);
+
+   /**
     * The message expires after given milliseconds (message is erased).<p />
     * Clients will get a notify about expiration.<br />
     * This value is calculated relative to the rcvTimestamp in the xmlBlaster server.<br />

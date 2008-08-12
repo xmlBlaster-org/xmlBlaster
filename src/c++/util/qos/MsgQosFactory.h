@@ -49,6 +49,7 @@ private:
    bool inDestination_;
    bool inSender_;
    bool inPriority_;
+   bool inAdministrative_;
    bool inClientProperty_;
    bool inExpiration_;
    bool inRcvTimestamp_; // QosData

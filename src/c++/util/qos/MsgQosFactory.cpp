@@ -49,6 +49,7 @@ MsgQosFactory::MsgQosFactory(Global& global)
    inDestination_     = false;
    inSender_          = false;
    inPriority_        = false;
+   inAdministrative_  = false;
    inClientProperty_  = false;
    inExpiration_      = false;
    inRcvTimestamp_    = false;
@@ -147,6 +148,11 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
    if (name.compare("priority") == 0) {
       if (!inQos_) return;
       inPriority_ = true;
+      return;
+   }
+   if (name.compare("administrative") == 0) {
+      if (!inQos_) return;
+      inAdministrative_ = true;
       return;
    }
    if (name.compare("expiration") == 0) {
@@ -340,6 +346,13 @@ void MsgQosFactory::endElement(const string &name)
       return;
    }
 
+   if(name.compare("administrative") == 0) {
+      inAdministrative_ = false;
+      msgQosDataP_->setAdministrative(XmlHandlerBase::getBoolValue(character_));
+      character_.erase();
+      return;
+   }
+
    if(name.compare("expiration") == 0) {
       inExpiration_ = false;
       character_.erase();
@@ -460,6 +473,7 @@ int main(int args, char* argv[])
     <state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
     <sender>Tim</sender>
     <priority>5</priority>
+    <administrative>false</administrative>
     <subscribe id='__subId:1'/>     <!-- Only for updates, id='__subId:PtP' for point to point messages -->
     <rcvTimestamp nanos='1007764305862000002'> <!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
           2001-12-07 23:31:45.862000002   <!-- The nanos from above but human readable -->
