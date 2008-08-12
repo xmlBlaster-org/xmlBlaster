@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.batik.parser.NumberParser;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
@@ -40,7 +42,9 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
    private FileWriter dumper;
    private String dumperFilename;
    private int count = 0;
-   private int backupEvery = 500;
+   private long changeDumpFrequency = 21600000L; // default: every 6 Hours
+   private long nextChangeDate;
+   private long startDate;
    
    public ReplicationDumper() {
    }
@@ -93,8 +97,11 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
       File tmpFile = new File(dumperFilename);
       if (!tmpFile.isAbsolute())
          dumperFilename = this.importLocation + "/" + dumperFilename;
-      backupEvery = info_.getInt("dumper.backupEvery", 1000);
-      dumperBackup();
+      
+      
+      changeDumpFrequency = info_.getLong("dumper.changeDumpFrequency", 21600000L);
+      startDate = System.currentTimeMillis();
+      changeDumpFile();
    }
 
    
@@ -110,18 +117,22 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
       fos.close();
    }
    
-   private void dumperBackup() {
+   private void changeDumpFile() {
       try {
          if (dumper != null) {
             // close file
             dumper.close();
             dumper = null;
             // make a backup
-            copyFile(dumperFilename, dumperFilename + ".bak");
+            // copyFile(dumperFilename, dumperFilename + ".bak");
          }
          // open the stream for writing again.
-         final boolean append = true;
-         dumper = new FileWriter(dumperFilename, append);
+         final boolean append = false;
+         count++;
+         DecimalFormat format = new DecimalFormat("###");
+         String tmpFilename = dumperFilename + format.format(count);
+         nextChangeDate = startDate + (changeDumpFrequency*count);
+         dumper = new FileWriter(tmpFilename, append);
       }
       catch (IOException ex) {
          ex.printStackTrace();
@@ -178,13 +189,14 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
       buf.append("\n<!-- currentTimestamp ").append(System.currentTimeMillis()).append(" -->\n");
       dumper.write(buf.toString());
       dumper.write(dbInfo.toXml(extraOffset, doTruncate, forceReadable, omitDecl));
-      count++;
-      if (count == backupEvery) {
-         count = 0;
-         dumperBackup();
-      }
+      if (changeTimeReached())
+         changeDumpFile();
    }
 
+   private boolean changeTimeReached() {
+      return nextChangeDate < System.currentTimeMillis();
+   }
+   
    private final String getCompleteFileName(String filename) {
       return this.importLocation + File.separator + filename;
    }
