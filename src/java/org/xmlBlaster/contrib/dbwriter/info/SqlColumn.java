@@ -123,11 +123,9 @@ public class SqlColumn {
    public SqlColumn(I_Info info) {
    }
 
-   
    public String getCatalog() {
       return this.catalog;
    }
-
 
    public void setCatalog(String catalog) {
       this.catalog = catalog;
@@ -137,156 +135,125 @@ public class SqlColumn {
       return this.precision;
    }
 
-
    public void setPrecision(int precision) {
       this.precision = precision;
    }
 
-
    public boolean isReadOnly() {
       return this.readOnly;
    }
-
    
    public boolean isSearchable() {
       return this.searchable;
    }
 
-
    public void setSearchable(boolean searchable) {
       this.searchable = searchable;
    }
-
 
    public void setReadOnly(boolean readOnly) {
       this.readOnly = readOnly;
    }
 
-
    public int getScale() {
       return this.scale;
    }
-
 
    public void setScale(int scale) {
       this.scale = scale;
    }
 
-
    public String getSchema() {
       return this.schema;
    }
-
 
    public void setSchema(String schema) {
       this.schema = schema;
    }
 
-
    public boolean isSigned() {
       return this.signed;
    }
-
 
    public String getFkCatalog() {
       return fkCatalog;
    }
 
-
    public void setFkCatalog(String fkCatalog) {
       this.fkCatalog = fkCatalog;
    }
-
 
    public String getFkCol() {
       return fkCol;
    }
 
-
    public void setFkCol(String fkCol) {
       this.fkCol = fkCol;
    }
-
 
    public String getFkDef() {
       return fkDef;
    }
 
-
    public void setFkDef(String fkDef) {
       this.fkDef = fkDef;
    }
-
 
    public String getFkDelRule() {
       return fkDelRule;
    }
 
-
    public void setFkDelRule(String fkDelRule) {
       this.fkDelRule = fkDelRule;
    }
-
 
    public String getFkSchema() {
       return fkSchema;
    }
 
-
    public void setFkSchema(String fkSchema) {
       this.fkSchema = fkSchema;
    }
-
 
    public String getFkSeq() {
       return fkSeq;
    }
 
-
    public void setFkSeq(String fkSeq) {
       this.fkSeq = fkSeq;
    }
-
 
    public String getFkTable() {
       return fkTable;
    }
 
-
    public void setFkTable(String fkTable) {
       this.fkTable = fkTable;
    }
-
 
    public String getFkUpdRule() {
       return fkUpdRule;
    }
 
-
    public void setFkUpdRule(String fkUpdRule) {
       this.fkUpdRule = fkUpdRule;
    }
-
 
    public void setSigned(boolean signed) {
       this.signed = signed;
    }
 
-
    public String getTable() {
       return this.table;
    }
-
 
    public void setTable(String table) {
       this.table = table;
    }
 
-
    public String getType() {
       return this.type;
    }
-
 
    public void setSqlType(int sqlType) {
       this.sqlType = sqlType;
@@ -300,7 +267,6 @@ public class SqlColumn {
       this.type = type;
    }
 
-
    public String getColName() {
       return this.colName;
    }
@@ -309,11 +275,6 @@ public class SqlColumn {
       this.colName = colName;
    }
 
-
-   private boolean stringExists(String str) {
-      return str != null && str.length() > 0;
-   }
-   
    public boolean isPrimaryKey() {
       return this.primaryKey;
    }
@@ -323,7 +284,6 @@ public class SqlColumn {
       this.primaryKey = primaryKey;
    }
 
-
    public int getNullable() {
       return this.nullable;
    }
@@ -332,7 +292,101 @@ public class SqlColumn {
       this.nullable = nullable;
    }
 
+   public int getCharLength() {
+      return charLength;
+   }
 
+   public void setCharLength(int charLength) {
+      this.charLength = charLength;
+   }
+
+   public int getColSize() {
+      return colSize;
+   }
+
+   public void setColSize(int colSize) {
+      this.colSize = colSize;
+   }
+
+   public String getColDefault() {
+      return this.colDefault;
+   }
+
+   public void setColDefault(String colDefault) {
+      this.colDefault = colDefault;
+   }
+
+   public int getPos() {
+      return pos;
+   }
+
+   public void setPos(int pos) {
+      this.pos = pos;
+   }
+
+   public int getRadix() {
+      return radix;
+   }
+
+   public void setRadix(int radix) {
+      this.radix = radix;
+   }
+
+   public String getRemarks() {
+      return remarks;
+   }
+
+   public void setRemarks(String remarks) {
+      this.remarks = remarks;
+   }
+
+   public String getPkName() {
+      return pkName;
+   }
+
+   public void setPkName(String pkName) {
+      this.pkName = pkName;
+   }
+ 
+   public boolean isAutoInc() {
+      return autoInc;
+   }
+
+   public void setAutoInc(boolean autoInc) {
+      this.autoInc = autoInc;
+   }
+
+   public boolean isCaseSens() {
+      return caseSens;
+   }
+
+   public void setCaseSens(boolean caseSens) {
+      this.caseSens = caseSens;
+   }
+
+   public String getLabel() {
+      return label;
+   }
+
+   public void setLabel(String label) {
+      this.label = label;
+   }
+
+   public String getTypeName() {
+      return typeName;
+   }
+
+   public void setTypeName(String typeName) {
+      this.typeName = typeName;
+   }
+
+
+   
+   
+   private boolean stringExists(String str) {
+      return str != null && str.length() > 0;
+   }
+   
    public String toXml(String extraOffset) {
       StringBuffer buf = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
@@ -422,118 +476,6 @@ public class SqlColumn {
    public boolean isFk() {
       return this.fkTable != null;
    }
-
-
-   public int getCharLength() {
-      return charLength;
-   }
-
-
-   public void setCharLength(int charLength) {
-      this.charLength = charLength;
-   }
-
-
-   public int getColSize() {
-      return colSize;
-   }
-
-
-   public void setColSize(int colSize) {
-      this.colSize = colSize;
-   }
-
-
-   public String getColDefault() {
-      return this.colDefault;
-   }
-
-
-   public void setColDefault(String colDefault) {
-      this.colDefault = colDefault;
-   }
-
-
-   public int getPos() {
-      return pos;
-   }
-
-
-   public void setPos(int pos) {
-      this.pos = pos;
-   }
-
-
-   public int getRadix() {
-      return radix;
-   }
-
-
-   public void setRadix(int radix) {
-      this.radix = radix;
-   }
-
-
-   public String getRemarks() {
-      return remarks;
-   }
-
-
-   public void setRemarks(String remarks) {
-      this.remarks = remarks;
-   }
-
-
-   public String getPkName() {
-      return pkName;
-   }
-
-
-   public void setPkName(String pkName) {
-      this.pkName = pkName;
-   }
- 
-   
-   
-   public boolean isAutoInc() {
-      return autoInc;
-   }
-
-
-   public void setAutoInc(boolean autoInc) {
-      this.autoInc = autoInc;
-   }
-
-
-   public boolean isCaseSens() {
-      return caseSens;
-   }
-
-
-   public void setCaseSens(boolean caseSens) {
-      this.caseSens = caseSens;
-   }
-
-
-   public String getLabel() {
-      return label;
-   }
-
-
-   public void setLabel(String label) {
-      this.label = label;
-   }
-
-
-   public String getTypeName() {
-      return typeName;
-   }
-
-
-   public void setTypeName(String typeName) {
-      this.typeName = typeName;
-   }
-
 
    public static String getSqlTypeAsText(int sqlType) {
       if (sqlType == Types.ARRAY)
@@ -848,5 +790,43 @@ public class SqlColumn {
       return null;
    }
    
+
+   public SqlColumn doClone() {
+      SqlColumn other = new SqlColumn(null);
+      other.setCatalog(getCatalog());
+      other.setPrecision(getPrecision());
+      other.setSearchable(isSearchable());
+      other.setReadOnly(isReadOnly());
+      other.setScale(getScale());
+      other.setSchema(getSchema());
+      other.setFkCatalog(getFkCatalog());
+      other.setFkCol(getFkCol());
+      other.setFkDef(getFkDef());
+      other.setFkDelRule(getFkDelRule());
+      other.setFkSchema(getFkSchema());
+      other.setFkSeq(getFkSeq());
+      other.setFkTable(getFkTable());
+      other.setFkUpdRule(getFkUpdRule());
+      other.setSigned(isSigned());
+      other.setTable(getTable());
+      other.setType(getType());
+      other.setColName(getColName());
+      other.setPrimaryKey(isPrimaryKey());
+      other.setCharLength(getCharLength());
+      other.setColSize(getColSize());
+      other.setColDefault(getColDefault());
+      other.setPos(getPos());
+      other.setRadix(getRadix());
+      other.setRemarks(getRemarks());
+      other.setPkName(getPkName());
+      other.setAutoInc(isAutoInc());
+      other.setCaseSens(isCaseSens());
+      other.setLabel(getLabel());
+      other.setTypeName(getTypeName());
+      other.setSqlType(getSqlType());
+      other.setNullable(getNullable());
+      return other;
+   }
+
    
 }

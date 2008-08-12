@@ -591,7 +591,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * @param doAdd if true, the message is added to the current message, if false it is replaced.
     */
    private void changeLastMessage(String newMsg) {
-      log.fine("'" + newMsg + "' invoked");
+      log.info("monitor message: '" + newMsg + "' invoked");
       if (newMsg == null) {
          if (this.lastMessage != null && this.lastMessage.length() > 0)
             this.lastMessage = "";
