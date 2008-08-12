@@ -9,6 +9,7 @@ Author:    xmlBlaster@marcelruff.info
 #include <util/Global.h>
 #include <stdarg.h>           // va_start for logging
 #include <stdio.h>            // vsnprintf for g++ 2.9x only
+#include <string.h>           // memset
 #include <util/lexical_cast.h>
 #include <util/MessageUnit.h>
 #include <util/queue/ConnectQueueEntry.h>

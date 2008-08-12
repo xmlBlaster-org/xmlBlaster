@@ -111,6 +111,8 @@ const char* XB_GLOBAL_KEY = "XB_Global"; // For registration with lifetime manag
 const char* XB_XMLPARSERFACTORY_KEY = "XB_XmlParserFactory"; // For registration with lifetime manager
 
 const char* JMS_PREFIX = "__jms:";
+const char* JMS_REPLY_TO = "__jms:JMSReplyTo";
+const char* UPDATE_BULK_ACK = "__updateBulkAck";
 const char* JMSX_GROUP_ID = "__jms:JMSXGroupID";
 const char* JMSX_GROUP_SEQ = "__jms:JMSXGroupSeq";
 const char* JMSX_GROUP_EOF = "__jms:JMSXGroupEof";

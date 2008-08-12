@@ -11,6 +11,7 @@ See:       Other C++ test tools: http://c2.com/cgi/wiki?TestingFramework
 
 #include <assert.h> // windows
 #include <iostream>
+#include <cstring>
 #include <client/XmlBlasterAccess.h>
 #include <util/EmbeddedServer.h>
 #include <util/XmlBlasterException.h>

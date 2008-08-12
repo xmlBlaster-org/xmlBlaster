@@ -349,6 +349,12 @@ public:
     */
    std::vector<org::xmlBlaster::util::MessageUnit> receive(std::string oid, int maxEntries, long timeout, bool consumable);
 
+   std::vector<org::xmlBlaster::util::MessageUnit> request(org::xmlBlaster::util::MessageUnit &msgUnit, long timeout, int maxEntries);
+
+   /**
+    * @return oid
+    */
+   std::string createTemporaryTopic(long destroyDelay, int historyMaxMsg);
 
    // org::xmlBlaster::client::qos::UnSubscribeReturnQos[]
 //   std::vector<std::string> unSubscribe(const std::string&  xmlKey, const std::string&  qos);

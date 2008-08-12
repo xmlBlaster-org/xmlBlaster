@@ -514,6 +514,61 @@ vector<MessageUnit> XmlBlasterAccess::receive(string oid, int maxEntries, long t
    return msgs;
 }
 
+vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout, int maxEntries) {
+   if (log_.call()) log_.call(ME, "request");
+
+   // Create a temporary reply topic ...
+   long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
+   string tempTopicOid = createTemporaryTopic(destroyDelay, maxEntries);
+
+   vector<MessageUnit> msgs;
+   try {
+      // Send the request ...
+      // "__jms:JMSReplyTo"
+      org::xmlBlaster::util::qos::QosData &qos =  const_cast<org::xmlBlaster::util::qos::QosData&>(msgUnit.getQos());
+      qos.addClientProperty(string(Constants::JMS_REPLY_TO), tempTopicOid);
+      publish(msgUnit);
+      // Access the reply ...
+      vector<MessageUnit> msgs = receive("topic/"+tempTopicOid, maxEntries, timeout, true);
+      {  // Clean up temporary topic ...
+         EraseKey ek(global_, tempTopicOid);
+         EraseQos eq(global_);
+         eq.setForceDestroy(true);
+         erase(ek, eq);
+      }
+      return msgs;
+   }
+   catch (exception &ex) {
+      {  // Clean up temporary topic ...
+         EraseKey ek(global_, tempTopicOid);
+         EraseQos eq(global_);
+         eq.setForceDestroy(true);
+         erase(ek, eq);
+      }
+      throw ex;
+   }
+}
+
+std::string XmlBlasterAccess::createTemporaryTopic(long destroyDelay, int historyMaxMsg) {
+   PublishKey pk(global_);
+   PublishQos pq(global_);
+   TopicProperty topicProperty(global_);
+   topicProperty.setDestroyDelay(destroyDelay);
+   topicProperty.setCreateDomEntry(false);
+   topicProperty.setReadonly(false);
+   //pq.getData().setAdministrative(true); // TODO: add to PublishQos
+   if (historyMaxMsg >= 0L) {
+      HistoryQueueProperty prop(global_, "");
+      prop.setMaxEntries(historyMaxMsg);
+      topicProperty.setHistoryQueueProperty(prop);
+   }
+   pq.setTopicProperty(topicProperty);
+   MessageUnit msgUnit(pk, "", pq);
+   PublishReturnQos prq = publish(msgUnit);
+   if (log_.call()) log_.call(ME, string("Created temporary topic ") + prq.getKeyOid());
+   return prq.getKeyOid();
+}
+
 
 vector<UnSubscribeReturnQos>
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
