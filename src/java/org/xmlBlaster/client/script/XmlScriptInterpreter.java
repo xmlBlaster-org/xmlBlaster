@@ -900,7 +900,7 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
     * @return
     * @throws XmlBlasterException
     */
-        public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       synchronized (this.waitMutex) {
          if (updateQos.isOk())
             this.updateCounter++;
