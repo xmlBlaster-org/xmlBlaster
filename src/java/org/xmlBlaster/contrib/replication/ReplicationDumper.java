@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.batik.parser.NumberParser;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
@@ -129,7 +128,7 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
          // open the stream for writing again.
          final boolean append = false;
          count++;
-         DecimalFormat format = new DecimalFormat("###");
+         DecimalFormat format = new DecimalFormat("000000");
          String tmpFilename = dumperFilename + format.format(count);
          nextChangeDate = startDate + (changeDumpFrequency*count);
          dumper = new FileWriter(tmpFilename, append);
