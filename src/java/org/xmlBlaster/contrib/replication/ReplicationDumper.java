@@ -28,9 +28,13 @@ import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
+import org.xmlBlaster.util.Execute;
+import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.qos.ClientProperty;
 
-public class ReplicationDumper implements I_Writer, ReplicationConstants {
+public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Timeout {
    private static Logger log = Logger.getLogger(ReplicationDumper.class.getName());
    protected I_Info info;
    I_Mapper mapper;
@@ -44,6 +48,8 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
    private long changeDumpFrequency = 21600000L; // default: every 6 Hours
    private long nextChangeDate;
    private long startDate;
+   private String closeCmd;
+   private Timeout timeout;
    
    public ReplicationDumper() {
    }
@@ -100,7 +106,10 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
       
       changeDumpFrequency = info_.getLong("dumper.changeDumpFrequency", 21600000L);
       startDate = System.currentTimeMillis();
-      changeDumpFile();
+      closeCmd = info.get("replication.player.closeCmd", null);
+      timeout = new Timeout("replication.streamFeeder");
+      if (changeDumpFrequency > 0L)
+         timeout(null);
    }
 
    
@@ -116,12 +125,24 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
       fos.close();
    }
    
-   private void changeDumpFile() {
+   private synchronized void changeDumpFile() throws Exception {
       try {
          if (dumper != null) {
             // close file
             dumper.close();
             dumper = null;
+            // if (Execute.isWindows()) cmd = "cmd " + cmd;
+            if (closeCmd != null) {
+               DecimalFormat format = new DecimalFormat("000000");
+               String tmpFilename = dumperFilename + format.format(count);
+               String cmd = closeCmd + " " + tmpFilename; 
+               String[] args = ReplaceVariable.toArray(cmd, " ");
+               Execute execute = new Execute(args, null, 10L);
+               execute.run(); // blocks until finished
+               if (execute.getExitValue() != 0) {
+                  throw new Exception("Exception occured on executing '" + cmd + "");
+               }
+            }
             // make a backup
             // copyFile(dumperFilename, dumperFilename + ".bak");
          }
@@ -147,9 +168,11 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
          this.parserForOldInUpdates.shutdown();
          this.parserForOldInUpdates = null;
       }
-      if (dumper != null)
-         dumper.close();
-      dumper = null;
+      synchronized(this) {
+         if (dumper != null)
+            dumper.close();
+         dumper = null;
+      }
    }
 
    /**
@@ -186,10 +209,12 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
          return;
       StringBuffer buf = new StringBuffer(512);
       buf.append("\n<!-- currentTimestamp ").append(System.currentTimeMillis()).append(" -->\n");
-      dumper.write(buf.toString());
-      dumper.write(dbInfo.toXml(extraOffset, doTruncate, forceReadable, omitDecl));
-      if (changeTimeReached())
-         changeDumpFile();
+      synchronized(this) {
+         dumper.write(buf.toString());
+         dumper.write(dbInfo.toXml(extraOffset, doTruncate, forceReadable, omitDecl));
+         if (changeTimeReached())
+            changeDumpFile();
+      }
    }
 
    private boolean changeTimeReached() {
@@ -263,5 +288,24 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants {
          log.severe("Unknown operation");
       
    }
+   
+   
+   /**
+    * @see org.xmlBlaster.util.I_Timeout#timeout(java.lang.Object)
+    */
+   public void timeout(Object userData) {
+      try {
+         changeDumpFile();
+      }
+      catch (Exception ex) {
+         log.severe("Exception occured: " + ex.getMessage());
+         ex.printStackTrace();
+      }
+      finally {
+         if (timeout != null)
+            timeout.addTimeoutListener(this, changeDumpFrequency, null);
+      }
+   }
+   
    
 }

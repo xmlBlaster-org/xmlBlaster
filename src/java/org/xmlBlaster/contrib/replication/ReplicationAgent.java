@@ -52,7 +52,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class ReplicationAgent implements I_InitialUpdateListener {
    
    private static Logger log = Logger.getLogger(ReplicationAgent.class.getName());
-
+   
    // private I_Info readerInfo;
    // private I_Info writerInfo;
    
@@ -63,6 +63,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
    private String[] cmdLineArgs;
    private boolean hasDbWatcher;
    private boolean stopWatcherOnIU;
+   private boolean running = true;
    
    public class OwnGlobalInfo extends GlobalInfo {
       
@@ -101,6 +102,10 @@ public class ReplicationAgent implements I_InitialUpdateListener {
       return cfgInfo;
    }
    
+   public boolean isRunning() {
+      return running;
+   }
+   
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
     */
@@ -126,7 +131,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
          if (isInteractive)
             agent.process(readerInfo, writerInfo);
          else {
-            while (true) {
+            while (agent.isRunning()) {
                try {
                   Thread.sleep(5000L);
                }
