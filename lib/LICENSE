@@ -356,4 +356,10 @@ only the SNMP subagent module jax.jar is GPL only!
   http://www.opensymphony.com/quartz/
   A Scheduler library which is easy to use
 
+46) joda-time-1.5.2
+===================
+  For ISO 8601 time handling, 2008-08-17
+  Apache License
+  http://joda-time.sourceforge.net/
+
 
