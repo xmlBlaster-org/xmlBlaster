@@ -355,6 +355,48 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 }
 
 /**
+ * Get current timestamp string in ISO 8601 notation. 
+ * @param bufSize at least 26
+ * @param timeStr out parameter, filled with e.g. "1997-07-16T19:20:30.45-02:00"
+ * @see http://en.wikipedia.org/wiki/ISO_8601
+ */
+Dll_Export void getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize) {
+#  if defined(WINCE)
+        /*http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcekernl/html/_wcesdk_win32_systemtime_str.asp*/
+        SYSTEMTIME st;
+        GetSystemTime(&st);
+        snprintf0(timeStr, bufSize, "%hd-%hd-%hdT%hd:%hd:%hd.%hd\n", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+#  elif _MSC_VER >= 1400
+        /* TODO */
+        /*__time64_t timer;
+         _time64(&timer);*/
+        time_t t1; /* unsigned long */
+        (void) time(&t1); /* in seconds since the Epoch. 1970 */
+        ctime_s(timeStr, bufSize-1, &t1);
+#  elif defined(_WINDOWS)
+        /* TODO */
+        time_t t1; /* unsigned long */
+        (void) time(&t1);
+        strncpy0(timeStr, ctime(&t1), bufSize);
+#  elif defined(__sun)
+        /* TODO */
+        time_t t1; /* unsigned long */
+        (void) time(&t1);
+        ctime_r(&t1, (char *)timeStr, bufSize-1);
+#  else
+        time_t t1; /* unsigned long */
+        struct tm st;
+        (void) time(&t1);
+        /*ctime_r(&t1, (char *)timeStr);*/
+        gmtime_r(&t1, &st); /* TODO: localtime_r() with zone offset*/
+        snprintf0(timeStr, bufSize,
+                        "20%0.2hd-%0.2hd-%0.2hdT%0.2hd:%0.2hd:%0.2hdZ\n", st.tm_year - 100,
+                        st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec);
+#  endif
+        *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
+}
+
+/**
  * Allocates the string with malloc for you.
  * You need to free it with free()
  * @param src The text to copy
@@ -615,6 +657,22 @@ Dll_Export void trimEnd(char *s)
    if (i<0) *s = '\0';
 }
 
+Dll_Export
+bool endsWith(const char * const str, const char * const token) {
+	int i, count=0, lenStr, len;
+	if (str == 0 || token == 0)
+		return false;
+	lenStr = strlen(str);
+	len = strlen(token);
+	if (lenStr < len)
+		return false;
+	for (i = lenStr - len; i < lenStr; i++, count++) {
+		if (str[i] != token[count])
+			return false;
+	}
+	return true;
+}
+
 /**
  * Converts the given binary data to a more readable string,
  * the zero bytes are replaced by '*'
@@ -660,7 +718,7 @@ long get_pthread_id(pthread_t t)
 
 /**
  * Get a human readable time string for logging.
- * @param timeStr out parameter, e.g. "2006-11-14 12:34:46"
+ * @param timeStr out parameter, e.g. "12:34:46" or "2006-11-14 12:34:46"
  * @param bufSize The size of timeStr
  */
 Dll_Export void getCurrentTimeStr(char *timeStr, int bufSize) {

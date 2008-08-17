@@ -4,10 +4,16 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o 17093 C++ client library: Implemented request/reply pattern, see xmlBlaster/testsuite/src/c++/TestRequestResponse.cpp
+ o r17097 Added "__UTC", the current timestamp of the client environment in ISO 8601 notation,
+          to be send by clients on connect with ConnectQos clientProperty
+          This allows to guess the server the offset for clients having misconfigured time
+	  Is currently written as remoteProperty to the clients session for human usage (e.g. to compare log file entries)
+	  Added joda-time-1.5.2 Apache License http://joda-time.sourceforge.net/
+
+ o r17093 C++ client library: Implemented request/reply pattern, see xmlBlaster/testsuite/src/c++/TestRequestResponse.cpp
           Added administrative flag to PublishQos
 
- o 17082 CheckPoint new logging point "publish.enter"
+ o r17082 CheckPoint new logging point "publish.enter"
 
  o r17073 CheckPoint now uses apache-log4j-1.2.15 http://logging.apache.org/log4j/1.2
 	  via commons-logging 1.1.1 http://commons.apache.org/logging

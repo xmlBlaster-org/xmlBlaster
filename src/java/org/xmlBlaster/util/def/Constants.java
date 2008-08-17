@@ -221,6 +221,8 @@ public class Constants {
    /** message queue onOverflow handling "__sys__deadMessage */
    public final static String OID_DEAD_LETTER = INTERNAL_OID_PREFIX + "deadMessage";
 
+   /** Client sends with ConnectQos its current UTC timestamp string so server knows approximate offset in time as client may not have accurate time set */
+   public final static String CLIENTPROPERTY_UTC = INTERNAL_OID_PREFIX_FOR_CORE + "UTC";
    /** Dead messages transport in their QoS clientProperty the original message key in '__key' */
    public final static String CLIENTPROPERTY_DEADMSGKEY = INTERNAL_OID_PREFIX_FOR_CORE + "key";
    /** Dead messages transport in their QoS clientProperty the original message QoS in '__qos' */

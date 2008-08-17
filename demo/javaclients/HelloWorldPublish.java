@@ -27,6 +27,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -275,6 +276,8 @@ public class HelloWorldPublish
          if (connectPersistent) {
             qos.setPersistent(connectPersistent);
          }
+         // "__remoteProperties"
+         qos.getData().addClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, true);
          if (connectQosClientPropertyMap != null) {
             Iterator it = connectQosClientPropertyMap.keySet().iterator();
             while (it.hasNext()) {

@@ -40,5 +40,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz-all-1.6.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/joda-time.jar"/>
 	<classpathentry kind="output" path="classesEclipse"/>
 </classpath>

@@ -89,6 +89,7 @@ int main(int argc, const char* const* argv) {
                " <session name='%.80s' timeout='%ld' maxSessions='%d' clearSessions='false' reconnectSameClientOnly='false'/>"
                " %.20s"
                "%.1024s"
+	       "<clientProperty name='__remoteProperties'>true</clientProperty>"
                "</qos>", sessionName, passwd, sessionName, sessionTimeout, maxSessions, persistent?"<persistent/>":"", callbackQos);
 
       response = xa->connect(xa, connectQos, 0, &xmlBlasterException);

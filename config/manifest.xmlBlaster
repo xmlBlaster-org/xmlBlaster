@@ -16,6 +16,7 @@ Class-Path: xmlrpc.jar junit.jar omquery.jar
  batik/batik.jar js.jar 
  jaxen.jar 
  postgresql.jar 
+ joda-time.jar 
  jmxtools.jar jmxri.jar 
  hsqldb.jar 
  java_cup.jar 

@@ -118,6 +118,7 @@ Dll_Export extern void sleepMillis(long millis);
 Dll_Export extern int64_t getTimestamp(void);   /* if no 'int64_t=long long' support we need a workaround */
 Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime); /* timespec forces pthread */
 Dll_Export extern void getCurrentTimeStr(char *timeStr, int bufSize);
+Dll_Export extern void getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize);
 
 #if defined(__FreeBSD__) || defined(__MacOSX__) || defined(__hpux__) || defined(__linux__)
 #include <wchar.h>
@@ -135,6 +136,7 @@ Dll_Export extern int snprintf0(char *buffer, size_t sizeOfBuffer, const char *f
 Dll_Export extern void trim(char *s);
 Dll_Export extern void trimStart(char *s);
 Dll_Export extern void trimEnd(char *s);
+Dll_Export extern bool endsWith(const char * const str, const char * const token);
 Dll_Export extern void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum);
 Dll_Export extern char *toReadableDump(char *data, size_t len);
 Dll_Export extern const char* int64ToStr(char * const buf, int64_t val);

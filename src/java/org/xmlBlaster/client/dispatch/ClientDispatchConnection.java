@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
@@ -25,6 +26,7 @@ import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -53,7 +55,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    private final String ME;
    private I_XmlBlasterConnection driver;
    private final I_MsgSecurityInterceptor securityInterceptor;
-   private String encryptedConnectQos;
+   private ConnectQosData connectQosData;
    private ConnectReturnQos connectReturnQos;
    private String[] checkPointContext;
    private MsgQueueEntry connectEntry;
@@ -449,24 +451,38 @@ public final class ClientDispatchConnection extends DispatchConnection
    }
 
    /**
+    * Remember the cqd in this.connectQosData and return the encrypted string. 
+    */   
+   private String getEncryptedConnectQos(ConnectQosData cqd) throws XmlBlasterException {
+      if (cqd == null) {
+         return null;
+      }
+      cqd.addClientProperty(Constants.CLIENTPROPERTY_UTC, IsoDateParser.getCurrentUTCTimestamp());
+      this.connectQosData = cqd;
+      if (this.securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
+          if (log.isLoggable(Level.FINE)) log.fine("TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
+          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, cqd.toXml()));
+          String encryptedConnectQos = this.securityInterceptor.exportMessage(dataHolder).getQos();
+          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");
+          return encryptedConnectQos;
+      }
+      else {
+          log.warning("No session security context, connect request is not encrypted");
+          return cqd.toXml();
+      }
+   }
+
+   /**
     * Encrypt and send a connect request, decrypt the returned data
     */
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
       this.sessionName = connectEntry.getConnectQosData().getSessionName();
-      if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         if (log.isLoggable(Level.FINE)) log.fine("TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
-         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectEntry.getConnectQosData().toXml()));
-         this.encryptedConnectQos = securityInterceptor.exportMessage(dataHolder).getQos();
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");
-      }
-      else {
-         log.warning("No session security context, connect request is not encrypted");
-         this.encryptedConnectQos = connectEntry.getConnectQosData().toXml();
-      }
+
+      String encryptedConnectQos = getEncryptedConnectQos(connectEntry.getConnectQosData());
 
       // TODO: pass connectEntry.getConnectQosData().getSender().getLoginName(); as this is used by SOCKET:requestId
-      String rawReturnVal = this.driver.connect(this.encryptedConnectQos); // Invoke remote server
+      String rawReturnVal = this.driver.connect(encryptedConnectQos); // Invoke remote server
 
       connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       
@@ -493,15 +509,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          connectQos.setSessionName(this.connectReturnQos.getSessionName());
          this.sessionName = this.connectReturnQos.getSessionName();
          connectQos.getSessionQos().setSecretSessionId(this.connectReturnQos.getSecretSessionId());
-         if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectQos.toXml()));
-            this.encryptedConnectQos = securityInterceptor.exportMessage(dataHolder).getQos();
-            if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");
-         }
-         else {
-            log.warning("No session security context, connect request is not encrypted");
-            this.encryptedConnectQos = connectQos.toXml();
-         }
+         this.connectQosData = connectQos;
       }
 
       if (connectEntry.wantReturnObj()) {
@@ -561,14 +569,15 @@ public final class ClientDispatchConnection extends DispatchConnection
          return;
       }
 
-      if (this.encryptedConnectQos == null) {
+      if (this.connectQosData == null) {
          // We never had connected on application layer, so try low level layer only
          this.driver.connectLowlevel((Address)super.address);
          return;
       }
 
+      String encryptedConnectQos = getEncryptedConnectQos(this.connectQosData);
       // low level connect (e.g. on TCP/IP layer) and remote invoke method connect()
-      String rawReturnVal = this.driver.connect(this.encryptedConnectQos); // Invoke remote server
+      String rawReturnVal = this.driver.connect(encryptedConnectQos); // Invoke remote server
 
       connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       

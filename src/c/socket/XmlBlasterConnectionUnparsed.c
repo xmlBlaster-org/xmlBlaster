@@ -800,6 +800,8 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
 {
    SocketDataHolder responseSocketDataHolder;
    char *response;
+   char *qos2;
+   char timestampStr[256];
    
    if (qos == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -811,12 +813,25 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    if (initConnection(xb, exception) == false) {
       return (char *)0;
    }
-
-   if (sendData(xb, XMLBLASTER_CONNECT, MSG_TYPE_INVOKE, (const char *)qos,
-                (qos == (const char *)0) ? 0 : strlen(qos),
+   
+   /** Append current client UTC timestamp */
+   qos2 = strcpyAlloc(qos);
+   trimEnd(qos2);
+   if (endsWith(qos2, "</qos>")) {
+      getCurrentLocalIsoTimestampStr(timestampStr, 200);
+      qos2[strlen(qos2) - 6] = 0;
+      strcatAlloc(&qos2, "<clientProperty name='__UTC'>");
+      strcatAlloc(&qos2, timestampStr);
+      strcatAlloc(&qos2, "</clientProperty></qos>");
+   }
+   
+   if (sendData(xb, XMLBLASTER_CONNECT, MSG_TYPE_INVOKE, (const char *)qos2,
+                (qos2 == (const char *)0) ? 0 : strlen(qos2),
                 &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
+      free(qos2);
       return (char *)0;
    }
+   free(qos2);
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
    freeBlobHolderContent(&responseSocketDataHolder.blob);

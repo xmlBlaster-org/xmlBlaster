@@ -26,6 +26,7 @@ import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
@@ -1169,7 +1170,20 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       while (it.hasNext()) {
          String key = (String)it.next();
          if (Constants.CLIENTPROPERTY_REMOTEPROPERTIES.equals(key))
-                continue; // Remove, is only a flag
+             continue; // Remove, is only a flag
+         if (Constants.CLIENTPROPERTY_UTC.equals(key)) {
+            try {
+                ClientProperty cpClientUtc = (ClientProperty)map.get(key);
+                if (cpClientUtc != null) {
+                   String timeOffset = IsoDateParser.getDifferenceToNow(cpClientUtc.getStringValue());
+                   this.remoteProperties.put("__timeOffset", timeOffset);
+                }
+             }
+             catch (Throwable e) {
+                e.printStackTrace();
+             }
+             continue; // Remove, we only want the offset time between client and server
+         }
          Object value = map.get(key);
          this.remoteProperties.put(key, (ClientProperty)value);
       }

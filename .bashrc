@@ -108,6 +108,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/remotecons.jar:${CLASSPATH}
 
+   CLASSPATH=${XMLBLASTER_HOME}/lib/joda-time.jar:${CLASSPATH}
+
    CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/concurrent.jar:${CLASSPATH}

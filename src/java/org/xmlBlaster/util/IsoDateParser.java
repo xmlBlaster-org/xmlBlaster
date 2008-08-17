@@ -14,6 +14,12 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
+import org.joda.time.DateTime;
+import org.joda.time.Period;
+import org.joda.time.ReadableDuration;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 /*
  * ISO 8601 date time formatting.
  * http://www.w3.org/TR/NOTE-datetime
@@ -118,6 +124,23 @@ public class IsoDateParser {
       synchronized (utcFmtT) {
          return utcFmtT.format(date)+"Z";
       }
+   }
+   
+   
+   /**
+    * Calculate the difference from the given time to now. 
+    * ISO 8601 states: Durations are represented by the format P[n]Y[n]M[n]DT[n]H[n]M[n]S
+    * @param utc Given time, e.g. "1997-07-16T19:20:30.45+01:00"
+    * @return The ISO 8601 Period like "P3Y6M4DT12H30M17S"
+    */
+   public static String getDifferenceToNow(String utc) {
+	   if (utc == null) return "";
+	   utc = ReplaceVariable.replaceAll(utc, " ", "T");
+	   DateTime now = new DateTime();
+	   DateTimeFormatter f = ISODateTimeFormat.dateTimeParser();
+	   DateTime other = f.parseDateTime(utc);
+	   Period period = new Period(other, now); // Period(ReadableInstant startInstant, ReadableInstant endInstant)
+	   return period.toString();
    }
 
    /**
@@ -379,7 +402,18 @@ public class IsoDateParser {
     }
 
     // java org.xmlBlaster.util.IsoDateParser
-    public static void main(String args[]) {
+   public static void main(String args[]) {
+	  {
+      String utc = "1997-07-16T19:20:30.45+01:00";
+      String period = getDifferenceToNow(utc);
+      System.out.println("now - " + utc + " = " + period);
+	  }
+      {
+      String utc = "1997-07-16 19:20:30.45+01:00";
+      String period = getDifferenceToNow(utc);
+      System.out.println("now - " + utc + " = " + period);
+      }
+
    test("1997-07-16T19:20:30.45-02:00");
    test("1997-07-16T19:20:30.678Z");
    test("2006-07-16T21:20:30.450+00:00");
