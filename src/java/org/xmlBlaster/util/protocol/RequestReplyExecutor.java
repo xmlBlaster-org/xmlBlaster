@@ -726,7 +726,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       for (int i=0; i<latches.length; i++) {
          latches[i].latchIsInterrupted = true;
          latches[i].latch.release(); // wake up
-         log.severe("DEBUG ONLY: Forced release of latch");
+         //log.warning("DEBUG ONLY: Forced release of latch");
       }
       return latches.length;
    }
