@@ -65,6 +65,8 @@ public class HandleClient extends SocketExecutor implements Runnable
    protected volatile static ExecutorService executorService;
 
    protected boolean disconnectIsCalled = false;
+   
+   private Thread socketHandlerThread;
 
    /**
     * Creates an instance which serves exactly one client.
@@ -109,16 +111,19 @@ public class HandleClient extends SocketExecutor implements Runnable
 
       this.callCoreInSeparateThread = getAddressServer().getEnv("callCoreInSeparateThread", callCoreInSeparateThread).getValue();
 
-      Thread t = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
+      this.socketHandlerThread = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
       int threadPrio = getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
-         t.setPriority(threadPrio);
+         this.socketHandlerThread.setPriority(threadPrio);
          if (log.isLoggable(Level.FINE)) log.fine("-plugin/socket/threadPrio "+threadPrio);
       }
       catch (IllegalArgumentException e) {
          log.warning("Your -plugin/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
       }
-      t.start();
+   }
+   
+   public void startThread() {
+      this.socketHandlerThread.start();
    }
    
    public boolean useUdpForOneway() {
@@ -257,7 +262,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
       }
       catch (XmlBlasterException e) {
-         if (log.isLoggable(Level.FINE)) log.fine("Can't handle message, throwing exception back to client: " + e.toString());
+         /*if (log.isLoggable(Level.FINE)) log.fine*/log.info("Can't handle message, throwing exception back to client: " + e.toString());
          try {
             if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
                executeException(receiver, e, false);

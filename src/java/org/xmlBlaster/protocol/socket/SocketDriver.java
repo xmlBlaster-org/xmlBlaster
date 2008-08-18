@@ -542,6 +542,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
             synchronized (handleClientSet) {
                handleClientSet.add(hh);
             }
+            hh.startThread();
          }
       }
       catch (java.net.UnknownHostException e) {
