@@ -47,7 +47,7 @@ public class FileDumper {
    public String dumpMessage(KeyData keyData, byte[] content, QosData qosData) {
       String fnStr = "";
       try {
-         String fn = qosData.getRcvTimestamp().toString();
+         String fn = qosData.getRcvTimestampNotNull().toString();
          String key = keyData.toXml();
          String qos = qosData.toXml();
          String oid = keyData.getOid();
