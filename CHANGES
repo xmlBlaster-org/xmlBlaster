@@ -4,7 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o 17100  Fixed potential race condition where SOCKET HandleClient was not removed from SocketDriver Set
+ o r17102 Java client library: Fixed too frequently client reconnect polling if server is in RL4
+
+ o 171001 Fixed potential race condition where SOCKET HandleClient was not removed from SocketDriver Set
 
  o r17097 Added "__UTC", the current timestamp of the client environment in ISO 8601 notation,
           to be send by clients on connect with ConnectQos clientProperty
