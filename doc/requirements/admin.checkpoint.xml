@@ -169,6 +169,14 @@ trace intensity.
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>excludeIfClientPropertyKey</td>
+            <td></td>
+            <td>If the client property key is found in the message the message is not logged.
+	    You can specify a comma separated list of such keys like 'table,description,quickKey'.
+             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>xmlStyle</td>
             <td>true</td>
             <td>The logging output is partially formatted with xml tags.</td>

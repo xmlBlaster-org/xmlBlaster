@@ -11,6 +11,9 @@ package org.xmlBlaster.util.checkpoint;
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -106,9 +109,12 @@ public class Checkpoint implements I_Checkpoint {
 
    protected ContextNode contextNode;
 
+   /** If given messages containing such keys are not logged */
+   protected String[] excludeIfKeys;
+
    /** If given will be used to filter which messages are logged */
    protected String filterClientPropertyKey;
-
+   
    /** Is parsed from comma separated list of filterClientPropertyKey */
    protected String[] filterKeys = new String[0];
 
@@ -140,6 +146,12 @@ public class Checkpoint implements I_Checkpoint {
             return;
 
          org.apache.commons.logging.Log l = loggers[checkpoint];
+
+         for (int i=0; i<this.excludeIfKeys.length; i++) {
+             if (msgUnit.getQosData().getClientProperty(this.excludeIfKeys[i])!=null) {
+                return;
+             }
+          }
 
          boolean foundKey = false;
          //System.out.println("XXXXXXX" + msgUnit.getQosData().toXml());
@@ -245,6 +257,8 @@ public class Checkpoint implements I_Checkpoint {
                ME + ".init",
                "could not retreive the ServerNodeScope. Am I really on the server side ?");
 
+      setExcludeIf(glob.get("excludeIfClientPropertyKey",
+              "", null, this.pluginInfo));
       setFilter(glob.get("filterClientPropertyKey",
             "wfguid", null, this.pluginInfo));
       this.xmlStyle = glob
@@ -470,6 +484,18 @@ public class Checkpoint implements I_Checkpoint {
       }
       this.filterClientPropertyKey = filterClientPropertyKey;
       this.filterKeys = StringPairTokenizer.toArray(this.filterClientPropertyKey, ",");
+   }
+
+   /**
+    * If one of the keys is found the checkpoint is not logged. 
+    * @param excludeIfClientPropertyKey comma separated list
+    */
+   public void setExcludeIf(String excludeIfClientPropertyKey) {
+      this.excludeIfKeys = new String[0];
+      if (excludeIfClientPropertyKey == null || excludeIfClientPropertyKey.trim().length() < 1) {
+         return;
+      }
+      this.excludeIfKeys = StringPairTokenizer.toArray(excludeIfClientPropertyKey, ",");
    }
 
    /**
