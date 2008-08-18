@@ -430,7 +430,7 @@ abstract public class DispatchConnection implements I_Timeout
       Thread.currentThread().setName(PING_THREAD_NAME);
       
       try {
-         this.timerKey = null;
+         //this.timerKey = null; Fix marcel 2008-08-18: seems to increase reconnect polling if server is in RL4
    
          if (isDead())
             return;
