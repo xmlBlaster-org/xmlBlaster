@@ -200,6 +200,7 @@
       <action do='STOP' onShutdownRunlevel='0' sequence='1'/>
       <attribute id='filterClientPropertyKey'>wfguid</attribute>
       <attribute id='showAllMessages'>true</attribute>
+      <attribute id='excludeIfClientPropertyKey'></attribute>
       <attribute id='xmlStyle'>true</attribute>
       <attribute id='showAllClientProperties'>false</attribute>
       <attribute id='log4j.configuration'>log4j.properties</attribute>
