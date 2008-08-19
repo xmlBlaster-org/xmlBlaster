@@ -130,8 +130,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       String initClass = System.getProperty("xmlBlaster/initClassName", "");
       if (initClass.length() > 0) {
          try {
-			this.getClass().getClassLoader().loadClass(initClass).newInstance();
-	     } catch (Exception e) {
+                        this.getClass().getClassLoader().loadClass(initClass).newInstance();
+             } catch (Exception e) {
             e.printStackTrace();
          }
       }
@@ -205,8 +205,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       log.fine("Following errorCodes do an immediate exit: " + this.panicErrorCodes);
       if (useJdbcManagerDelegate && this.panicErrorCodes.indexOf(ErrorCode.RESOURCE_DB_UNKNOWN.toString()) != -1)
           log.severe("You can not use 'xmlBlaster/panicErrorCodes' " +
-        		  ErrorCode.RESOURCE_DB_UNKNOWN.toString() +
-        		  " with xmlBlaster/useJdbcManagerDelegate=true. This could result in DB-less operation with persistent entries handled as transient entries which are lost on restart");
+                          ErrorCode.RESOURCE_DB_UNKNOWN.toString() +
+                          " with xmlBlaster/useJdbcManagerDelegate=true. This could result in DB-less operation with persistent entries handled as transient entries which are lost on restart");
 
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
@@ -233,15 +233,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
 
       boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
       if (!useKeyboard) {
-         while (true) {
-            try { Thread.sleep(100000000L);
-            } catch(InterruptedException e) { log.warning("Caught exception: " + e.toString()); }
-         }
-         /*
-         //  Exception in thread "main" java.lang.IllegalMonitorStateException:
-         try { Thread.currentThread().wait();
-         } catch(InterruptedException e) { log.warn(ME, "Caught exception: " + e.toString()); }
-         */
+         blockThread();
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
@@ -249,8 +241,20 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
 
       if (doBlocking) {
          checkForKeyboardInput();
-         // orb.run();
       }
+   }
+
+   public void blockThread() {
+      while (true) {
+         try { Thread.sleep(100000000L);
+         } catch(InterruptedException e) { log.warning("Caught exception: " + e.toString()); }
+      }
+      /*
+      //  Exception in thread "main" java.lang.IllegalMonitorStateException:
+      try { Thread.currentThread().wait();
+      } catch(InterruptedException e) { log.warn(ME, "Caught exception: " + e.toString()); }
+      */
+      //orb.run();
    }
 
    /** Same as shutdown() but does additionally an engine.global.shutdown() */
@@ -406,9 +410,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
                keyboardUsage();
          }
          catch (IOException e) {
-            log.warning(e.toString());
+            log.warning(e.toString() + " Keyboard input is disabled, we block this thread now");
+            break;
          }
       }
+      blockThread();
    }
 
    public boolean isHalted() {
