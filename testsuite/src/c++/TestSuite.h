@@ -19,6 +19,7 @@ See:       Other C++ test tools: http://c2.com/cgi/wiki?TestingFramework
 #include <util/thread/ThreadImpl.h>
 #include <util/Timestamp.h>
 #include <util/lexical_cast.h>
+#include <cstring> // strcmp()
 
 namespace org { namespace xmlBlaster { namespace test {
 
