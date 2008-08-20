@@ -13,6 +13,9 @@
         where you can find all
         necessary information and instructions on how to make Microsoft SQL Server run.
         </p>
+        <p>XmlBlaster supports SQL Server 2000, 2005 and 2008. It is recommended to use the latest JDBC driver
+        from Microsoft for all SQL Server versions, currently this is JDBC driver 1.2
+        </p>
         <p>Once you have a running database you can configure xmlBlaster to make it run against it.
         Before you need to download the jdbc driver. You must
         put these files in the CLASSPATH (for example you can put them into $XMLBLASTER_HOME/lib and add them to the
@@ -21,7 +24,11 @@
         <p>
         The tests where made with the type 4 JDBC driver of Microsoft with this extended CLASSPATH:
 <pre>
+old driver:
 set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
+
+new driver 2005:
+set CLASSPATH=\tmp\sqljdbc.jar;%CLASSPATH%
 </pre>
         </p>
         <h3>Setup SQL Server</h3>
@@ -46,7 +53,44 @@ set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
     </description>
 
     <example lang="Java" type="HTML">
-        <h2 id="2000">Setup SQL Server 2000</h2>
+        <h2 id="2005">Setup SQL Server 2005</h2>
+    <p>This is a configuration example from xmlBlaster.properties, please adjust
+    it with your password:
+    </p>
+    <p>See http://msdn2.microsoft.com/en-us/library/ms378428.aspx for a description of the URL syntax!</p>
+
+    <pre>
+JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                  url=jdbc:sqlserver://localhost:1433;databaseName=xmlBlaster,\
+                  user=sa,\
+                  password=xxx,\
+                  connectionPoolSize=5,\
+                  connectionBusyTimeout=90000,\
+                  maxWaitingThreads=300,\
+                  tableNamePrefix=XB_,\
+                  entriesTableName=ENTRIES,\
+                  colNamePrefix=XB_,\
+                  dbAdmin=true
+StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
+QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
+JdbcDriver.mapping[MicrosoftSQLServer2005]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
+    </pre>
+    <p>After starting xmlBlaster (without errors) you can query a table:</p>
+    <pre>
+MS-Dos Command line:
+
+osql -E
+1> use  xmlBlaster
+2> go
+1> select * from XB_ENTRIES
+2> go
+    </pre>
+   </example>
+
+    <example lang="Java" type="HTML">
+        <h2 id="2000">Setup for old SQL Server driver (deprecated)</h2>
     <p>This is a configuration example from xmlBlaster.properties, please adjust
     it with your password:
     </p>
@@ -85,44 +129,6 @@ osql -E
     </pre>
    </example>
 
-    <example lang="Java" type="HTML">
-        <h2 id="2005">Setup SQL Server 2005</h2>
-    <p>This is a configuration example from xmlBlaster.properties, please adjust
-    it with your password:
-    </p>
-    <p>See http://msdn2.microsoft.com/en-us/library/ms378428.aspx for a description of the URL syntax!
-       (In the beta 2005 it was 'url=jdbc:sqlserver://localhost:1433/database=xmlBlaster')</p>
-
-    <pre>
-JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                  url=jdbc:sqlserver://localhost:1433;databaseName=xmlBlaster,\
-                  user=sa,\
-                  password=xxx,\
-                  connectionPoolSize=5,\
-                  connectionBusyTimeout=90000,\
-                  maxWaitingThreads=300,\
-                  tableNamePrefix=XB_,\
-                  entriesTableName=ENTRIES,\
-                  colNamePrefix=XB_,\
-                  dbAdmin=true
-StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
-QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
-JdbcDriver.mapping[MicrosoftSQLServer2005]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
-    </pre>
-    <p>After starting xmlBlaster (without errors) you can query a table:</p>
-    <pre>
-MS-Dos Command line:
-
-osql -E
-1> use  xmlBlaster
-2> go
-1> select * from XB_ENTRIES
-2> go
-    </pre>
-   </example>
-
    <example lang="Java" type="HTML">
    <p>
    Before the first usage you have to create a database <i>'xmlBlaster'</i> in SQL Server.
@@ -146,7 +152,7 @@ begin
 end
 go
 
-create database xmlBlaster on default
+create database xmlBlaster
 go
 
    </pre>
