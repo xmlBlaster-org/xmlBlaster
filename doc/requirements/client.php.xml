@@ -9,7 +9,8 @@
    <description>
    <h2>Overview</h2>
    <p>
-   With Php you can get full access to XmlBlaster's interface, with synchronous and asynchronous calls.<br/>At the moment there is only demo with Php as a web script engine.
+   With Php 4.2 and 5 you can get full access to XmlBlaster's interface, with synchronous and asynchronous calls.<br/>
+   At the moment there is only demo with Php as a web script engine using XmlRpc.
    </p>
    <p>
    You can have a look at the README file <a href="http://www.xmlblaster.net/xmlBlaster/demo/php/xmlrpc/README">here</a>.
