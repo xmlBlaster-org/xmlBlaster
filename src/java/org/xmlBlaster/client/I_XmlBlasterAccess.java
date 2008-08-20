@@ -556,10 +556,11 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  Please note the timeout limitation as described at
     *  {@link #receive(String, int, long, boolean)})
     *
-    * @param msgUnit The request to send
+    * @param msgUnit The request to send. The topicId may be any you wish for the receiver to recognize.
+    *        If the receiver has not subsribed on this topicId you need to send it PtP (add the Destination client).
     * @param timeout The milliseconds to block, 0 is none blocking, -1 blocks forever
     * @param maxEntries The maximum number of entries to deliver or return with less after timeout
-    * @return The response messages, typically one.
+    * @return The response messages, typically one, never null, has 0 entries on timeout
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/demo/HelloWorld8.java.html">HelloWorld8.java</a>
     */
    MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException;
