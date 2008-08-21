@@ -48,10 +48,10 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
       this(1000L);
    }
 
-   public synchronized void init(I_Queue queue) throws XmlBlasterException {
-      if (queue == null)
+   public synchronized void init(I_Queue queue_) throws XmlBlasterException {
+      if (queue_ == null)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_CONFIGURATION, "The queue passed is null");
-      this.queue = queue;
+      this.queue = queue_;
    }
 
    public void clear() {
