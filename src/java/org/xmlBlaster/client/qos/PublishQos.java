@@ -216,6 +216,10 @@ public final class PublishQos
    public void setSender(SessionName sender) {
       this.msgQosData.setSender(sender);
    }
+   
+   public void setAdministrative(boolean administrative) {
+	   this.msgQosData.setAdministrative(administrative);
+   }
 
    /**
     * @param state The state to return to the server.
