@@ -525,7 +525,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * <p>
     * The msgUnit should contain a PublishQos which routes the request
     * to the desired client, for example sending it to client <code>joe</code>
-    * and its login session <code>1</code>:
+    * and its login session <code>1</code> or sending it to a topic which was subscribed
+    * by the destination client:
     * <pre>
     * import org.xmlBlaster.util.qos.address.Destination;
     * import org.xmlBlaster.client.qos.PublishQos;
@@ -553,6 +554,19 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  and we can handle multiple replies for one request.
     *  <p>
     *  The feature is implemented on client side with a temporary response topic and a <code>receive()</code> call.
+    *  The temporary response topic is erased after the response has arrived.
+    *  <br />
+    *  You can optionally add a clientProperty "__responseTopicIdPrefix", this topicId is
+    *  used as a prefix for the temporary response topicId. the given prefix must be unique
+    *  between clients. This is thread safe.
+    *  A use case could be to simplify detecting the topic for an authorizer plugin.
+    *  <br />
+    *  You can optionally add a clientProperty "__responseTopicId" with a unique topicId
+    *  to avoid the creation of temporary response topics, note that this feature
+    *  is NOT thread safe, the client may only send one request() at a time.
+    *  The response topic will live for one day after last usage.
+    *  A reason to do so could be the better performance (avoid short living temporary response topics).
+    *  <p>
     *  Please note the timeout limitation as described at
     *  {@link #receive(String, int, long, boolean)})
     *
