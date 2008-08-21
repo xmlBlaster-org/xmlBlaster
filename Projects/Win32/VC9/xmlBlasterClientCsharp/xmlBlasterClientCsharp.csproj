@@ -40,6 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\..\src\csharp\client\XbPinger.cs">
+      <Link>client\XbPinger.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\src\csharp\client\XbPoller.cs">
+      <Link>client\XbPoller.cs</Link>
+    </Compile>
     <Compile Include="..\..\..\..\src\csharp\Key.cs">
       <Link>Key.cs</Link>
     </Compile>
@@ -64,6 +70,15 @@
     <Compile Include="..\..\..\..\src\csharp\util\FileLocator.cs">
       <Link>util\FileLocator.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\..\src\csharp\util\I_Queue.cs">
+      <Link>util\I_Queue.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\src\csharp\util\I_QueueEntry.cs">
+      <Link>util\I_QueueEntry.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\src\csharp\util\RamQueuePlugin.cs">
+      <Link>util\RamQueuePlugin.cs</Link>
+    </Compile>
     <Compile Include="..\..\..\..\src\csharp\util\Serialization.cs">
       <Link>util\Serialization.cs</Link>
     </Compile>
@@ -75,6 +90,9 @@
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\XmlBlasterAccess.cs">
       <Link>XmlBlasterAccess.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\src\csharp\XmlBlasterAccessRaw.cs">
+      <Link>XmlBlasterAccessRaw.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
