@@ -63,6 +63,8 @@ public class XmlBlasterAccessTest : I_Callback, I_LoggingCallback
    public void CheckMethods()
    {
       I_XmlBlasterAccess xb = XmlBlasterAccessFactory.CreateInstance();
+      Hashtable properties = null;
+      xb.Initialize(properties);
       string connectQos =
          "<qos>\n" +
          " <securityService type='htpasswd' version='1.0'>\n" +

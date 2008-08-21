@@ -13,16 +13,28 @@ csc /unsafe /r:nunit.framework /t:library -debug+ -out:xmlBlasterClient.dll *.cs
 using System;
 using System.IO;
 using System.Collections;
+using System.Threading;
 //using System.Xml;
 using org.xmlBlaster.client;
 using org.xmlBlaster.util;
 using org.xmlBlaster.contrib.service;
 
-public class Start {
+public class Start : I_LoggingCallback, I_ConnectionStateListener {
+   public void OnLogging(XmlBlasterLogLevel logLevel, string location, string message)
+   {
+      Console.WriteLine(logLevel + " " + location + " " + message);
+   }
+
    static void Main(string[] argv) {
       Console.WriteLine("Startup");
 
-      simpleServiceTest();
+      //new Start().testXmlBlasterPing();
+
+      new Start().testXmlBlaster();
+
+      //(new Start()).TestPinger();
+      
+      //simpleServiceTest();
 
       /*
 
@@ -61,6 +73,20 @@ public class Start {
 
       Console.WriteLine("Done");
    }
+
+   private void TestPinger()
+   {
+      XmlBlasterAccess xbAccess = new XmlBlasterAccess();
+      long sleepMillis = 5000;
+      XbPinger xbPinger = new XbPinger(xbAccess, sleepMillis, this);
+      xbPinger.Start();
+
+      Thread.Sleep(12*1000);
+      xbPinger.Stop();
+
+      Thread.Sleep(10000000);
+   }
+
 
    public class TestSer {
       public TestSer() {
@@ -121,7 +147,52 @@ public class Start {
       n.CheckSerialInput();
    }
 
-   private static void testXmlBlaster() {
+   private void testXmlBlasterPing()
+   {
+      try
+      {
+         I_XmlBlasterAccess xb = XmlBlasterAccessFactory.CreateInstance();
+         xb.RegisterConnectionListener(this);
+         Hashtable properties = new Hashtable();
+         properties.Add("dispatch/connection/pingInterval", "12500");
+         properties.Add("dispatch/connection/delay", "8600");
+         properties.Add("dispatch/connection/pollOnInitialConnectFail", "true");
+         xb.Initialize(properties);
+         string connectQos =
+            "<qos>\n" +
+            " <securityService type='htpasswd' version='1.0'>\n" +
+            "   <user>fritz</user>\n" +
+            "   <passwd>secret</passwd>\n" +
+            " </securityService>\n" +
+            "</qos>";
+         ConnectReturnQos crq = xb.Connect(connectQos, null);
+         Console.WriteLine("Done, sleeping now");
+      }
+      catch (Exception e)
+      {
+         Console.WriteLine("Test failed, sleeping now: " + e.ToString());
+      }
+
+      Thread.Sleep(1000000);
+   }
+
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+   {
+      Console.WriteLine("****CLIENT reachedAlive " + oldState + "->ALIVE");
+   }
+
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+   {
+      Console.WriteLine("****CLIENT reachedPolling " + oldState + "->POLLING");
+   }
+
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
+   {
+      Console.WriteLine("****CLIENT reachedDead " + oldState + "->DEAD");
+   }
+
+
+   private void testXmlBlaster() {
       QosTest qosTest = new QosTest();
       qosTest.CheckConnectReturnQos();
       qosTest.CheckComplete();
@@ -129,8 +200,8 @@ public class Start {
       try {
          qosTest.CheckInvalid();
       }
-      catch (Exception) {
-         // OK, expected
+      catch (Exception e) {
+         Console.WriteLine("OK Expected: " + e.ToString());
       }
 
 
