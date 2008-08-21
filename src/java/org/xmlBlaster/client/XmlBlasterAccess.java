@@ -2049,13 +2049,27 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    public PublishReturnQos createTemporaryTopic(long destroyDelay, int historyMaxMsg) throws XmlBlasterException {
-      PublishKey pk = new PublishKey(glob, "");
+	   return createTemporaryTopic(null, destroyDelay, historyMaxMsg);
+   }
+
+   /**
+    * 
+    * @param uniqueTopicId Usually null, can be used to force a topicId. 
+    * e.g. topicIdPrefix="device.joe.request" -> the topic is something like "device.joe.request135823058558"
+    * @param destroyDelay
+    * @param historyMaxMsg
+    * @return
+    * @throws XmlBlasterException
+    */
+   public PublishReturnQos createTemporaryTopic(String uniqueTopicId, long destroyDelay, int historyMaxMsg) throws XmlBlasterException {
+	  if (uniqueTopicId == null) uniqueTopicId = "";
+      PublishKey pk = new PublishKey(glob, uniqueTopicId);
       PublishQos pq = new PublishQos(glob);
       TopicProperty topicProperty = new TopicProperty(glob);
       topicProperty.setDestroyDelay(destroyDelay);
       topicProperty.setCreateDomEntry(false);
       topicProperty.setReadonly(false);
-      pq.getData().setAdministrative(true); // TODO: add to PublishQos
+      pq.setAdministrative(true);
       if (historyMaxMsg >= 0L) {
          HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
          prop.setMaxEntries(historyMaxMsg);
@@ -2080,25 +2094,40 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       // Create a temporary reply topic ...
       long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
-      PublishReturnQos tempTopic = createTemporaryTopic(destroyDelay, maxEntries);
-
+      // optional, "device.joe.response" -> can be useful for performance, NOT thread safe
+      String responseTopicId = msgUnit.getQosData().getClientProperty("__responseTopicId", "");
+      if (responseTopicId.length() > 0) {
+          msgUnit.getQosData().getClientProperties().remove("__responseTopicId");
+      }
+      else {
+          // "device.joe.response" -> can be useful for authorization, must be distinguishable to other clients
+          String responseTopicIdPrefix = msgUnit.getQosData().getClientProperty("__responseTopicIdPrefix", "");
+          if (responseTopicIdPrefix.length() > 0) {
+             responseTopicId = responseTopicIdPrefix + new Timestamp().getTimestamp(); // now thread safe for request()s in parallel
+             msgUnit.getQosData().getClientProperties().remove("__responseTopicIdPrefix");
+          }
+      }
+      PublishReturnQos tempTopic = createTemporaryTopic(responseTopicId, destroyDelay, maxEntries);
+     
       try {
          // Send the request ...
          // "__jms:JMSReplyTo"
          msgUnit.getQosData().addClientProperty(Constants.addJmsPrefix(Constants.JMS_REPLY_TO, log), tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
          publish(msgUnit);
-
+      
          // Access the reply ...
          MsgUnit[] msgs = receive("topic/"+tempTopic.getKeyOid(), maxEntries, timeout, true);
 
          return msgs;
       }
       finally {
-         // Clean up temporary topic ...
-         EraseKey ek = new EraseKey(glob, tempTopic.getKeyOid());
-         EraseQos eq = new EraseQos(glob);
-         eq.setForceDestroy(true);
-         erase(ek, eq);
+         if (responseTopicId.length() == 0) {
+            // Clean up temporary topic ...
+            EraseKey ek = new EraseKey(glob, tempTopic.getKeyOid());
+            EraseQos eq = new EraseQos(glob);
+            eq.setForceDestroy(true);
+            erase(ek, eq);
+         }
       }
    }
 
