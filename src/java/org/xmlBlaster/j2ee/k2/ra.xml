@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE connector PUBLIC '-//Sun Microsystems, Inc.//DTD Connector 1.0//EN' 'http://java.sun.com/j2ee/dtds/connector_1_0.dtd'>
-
 <connector>
     <display-name>xmlBlaster Adapter</display-name>
+    <description></description>
+    <icon></icon>
     <vendor-name>xmlBlaster org</vendor-name>
     <spec-version>1.0</spec-version>
-    <version>1.0</version>
     <eis-type>XML MOM</eis-type>
+    <version>1.0</version>
     <resourceadapter>
         <managedconnectionfactory-class>org.xmlBlaster.j2ee.k2.BlasterManagedConnectionFactory</managedconnectionfactory-class>
         <connectionfactory-interface>org.xmlBlaster.j2ee.k2.client.BlasterConnectionFactory</connectionfactory-interface>
@@ -60,10 +60,10 @@
             <config-property-type>java.lang.String</config-property-type>
             <config-property-value>xmlBlaster/globalUtil</config-property-value>
         </config-property>
-        <auth-mechanism>
-            <auth-mech-type>BasicPassword</auth-mech-type>
+        <authentication-mechanism>
+            <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
             <credential-interface>javax.resource.security.PasswordCredential</credential-interface>
-        </auth-mechanism>
+        </authentication-mechanism>
         <reauthentication-support>false</reauthentication-support>
     </resourceadapter>
 </connector>
