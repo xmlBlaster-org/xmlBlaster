@@ -4,4 +4,7 @@
 <!-- We load XmlBlaster.sar in an ear to get scoped classloading-->
 <application>
    <display-name>XmlBlaster sar</display-name>
+   <module>
+      <java></java>
+   </module>
 </application>
