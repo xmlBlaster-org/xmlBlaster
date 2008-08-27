@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docbase="/opt/shareHome/michele/data/xmlBlaster/doc/howto"
+   sodipodi:docname="queues-2008.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="375"
+     inkscape:cy="337.58043"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1180"
+     inkscape:window-height="867"
+     inkscape:window-x="63"
+     inkscape:window-y="64" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:0.59883722;fill:#280b0b;fill-opacity:0.23899369;stroke:#b4d278;stroke-width:0;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2160"
+       width="331"
+       height="88"
+       x="33"
+       y="-217.36218"
+       transform="scale(1,-1)" />
+    <rect
+       style="opacity:0.59883722;fill:#280b0b;fill-opacity:0.23899369;stroke:#b4d278;stroke-width:0;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2164"
+       width="335"
+       height="164"
+       x="380"
+       y="68.862183" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="38"
+       y="142.36218"
+       id="text2166"><tspan
+         sodipodi:role="line"
+         id="tspan2168"
+         x="38"
+         y="142.36218"
+         style="fill:#ff0000;fill-opacity:1">XBSTORE</tspan></text>
+    <rect
+       style="opacity:0.59883722;fill:#280b0b;fill-opacity:0.23899369;stroke:#b4d278;stroke-width:0;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2162"
+       width="410"
+       height="136"
+       x="204"
+       y="298.86218" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="211.36816"
+       y="310.54089"
+       id="text2170"><tspan
+         sodipodi:role="line"
+         id="tspan2172"
+         x="211.36816"
+         y="310.54089"
+         style="fill:#ff0000;fill-opacity:1">XBREF</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="384.36816"
+       y="84.540894"
+       id="text2174"><tspan
+         sodipodi:role="line"
+         id="tspan2176"
+         x="384.36816"
+         y="84.540894"
+         style="fill:#ff0000;fill-opacity:1">XBMEAT</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 234,217.36218 C 292,303.36218 286,299.36218 286,299.36218"
+       id="path2183" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 423.91184,232.3477 C 423.91184,232.3477 393.91184,300.3477 393.91184,300.3477"
+       id="path2185"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="266.9082"
+       y="295.46472"
+       id="text2190"><tspan
+         sodipodi:role="line"
+         id="tspan2192"
+         x="266.9082"
+         y="295.46472">n</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="224.68066"
+       y="229.54382"
+       id="text2194"><tspan
+         sodipodi:role="line"
+         id="tspan2196"
+         x="224.68066"
+         y="229.54382">1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="420.11133"
+       y="253.67468"
+       id="text2198"><tspan
+         sodipodi:role="line"
+         id="tspan2200"
+         x="420.11133"
+         y="253.67468">1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="378.68066"
+       y="294.54382"
+       id="text2202"><tspan
+         sodipodi:role="line"
+         id="tspan2204"
+         x="378.68066"
+         y="294.54382">m</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="214"
+       y="124.36218"
+       id="text2206"><tspan
+         sodipodi:role="line"
+         id="tspan2208"
+         x="214"
+         y="124.36218">Map Name or Queue Name</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="42.368164"
+       y="161.54089"
+       id="text2210"><tspan
+         sodipodi:role="line"
+         id="tspan2212"
+         x="42.368164"
+         y="161.54089">xbstoreid (long -&gt; NUMERIC19 NUMBER 19, SEQUENCE)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="41.635742"
+       y="175.46765"
+       id="text2214"><tspan
+         sodipodi:role="line"
+         id="tspan2216"
+         x="41.635742"
+         y="175.46765">storename (VARCHAR 512) (unique)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="524.03711"
+       y="62.540894"
+       id="text2218"><tspan
+         sodipodi:role="line"
+         id="tspan2220"
+         x="524.03711"
+         y="62.540894">Contains the Data of the messages</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="482.03711"
+       y="291.54089"
+       id="text2222"><tspan
+         sodipodi:role="line"
+         id="tspan2224"
+         x="482.03711"
+         y="291.54089">Binds stores with meats</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="383.03418"
+       y="99.470581"
+       id="text2226"><tspan
+         sodipodi:role="line"
+         id="tspan2228"
+         x="383.03418"
+         y="99.470581">xbmeatid (long -&gt; NUMERIC19 NUMBER 19)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="385.09375"
+       y="117.47351"
+       id="text2230"><tspan
+         sodipodi:role="line"
+         id="tspan2232"
+         x="385.09375"
+         y="117.47351">durable (CHAR)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="385.75391"
+       y="132.58679"
+       id="text2234"><tspan
+         sodipodi:role="line"
+         id="tspan2236"
+         x="385.75391"
+         y="132.58679">bytessize (NUMBER10, INT4)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="387.11719"
+       y="145.46765"
+       id="text2238"><tspan
+         sodipodi:role="line"
+         id="tspan2240"
+         x="387.11719"
+         y="145.46765">datatype (VARCHAR32)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="210.22852"
+       y="388.39441"
+       id="text2242"><tspan
+         sodipodi:role="line"
+         id="tspan2244"
+         x="210.22852"
+         y="388.39441">prio (INT4, NUMBER10) </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="387.58496"
+       y="158.46472"
+       id="text2246"><tspan
+         sodipodi:role="line"
+         id="tspan2248"
+         x="387.58496"
+         y="158.46472">flag1 (VARCHAR32)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="629.87402"
+       y="227.46765"
+       id="text2250"><tspan
+         sodipodi:role="line"
+         id="tspan2252"
+         x="629.87402"
+         y="227.46765">PK: (xbmeatid)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="280.73242"
+       y="212.46765"
+       id="text2254"><tspan
+         sodipodi:role="line"
+         id="tspan2256"
+         x="280.73242"
+         y="212.46765">PK: (xbstoreid)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="317.73242"
+       y="430.46765"
+       id="text2258"><tspan
+         sodipodi:role="line"
+         id="tspan2260"
+         x="317.73242"
+         y="430.46765">PK (XB_STORE.xbstoreid, XB_MEAT.xbmeatid)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="19.908203"
+       y="502.46472"
+       id="text2262"><tspan
+         sodipodi:role="line"
+         id="tspan2264"
+         x="19.908203"
+         y="502.46472">SELECT STATEMENT FOR CLEANUP STATEMENT (meat without references):</tspan><tspan
+         sodipodi:role="line"
+         x="19.908203"
+         y="517.46472"
+         id="tspan2266" /><tspan
+         sodipodi:role="line"
+         x="19.908203"
+         y="532.46472"
+         id="tspan2268" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="210.51953"
+       y="349.47058"
+       id="text2270"><tspan
+         sodipodi:role="line"
+         id="tspan2272"
+         x="210.51953"
+         y="349.47058">xbstoreid (long -&gt; NUMERIC10, INT4)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="211.00781"
+       y="362.58679"
+       id="text2274"><tspan
+         sodipodi:role="line"
+         id="tspan2276"
+         x="211.00781"
+         y="362.58679">durable (CHAR)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="210.06445"
+       y="375.46765"
+       id="text2278"><tspan
+         sodipodi:role="line"
+         id="tspan2280"
+         x="210.06445"
+         y="375.46765">bytessize (NUMBER10, INT4)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="387.87402"
+       y="173.46765"
+       id="text4222"><tspan
+         sodipodi:role="line"
+         id="tspan4224"
+         x="387.87402"
+         y="173.46765">msgcont (BLOB)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="209.87402"
+       y="400.46765"
+       id="text4226"><tspan
+         sodipodi:role="line"
+         id="tspan4228"
+         x="209.87402"
+         y="400.46765">flag1 (VARCHAR32)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="12.052734"
+       y="667.47058"
+       id="text4248"><tspan
+         sodipodi:role="line"
+         id="tspan4250"
+         x="12.052734"
+         y="667.47058">Comments:</tspan><tspan
+         sodipodi:role="line"
+         x="12.052734"
+         y="682.47058"
+         id="tspan4256">Should the PK of store and meat really be a sequence ? Problems: it is probably not portable (depens on DB), and if not</tspan><tspan
+         sodipodi:role="line"
+         x="12.052734"
+         y="697.47058"
+         id="tspan4258">generated it is easier to create XB_REF Entries.</tspan><tspan
+         sodipodi:role="line"
+         x="12.052734"
+         y="712.47058"
+         id="tspan4252" /><tspan
+         sodipodi:role="line"
+         x="12.052734"
+         y="727.47058"
+         id="tspan4254" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="210.51953"
+       y="336.47058"
+       id="text4260"><tspan
+         sodipodi:role="line"
+         id="tspan4262"
+         x="210.51953"
+         y="336.47058">xbmeatid (long -&gt; NUMERIC10, INT4)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="209.51953"
+       y="323.47058"
+       id="text4264"><tspan
+         sodipodi:role="line"
+         id="tspan4266"
+         x="209.51953"
+         y="323.47058">xbrefid (long -&gt; NUMERIC10 INT4)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="49"
+       y="733.36218"
+       id="text4268"><tspan
+         sodipodi:role="line"
+         id="tspan4270"
+         x="49"
+         y="733.36218">Oracle:</tspan><tspan
+         sodipodi:role="line"
+         x="49"
+         y="748.36218"
+         id="tspan4272" /><tspan
+         sodipodi:role="line"
+         x="49"
+         y="763.36218"
+         id="tspan4274" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="387.60938"
+       y="210.47058"
+       id="text4276"><tspan
+         sodipodi:role="line"
+         id="tspan4278"
+         x="387.60938"
+         y="210.47058">refcount (NUMBER10, INT4)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="13.800781"
+       y="775.46765"
+       id="text4280"><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="775.46765"
+         id="tspan4286">TODO:</tspan><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="790.46765"
+         id="tspan4297">- Test if the XBMEAT Table with several LOBS allows a TRIGGER on it (test with our replication)</tspan><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="805.46765"
+         id="tspan4323">.- metainfo, msgqos, msgkey shall be checked with tests</tspan><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="820.46765"
+         id="tspan4325" /><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="835.46765"
+         id="tspan4321" /><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="850.46765"
+         id="tspan4299" /><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="865.46765"
+         id="tspan4301" /><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="880.46765"
+         id="tspan4288" /><tspan
+         sodipodi:role="line"
+         x="13.800781"
+         y="895.46765"
+         id="tspan4290" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="386.60938"
+       y="185.47058"
+       id="text4303"><tspan
+         sodipodi:role="line"
+         id="tspan4305"
+         x="386.60938"
+         y="185.47058">msgkey (CBLOB)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="386.60938"
+       y="198.47058"
+       id="text4307"><tspan
+         sodipodi:role="line"
+         id="tspan4309"
+         x="386.60938"
+         y="198.47058">msgqos (CBLOB)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="208.87402"
+       y="412.46765"
+       id="text4311"><tspan
+         sodipodi:role="line"
+         id="tspan4313"
+         x="208.87402"
+         y="412.46765">metainfo (CLOB) (encodable data format map: &lt;cps&gt;..&lt;cp&gt;...&lt;/cp&gt;.&lt;/cps&gt;)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="294"
+       y="37.362183"
+       id="text4315"><tspan
+         sodipodi:role="line"
+         id="tspan4317"
+         x="294"
+         y="37.362183">XMLBLASTER QUEUES 2008</tspan></text>
+  </g>
+</svg>
