@@ -103,6 +103,44 @@ public class StringPairTokenizerTest extends TestCase {
 		}
 
 	}
+
+   public void testMapCSV() {
+      {
+         String line = "aKey=\"a value with &#034; apost, and semicolon\",otherKey=2300,third&#061;Key=a key with assignment,key4=\"Hello, == world\"";
+         Map map = StringPairTokenizer.CSVToMap(line);
+         String result = StringPairTokenizer.mapToCSV(map);
+         map = StringPairTokenizer.CSVToMap(result);
+         assertEquals(4, map.size());
+         assertEquals("a value with \" apost, and semicolon", (String)map.get("aKey"));
+         assertEquals("2300", (String)map.get("otherKey"));
+         assertEquals("a key with assignment", (String)map.get("third=Key"));
+         assertEquals("Hello, == world", (String)map.get("key4"));
+         assertNull(map.get("bla"));
+         log.info(line);
+         log.info(" to ");
+         log.info(result);
+         log.info("Done");
+      }
+      {
+         String line = "aNullKey,otherEmptyKey=,thirdKey=\" \", fourthKey = Blanks ";
+         Map map = StringPairTokenizer.CSVToMap(line);
+         String result = StringPairTokenizer.mapToCSV(map);
+         map = StringPairTokenizer.CSVToMap(result);
+         assertEquals(4, map.size());
+         assertEquals(null, (String)map.get("aNullKey"));
+         assertTrue(map.containsKey("aNullKey"));
+         assertEquals("", (String)map.get("otherEmptyKey"));
+         assertEquals("", (String)map.get("thirdKey"));
+         assertEquals("Blanks", (String)map.get("fourthKey"));
+         assertNull(map.get("bla"));
+         log.info(line);
+         log.info(" to ");
+         log.info(result);
+         log.info("Done");
+         }
+   }
+
+   
    /**
 	 * <pre>
 	 *   java org.xmlBlaster.test.classtest.StringPairTokenizerTest
