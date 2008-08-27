@@ -62,3 +62,16 @@ insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,pr
 insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,prio) values (2,1,1,'T',200,'subscriptionId=b社会保障la,oid=Übßk','',9);
 
 select * from xbref;
+
+
+--- Two ways to work with serial sequence:
+create table xbserial (
+  xbserialid  bigserial not null,
+  flag1 varchar(32) default ''
+);
+select nextval('xbserial_xbserialid_seq');
+-- new_id is returned
+INSERT INTO xbserial (xbserialid, flag1) VALUES (new_id, 'Test1');
+
+INSERT INTO xbserial (flag1) VALUES ('Test2');
+SELECT currval('xbserial_xbserialid_seq');
