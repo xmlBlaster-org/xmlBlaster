@@ -44,7 +44,7 @@ create table xbref (
   bytesize NUMBER(10) ,
   metainfo clob default '',
   flag1 varchar(32) default '',
-  prio  NUMBER(20)
+  prio  NUMBER(10)
 );
 
 
