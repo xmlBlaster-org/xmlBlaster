@@ -390,6 +390,79 @@ public class StringPairTokenizer {
       return parseStringProperties(rawString, outerToken, innerToken, true);
    }
 
+   /**
+    * Counterpart to #mapToCSV(Map)
+    * @param csv
+    * @return
+    */
+   public static Map/*<String, String>*/ CSVToMap(String csv) {
+      Map map = parseLine(csv, ',', '"', '=', false, false);
+      String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
+      for (int i=0; i<keys.length; i++) {
+         String key = keys[i];
+         String value = (String)map.get(key);
+         boolean containsAssign = key.indexOf("&#061;") != -1;
+         if (containsAssign) {
+            map.remove(key);
+            key = ReplaceVariable.replaceAll(key, "&#061;", "=");
+         }
+         value = ReplaceVariable.replaceAll(value, "&#034;", "\"");
+         value = ReplaceVariable.replaceAll(value, "&#039;", "'");
+         map.put(key, value);
+      }
+      return map;
+   }
+      
+   /**
+    * Counterpart to #CSVToMap(String)
+    * @param map
+    * @return
+    */
+   public static String mapToCSV(Map/*<String, String>*/ map) {
+      return mapToCSV(map, ',', '"');
+   }
+
+   /**
+    * A '=' in the key is escaped with "&#061;".
+    * A '"' or '\'' is escaped with &#034; respectively &#039;  
+    * @param map <String,String> (not yet <String,ClientProperty>)
+    * @param sep Defaults to ","
+    * @param apos Only '"' or "'" is supported, defaults to '"'
+    * @return aKey="a value with &#034; apost, and semicolon",otherKey=2300,third&#061;Key=a key with assignment,key4="Hello, == world"
+    */
+   public static String mapToCSV(Map/*<String, String|ClientProperty>*/ map, char sep, char apos) {
+      if (map == null || map.size() < 1)
+         return "";
+      if (sep == 0) sep = ',';
+      if (apos == 0) apos = '"';
+      // "\\"+apos or "&apos;" or "&#034;" (' is &#039;)
+      final String escApos = (apos == '"') ? "&#034;" : "&#039;";
+      StringBuffer buf = new StringBuffer(map.size() * 100);
+      Iterator it = map.entrySet().iterator();
+      while (it.hasNext()) {
+         Map.Entry entry = (Map.Entry)it.next();
+         if (entry == null) continue;
+         if (buf.length() > 0)
+            buf.append(',');
+         String key = (String)entry.getKey();
+         key = ReplaceVariable.replaceAll(key, "=", "&#061;");
+         buf.append(key);
+         String value = (String)entry.getValue();
+         if (value != null && value.length() > 0) {
+            buf.append('=');
+            boolean containsSep = value.indexOf(sep) != -1;
+            boolean containsApos = value.indexOf(apos) != -1;
+            if (containsSep)
+               buf.append(apos);
+            if (containsApos)
+               value = ReplaceVariable.replaceAll(value, ""+apos, escApos);
+            buf.append(value);
+            if (containsSep)
+               buf.append(apos);
+         }
+      }
+      return buf.toString();
+   }
 
    /**
     * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
