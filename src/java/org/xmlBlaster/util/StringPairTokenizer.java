@@ -91,6 +91,8 @@ public class StringPairTokenizer {
       List tokensOnThisLine = new ArrayList();
       StringBuffer sb = new StringBuffer();
       boolean inQuotes = false;
+      if (nextLines.length < 1 || nextLines[0] == null)
+         return new String[0];
       int jj=0;
       String nextLine = nextLines[jj];
       do {
@@ -101,6 +103,8 @@ public class StringPairTokenizer {
             if (jj >= nextLines.length)
                break;
             nextLine = nextLines[jj];
+            if (nextLine == null)
+               continue;
          }
          for (int i = 0; i < nextLine.length(); i++) {
             char c = nextLine.charAt(i);
@@ -392,11 +396,13 @@ public class StringPairTokenizer {
 
    /**
     * Counterpart to #mapToCSV(Map)
+    * Fails if key contains token "&#061;"
+    * and fails if value contains token "&#034;" 
     * @param csv
     * @return
     */
    public static Map/*<String, String>*/ CSVToMap(String csv) {
-      Map map = parseLine(csv, ',', '"', '=', false, false);
+      Map map = parseLine(new String[] {csv}, ',', '"', '=', false, false, true);
       String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
       for (int i=0; i<keys.length; i++) {
          String key = keys[i];
@@ -407,7 +413,7 @@ public class StringPairTokenizer {
             key = ReplaceVariable.replaceAll(key, "&#061;", "=");
          }
          value = ReplaceVariable.replaceAll(value, "&#034;", "\"");
-         value = ReplaceVariable.replaceAll(value, "&#039;", "'");
+         //value = ReplaceVariable.replaceAll(value, "&#039;", "'");
          map.put(key, value);
       }
       return map;
@@ -448,7 +454,7 @@ public class StringPairTokenizer {
          key = ReplaceVariable.replaceAll(key, "=", "&#061;");
          buf.append(key);
          String value = (String)entry.getValue();
-         if (value != null && value.length() > 0) {
+         if (value != null/* && value.length() > 0*/) {
             buf.append('=');
             boolean containsSep = value.indexOf(sep) != -1;
             boolean containsApos = value.indexOf(apos) != -1;
