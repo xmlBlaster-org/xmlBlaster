@@ -1939,6 +1939,7 @@ TODO
       <unjar src="${lib.dir}/commons-lang-2.4.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/log4j.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/joda-time.jar" dest="${dist-client.dir}/classes" />
 
       <switch value="${ADD_HSQLDB}">
          <case value="true">
@@ -1993,8 +1994,8 @@ TODO
       </switch>
       <switch value="${ADD_PLUGINPROP}">
          <case value="false">
-            <echo message="Using default xmlBlasterPlugins.xml" />
-            <copy file="config/xmlBlasterPlugins.xml.template" tofile="${dist-client.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
+            <echo message="Using no xmlBlasterPlugins.xml on client side" />
+            <!-- copy file="config/xmlBlasterPlugins.xml.template" tofile="${dist-client.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/ -->
          </case>
          <default>
             <echo message="Using ${ADD_PLUGINPROP} -> ${dist.dir}/config/*.xml*" />
