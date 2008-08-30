@@ -187,6 +187,19 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       if (eh != null)
          eh.newException(this);
    }
+   
+   /**
+    * @return can be null
+    */
+   public final ErrorCode getOriginalErrorCode() {
+      if (this.embeddedMessage != null
+          && this.embeddedMessage.startsWith("Original errorCode=")
+          && this.embeddedMessage.length() > "Original errorCode=".length()) {
+          String errorCodeStr = this.embeddedMessage.substring("Original errorCode=".length());
+          return ErrorCode.toErrorCode(errorCodeStr);
+	   }
+	   return null;
+   }
 
    public final void changeErrorCode(ErrorCode errorCodeEnum) {
       if (this.embeddedMessage == null || this.embeddedMessage.length() < 1) {
