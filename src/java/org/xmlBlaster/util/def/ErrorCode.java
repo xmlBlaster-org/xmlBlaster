@@ -449,6 +449,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_SECURITY = new ErrorCode("user.security",
+	         "General security exception, authentication or authorization.",
+	         new ResourceInfo[] {
+	         }
+	      );
+
    public static final ErrorCode USER_SECURITY_AUTHENTICATION = new ErrorCode("user.security.authentication",
 	         "Login to xmlBlaster failed due to some reason.",
 	         new ResourceInfo[] {
