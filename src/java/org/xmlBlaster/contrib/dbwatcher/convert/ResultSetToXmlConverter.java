@@ -101,6 +101,8 @@ public class ResultSetToXmlConverter implements I_DataConverter
    protected String postStatement;
    protected String charSet;
    private int maxRows;
+   private long size;
+   
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
@@ -151,6 +153,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
          try { this.out.close(); } catch (java.io.IOException e) { /* Ignore */ }
       }
       this.out = out;
+      this.size = 0L;
       this.command = command;
       this.ident = ident;
       this.rowCounter = 0;
@@ -187,8 +190,11 @@ public class ResultSetToXmlConverter implements I_DataConverter
             buf.append(" encoding='").append(BASE64).append("'>").append(Base64.encode(value.getBytes()));
          buf.append("</attr>");
       }
-      if (buf.length() > 0)
-         this.out.write(buf.toString().getBytes(this.charSet));
+      if (buf.length() > 0) {
+         byte[] data = buf.toString().getBytes(this.charSet);
+         size += data.length;
+         this.out.write(data);
+      }
    }
    
    /**
@@ -290,7 +296,9 @@ public class ResultSetToXmlConverter implements I_DataConverter
          buf.append("\n </row>");
       }
 
-      this.out.write(buf.toString().getBytes(this.charSet));
+      byte[] data = buf.toString().getBytes(this.charSet);
+      size += data.length;
+      this.out.write(data);
 
       /* isLast() is not always available!
       if (rs.isLast()) {
@@ -374,5 +382,11 @@ public class ResultSetToXmlConverter implements I_DataConverter
       converter.shutdown();
       return baos.toByteArray();
    }
+
+
+   public long getCurrentMessageSize() {
+      return size;
+   }
+   
 
 }

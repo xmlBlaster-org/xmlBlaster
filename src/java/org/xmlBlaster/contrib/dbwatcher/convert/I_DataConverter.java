@@ -128,5 +128,12 @@ public interface I_DataConverter
     * has been finished. In normal cases this means after having published the change message. 
     */
    String getPostStatement();
+   
+   /**
+    * Returns the size of the message as it is at the current moment
+    * 
+    * @return
+    */
+   long getCurrentMessageSize();
 }
 

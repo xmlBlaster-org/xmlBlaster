@@ -74,6 +74,7 @@ public class DbWatcher implements I_ChangeListener {
    private int changeCount;
    private int collectedMessages = 1;
    private int maxCollectedMessages;
+   private long maxMessageSize;
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -177,7 +178,7 @@ public class DbWatcher implements I_ChangeListener {
 
       // Now we load all plugins to do the job
       this.maxCollectedMessages = this.info.getInt("dbWatcher.maxCollectedStatements", 0);
-      
+      maxMessageSize = this.info.getLong("dbWatcher.maxMessageSize", 250000L);
       String converterClass = this.info.get("converter.class", "org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter").trim();
       String changeDetectorClass = this.info.get("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector").trim();
       String alerSchedulerClasses = this.info.get("alertProducer.class", "org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler").trim(); // comma separated list
@@ -387,7 +388,7 @@ public class DbWatcher implements I_ChangeListener {
                          if (log.isLoggable(Level.FINE)) 
                             log.fine("Processing " + groupColName + "=" + groupColValue + " has changed to '" + newGroupColValue + "'");
 
-                         if (maxCollectedMessages < 1 || collectedMessages >= maxCollectedMessages) {
+                         if (maxCollectedMessages < 1 || collectedMessages >= maxCollectedMessages || dataConverter.getCurrentMessageSize() > maxMessageSize) {
                             String resultXml = "";
                             first = false;
                             if (dataConverter != null) {
