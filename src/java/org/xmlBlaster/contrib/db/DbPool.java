@@ -125,7 +125,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       }
       
    }
-
+   
    public String getUser() {
       return this.dbUser;
    }
