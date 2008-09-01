@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17138 Replication and DbWatcher: when sending multiple transactions in one message the 'maxMessageSize' limits the maximum size
+          (does not break within the same transaction). Also the 'alreadyProcessedFlag' is not sent nor evaluated anymore.
+
  o r17118 Java client library: Synchronous request()
           Added possibility to specify topicId for request/reply with __responseTopicId or __responseTopicIdPrefix client property
 
