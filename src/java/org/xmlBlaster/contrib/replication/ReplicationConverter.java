@@ -299,7 +299,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.newReplKey = rs.getLong(1);
       boolean markProcessed = false;
       
-      if (this.newReplKey <= this.oldReplKey) {
+      // if (this.newReplKey <= this.oldReplKey) {
+      if (false) {
          log.warning("the replication key '" + this.newReplKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
          markProcessed = true;
       }
