@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -71,6 +69,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long newReplKey;
    private boolean sendUnchangedUpdates = true;
    private boolean useReaderCharset;
+   private long size;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -483,7 +482,9 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
          
       String tmp = this.sqlInfo.toXml("");
-      this.out.write(tmp.getBytes());
+      byte[] data = tmp.getBytes();
+      size += data.length;
+      this.out.write(data);
       this.out.flush();
       this.sqlInfo = null;
       return ret;
@@ -491,6 +492,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
 
    public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
       this.out = out;
+      size = 0;
       this.transactionId = null;
       this.allTransactions.clear();
       this.sqlInfo = new SqlInfo(this.info);
@@ -529,5 +531,9 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       return statement;
    }
 
+   public long getCurrentMessageSize() {
+      return size;
+   }
+   
 }
 

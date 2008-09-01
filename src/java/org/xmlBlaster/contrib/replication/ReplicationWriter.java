@@ -312,10 +312,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
             ex.printStackTrace();
          }
       }
-      if (checkIfAlreadyProcessed(dbInfo)) {
-         log.info("Entry '" + dbInfo.toString() + "' already processed, will ignore it");
-         return;
-      }
+      // if (checkIfAlreadyProcessed(dbInfo)) {
+      //    log.info("Entry '" + dbInfo.toString() + "' already processed, will ignore it");
+      //    return;
+      // }
       SqlDescription description = dbInfo.getDescription();
       if (description == null) {
          log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toString());

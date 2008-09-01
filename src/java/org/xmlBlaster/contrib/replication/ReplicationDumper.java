@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,11 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
    private long startDate;
    private String closeCmd;
    private Timeout timeout;
+   private DecimalFormat format;
+   private String formatTxt = "000000";
    
    public ReplicationDumper() {
+      format = new DecimalFormat(formatTxt);
    }
    
    /**
@@ -108,6 +112,7 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
       startDate = System.currentTimeMillis();
       closeCmd = info.get("replication.player.closeCmd", null);
       timeout = new Timeout("replication.streamFeeder");
+      count = getInitialCount();
       if (changeDumpFrequency > 0L)
          timeout(null);
    }
@@ -125,6 +130,59 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
       fos.close();
    }
    
+   private int getInitialCount() {
+      if (dumperFilename == null)
+         return -1;
+      File tmpFile = new File(dumperFilename);
+      File parent = tmpFile.getParentFile();
+      if (parent == null) {
+         log.severe("The file '" + dumperFilename + "' does not have a valid parent");
+         return -1;
+      }
+      
+      if (!parent.exists()) {
+         log.severe("The file '" + parent.getAbsolutePath() + File.pathSeparator + parent.getName() + "' does not exist");
+         return -1;
+      }
+      if (!parent.isDirectory()) {
+         log.severe("The file '" + parent.getAbsolutePath() + File.pathSeparator + parent.getName() + "' is not a directory");
+         return -1;
+      }
+      File[] childs = parent.listFiles();
+      int maxVal = 0;
+      for (int i=0; i < childs.length; i++) {
+         int val = getIndex(childs[i].getName());
+         if (val > maxVal)
+            maxVal = val;
+      }
+      return maxVal;
+   }
+   
+   private int getIndex(String filename) {
+      if (filename == null || dumperFilename == null)
+         return -1;
+      int pos = filename.indexOf(dumperFilename);
+      if (pos < 0)
+         return -1;
+      String tmp = filename.substring(pos + dumperFilename.length());
+      tmp = tmp.trim();
+      int length = formatTxt.length();
+      if (tmp.length() > length)
+         tmp = tmp.substring(0, tmp.length());
+      try {
+         Number num = format.parse(tmp);
+         return num.intValue();
+      }
+      catch (NumberFormatException ex) {
+         log.severe("Could not parse '" + filename + "' since '" + tmp + "' is not an allowed number " + ex.getMessage());
+         return -1;
+      }
+      catch (ParseException ex) {
+         log.severe("Could not parse '" + filename + "' since '" + tmp + "' is not an allowed number " + ex.getMessage());
+         return -1;
+      }
+   }
+   
    private synchronized void changeDumpFile() throws Exception {
       try {
          if (dumper != null) {
@@ -133,7 +191,6 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
             dumper = null;
             // if (Execute.isWindows()) cmd = "cmd " + cmd;
             if (closeCmd != null) {
-               DecimalFormat format = new DecimalFormat("000000");
                String tmpFilename = dumperFilename + format.format(count);
                String cmd = closeCmd + " " + tmpFilename; 
                String[] args = ReplaceVariable.toArray(cmd, " ");
@@ -149,7 +206,6 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
          // open the stream for writing again.
          final boolean append = false;
          count++;
-         DecimalFormat format = new DecimalFormat("000000");
          String tmpFilename = dumperFilename + format.format(count);
          nextChangeDate = startDate + (changeDumpFrequency*count);
          dumper = new FileWriter(tmpFilename, append);
@@ -175,31 +231,7 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
       }
    }
 
-   /**
-    * Checks weather an entry has already been processed, in which case it will not be processed anymore
-    * @param dbInfo
-    * @return
-    */
-   private boolean checkIfAlreadyProcessed(SqlInfo dbInfo) {
-      ClientProperty prop = dbInfo.getDescription().getAttribute(ReplicationConstants.ALREADY_PROCESSED_ATTR);
-      if (prop != null)
-         return true;
-      List rows = dbInfo.getRows();
-      for (int i=0; i < rows.size(); i++) {
-         SqlRow row = (SqlRow)rows.get(i);
-         prop = row.getAttribute(ReplicationConstants.ALREADY_PROCESSED_ATTR);
-         if (prop != null)
-            return true;
-      }
-      return false;
-   }
-   
-   
    public void store(SqlInfo dbInfo) throws Exception {
-      if (checkIfAlreadyProcessed(dbInfo)) {
-         log.info("Entry '" + dbInfo.toString() + "' already processed, will ignore it");
-         return;
-      }
       // TODO STORE THE ENTRY HERE
       final String extraOffset = "";
       final boolean doTruncate = false;
@@ -212,6 +244,7 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
       synchronized(this) {
          dumper.write(buf.toString());
          dumper.write(dbInfo.toXml(extraOffset, doTruncate, forceReadable, omitDecl));
+         dumper.flush();
          if (changeTimeReached())
             changeDumpFile();
       }
