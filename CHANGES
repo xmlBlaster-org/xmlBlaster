@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17141 Replication: fixed handling of simultaneous operations. Note that also new statements shall be used as defined in the
+          replication demo (demo/javaclients/contrib/replication).
+
  o r17138 Replication and DbWatcher: when sending multiple transactions in one message the 'maxMessageSize' limits the maximum size
           (does not break within the same transaction). Also the 'alreadyProcessedFlag' is not sent nor evaluated anymore.
 
