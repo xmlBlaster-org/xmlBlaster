@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17145 GlobalInfo: the clash jdbc.drivers and JdbcDriver.drivers has now been fixed: you can set either the one or the other.
+
  o r17141 Replication: fixed handling of simultaneous operations. Note that also new statements shall be used as defined in the
           replication demo (demo/javaclients/contrib/replication).
 
