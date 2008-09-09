@@ -165,14 +165,14 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmeatid int8 primary key unique not null,\n");
          buf.append("      -- creationts timestamp not null default current_timestamp,\n");
          buf.append("      -- modifiedts timestamp not null default current_timestamp,\n");
-         buf.append("      durable char not null default 'F',\n");
-         buf.append("      refcount int4,\n");
-         buf.append("      bytesize int4,\n");
-         buf.append("      datatype varchar(32) not null default '',\n");
-         buf.append("      flag1 varchar(32) default '',\n");
-         buf.append("      msgqos text default '',\n");
-         buf.append("      msgcont bytea default '',\n");
-         buf.append("      msgkey text default '')\n");
+         buf.append("      xbdurable char not null default 'F',\n");
+         buf.append("      xbrefcount int4,\n");
+         buf.append("      xbbytesize int4,\n");
+         buf.append("      xbdatatype varchar(32) not null default '',\n");
+         buf.append("      xbflag1 varchar(32) default '',\n");
+         buf.append("      xbmsgqos text default '',\n");
+         buf.append("      xbmsgcont bytea default '',\n");
+         buf.append("      xbmsgkey text default '')\n");
       }
       else if (getDbVendor().equals(ORACLE)) {
          buf.append("create table ${table} (\n");
