@@ -220,6 +220,8 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     */
    public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       String[] additionalAttributes = null;
+global_.getProperty().getProperties().list(System.out);      
+      
       if (this.onServer)
          additionalAttributes = global_.getNativeConnectArgs();
       this.global = global_.getClone(additionalAttributes);
@@ -362,10 +364,13 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
             return this.global.getProperty().get(prefix + key, ret);
          }
          
+         if ("jdbc.drivers".equals(key)) {
+            def = global.getProperty().get("JdbcDriver.drivers", def); // ask xmlBlaster.properties
+         }
+
          String value = this.global.get(key, def, null, this.pluginInfo);
          value = this.helper.replace(value);
-         if ("jdbc.drivers".equals(key) && (value == null || value.length() < 1))
-            return this.global.getProperty().get("JdbcDriver.drivers", ""); // ask xmlBlaster.properties
+         
          log.fine("Resolving " + key + " to '" + value + "'");
          return value;
       }
