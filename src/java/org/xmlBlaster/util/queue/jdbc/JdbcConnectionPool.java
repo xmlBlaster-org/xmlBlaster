@@ -80,7 +80,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private String configurationIdentifier;
    private boolean cascadeDeleteSupported;
    private boolean nestedBracketsSupported;
-   private int forceIsoaltionLevel = -1;
+   private int forceIsolationLevel = -1;
    private boolean debug;
    
    private final int MIN_POOL_SIZE = 1;
@@ -371,8 +371,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          if (doLog) {
             log.info(getIsolationLevel(conn));
          }
-         if (this.forceIsoaltionLevel != -1)
-            conn.setTransactionIsolation(this.forceIsoaltionLevel);
+         if (this.forceIsolationLevel != -1)
+            conn.setTransactionIsolation(this.forceIsolationLevel);
          this.connections.put(conn);
          setInPool(conn, true);
          // log.info(ME, "DriverManager:" + buf.toString());
@@ -571,7 +571,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.colNamePrefix = pluginProp.getProperty("colNamePrefix", this.colNamePrefix).trim().toUpperCase();
 
       try {
-         this.forceIsoaltionLevel = Integer.valueOf(pluginProp.getProperty("forceIsoaltionLevel", "-1")).intValue();
+         this.forceIsolationLevel = Integer.valueOf(pluginProp.getProperty("forceIsoaltionLevel", "-1")).intValue();
       }
       catch(NumberFormatException e) {
          log.warning("Please check your forceIsoaltionLevel:" + e.toString());
@@ -1045,13 +1045,13 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.isShutdown = true;
    }
 
-   synchronized public void registerManager(JdbcManagerCommonTable manager) {
+   synchronized public void registerManager(Object manager) {
       if (log.isLoggable(Level.FINER)) log.finer("registerManager, number of managers registered (before registering this one): '" + this.managerCount + "'");
       if (manager == null) return;
       this.managerCount++;
    }
 
-   synchronized public void unregisterManager(JdbcManagerCommonTable manager) {
+   synchronized public void unregisterManager(Object manager) {
       if (log.isLoggable(Level.FINER)) log.finer("unregisterManager, number of managers registered (still including this one): '" + this.managerCount + "'");
       if (manager == null) return;
       this.managerCount--;
