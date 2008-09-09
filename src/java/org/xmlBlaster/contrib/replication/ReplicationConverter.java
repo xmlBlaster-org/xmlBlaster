@@ -290,8 +290,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
      
-      if (numberOfColumns != 11)
-         throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be 11 but was " + numberOfColumns);
+      if (numberOfColumns < 11)
+         throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be at least 11 but was " + numberOfColumns);
       
       /*
        * Note that this test implies that the replKeys come in a growing sequence. If this is not the case, this test is useless.
@@ -331,6 +331,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (this.transactionId == null) {
          this.transactionId = transKey;
          this.allTransactions.add(transKey);
+         // CHANGED / FIXED 2008-09-09
+         if (newReplKey <= oldReplKey)
+            log.warning("the replication key '" + newReplKey + "' has already been processed since the former key was '" + oldReplKey + "'.");
+         else
+            oldReplKey = newReplKey;
+         
       }
       else {
          if (!this.transactionId.equals(transKey)) {
@@ -375,8 +381,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          completeAttrs.put(SCHEMA_ATTR, schema);
          completeAttrs.put(VERSION_ATTR, version);
          completeAttrs.put(ACTION_ATTR, action);
-         if (markProcessed)
-            completeAttrs.put(ALREADY_PROCESSED_ATTR, "true");
+         // if (markProcessed)
+         //   completeAttrs.put(ALREADY_PROCESSED_ATTR, "true");
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             try {
                log.info("addInfo: going to create a new table '" + tableName + "'");
