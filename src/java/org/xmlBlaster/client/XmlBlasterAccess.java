@@ -2095,6 +2095,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       // Create a temporary reply topic ...
       long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
       // optional, "device.joe.response" -> can be useful for performance, NOT thread safe
+      boolean createResponseTopic = msgUnit.getQosData().getClientProperty("__createResponseTopic", true);
+      if (createResponseTopic == false) {
+          msgUnit.getQosData().getClientProperties().remove("__createResponseTopic");
+      }
       String responseTopicId = msgUnit.getQosData().getClientProperty("__responseTopicId", "");
       if (responseTopicId.length() > 0) {
           msgUnit.getQosData().getClientProperties().remove("__responseTopicId");
@@ -2107,23 +2111,26 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
              msgUnit.getQosData().getClientProperties().remove("__responseTopicIdPrefix");
           }
       }
-      PublishReturnQos tempTopic = createTemporaryTopic(responseTopicId, destroyDelay, maxEntries);
+      if (createResponseTopic) {
+    	  PublishReturnQos tempTopic = createTemporaryTopic(responseTopicId, destroyDelay, maxEntries);
+          responseTopicId = tempTopic.getKeyOid();
+      }
      
       try {
          // Send the request ...
          // "__jms:JMSReplyTo"
-         msgUnit.getQosData().addClientProperty(Constants.addJmsPrefix(Constants.JMS_REPLY_TO, log), tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
+         msgUnit.getQosData().addClientProperty(Constants.addJmsPrefix(Constants.JMS_REPLY_TO, log), responseTopicId); // "__jms:JMSReplyTo"
          publish(msgUnit);
       
          // Access the reply ...
-         MsgUnit[] msgs = receive("topic/"+tempTopic.getKeyOid(), maxEntries, timeout, true);
+         MsgUnit[] msgs = receive("topic/"+responseTopicId, maxEntries, timeout, true);
 
          return msgs;
       }
       finally {
-         if (responseTopicId.length() == 0) {
+         if (createResponseTopic && responseTopicId.length() == 0) {
             // Clean up temporary topic ...
-            EraseKey ek = new EraseKey(glob, tempTopic.getKeyOid());
+            EraseKey ek = new EraseKey(glob, responseTopicId);
             EraseQos eq = new EraseQos(glob);
             eq.setForceDestroy(true);
             erase(ek, eq);
