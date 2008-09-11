@@ -7,6 +7,8 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.plugin.PluginInfo;
+
 import java.util.Vector;
 import java.util.StringTokenizer;
 
@@ -123,7 +125,8 @@ public class PluginLoader {
          if (log.isLoggable(Level.FINE)) log.fine("Trying Class.forName('"+param[0]+"') ...");
          Class cl = java.lang.Class.forName(param[0]);
          clntPlugin = (I_ClientPlugin)cl.newInstance();
-         clntPlugin.init(glob, null);
+         PluginInfo pluginInfo = new PluginInfo(glob, null, this.getType(), this.getVersion());
+         clntPlugin.init(glob, pluginInfo);
          if (log.isLoggable(Level.FINE)) log.fine("Found I_ClientPlugin '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {
