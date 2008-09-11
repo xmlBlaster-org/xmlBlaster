@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -224,7 +225,15 @@ global_.getProperty().getProperties().list(System.out);
       
       if (this.onServer)
          additionalAttributes = global_.getNativeConnectArgs();
+      
       this.global = global_.getClone(additionalAttributes);
+      Properties props = System.getProperties();
+      String[] keys = (String[])(props.keySet().toArray(new String[props.keySet().size()]));
+      for (int i=0; i < keys.length; i++) {
+         if (global.getProperty().get(keys[i], (String)null) == null)
+            global.getProperty().set(keys[i], props.getProperty(keys[i]));
+      }
+      
       if (global_ instanceof ServerScope) {
          this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
          this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_);
