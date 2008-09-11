@@ -33,9 +33,11 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    private String passwd;
    private String clientIp;
 
-   public SecurityQos(Global glob)
+   public SecurityQos(Global glob, ClientPlugin clientPlugin)
    {
       super(glob);
+      this.type = clientPlugin.getType();
+      this.version = clientPlugin.getVersion();
    }
 
    public SecurityQos(Global glob, String xmlQos_literal) throws XmlBlasterException

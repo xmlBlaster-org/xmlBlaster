@@ -28,22 +28,24 @@ import org.xmlBlaster.authentication.plugins.htpasswd.SecurityQos;
 public class ClientPlugin implements I_ClientPlugin {
    public static final String ME = "ClientPlugin";
    private Global glob;
+   private PluginInfo pluginInfo;
 
    public ClientPlugin() {
    }
 
-   public void init(Global glob, PluginInfo pluginInfo) {
-      this.glob = glob;
+   public void init(Global glob_, PluginInfo pluginInfo_) {
+      this.glob = glob_;
+      this.pluginInfo = pluginInfo_;
    }
 
    public String getType()
    {
-      return "htpasswd";
+      return (this.pluginInfo == null) ? "htpasswd" : this.pluginInfo.getType();
    }
 
    public String getVersion()
    {
-      return "1.0";
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
    }
 
    /**
@@ -52,7 +54,7 @@ public class ClientPlugin implements I_ClientPlugin {
     */
    public I_SecurityQos createSecurityQos()
    {
-      return new SecurityQos(this.glob); // "htpasswd" "1.0"
+      return new SecurityQos(this.glob, this); // "htpasswd" "1.0"
    }
 
    public void setSessionData(String sessionData)
