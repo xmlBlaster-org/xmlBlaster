@@ -265,6 +265,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
                instanceName, this.global.getScopeContextNode());
       }
 
+      this.helper.replaceAllEntries(this, this.propsOfOwnInterest);
       doInit(global_, pluginInfo);
       initJmx();
       this.helper.replaceAllEntries(this, this.propsOfOwnInterest);
