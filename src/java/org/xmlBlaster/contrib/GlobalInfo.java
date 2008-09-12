@@ -221,7 +221,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     */
    public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       String[] additionalAttributes = null;
-// global_.getProperty().getProperties().list(System.out);      
+      // global_.getProperty().getProperties().list(System.out);      
       
       if (this.onServer)
          additionalAttributes = global_.getNativeConnectArgs();
@@ -264,8 +264,6 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
          this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
                instanceName, this.global.getScopeContextNode());
       }
-      // TODO CHECK IF THIS IS CORRECT !!!!
-      this.helper.replaceAllEntries(this, this.propsOfOwnInterest);
 
       doInit(global_, pluginInfo);
       initJmx();
