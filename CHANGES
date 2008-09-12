@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17157 GlobalInfo: the parameter replacement is now done before AND after calling doInit (the extention's init method)
+
  o r17149 Passing through type/version from xmlBlaster.properties to htpasswd.SecurityQos,
           like this we are able to reuse htpasswd.SecurityQos.java for other security plugins
 	  which have a loginName/password approach (client side)
