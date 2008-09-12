@@ -388,7 +388,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
       <xsd:element name="filter" type="QueryRefinementType" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="querySpec" type="QueryRefinementType" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="history" type="HistoryQosType" minOccurs="0"/>
-      <xsd:element name="querySpec" type="QueryRefinementType" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:choice>
          <xsd:element name="isErase" type="EmptyType"/>
          <xsd:element name="isGet" type="EmptyType"/>
