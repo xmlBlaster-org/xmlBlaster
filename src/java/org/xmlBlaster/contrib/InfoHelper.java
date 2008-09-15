@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.apache.tools.ant.taskdefs.Replace;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -108,6 +109,9 @@ public class InfoHelper {
     */
    public static Map getPropertiesStartingWith(String prefix, I_Info info, DbMetaHelper dbHelper, String newPrefix) {
       synchronized (info) {
+         
+         InfoHelper helper = new InfoHelper(info);
+         
          Iterator iter = info.getKeys().iterator();
          TreeMap map = new TreeMap();
          while (iter.hasNext()) {

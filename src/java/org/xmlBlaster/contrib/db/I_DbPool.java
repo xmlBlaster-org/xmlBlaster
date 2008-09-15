@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TestResultSetToXmlConverter.java
+Name:      I_DBPool.java
 Project:   org.xmlBlasterProject:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/

@@ -21,13 +21,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.pool.PoolManager;
 import org.xmlBlaster.util.pool.I_PoolManager;
 import org.xmlBlaster.util.pool.ResourceWrapper;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 
 /**
@@ -98,6 +102,15 @@ public class DbPool implements I_DbPool, I_PoolManager {
       this.dbUrl = this.info.get("db.url", "");
       this.dbUser = this.info.get("db.user", "");
       this.dbPasswd = this.info.get("db.password", "");
+      
+      Global glob = (Global)info.getObject(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
+      if (glob == null)
+         glob = (Global)info.getObject(Constants.OBJECT_ENTRY_ServerScope);
+      if (glob != null) {
+         String dbInstanceName = glob.getStrippedId();
+         dbUrl = ReplaceVariable.replaceFirst(dbUrl, "$_{xmlBlaster_uniqueId}", dbInstanceName);
+      }
+      
       int maxInstances = this.info.getInt("db.maxInstances", 10);
       // How long may a query last
       long busyToIdle = this.info.getLong("db.busyToIdleTimeout", 0);
