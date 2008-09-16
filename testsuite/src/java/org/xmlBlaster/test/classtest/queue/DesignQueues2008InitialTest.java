@@ -165,10 +165,13 @@ public class DesignQueues2008InitialTest extends TestCase {
       return ret;
    }
 
-   private XBStore createSimpleStore(long id, String name) {
+   private XBStore createSimpleStore(long id, String node, String storeType, String storePostfix) {
       XBStore store = new XBStore();
       store.setId(id);
-      store.setName(name);
+      store.setNode(node);
+      store.setType(storeType);
+      store.setPostfix(storePostfix);
+      
       store.setFlag1("dummyflag");
       return store;
    }
@@ -202,7 +205,7 @@ public class DesignQueues2008InitialTest extends TestCase {
          // insert store
          XBStore[] stores = new XBStore[nmax];
          for (int i=0; i < nmax; i++) {
-            stores[i] = createSimpleStore((long)i, "queuename" + i);
+            stores[i] = createSimpleStore((long)i, "node01", "testsuite", "queuename" + i);
          }
 
          long t0 = System.currentTimeMillis();
