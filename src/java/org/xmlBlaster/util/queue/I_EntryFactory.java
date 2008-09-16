@@ -10,6 +10,8 @@ import java.io.InputStream;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
 
 /**
  * The Interface which can be used to convert an object which implements the
@@ -65,4 +67,15 @@ public interface I_EntryFactory
     */
    public Object getProperties();
 
+   /**
+    * Added for 2008 Queues
+    * @param meat The meat of the message (could be null if a reference)
+    * @param ref The reference of the message (should never be null)
+    * @param storageId the storageId
+    * @return the newly created I_Entry
+    * @throws XmlBlasterException
+    */
+   // I_Entry createEntry(XBMeat meat, XBRef ref, StorageId storageId) throws XmlBlasterException;
+
+   
 }
