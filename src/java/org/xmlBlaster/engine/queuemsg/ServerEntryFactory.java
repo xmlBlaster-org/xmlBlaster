@@ -411,8 +411,8 @@ public class ServerEntryFactory implements I_EntryFactory
             String receiverStr = (String)map.get(XBRef.RECEIVER_STR);
             String subscriptionId = (String)map.get(XBRef.SUB_ID);
             String flag = (String)map.get(XBRef.FLAG);
-            Integer redeliverCount = new Integer((String)map.get(XBRef.REDELIVER_COUNTER));
-
+            int redeliverCount = Integer.parseInt((String)map.get(XBRef.REDELIVER_COUNTER));
+            
             // We read the message content as well but don't parse it yet:
             String qos = null;
             String key = null;
@@ -428,7 +428,8 @@ public class ServerEntryFactory implements I_EntryFactory
                          " subscriptionId=" + subscriptionId + " flag=" + flag + " redeliverCount=" + redeliverCount);
             SessionName receiver = new SessionName(glob, receiverStr);
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
-            return new MsgQueueUpdateEntry(this.glob,
+            
+            return new MsgQueueUpdateEntry(glob,
                                            PriorityEnum.toPriorityEnum(ref.getPrio()), storageId, updateEntryTimestamp,
                                            keyOid, msgUnitWrapperUniqueId, ref.isDurable(), ref.getByteSize(),
                                            receiver, subscriptionId, flag, redeliverCount,
