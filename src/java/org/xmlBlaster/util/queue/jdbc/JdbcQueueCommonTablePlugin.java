@@ -29,7 +29,6 @@ import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
-import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable.EntryCount;
 
 import java.io.OutputStream;
 import java.io.IOException;

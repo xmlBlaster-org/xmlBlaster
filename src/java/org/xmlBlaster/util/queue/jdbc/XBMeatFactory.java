@@ -9,14 +9,12 @@ package org.xmlBlaster.util.queue.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import org.xmlBlaster.contrib.I_Info;
 
 /**
@@ -37,6 +35,7 @@ public class XBMeatFactory extends XBFactory {
    private final static int KEY = 9;
 
    private String updateRefCounterSt;
+   private String updateSt;
    private String incRefCounterFunction;
    private String incRefCounterInvoke;
    
@@ -66,99 +65,20 @@ public class XBMeatFactory extends XBFactory {
       super(prefix, getName());
       insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       deleteSt = "delete from ${table} where xbmeatid=?";
-      getSt = "select * from ${table} where xbmeatid=?";
+      deleteTransientsSt = deleteAllSt + " where xbdurable='F'";
+      getSt = getAllSt + " where xbmeatid=?";
+      updateSt = "update ${table} set xbmeatid=?,xbdurable=?,xbrefcount=?,xbbytesize=?,xbdatatype=?,xbflag1=?,xbqos=?,xbcontent=?,xbkey=? where xbmeatid=?";
       updateRefCounterSt = "update ${table} set xbrefcount=? where xbmeatid=?";
+      getAllSt = "select * from ${table}";
+      inList = " where xbmeatid in ("; 
    }
 
    
-   private String getDefaultIncRefCounterFunction() {
+   protected void prepareDefaultStatements() {
+      super.prepareDefaultStatements();
+      incRefCounterFunction = null;
+      incRefCounterInvoke = null;
       StringBuffer buf = new StringBuffer(512);
-      
-      if (getDbVendor().equals(POSTGRES)) {
-         buf = null;
-      }
-      else if (getDbVendor().equals(ORACLE)) {
-         buf.append("CREATE OR REPLACE PROCEDURE ${table}incr(id number, incr number) AS\n");
-         buf.append("   oldCounter NUMBER(10);\n");
-         buf.append("   newCounter NUMBER(10);\n");
-         buf.append("   CURSOR c1\n");
-         buf.append("      IS\n");
-         buf.append("         SELECT xbrefcount FROM ${table} WHERE xbmeatid=id FOR UPDATE of xbrefcount;\n");
-         buf.append("\n");
-         buf.append("BEGIN\n");
-         buf.append("   open c1;\n");
-         buf.append("   fetch c1 into oldCounter;\n");
-         buf.append("   newCounter := oldCounter + incr;\n");
-         buf.append("   UPDATE ${table} SET xbrefcount=newCounter WHERE CURRENT OF c1;\n");
-         buf.append("   COMMIT;\n");
-         buf.append("   close c1;\n");
-         buf.append("END;\n");
-      }
-      /*
-      else if (getDbVendor().equals(DB2)) {
-         
-      }
-      else if (getDbVendor().equals(FIREBIRD)) {
-         
-      }
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
-         
-      }
-      else if (getDbVendor().equals(MYSQL)) {
-         
-      }
-      else if (getDbVendor().equals(SQLITE)) {
-         
-      }
-      */
-      else { // if (getDbVendor().equals(HSQLDB))
-         buf = null;
-      }
-      if (buf != null)
-         return buf.toString();
-      else
-         return null;
-   }
-   
-   
-   private String getDefaultIncRefCounterInvoke() {
-      StringBuffer buf = new StringBuffer(512);
-      
-      if (getDbVendor().equals(POSTGRES)) {
-         buf = null;
-      }
-      else if (getDbVendor().equals(ORACLE)) {
-         buf.append("{call ${table}incr(?,?)}");
-      }
-      /*
-      else if (getDbVendor().equals(DB2)) {
-         
-      }
-      else if (getDbVendor().equals(FIREBIRD)) {
-         
-      }
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
-         
-      }
-      else if (getDbVendor().equals(MYSQL)) {
-         
-      }
-      else if (getDbVendor().equals(SQLITE)) {
-         
-      }
-      */
-      else { // if (getDbVendor().equals(HSQLDB))
-         buf = null;
-      }
-      if (buf != null)
-         return buf.toString();
-      else
-         return null;
-   }
-   
-   protected String getDefaultCreateStatement() {
-      StringBuffer buf = new StringBuffer(512);
-      
       if (getDbVendor().equals(POSTGRES)) {
          buf.append("create table ${table} (\n");
          buf.append("      -- xbmeatid bigserial not null,\n");
@@ -175,6 +95,27 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgkey text default '')\n");
       }
       else if (getDbVendor().equals(ORACLE)) {
+         incRefCounterInvoke = "{call ${table}incr(?,?)}";
+         StringBuffer buf1 = new StringBuffer(512);
+         
+         buf1.append("CREATE OR REPLACE PROCEDURE ${table}incr(id number, incr number) AS\n");
+         buf1.append("   oldCounter NUMBER(10);\n");
+         buf1.append("   newCounter NUMBER(10);\n");
+         buf1.append("   CURSOR c1\n");
+         buf1.append("      IS\n");
+         buf1.append("         SELECT xbrefcount FROM ${table} WHERE xbmeatid=id FOR UPDATE of xbrefcount;\n");
+         buf1.append("\n");
+         buf1.append("BEGIN\n");
+         buf1.append("   open c1;\n");
+         buf1.append("   fetch c1 into oldCounter;\n");
+         buf1.append("   newCounter := oldCounter + incr;\n");
+         buf1.append("   UPDATE ${table} SET xbrefcount=newCounter WHERE CURRENT OF c1;\n");
+         buf1.append("   COMMIT;\n");
+         buf1.append("   close c1;\n");
+         buf1.append("END;\n");
+         incRefCounterFunction = buf1.toString();
+         
+         // and here the create statement ...
          buf.append("create table ${table} (\n");
          buf.append("      xbmeatid number(20) primary key,\n");
          buf.append("      xbdurable char default 'F' not null,\n");
@@ -215,17 +156,20 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgcont binary default '',\n");
          buf.append("      xbmsgkey varchar default '')\n");
       }
-      return buf.toString();
+      createSt = buf.toString();
    }
    
    protected void doInit(I_Info info) {
       updateRefCounterSt = info.get(prefix + ".updateRefCounterStatement", updateRefCounterSt);
-      incRefCounterFunction = info.get(prefix + ".incRefCounterFunction", getDefaultIncRefCounterFunction());
+      incRefCounterFunction = info.get(prefix + ".incRefCounterFunction", incRefCounterFunction);
       if (incRefCounterFunction != null && incRefCounterFunction.trim().length() < 1)
          incRefCounterFunction = null;
-      incRefCounterInvoke = info.get(prefix + ".incRefCounterInvoke", getDefaultIncRefCounterInvoke());
+      incRefCounterInvoke = info.get(prefix + ".incRefCounterInvoke", incRefCounterInvoke);
       if (incRefCounterInvoke != null && incRefCounterInvoke.trim().length() < 1)
          incRefCounterInvoke = null;
+
+      updateSt = info.get(prefix + ".updateStatement", updateSt);
+      inList = " where xbmeatid in (";
    }
 
    public boolean create(Connection conn) throws SQLException {
@@ -245,44 +189,48 @@ public class XBMeatFactory extends XBFactory {
       return ret;
    }
 
+   private void fillStatement(PreparedStatement preStatement, XBMeat xbMeat) throws SQLException, IOException {
+      preStatement.setLong(ID, xbMeat.getId());
+
+      if (xbMeat.isDurable())
+         preStatement.setString(DURABLE, "T");
+      else 
+         preStatement.setString(DURABLE, "F");
+
+      preStatement.setLong(REF_COUNT, xbMeat.getRefCount());
+      preStatement.setLong(BYTE_SIZE, xbMeat.getByteSize());
+      preStatement.setString(DATA_TYPE, xbMeat.getDataType());
+      
+      preStatement.setString(FLAG1, xbMeat.getFlag1());
+
+      InputStream qosStream = new ByteArrayInputStream(xbMeat.getQos().getBytes("UTF-8"));
+      preStatement.setAsciiStream(QOS, qosStream, xbMeat.getQos().length());
+      
+      InputStream contentStream = new ByteArrayInputStream(xbMeat.getContent());
+      preStatement.setBinaryStream(CONTENT, contentStream, xbMeat.getContent().length);
+      
+      InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey().getBytes("UTF-8"));
+      preStatement.setAsciiStream(KEY, keyStream, xbMeat.getKey().length());
+      
+   }
+   
    /**
     * Inserts an entry in the database
     * @param table
     * @param xbMeat The object to store. Note that 
     * @param conn The database connection to use
-    * @param timeout the time in seconds it has to wait for a response. If less than 1 it is not
     * set.
     * @throws SQLException If an exception occurs in the backend. For example if the entry already
     * exists in the database.
     */
-   public void insert(XBMeat xbMeat, Connection conn, int timeout) throws SQLException, UnsupportedEncodingException {
+   public void insert(XBMeat xbMeat, Connection conn, int timeout) throws SQLException, IOException {
       if (xbMeat == null || conn == null)
          return;
       PreparedStatement preStatement = conn.prepareStatement(insertSt);
       try {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
-         preStatement.setLong(ID, xbMeat.getId());
-
-         if (xbMeat.isDurable())
-            preStatement.setString(DURABLE, "T");
-         else 
-            preStatement.setString(DURABLE, "F");
-
-         preStatement.setLong(REF_COUNT, xbMeat.getRefCount());
-         preStatement.setLong(BYTE_SIZE, xbMeat.getByteSize());
-         preStatement.setString(DATA_TYPE, xbMeat.getDataType());
-         
-         preStatement.setString(FLAG1, xbMeat.getFlag1());
-
-         InputStream qosStream = new ByteArrayInputStream(xbMeat.getQos().getBytes("UTF-8"));
-         preStatement.setAsciiStream(QOS, qosStream, xbMeat.getQos().length());
-         
-         InputStream contentStream = new ByteArrayInputStream(xbMeat.getContent());
-         preStatement.setBinaryStream(CONTENT, contentStream, xbMeat.getContent().length);
-         
-         InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey().getBytes("UTF-8"));
-         preStatement.setAsciiStream(KEY, keyStream, xbMeat.getKey().length());
+         fillStatement(preStatement, xbMeat);
          preStatement.execute();
       }
       finally {
@@ -316,6 +264,30 @@ public class XBMeatFactory extends XBFactory {
       }
    }
    
+   /**
+    * Updates the XBMeat object. If qos, flag or 
+    * @param table
+    * @param xbMeat
+    * @param conn
+    * @throws SQLException
+    */
+   public void update(XBMeat xbMeat, Connection conn, int timeout) throws SQLException, IOException {
+      if (xbMeat == null || conn == null)
+         return;
+      PreparedStatement preStatement = conn.prepareStatement(updateRefCounterSt);
+      try {
+         if (timeout > 0)
+            preStatement.setQueryTimeout(timeout);
+         fillStatement(preStatement, xbMeat);
+         preStatement.setLong(10, xbMeat.getId());
+         preStatement.executeUpdate();
+      }
+      finally {
+         if (preStatement != null)
+            preStatement.close();
+      }
+   }
+   
    
    public void incrementRefCounter(long meatId, long increment, Connection conn, int timeout) throws SQLException, IOException {
       if (increment == 0)
@@ -340,6 +312,27 @@ public class XBMeatFactory extends XBFactory {
       }
    }
    
+   protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
+      XBMeat xbMeat = new XBMeat();
+      xbMeat.setId(rs.getLong(ID));
+      String tmp = rs.getString(DURABLE);
+      if (tmp != null && "F".equalsIgnoreCase(tmp))
+         xbMeat.setDurable(true);
+      
+      xbMeat.setRefCount(rs.getLong(REF_COUNT));
+      xbMeat.setByteSize(rs.getLong(BYTE_SIZE));
+      xbMeat.setDataType(rs.getString(DATA_TYPE));
+      xbMeat.setFlag1(rs.getString(FLAG1));
+      InputStream stream = rs.getAsciiStream(QOS);
+      xbMeat.setQos(new String(readStream(stream), "UTF-8"));
+      stream = rs.getBinaryStream(CONTENT);
+      xbMeat.setContent(readStream(stream));
+      stream = rs.getAsciiStream(KEY);
+      xbMeat.setKey(new String(readStream(stream), "UTF-8"));
+
+      return xbMeat;
+   }
+   
    /**
     * 
     * @param sql The select statement to use to fill the objects.
@@ -348,7 +341,7 @@ public class XBMeatFactory extends XBFactory {
     * @throws SQLException
     */
    public XBMeat get(long id, Connection conn, int timeout) throws SQLException, IOException {
-      XBMeat xbMeat = new XBMeat();
+      XBMeat xbMeat = null;
       if (conn == null)
          return xbMeat;
       PreparedStatement preStatement = conn.prepareStatement(getSt);
@@ -360,22 +353,7 @@ public class XBMeatFactory extends XBFactory {
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
-         
-         xbMeat.setId(rs.getLong(ID));
-         String tmp = rs.getString(DURABLE);
-         if (tmp != null && "F".equalsIgnoreCase(tmp))
-            xbMeat.setDurable(true);
-         
-         xbMeat.setRefCount(rs.getLong(REF_COUNT));
-         xbMeat.setByteSize(rs.getLong(BYTE_SIZE));
-         xbMeat.setDataType(rs.getString(DATA_TYPE));
-         xbMeat.setFlag1(rs.getString(FLAG1));
-         InputStream stream = rs.getAsciiStream(QOS);
-         xbMeat.setQos(new String(readStream(stream), "UTF-8"));
-         stream = rs.getBinaryStream(CONTENT);
-         xbMeat.setContent(readStream(stream));
-         stream = rs.getAsciiStream(KEY);
-         xbMeat.setKey(new String(readStream(stream), "UTF-8"));
+         xbMeat = (XBMeat)rsToEntry(rs);
       }
       finally {
          if (preStatement != null)
@@ -385,5 +363,4 @@ public class XBMeatFactory extends XBFactory {
       return xbMeat;
    }
 
-   
 }

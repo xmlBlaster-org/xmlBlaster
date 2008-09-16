@@ -11,7 +11,7 @@ package org.xmlBlaster.util.queue.jdbc;
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  */
 
-public class XBRef {
+public class XBRef extends XBEntry {
 
    /**
     * <pre>
@@ -26,31 +26,15 @@ public class XBRef {
     * </pre>
     * 
     */
-   private long refId;
    private long storeId;
    private long meatId;
-   
-   private boolean durable;
-   private long byteSize;
    private String metaInfo;
-   
-   private String flag1;
    private int prio;
    
    
    public XBRef() {
+      super();
    }
-
-
-   public long getRefId() {
-      return refId;
-   }
-
-
-   public void setRefId(long refId) {
-      this.refId = refId;
-   }
-
 
    public long getStoreId() {
       return storeId;
@@ -72,26 +56,6 @@ public class XBRef {
    }
 
 
-   public boolean isDurable() {
-      return durable;
-   }
-
-
-   public void setDurable(boolean durable) {
-      this.durable = durable;
-   }
-
-
-   public long getByteSize() {
-      return byteSize;
-   }
-
-
-   public void setByteSize(long byteSize) {
-      this.byteSize = byteSize;
-   }
-
-
    public String getMetaInfo() {
       return metaInfo;
    }
@@ -99,16 +63,6 @@ public class XBRef {
 
    public void setMetaInfo(String metaInfo) {
       this.metaInfo = metaInfo;
-   }
-
-
-   public String getFlag1() {
-      return flag1;
-   }
-
-
-   public void setFlag1(String flag1) {
-      this.flag1 = flag1;
    }
 
 

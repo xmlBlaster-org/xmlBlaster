@@ -17,6 +17,8 @@ import org.xmlBlaster.util.def.MethodName;
 
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
 
 
 /**
@@ -464,5 +466,44 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    public MsgUnit getMsgUnit() throws XmlBlasterException {
       return null;
    }
+   
+   
+   /**
+    * For the new queues 
+    */
+   public XBMeat getMeat() throws XmlBlasterException {
+      XBMeat meat = new XBMeat();
+      meat.setByteSize(getSizeInBytes());
+      meat.setDataType(getEmbeddedType());
+      meat.setDurable(isPersistent());
+      // meat.setFlag1(flag1);
+      meat.setId(getUniqueId());
+      MsgUnit unit = getMsgUnit();
+      if (unit != null) {
+         meat.setContent(unit.getContent());
+         meat.setKey(unit.getKey());
+         meat.setQos(unit.getQos());
+      }
+      meat.setRefCount(1);
+      return meat;
+   }
+
+   /**
+    * For the new queues 
+    */
+   public XBRef getRef() {
+      XBRef ref = new XBRef();
+      ref.setByteSize(getSizeInBytes());
+      ref.setDurable(isPersistent());
+      // ref.setFlag1();
+      ref.setId(getUniqueId());
+      ref.setMeatId(getUniqueId());
+      ref.setMetaInfo(null);
+      ref.setPrio(getPriority());
+      return ref;
+   }
+
+   
+   
 }
 

@@ -6,6 +6,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
+import org.xmlBlaster.util.queue.jdbc.XBStore;
 import org.xmlBlaster.util.def.PriorityEnum;
 
 /**
@@ -18,7 +21,7 @@ public class DummyEntry extends MsgQueueEntry {
    public static final String ENTRY_TYPE = "DUMMY";
    private long sizeOfMsg = 0;
    private byte[] content;
-
+   
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
     */
@@ -119,4 +122,5 @@ public class DummyEntry extends MsgQueueEntry {
       if (this.content != null)
          out.write(this.content);
    }
+
 }

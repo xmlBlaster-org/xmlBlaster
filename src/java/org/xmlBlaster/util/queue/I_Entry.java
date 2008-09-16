@@ -5,6 +5,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
+import org.xmlBlaster.util.XmlBlasterException;
+
 public interface I_Entry extends java.io.Serializable
 {
    /**
@@ -100,4 +104,11 @@ public interface I_Entry extends java.io.Serializable
     * @param props Control porperties
     */
    void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException;
+   
+   
+   XBMeat getMeat() throws XmlBlasterException;
+   
+   
+   XBRef getRef();
+   
 }

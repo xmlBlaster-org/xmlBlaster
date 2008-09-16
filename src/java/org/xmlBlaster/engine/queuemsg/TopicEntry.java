@@ -14,6 +14,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.def.Constants;
@@ -340,5 +342,38 @@ public final class TopicEntry implements I_MapEntry
          System.err.println("ERROR: " + e.getMessage());
       }
    }
+   
+   /**
+    * For the new queues 
+    */
+   public XBMeat getMeat() {
+      XBMeat meat = new XBMeat();
+      meat.setByteSize(getSizeInBytes());
+      meat.setContent(msgUnit.getContent());
+      meat.setDataType(getEmbeddedType());
+      meat.setDurable(isPersistent());
+      // meat.setFlag1(flag1);
+      meat.setId(uniqueId);
+      meat.setKey(msgUnit.getKey());
+      meat.setQos(msgUnit.getQos());
+      meat.setRefCount(1);
+      return meat;
+   }
+
+   /**
+    * For the new queues 
+    */
+   public XBRef getRef() {
+      XBRef ref = new XBRef();
+      ref.setByteSize(getSizeInBytes());
+      ref.setDurable(isPersistent());
+      // ref.setFlag1();
+      ref.setId(getUniqueId());
+      ref.setMeatId(getUniqueId());
+      ref.setMetaInfo(null);
+      ref.setPrio(getPriority());
+      return ref;
+   }
+
 }
 

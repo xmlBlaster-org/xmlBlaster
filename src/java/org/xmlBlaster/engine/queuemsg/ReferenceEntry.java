@@ -17,6 +17,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.lang.ref.WeakReference;
@@ -371,5 +372,14 @@ public class ReferenceEntry extends MsgQueueEntry
       entry = (ReferenceEntry)super.clone();
       return entry;
    }
+
+
+   /**
+    * Shall return null since it is a reference
+    */
+   public XBMeat getMeat() {
+      return null;
+   }
+   
 }
 

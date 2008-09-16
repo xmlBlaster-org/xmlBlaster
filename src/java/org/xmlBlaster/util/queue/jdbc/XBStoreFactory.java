@@ -85,7 +85,9 @@ public class XBStoreFactory extends XBFactory {
       getByNameSt = info.get(prefix + ".getByNameStatement", getByNameSt);
    }
    
-   
+   protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
+      return null; // to make compiler happy
+   }
    
    /**
     * Inserts an entry in the database

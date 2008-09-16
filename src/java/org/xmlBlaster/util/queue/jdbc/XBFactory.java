@@ -14,44 +14,33 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.InfoHelper;
-import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  */
 
-public abstract class XBFactory {
+public abstract class XBFactory extends XBFactoryBase {
 
-   private final static Logger log = Logger.getLogger(XBMeatFactory.class.getName());
-   public final static String POSTGRES = "postgres";
-   public final static String ORACLE = "oracle";
-   public final static String DB2 = "db2";
-   public final static String FIREBIRD = "firebird";
-   public final static String SQLSERVER_2000 = "sqlserver2000";
-   public final static String SQLSERVER_2005 = "sqlserver2005";
-   public final static String HSQLDB = "hsqldb";
-   public final static String MYSQL = "mysql";
-   public final static String LDBC = "ldbc";
-   public final static String SQLITE = "sqlite";
-   public final static String UNKNOWN = "unknown";
-   
    protected String insertSt;
    protected String getSt;
+   protected String getAllSt;
+   protected String deleteAllSt;
+   protected String deleteTransientsSt;
    protected String deleteSt;
    protected String createSt;
    protected String dropSt = "drop table ${table}";
    protected String prefix = "queue.jdbc";
    protected String table;
    private String tableNameDefault;
-   
-   private String dbVendor;
+   protected String inList;
+   protected boolean limitAtEnd;
    
    /**
     * 
@@ -79,71 +68,57 @@ public abstract class XBFactory {
          prefix += "." + name;
    }
 
-   abstract protected void doInit(I_Info info);
-
-   public final void init(I_Info origInfo) {
+   public final I_Info init(I_Info origInfo) throws XmlBlasterException {
       table = origInfo.get(prefix + ".table." + tableNameDefault, tableNameDefault);
-
-      // we take a clone to avoid contaminate the original info with the table settings
-      I_Info info = new PropertiesInfo(new Properties());
-      InfoHelper.fillInfoWithEntriesFromInfo(info, origInfo);
-      
-      
-      String url = info.get("db.url", null);
-      if (url != null) {
-         if (url.startsWith("jdbc:postgresql:"))
-            dbVendor = POSTGRES;
-         else if (url.startsWith("jdbc:oracle:"))
-            dbVendor = ORACLE;
-         else if (url.startsWith("jdbc:db2:"))
-            dbVendor = DB2;
-         else if (url.startsWith("jdbc:firebirdsql:"))
-            dbVendor = FIREBIRD;
-         else if (url.startsWith("jdbc:microsoft:sqlserver:"))
-            dbVendor = SQLSERVER_2000;
-         else if (url.startsWith("jdbc:sqlserver:"))
-            dbVendor = SQLSERVER_2005;
-         else if (url.startsWith("jdbc:hsqldb:"))
-            dbVendor = HSQLDB;
-         else if (url.startsWith("jdbc:mysql:"))
-            dbVendor = MYSQL;
-         else if (url.startsWith("jdbc:ldbc:"))
-            dbVendor = LDBC;
-         else if (url.startsWith("jdbc:sqlite:"))
-            dbVendor = SQLITE;
-         else {
-            log.info("Could not determine the database type by analyzing the url '" + url + "' will set it to " + UNKNOWN + "'");
-            dbVendor = UNKNOWN;
-         }
-            
-      }
-      
-      createSt = getDefaultCreateStatement();
+      I_Info info = super.init(origInfo);
+      prepareDefaultStatements();
       info.put("table", table);
       doInit(info);
 
       insertSt = info.get(prefix + ".insertStatement", insertSt);
+      deleteAllSt = info.get(prefix + ".deleteAllStatement", deleteAllSt);
       deleteSt = info.get(prefix + ".deleteStatement", deleteSt);
+      deleteTransientsSt = info.get(prefix + ".deleteTransientsSttatement", deleteTransientsSt);
       getSt = info.get(prefix + ".getStatement", getSt);
-      createSt = info.get(prefix + ".getStatement", createSt);
-      dropSt = info.get(prefix + ".getStatement", dropSt);
+      getAllSt = info.get(prefix + ".getAllStatement", getAllSt);
+      createSt = info.get(prefix + ".createStatement", createSt);
+      dropSt = info.get(prefix + ".dropStatement", dropSt);
+      
+      return info;
    }
    
-   public void delete(long id, Connection conn, int timeout) throws SQLException {
+   public int delete(long id, Connection conn, int timeout) throws SQLException {
       if (conn == null)
-         return;
+         return 0;
       PreparedStatement preStatement = conn.prepareStatement(deleteSt);
+      if (timeout > 0)
+         preStatement.setQueryTimeout(timeout);
       try {
-         if (timeout > 0)
-            preStatement.setQueryTimeout(timeout);
          preStatement.setLong(1, id);
-         preStatement.execute();
+         return preStatement.executeUpdate();
       }
       finally {
          if (preStatement != null)
             preStatement.close();
       }
    }
+
+   public int deleteTransients(Connection conn, int timeout) throws SQLException {
+      if (conn == null)
+         return 0;
+      PreparedStatement preStatement = conn.prepareStatement(deleteTransientsSt);
+      if (timeout > 0)
+         preStatement.setQueryTimeout(timeout);
+      try {
+         return preStatement.executeUpdate();
+      }
+      finally {
+         if (preStatement != null)
+            preStatement.close();
+      }
+   }
+
+   protected abstract XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException;
 
    /**
     * Checks if the table already exists, the check is done against
@@ -182,7 +157,6 @@ public abstract class XBFactory {
     * Returns true if the table has been created, false otherwise. It returns false for example
     * if the table existed already, in which case it is not newly created.
     * @param conn
-    * @param timeout
     * @return
     * @throws SQLException
     */
@@ -211,7 +185,6 @@ public abstract class XBFactory {
     * Returns true if it could delete the table, false otherwise. It would return false 
     * if the table did not exist.
     * @param conn
-    * @param timeout
     * @return
     * @throws SQLException
     */
@@ -244,16 +217,183 @@ public abstract class XBFactory {
       return baos.toByteArray();
    }
    
-   public final String getDbVendor() {
-      return dbVendor;
-   }
-   
-
    /**
     * This method must be implemented in all underlying extentions to this class. It returns (for the different
     * database vendors a default for the creation of the table.
     * @return
     */
-   protected abstract String getDefaultCreateStatement();
+   protected void prepareDefaultStatements() {
+      if (getDbVendor().equals(POSTGRES)) {
+         limitAtEnd = true;
+      }
+      else if (getDbVendor().equals(ORACLE)) {
+         limitAtEnd = true;
+      }
+      /*
+      else if (getDbVendor().equals(DB2)) {
+         
+      }
+      else if (getDbVendor().equals(FIREBIRD)) {
+         limitAtEnd = false;
+      }
+      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
+         limitAtEnd = false;
+      }
+      else if (getDbVendor().equals(MYSQL)) {
+         limitAtEnd = true;
+      }
+      else if (getDbVendor().equals(SQLITE)) {
+         limitAtEnd = true;
+      }
+      */
+      else { // if (getDbVendor().equals(HSQLDB))
+         limitAtEnd = false;
+      }
+   }
    
+   
+   
+   /**
+    * The prefix is the initial part of the SQL update/query. Note that this
+    * method can be used both for SELECT statements as for updates such as
+    * DELETE or UPDATE.
+    * An example of prefix:
+    * "delete from tableName where dataId in(";
+    */
+   protected final List whereInStatement(String reqPrefix, long[] uniqueIds, int maxStatementLength, int maxNumStatements) {
+      final String reqPostfix = ")";
+      boolean isFirst = true;
+      int initialLength = reqPrefix.length() + reqPostfix.length() + 2;
+      StringBuffer buf = new StringBuffer();
+      int length = initialLength;
+      int currentLength = 0;
+
+      List ret = new ArrayList();
+      int count = 0;
+      for (int i=0; i<uniqueIds.length; i++) {
+         String req = null;
+         String entryId = Long.toString(uniqueIds[i]);
+         currentLength = entryId.length();
+         length += currentLength;
+         if ((length > maxStatementLength) || (i == (uniqueIds.length-1)) || count >= maxNumStatements) { // then make the update
+            if (i == (uniqueIds.length-1)) {
+               if (!isFirst) buf.append(",");
+               count++;
+               buf.append(entryId);
+            }
+            req = reqPrefix + buf.toString() + reqPostfix;
+            if (count > 0)
+               ret.add(req);
+
+            length = initialLength + currentLength;
+            buf = new StringBuffer();
+            count = 0;
+            isFirst = true;
+         }
+         else
+            count++;
+
+         if (!isFirst) {
+            buf.append(",");
+            length++;
+         }
+         else 
+            isFirst = false;
+         count++;
+         buf.append(entryId);
+      }
+
+      return ret;
+   }
+
+   
+   /**
+    * Deletes the specified entries. Since all entry may not fit in one single operation,
+    * they are splitted over different operations.
+    * If you specified  commitInBetween or the auto-commit flag is set to true,
+    * It always returns the number of deleted entries. If a batch could not be completely deleted,
+    * it returns the number of operations previously deleted.
+    *
+    * @param  store the store to use.
+    * @param  the connection to be used.
+    * @param   ids the array containing all ids to delete.
+    * @return the number of entries successfully processed. These are the first. If an
+    * error occurs it stops.
+    * 
+    */
+   public long deleteList(XBStore store, Connection conn, long[] ids, int maxStLength, int maxNumSt, boolean commitInBetween, int timeout) throws SQLException {
+      String reqPrefix = deleteAllSt + inList;
+      List reqList = whereInStatement(reqPrefix, ids, maxStLength, maxNumSt);
+      commitInBetween = commitInBetween && !conn.getAutoCommit();
+      long sum = 0;
+      try {
+         for (int i=0; i < reqList.size(); i++) {
+            String req = (String)reqList.get(i);
+            Statement st = null;
+            try {
+               st = conn.createStatement();
+               st.setQueryTimeout(timeout);
+               int num = st.executeUpdate(req);
+               if (commitInBetween)
+                  conn.commit();
+               sum += num;
+            }
+            finally {
+               if (st != null)
+                  st.close();
+            }
+         }
+      }
+      catch (SQLException ex) {
+         if (!commitInBetween)
+            sum = 0;
+         else
+            conn.rollback();
+      }
+      return sum;
+   }
+
+   
+   /**
+    * Gets the specified entries. Since all entry may not fit in one single operation,
+    * they are splitted over different operations.
+    * If you specified  commitInBetween or the auto-commit flag is set to true,
+    * It always returns the number of deleted entries. If a batch could not be completely deleted,
+    * it returns the number of operations previously deleted.
+    *
+    * @param  store the store to use.
+    * @param  the connection to be used.
+    * @param   ids the array containing all ids to delete.
+    * @return the number of entries successfully processed. These are the first. If an
+    * error occurs it stops.
+    * 
+    */
+   public XBEntry[] getList(XBStore store, Connection conn, long[] ids, int maxStLength, int maxNumSt, int timeout) throws SQLException, IOException {
+      String reqPrefix = getAllSt + inList;
+      List ret = new ArrayList();
+      List reqList = whereInStatement(reqPrefix, ids, maxStLength, maxNumSt);
+      try {
+         for (int i=0; i < reqList.size(); i++) {
+            String req = (String)reqList.get(i);
+            Statement st = null;
+            try {
+               st = conn.createStatement();
+               st.setQueryTimeout(timeout);
+               ResultSet rs = st.executeQuery(req);
+               while (rs.next()) {
+                  XBEntry entry = rsToEntry(rs);
+                  ret.add(entry);
+               }
+            }
+            finally {
+               if (st != null)
+                  st.close();
+            }
+         }
+      }
+      catch (SQLException ex) {
+      }
+      return (XBEntry[])ret.toArray(new XBEntry[ret.size()]);
+   }
+
 }

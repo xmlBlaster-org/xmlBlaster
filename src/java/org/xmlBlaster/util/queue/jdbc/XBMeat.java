@@ -11,8 +11,10 @@ package org.xmlBlaster.util.queue.jdbc;
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  */
 
-public class XBMeat {
+public class XBMeat extends XBEntry {
 
+   public final static String SESSION_NAME="sessionName";
+   
    /**
     * 
     * <pre>
@@ -29,43 +31,15 @@ public class XBMeat {
     * 
     * @return
     */
-   private long id;
-   
-   private boolean durable;
-   
    private long refCount;
-   
-   private long byteSize;
    private String dataType;
-   
-   private String flag1;
    private String qos;
-   
    private byte[] content;
    private String key;
    
    
    public XBMeat() {
-   }
-
-
-   public long getId() {
-      return id;
-   }
-
-
-   public void setId(long id) {
-      this.id = id;
-   }
-
-
-   public boolean isDurable() {
-      return durable;
-   }
-
-
-   public void setDurable(boolean durable) {
-      this.durable = durable;
+      super();
    }
 
 
@@ -79,16 +53,6 @@ public class XBMeat {
    }
 
 
-   public long getByteSize() {
-      return byteSize;
-   }
-
-
-   public void setByteSize(long byteSize) {
-      this.byteSize = byteSize;
-   }
-
-
    public String getDataType() {
       return dataType;
    }
@@ -96,16 +60,6 @@ public class XBMeat {
 
    public void setDataType(String dataType) {
       this.dataType = dataType;
-   }
-
-
-   public String getFlag1() {
-      return flag1;
-   }
-
-
-   public void setFlag1(String flag1) {
-      this.flag1 = flag1;
    }
 
 
@@ -137,7 +91,5 @@ public class XBMeat {
    public void setKey(String key) {
       this.key = key;
    }
-   
-   
    
 }

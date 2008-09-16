@@ -2369,19 +2369,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    }
    
-   class EntryCount {
-      long numOfEntries = 0L;
-      long numOfPersistentEntries = 0L;
-      long numOfBytes = 0L;
-      long numOfPersistentBytes = 0L;
-      public String toString() {
-         return "numOfEntries=" + numOfEntries +
-         " numOfPersistentEntries=" + numOfPersistentEntries +
-         " numOfBytes=" + numOfBytes +
-         " numOfPersistentBytes=" + numOfPersistentBytes;
-      }
-   }
-
    /**
     * Gets the real number of entries. 
     * That is it really makes a call to the DB to find out

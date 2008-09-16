@@ -6,10 +6,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.engine.queuemsg;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
 
 /**
  * SubscribeEntry
@@ -178,4 +184,39 @@ public class SubscribeEntry implements I_MapEntry {
       if (this.qos != null)
          out.write(this.qos.getBytes());
    }
+   
+   /**
+    * For the new queues 
+    */
+   public XBMeat getMeat() {
+      XBMeat meat = new XBMeat();
+      meat.setByteSize(getSizeInBytes());
+      meat.setContent(null);
+      meat.setDataType(getEmbeddedType());
+      meat.setDurable(isPersistent());
+      Map/*<String, String>*/ map = new HashMap/*<String, String>*/();
+      map.put(XBMeat.SESSION_NAME, getSessionName());
+      meat.setFlag1(StringPairTokenizer.mapToCSV(map));
+      meat.setId(uniqueId);
+      meat.setKey(key);
+      meat.setQos(qos);
+      meat.setRefCount(1);
+      return meat;
+   }
+
+   /**
+    * For the new queues 
+    */
+   public XBRef getRef() {
+      XBRef ref = new XBRef();
+      ref.setByteSize(getSizeInBytes());
+      ref.setDurable(isPersistent());
+      // ref.setFlag1();
+      ref.setId(getUniqueId());
+      ref.setMeatId(getUniqueId());
+      ref.setMetaInfo(null);
+      ref.setPrio(getPriority());
+      return ref;
+   }
+
 }

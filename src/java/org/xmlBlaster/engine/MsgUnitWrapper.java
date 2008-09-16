@@ -13,6 +13,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
@@ -733,5 +735,30 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       }
    }
    */
+   
+   /**
+    * For the new queues 
+    */
+   public XBMeat getMeat() {
+      XBMeat meat = new XBMeat();
+      meat.setByteSize(getSizeInBytes());
+      meat.setContent(msgUnit.getContent());
+      meat.setDataType(getEmbeddedType());
+      meat.setDurable(isPersistent());
+      // meat.setFlag1(flag1);
+      meat.setId(uniqueId);
+      meat.setKey(msgUnit.getKey());
+      meat.setQos(msgUnit.getQos());
+      meat.setRefCount(referenceCounter);
+      return meat;
+   }
+
+   /**
+    * For the new queues 
+    */
+   public XBRef getRef() {
+      return null;
+   }
+
 }
 
