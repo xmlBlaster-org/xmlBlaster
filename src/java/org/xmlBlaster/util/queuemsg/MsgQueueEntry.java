@@ -495,10 +495,8 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       XBRef ref = new XBRef();
       ref.setByteSize(getSizeInBytes());
       ref.setDurable(isPersistent());
-      // ref.setFlag1();
       ref.setId(getUniqueId());
       ref.setMeatId(getUniqueId());
-      ref.setMetaInfo(null);
       ref.setPrio(getPriority());
       return ref;
    }

@@ -194,13 +194,11 @@ public class SubscribeEntry implements I_MapEntry {
       meat.setContent(null);
       meat.setDataType(getEmbeddedType());
       meat.setDurable(isPersistent());
-      Map/*<String, String>*/ map = new HashMap/*<String, String>*/();
-      map.put(XBMeat.SESSION_NAME, getSessionName());
-      meat.setFlag1(StringPairTokenizer.mapToCSV(map));
       meat.setId(uniqueId);
       meat.setKey(key);
       meat.setQos(qos);
       meat.setRefCount(1);
+      meat.setDataType(getSessionName());
       return meat;
    }
 

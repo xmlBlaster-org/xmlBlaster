@@ -12,6 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
+import org.xmlBlaster.util.queue.jdbc.XBStore;
 
 /**
  * The Interface which can be used to convert an object which implements the
@@ -75,7 +76,7 @@ public interface I_EntryFactory
     * @return the newly created I_Entry
     * @throws XmlBlasterException
     */
-   // I_Entry createEntry(XBMeat meat, XBRef ref, StorageId storageId) throws XmlBlasterException;
+   I_Entry createEntry(XBStore store, XBMeat meat, XBRef ref) throws XmlBlasterException;
 
    
 }

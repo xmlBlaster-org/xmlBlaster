@@ -13,6 +13,14 @@ package org.xmlBlaster.util.queue.jdbc;
 
 public class XBRef extends XBEntry {
 
+   public final static String KEY_OID = "keyOid";
+   public final static String MSG_WRAPPER_ID = "msgWrapperId";
+   public final static String RECEIVER_STR = "receiverStr";
+   public final static String SUB_ID = "subId";
+   public final static String FLAG = "flag";
+   public final static String REDELIVER_COUNTER = "redeliverCounter";
+   
+
    /**
     * <pre>
     *  xbrefid NUMBER(20) primary key,
@@ -22,6 +30,7 @@ public class XBRef extends XBEntry {
     *  xbbytesize NUMBER(10) ,
     *  xbmetainfo clob default '',
     *  xbflag1 varchar(32) default '',
+    *  xbmethodname varchar(32) default '',
     *  xbprio  NUMBER(10)
     * </pre>
     * 
@@ -30,7 +39,7 @@ public class XBRef extends XBEntry {
    private long meatId;
    private String metaInfo;
    private int prio;
-   
+   private String methodName;
    
    public XBRef() {
       super();
@@ -63,6 +72,16 @@ public class XBRef extends XBEntry {
 
    public void setMetaInfo(String metaInfo) {
       this.metaInfo = metaInfo;
+   }
+
+
+   public String getMethodName() {
+      return methodName;
+   }
+
+
+   public void setMethodName(String methodName) {
+      this.methodName = methodName;
    }
 
 

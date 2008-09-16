@@ -18,10 +18,12 @@ import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
+import org.xmlBlaster.util.queue.jdbc.XBStore;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -376,7 +378,144 @@ public class ServerEntryFactory implements I_EntryFactory
       }
    }
    
+
+   private Map getCSV(String csv) {
+      Map map = null;
+      if (csv != null)
+         map = StringPairTokenizer.CSVToMap(csv);
+      else
+         map = new HashMap/*<String,String>*/();
+      return map;
+   }
+
+   private StorageId getStorageId(XBStore store) {
+      return new StorageId(store.getType(), store.getType() + store.getPostfix());
+   }
    
+   
+   public I_Entry createEntry(XBStore store, XBMeat meat, XBRef ref) throws XmlBlasterException {
+      // throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry: " + txt);
+      
+      StorageId storageId = getStorageId(store);
+      String type = store.getType();
+      long timestamp = ref.getId();
+      Map map = null;
+      if (ref != null)
+         map = getCSV(ref.getMetaInfo());
+      else
+         map = new HashMap/*<String,String>*/();
+      if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) { // still used
+         try {
+            String keyOid = (String)map.get(XBRef.KEY_OID);
+            Long msgUnitWrapperUniqueId = Long.parseLong((String)map.get(XBRef.MSG_WRAPPER_ID));
+            String receiverStr = (String)map.get(XBRef.RECEIVER_STR);
+            String subscriptionId = (String)map.get(XBRef.SUB_ID);
+            String flag = (String)map.get(XBRef.FLAG);
+            Integer redeliverCount = new Integer((String)map.get(XBRef.REDELIVER_COUNTER));
+
+            // We read the message content as well but don't parse it yet:
+            String qos = null;
+            String key = null;
+            byte[] content = null;
+            if (meat != null) {
+               content = meat.getContent();
+               key = meat.getKey();
+               qos = meat.getQos();
+            }
+               
+            if (log.isLoggable(Level.FINE)) log.fine("storageId=" + store.toString() + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
+                         " msgUnitWrapperUniqueId=" + msgUnitWrapperUniqueId + " receiverStr=" + receiverStr +
+                         " subscriptionId=" + subscriptionId + " flag=" + flag + " redeliverCount=" + redeliverCount);
+            SessionName receiver = new SessionName(glob, receiverStr);
+            Timestamp updateEntryTimestamp = new Timestamp(timestamp);
+            return new MsgQueueUpdateEntry(this.glob,
+                                           PriorityEnum.toPriorityEnum(ref.getPrio()), storageId, updateEntryTimestamp,
+                                           keyOid, msgUnitWrapperUniqueId, ref.isDurable(), ref.getByteSize(),
+                                           receiver, subscriptionId, flag, redeliverCount,
+                                           qos, key, content);
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry", ex);
+         }
+      }
+      else if (ENTRY_TYPE_HISTORY_REF.equalsIgnoreCase(type)) { // still used
+         try {
+            String keyOid = (String)map.get(XBRef.KEY_OID);
+            long msgUnitWrapperUniqueId = Long.parseLong((String)map.get(XBRef.MSG_WRAPPER_ID));
+            Timestamp updateEntryTimestamp = new Timestamp(timestamp);
+            return new MsgQueueHistoryEntry(glob,
+                                           PriorityEnum.toPriorityEnum(ref.getPrio()), storageId, updateEntryTimestamp,
+                                           keyOid, msgUnitWrapperUniqueId, ref.isDurable(), ref.getByteSize());
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueHistoryEntry", ex);
+         }
+      }
+      else if (ENTRY_TYPE_MSG_XML.equalsIgnoreCase(type)) { // still used
+         try {
+            String qos = meat.getQos();
+            String key = meat.getKey();
+            byte[] content = meat.getContent();
+            long referenceCounter = meat.getRefCount();
+            int historyReferenceCounter = Integer.parseInt((String)meat.getDataType());
+            PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
+            MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
+            MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
+            MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId,
+                                      (int)referenceCounter, historyReferenceCounter, meat.getByteSize());
+            msgUnitWrapper.startExpiryTimer();
+            return msgUnitWrapper;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgUnitWrapper", ex);
+         }
+      }
+      else if (ENTRY_TYPE_TOPIC_XML.equalsIgnoreCase(type)) { // still used
+         try {
+            String qos = meat.getQos();
+            String key = meat.getKey();
+            byte[] content = null;
+            PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
+            MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
+            MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, type, meat.getByteSize());
+            return topicEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+      else if (ENTRY_TYPE_SESSION.equalsIgnoreCase(type)) {  // still used
+         try {
+            String xmlLiteral = meat.getQos();
+            SessionEntry sessionEntry = new SessionEntry(xmlLiteral, timestamp, meat.getByteSize());
+            return sessionEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+      else if (ENTRY_TYPE_SUBSCRIBE.equalsIgnoreCase(type)) {  // still used
+         try {
+            String keyLiteral = meat.getKey();
+            String qosLiteral = meat.getQos();
+            String sessionName = meat.getDataType();
+            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, meat.getByteSize());
+            return subscribeEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+
+      else if (ENTRY_TYPE_DUMMY.equalsIgnoreCase(type)) { // still used (for testing)
+         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(ref.getPrio()), new Timestamp(timestamp), storageId, meat.getByteSize(), ref.isDurable());
+         //entry.setUniqueId(timestamp);
+         return entry;
+      }
+
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Persistent object '" + type + "' is not implemented");
+   }
    
    
 }

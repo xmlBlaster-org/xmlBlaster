@@ -22,8 +22,10 @@ import org.xmlBlaster.contrib.I_Info;
 public class XBStoreFactory extends XBFactory {
 
    private final static int ID = 1;
-   private final static int NAME = 2;
-   private final static int FLAG1 = 3;
+   private final static int NODE = 2;
+   private final static int TYPE = 3;
+   private final static int POSTFIX = 4;
+   private final static int FLAG1 = 5;
    private String getByNameSt;
    
    static String getName() {
@@ -32,10 +34,10 @@ public class XBStoreFactory extends XBFactory {
    
    public XBStoreFactory(String prefix) {
       super(prefix, getName());
-      insertSt = "insert into ${table} values ( ?, ?, ?)";
+      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?)";
       deleteSt = "delete from ${table} where xbstoreid=?";
       getSt = "select * from ${table} where xbstoreid=?";
-      getByNameSt = "select * from ${table} where xbname=?";
+      getByNameSt = "select * from ${table} where xbname=? and xbtype=? and xbpostfix=?";
    }
 
 
@@ -45,14 +47,18 @@ public class XBStoreFactory extends XBFactory {
       if (getDbVendor().equals(POSTGRES)) {
          buf.append("create table ${table} (\n");
          buf.append("      xbstoreid int8 primary key unique not null,\n");
-         buf.append("      storename varchar(512) not null unique,\n");
-         buf.append("      flag1 varchar(32) default '')\n");
+         buf.append("      xbnode varchar(256) not null,\n");
+         buf.append("      xbtype varchar(32) not null,\n");
+         buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      flag1 varchar(32) default '');\n");
+         buf.append("create unique index on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
       else if (getDbVendor().equals(ORACLE)) {
          buf.append("create table ${table} (\n");
          buf.append("      xbstoreid number(20) primary key,\n");
          buf.append("      xbname varchar(512) not null unique,\n");
-         buf.append("      xbflag1 varchar(32) default '')\n");
+         buf.append("      xbflag1 varchar(32) default '');\n");
+         buf.append("create unique index on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
       /*
       else if (getDbVendor().equals(DB2)) {
@@ -107,7 +113,9 @@ public class XBStoreFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(ID, xbStore.getId());
-         preStatement.setString(NAME, xbStore.getName());
+         preStatement.setString(NODE, xbStore.getNode());
+         preStatement.setString(TYPE, xbStore.getType());
+         preStatement.setString(POSTFIX, xbStore.getPostfix());
          preStatement.setString(FLAG1, xbStore.getFlag1());
          preStatement.execute();
       }
@@ -140,7 +148,9 @@ public class XBStoreFactory extends XBFactory {
             return null;
          
          xbStore.setId(rs.getLong(ID));
-         xbStore.setName(rs.getString(NAME));
+         xbStore.setNode(rs.getString(NODE));
+         xbStore.setType(rs.getString(TYPE));
+         xbStore.setPostfix(rs.getString(POSTFIX));
          xbStore.setFlag1(rs.getString(FLAG1));
       }
       finally {
@@ -158,7 +168,7 @@ public class XBStoreFactory extends XBFactory {
     * @return null if the object has not been found or the object if it has been found on the backend.
     * @throws SQLException
     */
-   public XBStore getByName(String name, Connection conn, int timeout) throws SQLException, IOException {
+   public XBStore getByName(String node, String type, String postfix, Connection conn, int timeout) throws SQLException, IOException {
       XBStore xbStore = new XBStore();
       if (conn == null)
          return xbStore;
@@ -167,13 +177,17 @@ public class XBStoreFactory extends XBFactory {
       try {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
-         preStatement.setString(1, name);
+         preStatement.setString(1, node);
+         preStatement.setString(2, type);
+         preStatement.setString(3, postfix);
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
          
          xbStore.setId(rs.getLong(ID));
-         xbStore.setName(rs.getString(NAME));
+         xbStore.setNode(rs.getString(NODE));
+         xbStore.setType(rs.getString(TYPE));
+         xbStore.setPostfix(rs.getString(POSTFIX));
          xbStore.setFlag1(rs.getString(FLAG1));
       }
       finally {

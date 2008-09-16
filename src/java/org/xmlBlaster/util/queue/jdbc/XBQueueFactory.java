@@ -509,7 +509,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
             }
          }
          log.severe("Could not insert entry '" + meat.getDataType() + "'-'" +  id + "': " + ex.toString());
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "addEntry"), ex)) {
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex)) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
          }
          // check if the exception was due to an existing entry. If yes, no exception will be thrown
@@ -528,7 +528,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
             
             if (log.isLoggable(Level.FINE)) 
                log.fine("addEntry: checking if entry already in db: exception in select: '" + ex.toString() + "'");
-            if (checkIfDBLoss(conn, getLogId(store.getName(), "addEntry"), ex1))
+            if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex1))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex1); 
             else 
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntry", "", ex1); 
@@ -557,7 +557,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          return addSingleEntry(store, entry, conn);
       }
       catch (Throwable ex) {
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "addEntry"), ex))
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex);
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntry", "", ex); 
       }
@@ -650,7 +650,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          if (log.isLoggable(Level.FINE)) 
             log.fine("Could not insert entries: " + ex.toString());
          if ((!this.supportsBatch || !this.enableBatchMode) ||
-            checkIfDBLoss(conn, getLogId(store.getName(), "addEntries"), ex)) 
+            checkIfDBLoss(conn, getLogId(store.toString(), "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
          else { // check if the exception was due to an already existing entry by re
             return addEntriesSingleMode(conn, store, entries);
@@ -685,7 +685,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          try {
-            if (checkIfDBLoss(conn, getLogId(store.getName(), "deleteEntries"), ex))
+            if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteEntries"), ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
          }
          catch (XmlBlasterException e) {
@@ -902,7 +902,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          return num;
       }
       catch (Throwable ex) {
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "deleteAllTransient"), ex))
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteAllTransient"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteAllTransient", "", ex);
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteAllTransient", "", ex); 
       }
@@ -929,7 +929,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          return ret;
       }
       catch (Throwable ex) {
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "getAndDeleteLowest"), ex))
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "getAndDeleteLowest"), ex))
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getAndDeleteLowest", "", ex);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getAndDeleteLowest", "", ex); 
       }
@@ -970,7 +970,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          return ret;
       }
       catch (Throwable ex) {
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "deleteEntries"), ex))
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex);
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntries", "", ex); 
       }
@@ -1007,7 +1007,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "deleteEntry"), ex))
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteEntry"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntry", "", ex); 
       }
@@ -1039,7 +1039,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
 
       if (numOfEntries >= Integer.MAX_VALUE)
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(store.getName(), "deleteFirstEntries"),
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(store.toString(), "deleteFirstEntries"),
                "The number of entries=" + numOfEntries + " to be deleted is too big for this system");
 
       Connection conn = null;
@@ -1059,7 +1059,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-         if (checkIfDBLoss(conn, getLogId(store.getName(), "deleteFirstEntries"), ex))
+         if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteFirstEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteFirstEntries", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteFirstEntries", "", ex); 
       }
@@ -1102,7 +1102,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-        if (checkIfDBLoss(conn, getLogId(store.getName(), "getEntriesByPriority"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getEntriesByPriority"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesByPriority", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesByPriority", "", ex); 
       }
@@ -1138,7 +1138,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-        if (checkIfDBLoss(conn, getLogId(store.getName(), "getEntriesBySamePriority"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getEntriesBySamePriority"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesBySamePriority", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesBySamePriority", "", ex); 
       }
@@ -1175,7 +1175,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-        if (checkIfDBLoss(conn, getLogId(store.getName(), "getEntries"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getEntries"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntries", "", ex); 
       }
@@ -1232,7 +1232,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-        if (checkIfDBLoss(conn, getLogId(store.getName(), "removeEntriesWithLimit"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "removeEntriesWithLimit"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeEntriesWithLimit", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeEntriesWithLimit", "", ex); 
       }
@@ -1266,7 +1266,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-        if (checkIfDBLoss(conn, getLogId(store.getName(), "removeEntriesWithLimit"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "removeEntriesWithLimit"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeEntriesWithLimit", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeEntriesWithLimit", "", ex); 
       }
@@ -1296,7 +1296,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       catch (Throwable ex) {
          success = false;
-        if (checkIfDBLoss(conn, getLogId(store.getName(), "getNumOfAll"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getNumOfAll"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfAll", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfAll", "", ex); 
       }
@@ -1457,4 +1457,9 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
    }
 
+   
+   private I_Entry createEntry(XBStore store, XBMeat meat, XBRef ref) throws XmlBlasterException {
+      return null;
+   }
+   
 }

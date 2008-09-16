@@ -18,6 +18,9 @@ import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
+import org.xmlBlaster.util.queue.jdbc.XBStore;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -195,5 +198,79 @@ public class ClientEntryFactory implements I_EntryFactory
    public Object getProperties() {
       return null;
    }
+   
+   private StorageId getStorageId(XBStore store) {
+      return new StorageId(store.getType(), store.getType() + store.getPostfix());
+   }
+   
+   
+   public I_Entry createEntry(XBStore store, XBMeat meat, XBRef ref) throws XmlBlasterException {
+      String type = ref.getMethodName();
+      StorageId storageId = getStorageId(store);
+      MethodName methodName = MethodName.toMethodName(type);
+      String key = meat.getKey();
+      String qos = meat.getQos();
+      byte[] content = meat.getContent();
+      long timestamp = ref.getId();
+      int priority = ref.getPrio();
+      long sizeInBytes = meat.getByteSize();
+      try {
+         if (methodName == MethodName.PUBLISH_ONEWAY || methodName == MethodName.PUBLISH) {
+            MsgQosData msgQosData = glob.getMsgQosFactory().readObject(qos);
+            MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
+            MsgUnit msgUnit = new MsgUnit(msgKeyData, content, msgQosData);
+            return new MsgQueuePublishEntry(glob, methodName, PriorityEnum.toPriorityEnum(priority), storageId,
+                                            new Timestamp(timestamp), sizeInBytes, msgUnit);
+         }
+         else if (methodName == MethodName.SUBSCRIBE) {
+            return new MsgQueueSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
+                       new Timestamp(timestamp), sizeInBytes,
+                       glob.getQueryKeyFactory().readObject(key),
+                       glob.getQueryQosFactory().readObject(qos));
+
+         }
+         else if (methodName == MethodName.UNSUBSCRIBE) {
+            return new MsgQueueUnSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
+                       new Timestamp(timestamp), sizeInBytes,
+                       new UnSubscribeKey(glob, glob.getQueryKeyFactory().readObject(key)),
+                       new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+
+         }
+         else if (methodName == MethodName.ERASE) {
+            return new MsgQueueEraseEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
+                       new Timestamp(timestamp), sizeInBytes,
+                       new EraseKey(glob, glob.getQueryKeyFactory().readObject(key)),
+                       new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+
+         }
+         else if (methodName == MethodName.GET) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Object '" + type + "' not implemented, you can't use synchronous GET requests in queues.");
+         }
+         else if (methodName == MethodName.CONNECT) {
+            ConnectQosData connectQosData = glob.getConnectQosFactory().readObject(qos);
+            return new MsgQueueConnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
+                                            new Timestamp(timestamp), sizeInBytes, connectQosData);
+         }
+         else if (methodName == MethodName.DISCONNECT) {
+            DisconnectQos disconnectQos = new DisconnectQos(glob, glob.getDisconnectQosFactory().readObject(qos));
+            return new MsgQueueDisconnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
+                                            new Timestamp(timestamp), sizeInBytes, disconnectQos);
+         }
+         else if (methodName == MethodName.DUMMY) { // for testsuite only
+            DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, content, ref.isDurable());
+            //entry.setUniqueId(timestamp);
+            return entry;
+         }
+
+      }
+      catch (Exception ex) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-" + methodName, ex);
+      }
+
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Object '" + type + "' not implemented");
+   }
+   
+   
+   
 }
 

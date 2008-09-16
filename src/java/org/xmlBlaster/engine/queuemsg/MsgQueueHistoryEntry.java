@@ -5,16 +5,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
@@ -102,5 +106,17 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
       entry = (MsgQueueHistoryEntry)super.clone();
       return entry;
    }
+
+   public XBRef getRef() {
+      XBRef ref = super.getRef();
+      Map map = new HashMap/*<String,String>*/();
+      map.put(XBRef.KEY_OID, keyOid);
+      map.put(XBRef.MSG_WRAPPER_ID, msgUnitWrapperUniqueId);
+      ref.setMetaInfo(StringPairTokenizer.mapToCSV(map));
+      return ref;
+   }
+   
+   
+   
 }
 

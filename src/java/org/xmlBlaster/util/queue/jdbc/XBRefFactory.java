@@ -40,6 +40,8 @@ public class XBRefFactory extends XBFactory {
    private final static int META_INFO = 6;
    private final static int FLAG1 = 7;
    private final static int PRIO = 8;
+   private final static int METHOD_NAME = 9;
+   
    private String base;
    private String getAndDeleteSt;
    private String getBySamePrioSt;
@@ -71,7 +73,7 @@ public class XBRefFactory extends XBFactory {
    public XBRefFactory(String prefix) {
       super(prefix, getName());
       base = prefix;
-      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?, ?, ?, ?)";
+      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       deleteAllSt = "delete from ${table}";
       deleteSt = deleteAllSt + " where xbrefid=?";
       deleteAllStoreSt = deleteAllSt + " where xbstoreid=?";
@@ -102,6 +104,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("xbmetainfo text default '',\n");
          buf.append("xbflag1 varchar(32) default '',\n");
          buf.append("xbprio int4)\n");
+         buf.append("xbmethodname varchar(32) default '',\n");
          getFirstEntriesSt = "select xbrefid, xbbytesize from ${table} where xbstoreid=? order by xbprio desc, xbrefid asc limit ?";
          getByPrioSt = "select * from ${table} where xbstoreid=? and xbprio >= ? and xbprio <= ? order by xbprio desc, xbrefid asc limit ?";
          getBySamePrioSt = "select * from ${table} where xbstoreid=? and xbprio=(select max(prio) from ${table} where xbstoreid=?) order by xbrefid asc limit ?";
@@ -116,6 +119,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbmetainfo clob default '',\n");
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  NUMBER(10)\n");
+         buf.append("      xbmethodname varchar(32) default '',\n");
          buf.append("    );\n");
         
          buf.append("    alter table xbref \n");
@@ -168,6 +172,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbmetainfo varchar default '',\n");
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  integer\n");
+         buf.append("      xbmethodname varchar(32) default '',\n");
          buf.append("    );\n");
 
          buf.append("    alter table ${table} \n");
@@ -240,6 +245,10 @@ public class XBRefFactory extends XBFactory {
          
          preStatement.setString(FLAG1, xbRef.getFlag1());
          preStatement.setInt(PRIO, xbRef.getPrio());
+         if (xbRef.getMethodName() != null)
+            preStatement.setString(METHOD_NAME, xbRef.getMethodName());
+         else
+            preStatement.setString(METHOD_NAME, "");
 
          preStatement.execute();
       }
@@ -268,6 +277,7 @@ public class XBRefFactory extends XBFactory {
 
       xbRef.setFlag1(rs.getString(FLAG1));
       xbRef.setPrio(rs.getInt(PRIO));
+      xbRef.setMethodName(rs.getString(METHOD_NAME));
       return xbRef;
    }
    
