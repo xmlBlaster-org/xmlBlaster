@@ -1,8 +1,6 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
@@ -177,7 +175,7 @@ public class DesignQueues2008InitialTest extends TestCase {
    
    private XBRef createSimpleRef(long id, long meatId, long storeId) {
       XBRef ref = new XBRef();
-      ref.setRefId(id);
+      ref.setId(id);
       ref.setMeatId(meatId);
       ref.setStoreId(storeId);
       ref.setByteSize(100);
