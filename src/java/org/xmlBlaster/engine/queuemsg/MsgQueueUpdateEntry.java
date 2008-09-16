@@ -244,7 +244,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       XBRef ref = super.getRef();
       Map map = new HashMap/*<String, String>*/();
       map.put(XBRef.KEY_OID, keyOid);
-      map.put(XBRef.MSG_WRAPPER_ID, msgUnitWrapperUniqueId);
+      map.put(XBRef.MSG_WRAPPER_ID, "" + msgUnitWrapperUniqueId);
       map.put(XBRef.RECEIVER_STR, receiver.getAbsoluteName());
       map.put(XBRef.SUB_ID, subscriptionId);
       map.put(XBRef.FLAG, flag);

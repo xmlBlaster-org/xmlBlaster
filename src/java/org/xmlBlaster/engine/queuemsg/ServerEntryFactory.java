@@ -407,7 +407,7 @@ public class ServerEntryFactory implements I_EntryFactory
       if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) { // still used
          try {
             String keyOid = (String)map.get(XBRef.KEY_OID);
-            Long msgUnitWrapperUniqueId = Long.parseLong((String)map.get(XBRef.MSG_WRAPPER_ID));
+            long msgUnitWrapperUniqueId = Long.parseLong((String)map.get(XBRef.MSG_WRAPPER_ID));
             String receiverStr = (String)map.get(XBRef.RECEIVER_STR);
             String subscriptionId = (String)map.get(XBRef.SUB_ID);
             String flag = (String)map.get(XBRef.FLAG);

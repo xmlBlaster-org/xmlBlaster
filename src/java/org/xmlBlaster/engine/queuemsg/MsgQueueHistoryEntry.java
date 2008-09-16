@@ -111,7 +111,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
       XBRef ref = super.getRef();
       Map map = new HashMap/*<String,String>*/();
       map.put(XBRef.KEY_OID, keyOid);
-      map.put(XBRef.MSG_WRAPPER_ID, msgUnitWrapperUniqueId);
+      map.put(XBRef.MSG_WRAPPER_ID, "" + msgUnitWrapperUniqueId);
       ref.setMetaInfo(StringPairTokenizer.mapToCSV(map));
       return ref;
    }
