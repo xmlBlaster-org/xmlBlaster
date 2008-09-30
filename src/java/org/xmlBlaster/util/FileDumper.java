@@ -3,6 +3,7 @@ package org.xmlBlaster.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.def.Constants;
@@ -29,27 +30,37 @@ public class FileDumper {
    private boolean forceBase64 = false;
    
    public FileDumper(Global glob) throws XmlBlasterException {
+	  this(glob, glob.getProperty().get("xmlBlaster/FileDumper/directoryName", System.getProperty("user.home") + System.getProperty("file.separator") + "FileDumper"));
+   }
+   
+   public FileDumper(Global glob, String dirName) throws XmlBlasterException {
       this.glob = glob;
-      String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "FileDumper";
-      this.directoryName = this.glob.getProperty().get("xmlBlaster/FileDumper/directoryName", defaultPath);
+      this.directoryName = dirName;
       initDirectory(null, "directoryName", this.directoryName);
       
       log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
       this.forceBase64 = this.glob.getProperty().get("xmlBlaster/FileDumper/forceBase64", this.forceBase64);
    }
-   
+
+   public String dumpMessage(KeyData keyData, byte[] content, QosData qosData) {
+	   return dumpMessage(keyData, content, qosData, true);
+   }
+
    /**
     * Dump dead message to hard disk. 
     * The file name is the receive timestamp of the message, for example
     * <tt>/home/xmlblast/tmp/2004-10-23_18_52_39_87.xml</tt>
     * @return fileName
     */                     
-   public String dumpMessage(KeyData keyData, byte[] content, QosData qosData) {
+   public String dumpMessage(KeyData keyData, byte[] content, QosData qosData, boolean verbose) {
       String fnStr = "";
       try {
          String fn = qosData.getRcvTimestampNotNull().toString();
          String key = keyData.toXml();
-         String qos = qosData.toXml();
+         Properties props = new Properties();
+         if (!forceBase64)
+        	 props.put(Constants.TOXML_FORCEREADABLE, ""+true);
+         String qos = qosData.toXml("", props);
          String oid = keyData.getOid();
 
          fn = Global.getStrippedString(fn); // Strip chars like ":" so that fn is usable as a file name
@@ -61,7 +72,8 @@ public class FileDumper {
          fnStr = to_file.getAbsolutePath();
          
          FileOutputStream to = new FileOutputStream(to_file);
-         log.info("Dumping dead message to  '" + to_file.toString() + "'" );
+         if (verbose)
+        	 log.info("Dumping message to  '" + to_file.toString() + "'" );
 
          StringBuffer sb = new StringBuffer(qos.length() + key.length() + 1024);
          //sb.append("<?xml version='1.0' encoding='iso-8859-1'?>");
@@ -167,4 +179,13 @@ public class FileDumper {
       }
       return dir;
    }
+
+public boolean isForceBase64() {
+	return forceBase64;
+}
+
+public void setForceBase64(boolean forceBase64) {
+	this.forceBase64 = forceBase64;
+}
+
 }
