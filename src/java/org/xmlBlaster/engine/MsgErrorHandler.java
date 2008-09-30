@@ -215,6 +215,16 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                }
             }
             String txt = (e == null) ? "" : e.toString();
+            if (e != null) {
+            	Throwable cause = e.getCause();
+            	if (cause != null) {
+            		txt += " cause=" + cause.getMessage();
+            		//cause.getStackTrace();
+            	}
+            	else {
+            		//e.printStackTrace();
+            	}
+            }
             String name = (sessionName == null) ? "" : sessionName.getAbsoluteName();
             log.severe("Generating dead message '" + msgUnit.getLogId() + "'" +
                " from publisher=" + name +
