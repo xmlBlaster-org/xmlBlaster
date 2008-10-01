@@ -14,6 +14,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -84,7 +85,6 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       long size = 0;
       
       try {
-
          XmlBlasterException xmlBlasterException = msgErrorInfo.getXmlBlasterException();
          ErrorCode errorCode = xmlBlasterException.getErrorCode();
          message = xmlBlasterException.getMessage();
@@ -121,7 +121,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
             return;
          }
    
-         // 2. Generate dead letters if there are some entries in the queue
+         // 2a. Generate dead letters if there are some entries in the queue
          size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
          if (log.isLoggable(Level.FINE)) log.fine("Flushing " + size + " remaining message from queue");
          if (size > 0) {
@@ -150,7 +150,13 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                               " messages are lost: " + message + ": " + e.toString());
             }
          }
-   
+
+         // 2b. Generate dead letters if there is a raw message which we could not parse
+         if (msgErrorInfo.getMsgUnitRaw() != null) {
+             MsgUnitRaw msgUnitRaw = msgErrorInfo.getMsgUnitRaw();
+             glob.getRequestBroker().publishDeadMessageRaw(msgErrorInfo.getSessionName(), msgUnitRaw, message, null);
+         }
+
          // We do a auto logout if the callback is down
          if (dispatchManager == null || dispatchManager.isDead()) {
             if (log.isLoggable(Level.FINE)) log.fine("Doing error handling for dead connection state ...");

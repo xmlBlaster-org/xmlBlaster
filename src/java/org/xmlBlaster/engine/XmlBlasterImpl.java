@@ -382,7 +382,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       catch (XmlBlasterException e) {
     	  // to log SaxParseException, all other exceptions are logged by AvailabilityChecker
     	  if (!e.isInternal()) log.warning(e.getMessage() + ":\n" + msgUnitRaw.getKey() + "\n" + msgUnitRaw.getQos());
-    	  throw e;
+    	  if (sessionInfo.getConnectQos().allowExceptionsThrownToClient()) {
+             throw e; // normal use case
+    	  }
+    	  else {
+             // e.g. if a dumb device (phone) can't cope with exception, handle it server side
+             MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, sessionInfo.getSessionName(), msgUnitRaw, e);
+             sessionInfo.getMsgErrorHandler().handleError(msgErrorInfo);
+    	  }
       }
       QosData qosData = msgUnit.getQosData();
 

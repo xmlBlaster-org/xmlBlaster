@@ -20,6 +20,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.Timeout;
@@ -661,6 +662,42 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          return origMsgUnit.getKeyOid();
       }
    }
+
+   public String publishDeadMessageRaw(SessionName sender, MsgUnitRaw origMsgUnit, String text, SessionName receiver) throws XmlBlasterException {
+	      try {
+	         if (origMsgUnit.getKey().indexOf(Constants.OID_DEAD_LETTER) != -1) {  // Check for recursion of dead letters
+	            log.severe("PANIC: Recursive dead message is lost, no recovery possible - dumping to file not yet coded: " +
+	                         origMsgUnit.toXml() + ": " +
+	                         ((text != null) ? (": " + text) : "") );
+	            Thread.dumpStack();
+	            return origMsgUnit.getKey();
+	         }
+	         PublishQos pubQos = new PublishQos(glob);
+	         pubQos.setVolatile(true);
+	         PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
+	         pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGKEY, origMsgUnit.getKey()); //"__key"
+	         String qos = origMsgUnit.getQos();
+	         if (qos != null && qos.indexOf("</sender>") == -1 && sender != null) {
+	        	 // If import has not yet added the sender:
+	        	 int end = qos.indexOf("</qos>");
+	        	 if (end != -1)
+	        		 qos = qos.substring(0, end) + "<sender>" + sender.getAbsoluteName() + "</sender>" + qos.substring(end); 
+	         }
+	         pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, qos); //"__qos"
+	         pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGREASON, text); //"__deadMessageReason"
+	         if (sender != null)
+	            pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGSENDER, sender.getAbsoluteName());
+	         if (receiver != null)
+	            pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGRECEIVER, receiver.getAbsoluteName());
+	         MsgUnit msgUnit = new MsgUnit(publishKey, origMsgUnit.getContent(), pubQos);
+	         return publish(unsecureSessionInfo, msgUnit);
+	      }
+	      catch(Throwable e) {
+	         log.severe("PANIC: " + origMsgUnit.getKey() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml());
+	         e.printStackTrace();
+	         return origMsgUnit.getKey();
+	      }
+	   }
 
    public String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
       if (!sessionInfo.hasCallback()) {
