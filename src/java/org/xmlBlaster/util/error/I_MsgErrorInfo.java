@@ -9,6 +9,7 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -58,6 +59,13 @@ public interface I_MsgErrorInfo
     * @return null if not known
     */
    MsgUnit getMsgUnit();
+
+   /**
+    * Is not null for client calls into server like XmlBlasterImpl.publish()
+    * where no queue is involved and the message could not be parsed.   
+    * @return null if not known
+    */
+   MsgUnitRaw getMsgUnitRaw();
 
    String toXml();
 

@@ -10,6 +10,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -29,11 +30,33 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
    private static final long serialVersionUID = 1L;
    private final Global glob;
    private final SessionName sessionName;
+   private final MsgUnitRaw msgUnitRaw;
    private final MsgUnit msgUnit;
    private final MsgQueueEntry[] msgQueueEntries;
    private final DispatchManager dispatchManager;
    private final XmlBlasterException xmlBlasterException;
    
+   /**
+    * Called for raw messages e.g. during parsing problems.
+    * Creates an error info instance from server side XmlBlasterImpl.publish failure (remote method invokation)
+    * without a queue involved
+    * @param sessionName The sender client
+    * @param msgUnitRaw the message to handle, if it was not possible to parse it
+    * @param throwable Creates an error info instance with errorCode="internal.unknown" <br />
+    *        if throwable instanceof XmlBlasterException we use the given exception
+    */
+   public MsgErrorInfo(Global glob, SessionName sessionName, MsgUnitRaw msgUnitRaw, Throwable throwable) {
+      this.glob = glob;
+	  this.sessionName = sessionName;
+	  this.msgUnitRaw = msgUnitRaw;
+	  this.msgUnit = null;
+      this.msgQueueEntries = new MsgQueueEntry[0];
+      this.dispatchManager = null;
+	  this.xmlBlasterException = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
+             new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, 
+                "MsgErrorInfo.INTERNAL", (throwable==null) ? "NO INFO" : throwable.toString());
+   }
+
    /**
     * Creates an error info instance from server side XmlBlasterImpl.publish failure (remote method invokation)
     * without a queue involved 
@@ -45,6 +68,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
    public MsgErrorInfo(Global glob, SessionName sessionName, MsgUnit msgUnit, Throwable throwable) {
       this.glob = glob;
 	  this.sessionName = sessionName;
+	  this.msgUnitRaw = null;
 	  this.msgUnit = msgUnit;
       this.msgQueueEntries = new MsgQueueEntry[0];
       this.dispatchManager = null;
@@ -77,6 +101,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
       }
       this.glob = glob;
 	  this.sessionName = (dispatchManager == null) ? null : dispatchManager.getSessionName();
+	  this.msgUnitRaw = null;
 	  this.msgUnit = null;
       this.msgQueueEntries = (msgQueueEntries == null) ? (new MsgQueueEntry[0]) : msgQueueEntries;
       this.dispatchManager = dispatchManager;
@@ -158,6 +183,10 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
 
    public MsgUnit getMsgUnit() {
       return msgUnit;
+   }
+
+   public MsgUnitRaw getMsgUnitRaw() {
+	  return msgUnitRaw;
    }
 }
 
