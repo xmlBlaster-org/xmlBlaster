@@ -220,6 +220,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                // break; Loop to the latest if any
             }
             else {
+               log.warning("Expected connectReturnQos for " + msgQueueEntry.toXml() + " " + Global.getStackTraceAsString(null));
                if (log.isLoggable(Level.FINE)) log.fine("Expected connectReturnQos for " + msgQueueEntry.toXml() + " " + Global.getStackTraceAsString(null));
             }
          }

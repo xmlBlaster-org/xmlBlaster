@@ -155,18 +155,22 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       // 2. Otherwise the Pop3Driver must be changed to nevertheless return it to wake up the blocking latch
       setUseEmailExpiryTimestamp(addressConfig.getEnv("useEmailExpiryTimestamp", true).getValue());
 
-      setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
-      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
-      // the responseTimeout is used later to wait on a return value
-      // additionally we protect against blocking on socket level during invocation
-      // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
-      //        and with "jacorb.client.pending_reply_timeout"
+      initializeCb(addressConfig); // default settings
+   }
 
-      setPingResponseTimeout(addressConfig.getEnv("pingResponseTimeout", getDefaultPingResponseTimeout()).getValue());
-      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + this.pingResponseTimeout);
+   protected void initializeCb(AddressBase addressConfig) {
+	      setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
+	      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
+	      // the responseTimeout is used later to wait on a return value
+	      // additionally we protect against blocking on socket level during invocation
+	      // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
+	      //        and with "jacorb.client.pending_reply_timeout"
 
-      setUpdateResponseTimeout(addressConfig.getEnv("updateResponseTimeout", getDefaultUpdateResponseTimeout()).getValue());
-      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + this.updateResponseTimeout);
+	      setPingResponseTimeout(addressConfig.getEnv("pingResponseTimeout", getDefaultPingResponseTimeout()).getValue());
+	      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + this.pingResponseTimeout);
+
+	      setUpdateResponseTimeout(addressConfig.getEnv("updateResponseTimeout", getDefaultUpdateResponseTimeout()).getValue());
+	      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + this.updateResponseTimeout);
    }
    
    public AddressServer getAddressServer() {

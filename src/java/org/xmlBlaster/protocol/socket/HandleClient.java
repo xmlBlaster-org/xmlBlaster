@@ -23,6 +23,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
@@ -230,6 +231,11 @@ public class HandleClient extends SocketExecutor implements Runnable
                   if (log.isLoggable(Level.FINE)) log.fine(ME+": remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
                      if (log.isLoggable(Level.FINE)) log.fine(ME+": Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
+                     
+                     // Set client ConnectQos wishes like
+                     // <attribute name='updateResponseTimeout' type='long'>20000</attribute>
+                     initializeCb(cbArr[ii]);
+
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      //this.callback.init(this.glob, cbArr[ii]); is done in connectLowLeve()
                      cbArr[ii].setCallbackDriver(this.callback);
