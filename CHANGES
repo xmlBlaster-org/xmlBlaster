@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17176 socket driver: Fix to not ignore <attribute name='updateResponseTimeout' type='long'>7200000</attribute>
+          configurations from clients in ConnectQos <callback> section
+
  o r17173 Handle unparsable MsgUnit, e.g. for invalid Qos xml markup in case of !ConnectQos.allowExceptionsThrownToClient()
 
  o r17157 GlobalInfo: the parameter replacement is now done before AND after calling doInit (the extention's init method)
