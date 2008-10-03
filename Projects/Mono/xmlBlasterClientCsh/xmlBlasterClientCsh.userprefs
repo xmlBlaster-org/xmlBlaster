@@ -4,6 +4,8 @@
     <File filename="./xmlBlasterClientCsh/Main.cs" />
     <File filename="../../../src/csharp/service/PropTO.cs" />
     <File filename="../../../src/csharp/XmlBlasterAccess.cs" />
+    <File filename="../../../src/csharp/Qos.cs" />
+    <File filename="../../../src/csharp/service/ServiceListTO.cs" />
   </Files>
   <Views>
     <ViewMemento Id="MonoDevelop.Ide.Gui.Pads.ProjectPad">
@@ -11,8 +13,9 @@
         <Node expanded="True">
           <Node name="xmlBlasterClientCsh" expanded="True">
             <Node name="References" expanded="True" />
-            <Node name="ExternalFiles" expanded="True" />
-            <Node name="client" expanded="False" selected="True" />
+            <Node name="ExternalFiles" expanded="True">
+              <Node name="Stuff.cs" expanded="False" selected="True" />
+            </Node>
           </Node>
         </Node>
       </TreeView>
@@ -35,7 +38,7 @@
   </Views>
   <Properties>
     <Properties>
-      <Property key="ActiveWindow" value="/home/xmlblast/xmlBlaster/src/csharp/XmlBlasterAccess.cs" />
+      <Property key="ActiveWindow" value="/home/xmlblast/xmlBlaster/src/csharp/service/ServiceListTO.cs" />
       <Property key="ActiveConfiguration" value="Debug" />
     </Properties>
   </Properties>
