@@ -4,6 +4,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+
 /**
  * Same as StringBuffer but has the additional method appendEscaped() which
  * escapes predefined XML identities.
@@ -209,5 +212,19 @@ public class XmlBuffer {
                         buf.append(c);
             }
         }
+    }
+    
+    public static void main(String[] args) throws XmlBlasterException {
+       XmlBuffer buf = new XmlBuffer(256);
+       buf.append("<qos>");
+       buf.append("<subscribe id='");
+       buf.appendAttributeEscaped("__subId:client/NtmService/session/1-xpath://key[contains (@oid,'com.xml.notam')]");
+       buf.append("'/>");
+       buf.append("</qos>");
+       String xml = buf.toString();
+       System.out.println(xml);
+       MsgQosSaxFactory f = new MsgQosSaxFactory(Global.instance());
+       MsgQosData data = f.readObject(xml);
+       System.out.println(data.getSubscriptionId());
     }
 }
