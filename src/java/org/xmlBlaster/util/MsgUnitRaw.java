@@ -20,7 +20,7 @@ import org.xmlBlaster.util.def.Constants;
  * The constructor arguments are checked to be not null and corrected
  * to "" or 'new byte[0]' if they are null
  */
-public final class MsgUnitRaw // implements java.io.Serializable // Is serializable for RMI calls, but should not for J2ME!?
+public final class MsgUnitRaw implements java.io.Serializable // Is serializable for RMI calls, but should not for J2ME!?
 {
    private transient static final byte[] EMPTY_BYTEARR = new byte[0];
    private transient static final String EMPTY_STRING = "";
