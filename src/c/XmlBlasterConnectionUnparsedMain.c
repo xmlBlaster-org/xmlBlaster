@@ -15,6 +15,7 @@ Invoke:    XmlBlasterConnectionUnparsedMain -dispatch/callback/plugin/socket/hos
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 Date:      05/2003
 -----------------------------------------------------------------------------*/
+#if !defined(__IPhoneOS__)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -200,3 +201,4 @@ int main(int argc, char** argv)
    printf("[XmlBlasterConnectionUnparsedMain] Good bye.\n");
    return 0;
 }
+#endif

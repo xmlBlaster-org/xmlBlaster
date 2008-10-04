@@ -42,6 +42,7 @@ Compile:
         socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterZlib.c
 Date:      05/2003
 -----------------------------------------------------------------------------*/
+#if !defined(__IPhoneOS__)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -107,3 +108,4 @@ int main(int argc, const char* const* argv) {
 #  endif
    return 0;
 }
+#endif // IPhoneOS
