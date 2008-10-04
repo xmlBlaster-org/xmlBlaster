@@ -59,8 +59,8 @@ Dll_Export const char *getXmlBlasterVersion(void)
 }
 
 /**
- * Frees the pointer with free(). 
- * <p> 
+ * Frees the pointer with free().
+ * <p>
  * Users of this library can use xmlBlasterFree() instead of free().
  * This can be helpful on Windows and if this client library is a DLL and compiled with /MT
  * but the client code is not (or vice versa).
@@ -73,6 +73,18 @@ Dll_Export void xmlBlasterFree(char *p)
 {
    if (p != (char *)0) {
       free(p);
+   }
+}
+
+/**
+ * Frees the pointer with free().
+ * @param p The address of your pointer to be freed, *p is set to 0
+ */
+Dll_Export void xmlBlasterFree0(char **p)
+{
+   if (p != (char *)0) {
+      free(*p);
+      *p = 0;
    }
 }
 
@@ -145,7 +157,7 @@ Dll_Export void freeMsgUnitData(MsgUnit *msgUnit)
 }
 
 /**
- * Frees everything. 
+ * Frees everything.
  */
 Dll_Export void freeMsgUnit(MsgUnit *msgUnit)
 {
@@ -212,7 +224,7 @@ Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *
 }
 
 
-/* a local version of the 6 argument call to gethostbyname_r 
+/* a local version of the 6 argument call to gethostbyname_r
    this is copied from http://www.cygwin.com/ml/cygwin/2004-04/msg00532.html
    thanks to Enzo Michelangeli for this
 */
@@ -333,7 +345,7 @@ int gethostbyname_r (const char *name,
 #endif
 
 /**
- * Thread safe host lookup. 
+ * Thread safe host lookup.
  * NOTE: If the return is not NULL you need to free(*tmphstbuf)
  * @author Caolan McNamara (2000) <caolan@skynet.ie> (with some leak fixes by Marcel)
  */
@@ -456,7 +468,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          if (*tmphstbuf == 0) return 0;
       }
 
-      while ((NULL == ( hp = 
+      while ((NULL == ( hp =
          gethostbyname_r(host,hostbuf,*tmphstbuf,*hstbuflen,&herr)))
          && (errno == ERANGE))
       {
@@ -516,7 +528,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
            remoteHost = gethostbyname(host); /* Not thread safe, returns null on error (use WSAGetLastError() to retrieve reason) */
            pp = "gethostbyname";
          }
-         else  { 
+         else  {
            /* The gethostbyaddr function has been deprecated by the introduction of the getnameinfo function. */
            /* If not, get host by addr (assume IPv4) e.g. "192.168.1.1" */
            addr = inet_addr(host);
@@ -554,7 +566,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
            remoteHost = gethostbyname(host); /* Not thread safe */
            pp = "gethostbyname";
          }
-         else  { 
+         else  {
            /* If not, get host by addr (assume IPv4) e.g. "192.168.1.1" */
            addr = inet_addr(host);
            remoteHost = gethostbyaddr((char *) &addr, 4, AF_INET);
@@ -583,12 +595,12 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
 
    if (*hstbuflen == 0)
    {
-      *hstbuflen = 1024; 
+      *hstbuflen = 1024;
       *tmphstbuf = (char *)calloc (*hstbuflen, sizeof(char));
       if (*tmphstbuf == 0) return 0;
    }
 
-   while (( res = 
+   while (( res =
       gethostbyname_r(host,hostbuf,*tmphstbuf,*hstbuflen,&hp,&herr))
       && (errno == ERANGE))
    {

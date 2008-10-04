@@ -101,6 +101,7 @@ Dll_Export extern void initializeXmlBlasterException(XmlBlasterException *xmlBla
 
 Dll_Export extern const char *getXmlBlasterVersion(void);
 Dll_Export extern void xmlBlasterFree(char *p);
+Dll_Export extern void xmlBlasterFree0(char **p);
 Dll_Export extern void freeMsgUnitData(MsgUnit *msgUnit);
 Dll_Export extern void freeMsgUnit(MsgUnit *msgUnit);
 Dll_Export extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
