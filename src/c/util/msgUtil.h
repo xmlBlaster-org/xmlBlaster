@@ -97,6 +97,15 @@ typedef struct MsgRequestInfoStruct {
 #define XMLBLASTEREXCEPTION_MESSAGE_LEN   EXCEPTIONSTRUCT_MESSAGE_LEN
 typedef ExceptionStruct                   XmlBlasterException;
 
+/** /node/heron/client/joe/session/9 */
+typedef struct SessionName {
+   const char *nodeId;      /**< heron */
+   const char *subjectId;   /**< joe */
+   int sessionId;           /**< 9 */
+} SessionName;
+Dll_Export SessionName *createSessionName(const char* const absoluteName);
+Dll_Export void freeSessionName(SessionName *sessionName);
+
 Dll_Export extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException);
 
 Dll_Export extern const char *getXmlBlasterVersion(void);
