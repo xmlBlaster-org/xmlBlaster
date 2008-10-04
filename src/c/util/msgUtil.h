@@ -103,8 +103,8 @@ typedef struct SessionName {
    const char *subjectId;   /**< joe */
    int sessionId;           /**< 9 */
 } SessionName;
-Dll_Export SessionName *createSessionName(const char* const absoluteName);
-Dll_Export void freeSessionName(SessionName *sessionName);
+Dll_Export extern SessionName *createSessionName(const char* const absoluteName);
+Dll_Export extern void freeSessionName(SessionName *sessionName);
 
 Dll_Export extern void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException);
 
