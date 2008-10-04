@@ -46,8 +46,10 @@ Todo:      Tuning:
 @see:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 Testsuite: xmlBlaster/testsuite/src/c/TestQueue.c
 -----------------------------------------------------------------------------*/
+#if !defined(__IPhoneOS__)
 #include <stdio.h>
 #include <string.h>
+
 #include <malloc.h>
 #if !defined(_WINDOWS)
 # include <unistd.h>   /* unlink() */
@@ -1369,5 +1371,6 @@ int main(int argc, char **argv) {
    return 0;
 }
 #endif /*QUEUE_MAIN*/
+#endif // (__IPhoneOS__)
 /*=================== TESTCODE =======================*/
 
