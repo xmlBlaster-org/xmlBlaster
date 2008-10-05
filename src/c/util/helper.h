@@ -37,14 +37,14 @@ typedef ssize_t ( * XmlBlasterWriteToSocketFunc)(void *xb, const int fd, const c
 typedef ssize_t ( * XmlBlasterReadFromSocketFunc)(void *xb, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2);
 
 /**
- * Holds a callback function pointer and its user pointer (the 'this' pointer). 
+ * Holds a callback function pointer and its user pointer (the 'this' pointer).
  */
 typedef struct {
    XmlBlasterReadFromSocketFunc readFromSocketFuncP;
    void *userP;
    /** Register listener for socket read progress, can be NULL if nobody is interested */
    /**
-    * You can register a function pointer listener to be informed about the socket read progress. 
+    * You can register a function pointer listener to be informed about the socket read progress.
     * The function will be called than and again during reading the socket with the currently read bytes.
     * Example:
     * <pre>
@@ -56,13 +56,13 @@ typedef struct {
     */
    XmlBlasterNumReadFunc numReadFuncP;
    /**
-    * This will be looped through to numReadFuncP. 
+    * This will be looped through to numReadFuncP.
     */
    void *numReadUserP;
 } XmlBlasterReadFromSocketFuncHolder;
 
 /**
- * Holds a callback function pointer and its user pointer (the 'this' pointer, first argument). 
+ * Holds a callback function pointer and its user pointer (the 'this' pointer, first argument).
  */
 typedef struct {
    XmlBlasterWriteToSocketFunc writeToSocketFuncP;
@@ -105,7 +105,7 @@ typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    /*XMLBLASTER_LOG_PLAIN=8  don't use */
 } XMLBLASTER_LOG_LEVEL;
 typedef void  ( * XmlBlasterLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
-Dll_Export extern void xmlBlasterDefaultLogging(void *logUserP, 
+Dll_Export extern void xmlBlasterDefaultLogging(void *logUserP,
                               XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...);
@@ -127,6 +127,33 @@ Dll_Export extern char **convertWcsArgv(wchar_t **argv_wcs, int argc);
 
 Dll_Export extern void freeArgv(char **argv, int argc);
 Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
+/**
+ * Extract token from string.
+ * Thread save variant of strtok which returns empty string for two following delimiters.
+ * <pre>
+ * char *savePtr, *str = strcpyAlloc("\"H,ello\",joe,,");
+	int count = 0;
+	for (;; count++, str = 0) {
+		if ((token = strtok_r2(str, ",", &savePtr, '"')) == 0)
+			break;
+		printf("%d: %s\n", count, token);
+	}
+ * </pre>
+ * returns
+ * <pre>
+0: H,ello
+1: joe
+2:
+3:
+ * </pre>
+ * @param src Will be spoiled after this call, must be NULL after first call
+ * @param delim Separator like ","
+ * @param saveptr Holding current position
+ * @param quotechar Typically '"', can be 0 to be ignored
+ * @return the next token
+ * @see strsep
+ */
+Dll_Export char *strtok_r2(char *src, const char *delim, char **saveptr, const char quotechar);
 Dll_Export extern char *strcpyAlloc(const char *src);
 Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
 Dll_Export extern char *strcatAlloc(char **dest, const char *src);

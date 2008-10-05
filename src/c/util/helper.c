@@ -355,7 +355,7 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 }
 
 /**
- * Get current timestamp string in ISO 8601 notation. 
+ * Get current timestamp string in ISO 8601 notation.
  * @param bufSize at least 26
  * @param timeStr out parameter, filled with e.g. "1997-07-16T19:20:30.45-02:00"
  * @see http://en.wikipedia.org/wiki/ISO_8601
@@ -394,6 +394,35 @@ Dll_Export void getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize) {
                         st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec);
 #  endif
         *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
+}
+
+Dll_Export char *strtok_r2(char *src, const char *delim, char **saveptr, const char quotechar) {
+    bool inQuotes = false;
+    int ii, len;
+    char *ptr;
+	if (src != 0)
+		*saveptr = src;
+	ptr = *saveptr;
+	if (ptr == 0)
+		return 0;
+	len = strlen(ptr);
+   for (ii = 0; ii < len; ii++) {
+	  char c = ptr[ii];
+	  if (quotechar != 0 && c == quotechar) {
+		 inQuotes = !inQuotes;
+		 if (inQuotes)
+			 ptr++; /* strip leading quotechar */
+		 else
+			 ptr[ii] = 0; /* Remove trailing quotechar */
+	  }
+	  else if (strchr(delim, c) != 0 && !inQuotes) {
+		  ptr[ii] = 0;
+		  (*saveptr) = ptr+ii+1;
+		  return ptr;
+	  }
+   }
+   (*saveptr) = 0;
+   return ptr;
 }
 
 /**
