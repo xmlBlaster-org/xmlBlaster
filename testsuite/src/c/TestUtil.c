@@ -60,8 +60,142 @@ static const char * test_trimEnd(const char *expected, const char *source)
    return 0;
 }
 
+static const char * test_strtok_r2() {
+   char *token, *saveptr1;
+   const char *sep = ",";
+   const char quotechar = '"';
+   int j;
+   {
+   	char *savePtr, *str = strcpyAlloc("\"H,allo\",joe,,");
+   	int count = 0;
+   	for (;; count++, str = 0) {
+   		if ((token = strtok_r2(str, ",", &savePtr, '"')) == 0)
+   			break;
+   		printf("%d: %s\n", count, token);
+   	}
+   	xmlBlasterFree(str);
+   }
+   {
+   	char *str = strcpyAlloc("Hi,,ho");
+   	for (j=0;; j++, str = NULL) {
+   		token = strtok_r2(str, sep, &saveptr1, quotechar);
+   		if (token == NULL)
+   			break;
+   		printf("%d: %s\n", j, token);
+   		if (j==0)
+   			mu_assert("strtok_r2", !strcmp("Hi", token));
+   		else if (j==1)
+   			mu_assert("strtok_r2", !strcmp("", token));
+   		else if (j==2)
+   			mu_assert("strtok_r2", !strcmp("ho", token));
+   	}
+   	mu_assert("strtok_r2", j==3);
+   	xmlBlasterFree(str);
+   }
+   {
+   	char *str = strcpyAlloc("joe");
+   	for (j=0;; j++, str = NULL) {
+   		if ((token = strtok_r2(str, sep, &saveptr1, quotechar)) == 0)
+   			break;
+   		printf("%d: %s\n", j, token);
+   		if (j==0)
+   			mu_assert("strtok_r2", !strcmp("joe", token));
+   	}
+   	mu_assert("strtok_r2", j==1);
+   	xmlBlasterFree(str);
+   }
+   {
+   	char *str = strcpyAlloc("\"H,a\",joe");
+   	for (j=0;; j++, str = NULL) {
+   		if ((token = strtok_r2(str, sep, &saveptr1, quotechar)) == 0)
+   			break;
+   		printf("%d: %s\n", j, token);
+   		if (j==0)
+   			mu_assert("strtok_r2", !strcmp("H,a", token));
+   		else if (j==1)
+   			mu_assert("strtok_r2", !strcmp("joe", token));
+   	}
+   	mu_assert("strtok_r2", j==2);
+   	xmlBlasterFree(str);
+   }
+   {
+   	char *str = strcpyAlloc("\"H,a\",joe");
+   	for (j=0;; j++, str = NULL) {
+   		if ((token = strtok_r2(str, sep, &saveptr1, 0)) == 0)
+   			break;
+   		printf("%d: %s\n", j, token);
+   		if (j==0)
+   			mu_assert("strtok_r2", !strcmp("\"H", token));
+   		else if (j==1)
+   			mu_assert("strtok_r2", !strcmp("a\"", token));
+   		else if (j==2)
+   			mu_assert("strtok_r2", !strcmp("joe", token));
+   	}
+   	mu_assert("strtok_r2", j==3);
+   	xmlBlasterFree(str);
+   }
+   {
+   	char *str = strcpyAlloc(",");
+   	for (j=0;; j++, str = NULL) {
+   		token = strtok_r2(str, sep, &saveptr1, quotechar);
+   		if (token == NULL)
+   			break;
+   		printf("%d: %s\n", j, token);
+   	}
+   	mu_assert("strtok_r2", j==2);
+   	xmlBlasterFree(str);
+   }
+   return 0;
+}
+
+static const char * test_SessionName() {
+	{
+		const char * const str = 0;
+		SessionName *sessionName = createSessionName(str);
+		mu_assert("SessionName", sessionName == 0);
+		freeSessionName(sessionName);
+	}
+	{
+		const char * const str = "/node/heron/client/joe/session/1";
+		SessionName *sessionName = createSessionName(str);
+		mu_assert("SessionName", !strcmp(sessionName->nodeId, "heron"));
+		mu_assert("SessionName", !strcmp(sessionName->subjectId, "joe"));
+		mu_assert("SessionName", sessionName->sessionId == 1);
+		freeSessionName(sessionName);
+	}
+	{
+		const char * const str = "client/joe/session/1";
+		SessionName *sessionName = createSessionName(str);
+		mu_assert("SessionName", sessionName->nodeId == 0);
+		mu_assert("SessionName", !strcmp(sessionName->subjectId, "joe"));
+		mu_assert("SessionName", sessionName->sessionId == 1);
+		freeSessionName(sessionName);
+	}
+	{
+		const char * const str = "joe/1";
+		SessionName *sessionName = createSessionName(str);
+		mu_assert("SessionName", sessionName->nodeId == 0);
+		mu_assert("SessionName", !strcmp(sessionName->subjectId, "joe"));
+		mu_assert("SessionName", sessionName->sessionId == 1);
+		freeSessionName(sessionName);
+	}
+	{
+		const char * const str = "joe";
+		SessionName *sessionName = createSessionName(str);
+		mu_assert("SessionName", sessionName->nodeId == 0);
+		mu_assert("SessionName", !strcmp(sessionName->subjectId, "joe"));
+		mu_assert("SessionName", sessionName->sessionId == 0);
+		freeSessionName(sessionName);
+	}
+	printf("SessionName success\n");
+	return 0;
+}
+
 static const char *all_tests()
 {
+   mu_run_test(test_SessionName);
+   mu_run_test(test_strtok_r2);
+
    mu_run_test2(test_trim, "28316", "28316");
    mu_run_test2(test_trim, "28316", "     28316");
    mu_run_test2(test_trim, "28316", "  \t   28316   ");
