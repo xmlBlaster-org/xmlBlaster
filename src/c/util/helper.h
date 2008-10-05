@@ -131,13 +131,14 @@ Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
  * Extract token from string.
  * Thread save variant of strtok which returns empty string for two following delimiters.
  * <pre>
- * char *savePtr, *str = strcpyAlloc("\"H,ello\",joe,,");
-	int count = 0;
-	for (;; count++, str = 0) {
-		if ((token = strtok_r2(str, ",", &savePtr, '"')) == 0)
-			break;
-		printf("%d: %s\n", count, token);
-	}
+  char *p, *savePtr, *str = strcpyAlloc("\"H,ello\",joe,,");
+  int count = 0;
+  for (p=str;; count++, p = 0) {
+	if ((token = strtok_r2(p, ",", &savePtr, '"')) == 0)
+		break;
+	printf("%d: %s\n", count, token);
+  }
+  xmlBlasterFree(str);
  * </pre>
  * returns
  * <pre>
