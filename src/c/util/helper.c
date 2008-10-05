@@ -443,6 +443,19 @@ Dll_Export char *strcpyAlloc(const char *src)
    return dest;
 }
 
+Dll_Export char *strcpyAlloc0(const char *src, const size_t maxLen)
+{
+   char *dest;
+   size_t len;
+   if (src == 0) return (char *)0;
+   len = strlen(src) + 1;
+   if (len > maxLen) len = maxLen;
+   dest = (char *)malloc(len*sizeof(char));
+   if (dest == 0) return 0;
+   strncpy0(dest, src, len);
+   return dest;
+}
+
 /**
  * Same as strcat but reallocs the 'dest' string
  * @return The allocated string (*dest) or NULL if out of memory
@@ -458,6 +471,28 @@ Dll_Export char *strcatAlloc(char **dest, const char *src)
    (*dest) = (char *)realloc(*dest, len*sizeof(char));
    if ((*dest) == 0) return 0;
    strncat((*dest), src, lenSrc);
+   *((*dest)+len-1) = '\0';
+   return (*dest);
+}
+
+/**
+ * Same as strcat but reallocs the 'dest' string
+ * @return The allocated string (*dest) or NULL if out of memory
+ */
+Dll_Export char *strcatAlloc0(char **dest, const char *src, const size_t maxLen)
+{
+   size_t lenSrc;
+   size_t len;
+   assert(dest != 0);
+   if (src == 0) return (char *)0;
+   lenSrc = strlen(src);
+   len = lenSrc+strlen(*dest)+1;
+   (*dest) = (char *)realloc(*dest, len*sizeof(char));
+   if ((*dest) == 0) return 0;
+   strncat((*dest), src, lenSrc);
+   if (len > maxLen) {
+	   len = maxLen; /* TODO: proper handling: not allocate too much */
+   }
    *((*dest)+len-1) = '\0';
    return (*dest);
 }

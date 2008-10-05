@@ -156,8 +156,10 @@ Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
  */
 Dll_Export char *strtok_r2(char *src, const char *delim, char **saveptr, const char quotechar);
 Dll_Export extern char *strcpyAlloc(const char *src);
+Dll_Export extern char *strcpyAlloc0(const char *src, const size_t maxLen);
 Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
 Dll_Export extern char *strcatAlloc(char **dest, const char *src);
+Dll_Export extern char *strcatAlloc0(char **dest, const char *src, const size_t maxLen);
 Dll_Export extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 Dll_Export extern char *strncat0(char * const to, const char * const from, const size_t max);
 Dll_Export extern int snprintf0(char *buffer, size_t sizeOfBuffer, const char *format, ...);
