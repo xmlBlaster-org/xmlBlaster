@@ -69,10 +69,10 @@ Dll_Export const char *getXmlBlasterVersion(void)
  * </p>
  * On UNIX we don't need this function but it doesn't harm either.
  */
-Dll_Export void xmlBlasterFree(char *p)
+Dll_Export void xmlBlasterFree(char *p/*const char *p*/)
 {
    if (p != (char *)0) {
-      free(p);
+      free((void *)p);
    }
 }
 
@@ -80,8 +80,13 @@ Dll_Export void xmlBlasterFree(char *p)
  * Frees the pointer with free().
  * @param p The address of your pointer to be freed, *p is set to 0
  */
-Dll_Export void xmlBlasterFree0(char **p)
+Dll_Export void xmlBlasterFree0(char **p/*const char **p*/)
 {
+	/*
+	char *x = "J";
+	const char *y = "J";
+	const char * const z = "J";
+	*/
    if (p != (char **)0) {
       free(*p);
       *p = 0;
@@ -155,8 +160,8 @@ Dll_Export SessionName *createSessionName(const char* const name) {
 Dll_Export void freeSessionName(SessionName *sessionName)
 {
 	if (sessionName == 0) return;
-	xmlBlasterFree(sessionName->nodeId);
-	xmlBlasterFree(sessionName->subjectId);
+	xmlBlasterFree0((char **)&sessionName->nodeId);
+	xmlBlasterFree0((char **)&sessionName->subjectId);
 	free(sessionName);
 }
 
