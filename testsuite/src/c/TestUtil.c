@@ -61,24 +61,24 @@ static const char * test_trimEnd(const char *expected, const char *source)
 }
 
 static const char * test_strtok_r2() {
-   char *token, *saveptr1;
+   char *token, *saveptr1, *p;
    const char *sep = ",";
    const char quotechar = '"';
    int j;
    {
-   	char *savePtr, *str = strcpyAlloc("\"H,allo\",joe,,");
-   	int count = 0;
-   	for (;; count++, str = 0) {
-   		if ((token = strtok_r2(str, ",", &savePtr, '"')) == 0)
-   			break;
-   		printf("%d: %s\n", count, token);
-   	}
-   	xmlBlasterFree(str);
+      char *p, *savePtr, *str = strcpyAlloc("\"H,ello\",joe,,");
+      int count = 0;
+      for (p=str;; count++, p = 0) {
+         if ((token = strtok_r2(p, ",", &savePtr, '"')) == 0)
+            break;
+        printf("%d: %s\n", count, token);
+      }
+      xmlBlasterFree(str);
    }
    {
    	char *str = strcpyAlloc("Hi,,ho");
-   	for (j=0;; j++, str = NULL) {
-   		token = strtok_r2(str, sep, &saveptr1, quotechar);
+   	for (p=str, j=0;; j++, p = NULL) {
+   		token = strtok_r2(p, sep, &saveptr1, quotechar);
    		if (token == NULL)
    			break;
    		printf("%d: %s\n", j, token);
@@ -94,8 +94,8 @@ static const char * test_strtok_r2() {
    }
    {
    	char *str = strcpyAlloc("joe");
-   	for (j=0;; j++, str = NULL) {
-   		if ((token = strtok_r2(str, sep, &saveptr1, quotechar)) == 0)
+   	for (p=str, j=0;; j++, p = NULL) {
+   		if ((token = strtok_r2(p, sep, &saveptr1, quotechar)) == 0)
    			break;
    		printf("%d: %s\n", j, token);
    		if (j==0)
@@ -106,8 +106,8 @@ static const char * test_strtok_r2() {
    }
    {
    	char *str = strcpyAlloc("\"H,a\",joe");
-   	for (j=0;; j++, str = NULL) {
-   		if ((token = strtok_r2(str, sep, &saveptr1, quotechar)) == 0)
+   	for (p=str, j=0;; j++, p = NULL) {
+   		if ((token = strtok_r2(p, sep, &saveptr1, quotechar)) == 0)
    			break;
    		printf("%d: %s\n", j, token);
    		if (j==0)
@@ -120,8 +120,8 @@ static const char * test_strtok_r2() {
    }
    {
    	char *str = strcpyAlloc("\"H,a\",joe");
-   	for (j=0;; j++, str = NULL) {
-   		if ((token = strtok_r2(str, sep, &saveptr1, 0)) == 0)
+   	for (p=str, j=0;; j++, p = NULL) {
+   		if ((token = strtok_r2(p, sep, &saveptr1, 0)) == 0)
    			break;
    		printf("%d: %s\n", j, token);
    		if (j==0)
@@ -136,8 +136,8 @@ static const char * test_strtok_r2() {
    }
    {
    	char *str = strcpyAlloc(",");
-   	for (j=0;; j++, str = NULL) {
-   		token = strtok_r2(str, sep, &saveptr1, quotechar);
+   	for (p=str, j=0;; j++, p = NULL) {
+   		token = strtok_r2(p, sep, &saveptr1, quotechar);
    		if (token == NULL)
    			break;
    		printf("%d: %s\n", j, token);
