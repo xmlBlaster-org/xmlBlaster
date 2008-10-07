@@ -79,9 +79,9 @@ public class DesignQueues2008InitialTest extends TestCase {
       
    }
 
+   private final static Logger log = Logger.getLogger(DesignQueues2008InitialTest.class.getName());
    private String ME = "DesignQueues2008InitialTest";
    protected Global glob;
-   private static Logger log = Logger.getLogger(JdbcManagerCommonTableTest.class.getName());
    private I_DbPool pool;
    private Random random;
    private I_Info info;
@@ -162,6 +162,7 @@ public class DesignQueues2008InitialTest extends TestCase {
       ret.setQos("<qos></qos>");
       ret.setRefCount(0);
       ret.setByteSize(size + 128);
+      ret.setStoreId(1);
       return ret;
    }
 
@@ -176,7 +177,7 @@ public class DesignQueues2008InitialTest extends TestCase {
       return store;
    }
    
-   private XBRef createSimpleRef(long id, long meatId, long storeId) {
+   private XBRef createSimpleRef(long id, long meatId, long storeId, XBMeat meat) {
       XBRef ref = new XBRef();
       ref.setId(id);
       ref.setMeatId(meatId);
@@ -186,6 +187,8 @@ public class DesignQueues2008InitialTest extends TestCase {
       ref.setDurable(false);
       ref.setMetaInfo("simple metainfo data");
       ref.setPrio(6);
+      if (meat != null)
+         ref.setMeat(meat);
       return ref;
    }
    
@@ -199,17 +202,21 @@ public class DesignQueues2008InitialTest extends TestCase {
     */
    public void testManyEntries() {
       List logs = new ArrayList();
+      XBStore[] stores = null;
       XBMeat[] meats = null;
-      int nmax = 50000;
+      XBRef[] refs = null;
+      
+      int nmax = 5000;
+      int i = 0;
       try {
          // insert store
-         XBStore[] stores = new XBStore[nmax];
-         for (int i=0; i < nmax; i++) {
+         stores = new XBStore[nmax];
+         for (i=1; i < nmax; i++) {
             stores[i] = createSimpleStore((long)i, "node01", "testsuite", "queuename" + i);
          }
 
          long t0 = System.currentTimeMillis();
-         for (int i=0; i < stores.length; i++) {
+         for (i=1; i < stores.length; i++) {
             Connection conn = pool.reserve();
             conn.setAutoCommit(true);
             storeFactory.insert(stores[i], conn, 60);
@@ -228,12 +235,12 @@ public class DesignQueues2008InitialTest extends TestCase {
       try {
          // insert meat
          meats = new XBMeat[nmax];
-         for (int i=0; i < nmax; i++) {
+         for (i=1; i < nmax; i++) {
             meats[i] = createSimpleMeat((long)i, 10240);
          }
 
          long t0 = System.currentTimeMillis();
-         for (int i=0; i < meats.length; i++) {
+         for (i=1; i < meats.length; i++) {
             Connection conn = pool.reserve();
             conn.setAutoCommit(true);
             meatFactory.insert(meats[i], conn, 60);
@@ -245,19 +252,24 @@ public class DesignQueues2008InitialTest extends TestCase {
          log.info(txt); 
       }
       catch (Exception ex) {
+         log.severe("Exception occured on entry " + meats[i].toXml(""));
          ex.printStackTrace();
          fail(ex.getMessage());
       }
       
       try {
          // insert ref
-         XBRef[] refs = new XBRef[nmax];
-         for (int i=0; i < nmax; i++) {
-            refs[i] = createSimpleRef((long)i, (long)i, (long)i);
+         int nmax1 = nmax + 20;
+         refs = new XBRef[nmax1];
+         for (i=1; i < nmax1; i++) {
+            if (i < nmax)
+               refs[i] = createSimpleRef((long)i, (long)i, (long)i, meats[i]);
+            else
+               refs[i] = createSimpleRef((long)i, -(long)i, 1L, null);
          }
 
          long t0 = System.currentTimeMillis();
-         for (int i=0; i < refs.length; i++) {
+         for (i=1; i < refs.length; i++) {
             Connection conn = pool.reserve();
             conn.setAutoCommit(true);
             refFactory.insert(refs[i], conn, 60);
@@ -269,6 +281,7 @@ public class DesignQueues2008InitialTest extends TestCase {
          log.info(txt); 
       }
       catch (Exception ex) {
+         log.severe("Exception occured on entry " + refs[i].toXml(""));
          ex.printStackTrace();
          fail(ex.getMessage());
       }
@@ -276,10 +289,10 @@ public class DesignQueues2008InitialTest extends TestCase {
       // increment the ref counter (optimized way) 
       try {
          long t0 = System.currentTimeMillis();
-         for (int i=0; i < meats.length; i++) {
+         for (i=1; i < meats.length; i++) {
             Connection conn = pool.reserve();
             conn.setAutoCommit(true);
-            meatFactory.incrementRefCounter(meats[i].getId(), 1L, conn, 60);
+            meatFactory.incrementRefCounter(stores[1], meats[i], 1L, conn, 60);
             pool.release(conn);
          }
 
@@ -296,10 +309,10 @@ public class DesignQueues2008InitialTest extends TestCase {
       // increment the ref counter by classical read / increment store 
       try {
          long t0 = System.currentTimeMillis();
-         for (int i=0; i < meats.length; i++) {
+         for (i=1; i < meats.length; i++) {
             Connection conn = pool.reserve();
             conn.setAutoCommit(true);
-            XBMeat meat = meatFactory.get(meats[i].getId(), conn, 60);
+            XBMeat meat = meatFactory.get(stores[1], meats[i].getId(), conn, 60);
             meat.setRefCount(meat.getRefCount()+1);
             meatFactory.updateRefCounter(meat, conn, 60);
             pool.release(conn);
@@ -315,15 +328,17 @@ public class DesignQueues2008InitialTest extends TestCase {
          fail(ex.getMessage());
       }
       log.info("\n\n --------------------   RESULTS   ---------------------------");
-      for (int i=0; i < logs.size(); i++)
+      for (i=0; i < logs.size(); i++)
          log.info((String)logs.get(i));
       log.info(" --------------------  END RESULTS   ---------------------------\n\n");
    }
 
-
-
    public void tearDown() {
       try {
+         Connection conn = pool.reserve();
+         refFactory.drop(conn);
+         meatFactory.drop(conn);
+         storeFactory.drop(conn);
          if (pool != null)
             pool.shutdown();
       }
@@ -334,7 +349,6 @@ public class DesignQueues2008InitialTest extends TestCase {
       pool = null;
    }
 
-
    /**
     * Method is used by TestRunner to load these tests
     */
@@ -344,7 +358,6 @@ public class DesignQueues2008InitialTest extends TestCase {
       suite.addTest(new JdbcManagerCommonTableTest(glob, "testJdbcManagerCommonTable"));
       return suite;
    }
-
 
    /**
     * <pre>

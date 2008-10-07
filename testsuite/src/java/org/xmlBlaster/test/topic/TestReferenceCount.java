@@ -196,6 +196,8 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
     * Test as described in class javadoc. 
     */
    public void testReferenceCount() {
+      // long waitTime = 180000L;
+      long waitTime = 1000L;
       log.info("testReferenceCount START");
       log.info("STEP1: Start xmlBlaster server");
       this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.glob);
@@ -211,15 +213,15 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
             log.info("Receiving update of a message oid=" + updateKey.getOid() +
                            " priority=" + updateQos.getPriority() +
                            " state=" + updateQos.getState() +
-                           " we going to sleep and don't return control to server");
+                           " we are going to sleep and don't return control to server");
             try { Thread.sleep(1000000L); } catch( InterruptedException i) {}
-            log.severe("Waiking up from sleep");
-            fail("Waiking up from sleep");
+            log.severe("Waking up from sleep");
+            fail("Waking up from sleep");
             return "";
          }
       });
       doSubscribe(sub1.con);
-      assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(1000L, 1));
+      assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(waitTime, 1));
       sub1.updateInterceptor.clear();
 
       log.info("STEP4: Kill server and thereafter the clients");
@@ -233,14 +235,14 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
 
       log.info("STEP6: Start subscriber and expect the last not delivered message to be sent automatically");
       sub1 = doConnect("subscribe/1", null);
-      assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(1000L, 1));
+      assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(waitTime, 1));
       sub1.updateInterceptor.clear();
       sub1.con.disconnect(null);
 
       log.info("STEP7: Start another subscriber and subscribe");
       Client sub2 = doConnect("subscribe2", null);
       doSubscribe(sub2.con);
-      assertEquals("", 1, sub2.updateInterceptor.waitOnUpdate(1000L, 1));
+      assertEquals("", 1, sub2.updateInterceptor.waitOnUpdate(waitTime, 1));
       sub2.updateInterceptor.clear();
 
       log.info("testReferenceCount SUCCESS");

@@ -220,6 +220,7 @@ public class I_QueueTest extends TestCase {
          //queue.init(glob, pluginInfo);     // Init from pluginloader is first
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
          queue.initialize(queueId, prop1);
+         queue.clear(); // this is needed since the tearDown has cleaned the queue with previous cfg (other StorageId)
          assertEquals(ME+": Wrong queue ID", queueId, queue.getStorageId());
 
          try {
@@ -1791,6 +1792,10 @@ public class I_QueueTest extends TestCase {
 
          long startTime = System.currentTimeMillis();
 
+         testSub.setUp();
+         testSub.testSizesCheck();
+         testSub.tearDown();
+
          /*
          testSub.setUp();
          testSub.testPublishMsgBigEntry();
@@ -1835,10 +1840,6 @@ public class I_QueueTest extends TestCase {
 
          testSub.setUp();
          testSub.testPeekWithLimitEntry();
-         testSub.tearDown();
-
-         testSub.setUp();
-         testSub.testSizesCheck();
          testSub.tearDown();
 
          testSub.setUp();

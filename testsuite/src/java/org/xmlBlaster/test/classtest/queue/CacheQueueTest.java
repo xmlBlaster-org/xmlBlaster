@@ -110,7 +110,10 @@ public class CacheQueueTest extends TestCase {
          this.queues[1] = (I_Queue)pluginManager.getPlugin(pluginInfo, queueId, cbProp);
          this.queues[2] = queue;
 
-         for (int i=0; i < 3; i++) this.queues[i].shutdown(); // to allow to initialize again
+         for (int i=0; i < 3; i++) {
+            this.queues[i].clear();
+            this.queues[i].shutdown(); // to allow to initialize again
+         }
       }
       catch (Exception ex) {
          log.severe("could not propertly set up the database: " + ex.getMessage());
@@ -138,8 +141,8 @@ public class CacheQueueTest extends TestCase {
          config(20L, 10L, 500L, 200L);
       }
       catch (XmlBlasterException ex) {
-         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
          ex.printStackTrace();
+         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
       }
    }
 
@@ -158,7 +161,7 @@ public class CacheQueueTest extends TestCase {
 
       // this.queue = new CacheQueueInterceptorPlugin();
       this.queue.initialize(queueId, prop);
-
+      this.queue.clear();
       long persistentSize = this.queue.getPersistentQueue().getMaxNumOfBytes();
       long persistentMsg  = this.queue.getPersistentQueue().getMaxNumOfEntries();
       long transientSize  = this.queue.getTransientQueue().getMaxNumOfBytes();
@@ -194,8 +197,8 @@ public class CacheQueueTest extends TestCase {
          assertEquals("the size of the queue should be 0", 0L, numOfBytes);
       }
       catch (XmlBlasterException ex) {
-         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
          ex.printStackTrace();
+         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
       }
    }
 
@@ -213,8 +216,8 @@ public class CacheQueueTest extends TestCase {
          putPeekRemove(this.queues[index]);
       }
       catch (XmlBlasterException ex) {
-         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
          ex.printStackTrace();
+         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
       }
    }
 
@@ -368,8 +371,8 @@ public class CacheQueueTest extends TestCase {
          availability();
       }
       catch (XmlBlasterException ex) {
-         fail("Exception when testing availability probably due to failed initialization of the queue of type " + queueType);
          ex.printStackTrace();
+         fail("Exception when testing availability probably due to failed initialization of the queue of type " + queueType);
       }
    }
 
@@ -477,14 +480,10 @@ public class CacheQueueTest extends TestCase {
       testSub.testAvailability();
       testSub.tearDown();
 
-/*
-      testSub.setUp();
-      testSub.tearDown();
-
       testSub.setUp();
       testSub.testConfig();
       testSub.tearDown();
-*/
+
       testSub.setUp();
       testSub.testPutPeekRemove();
       testSub.tearDown();

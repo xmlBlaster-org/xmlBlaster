@@ -761,7 +761,6 @@ public class I_MapTest extends TestCase {
       long usedTime = System.currentTimeMillis() - startTime;
       testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
 
-      /*
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
          testSub = new I_MapTest("I_MapTest", i);
 
@@ -779,9 +778,10 @@ public class I_MapTest extends TestCase {
          testSub.testGetMsg();
          testSub.tearDown();
 
-         testSub.setUp();
-         testSub.testGetAllMsgs();
-         testSub.tearDown();
+         // already tested outside
+         // testSub.setUp();
+         // testSub.testGetAllMsgs();
+         // testSub.tearDown();
 
          testSub.setUp();
          testSub.testGetAllSwappedMsgs();
@@ -793,7 +793,6 @@ public class I_MapTest extends TestCase {
          usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
-      */
    }
 }
 
