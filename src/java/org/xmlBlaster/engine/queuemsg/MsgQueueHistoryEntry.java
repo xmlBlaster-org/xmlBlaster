@@ -113,6 +113,8 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
       map.put(XBRef.KEY_OID, keyOid);
       map.put(XBRef.MSG_WRAPPER_ID, "" + msgUnitWrapperUniqueId);
       ref.setMetaInfo(StringPairTokenizer.mapToCSV(map));
+      ref.setOneToMany(true); // since one meat can be referenced by many ref
+      ref.setMeatId(msgUnitWrapperUniqueId);
       return ref;
    }
    

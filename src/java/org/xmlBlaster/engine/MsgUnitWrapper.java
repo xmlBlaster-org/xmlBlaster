@@ -745,11 +745,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       meat.setContent(msgUnit.getContent());
       meat.setDataType(getEmbeddedType());
       meat.setDurable(isPersistent());
-      // meat.setFlag1(flag1);
       meat.setId(uniqueId);
       meat.setKey(msgUnit.getKey());
       meat.setQos(msgUnit.getQos());
       meat.setRefCount(referenceCounter);
+      meat.setRefCount2(historyReferenceCounter);
       return meat;
    }
 

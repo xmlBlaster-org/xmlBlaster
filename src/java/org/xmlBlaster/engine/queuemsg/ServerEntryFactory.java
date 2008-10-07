@@ -389,7 +389,12 @@ public class ServerEntryFactory implements I_EntryFactory
    }
 
    private StorageId getStorageId(XBStore store) {
-      return new StorageId(store.getType(), store.getType() + store.getPostfix());
+      String pre = store.getType();
+      if (pre != null)
+         pre.trim();
+      String post = store.getNode() + store.getPostfix();
+      post = post.trim();
+      return new StorageId(pre, post);
    }
    
    
@@ -398,12 +403,23 @@ public class ServerEntryFactory implements I_EntryFactory
       
       StorageId storageId = getStorageId(store);
       String type = store.getType();
-      long timestamp = ref.getId();
+      long timestamp = 0L;
+      
       Map map = null;
-      if (ref != null)
+      if (ref != null) {
+         timestamp = ref.getId();
          map = getCSV(ref.getMetaInfo());
+         if (ref.getMethodName() != null)
+            type = ref.getMethodName();
+      }
       else
          map = new HashMap/*<String,String>*/();
+      if (meat != null) {
+         timestamp = meat.getId();
+         if (meat.getDataType() != null)
+            type = meat.getDataType();
+      }
+      
       if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) { // still used
          try {
             String keyOid = (String)map.get(XBRef.KEY_OID);
@@ -458,12 +474,12 @@ public class ServerEntryFactory implements I_EntryFactory
             String key = meat.getKey();
             byte[] content = meat.getContent();
             long referenceCounter = meat.getRefCount();
-            int historyReferenceCounter = Integer.parseInt((String)meat.getDataType());
+            long historyReferenceCounter = meat.getRefCount2();
             PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
             MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId,
-                                      (int)referenceCounter, historyReferenceCounter, meat.getByteSize());
+                                      (int)referenceCounter, (int)historyReferenceCounter, meat.getByteSize());
             msgUnitWrapper.startExpiryTimer();
             return msgUnitWrapper;
          }
@@ -510,8 +526,23 @@ public class ServerEntryFactory implements I_EntryFactory
       }
 
       else if (ENTRY_TYPE_DUMMY.equalsIgnoreCase(type)) { // still used (for testing)
-         DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(ref.getPrio()), new Timestamp(timestamp), storageId, meat.getByteSize(), ref.isDurable());
-         //entry.setUniqueId(timestamp);
+         DummyEntry entry = null;
+         byte[] content = null;
+         long sizeInBytes = 0L;
+         if (ref != null)
+            sizeInBytes = ref.getByteSize();
+         if (meat != null)
+            sizeInBytes = meat.getByteSize();
+         if (meat != null)
+            content = meat.getContent();
+         int prio = 5;
+         if (ref != null)
+            prio = ref.getPrio();
+         
+         if (content != null)
+            entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(prio), new Timestamp(timestamp), storageId, content, ref.isDurable());
+         else
+            entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(prio), new Timestamp(timestamp), storageId, sizeInBytes, ref.isDurable());
          return entry;
       }
 

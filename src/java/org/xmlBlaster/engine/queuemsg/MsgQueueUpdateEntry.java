@@ -250,6 +250,8 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       map.put(XBRef.FLAG, flag);
       map.put(XBRef.REDELIVER_COUNTER, "" + redeliverCounter);
       ref.setMetaInfo(StringPairTokenizer.mapToCSV(map));
+      ref.setOneToMany(true); // since one meat can be referenced by many ref
+      ref.setMeatId(msgUnitWrapperUniqueId);
       return ref;
    }
    
