@@ -11,5 +11,6 @@ class EntryCount {
       " numOfBytes=" + numOfBytes +
       " numOfPersistentBytes=" + numOfPersistentBytes;
    }
+   
 }
 

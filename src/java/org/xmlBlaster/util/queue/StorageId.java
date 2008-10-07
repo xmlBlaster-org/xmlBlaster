@@ -5,10 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
+import java.util.StringTokenizer;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.queue.jdbc.XBStore;
 
 /**
  * Class encapsulating the unique id of a queue or a cache. 
@@ -23,6 +26,10 @@ public class StorageId implements java.io.Serializable
    private String strippedId;
    private final String id;
 
+   // these are used for the 2008 queues (to build an XBStore object)
+   private transient String xbNode;
+   private transient String xbPostfix;
+   
    /**
     * Create a unique id, e.g. "history:/node/heron/client/joe/-2"
     * @param prefix e.g. "history"
@@ -32,6 +39,7 @@ public class StorageId implements java.io.Serializable
       this.prefix = prefix;
       this.postfix = postfix;
       this.id = this.prefix + ":" + this.postfix;
+      splitPostfix(this.postfix);
       this.strippedId = Global.getStrippedString(this.id);
    }
 
@@ -54,9 +62,34 @@ public class StorageId implements java.io.Serializable
 
       this.prefix = this.id.substring(0, pos);
       this.postfix = this.id.substring(pos+1);
+      splitPostfix(this.postfix);
       this.strippedId = Global.getStrippedString(this.id);
    }
+
    
+   private final void splitPostfix(String post) {
+      int pos = post.indexOf('/');
+      if (pos < 0) {
+         xbNode = post;
+         xbPostfix = null;
+      }
+      else {
+         xbNode = post.substring(0, pos + 1);
+         String rest = post.substring(pos+1);
+         pos = rest.indexOf('/');
+         if (pos < 0)
+            xbPostfix = rest;
+         else {
+            xbNode += rest.substring(0, pos+1);
+            xbPostfix = rest.substring(pos+1);
+         }
+      }
+      if (xbNode == null)
+         xbNode = "";
+      if (xbPostfix == null)
+         xbPostfix = "";
+   }
+
    /**
     * Not functional, we have no guaranteed way to find out the real id from the stripped id. 
     * @param glob
@@ -132,4 +165,18 @@ public class StorageId implements java.io.Serializable
    public String toString() {
       return this.id;
    }
+   
+   
+   /**
+    * returns an XBStore without having filled the id nor the flag1 member variables.
+    * @return
+    */
+   public XBStore getXBStore() {
+      XBStore xbStore = new XBStore();
+      xbStore.setNode(Global.getStrippedString(xbNode));
+      xbStore.setType(Global.getStrippedString(prefix));
+      xbStore.setPostfix(Global.getStrippedString(xbPostfix));
+      return xbStore;
+   }
+
 }

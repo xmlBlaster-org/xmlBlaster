@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -27,6 +28,7 @@ public class XBStoreFactory extends XBFactory {
    private final static int POSTFIX = 4;
    private final static int FLAG1 = 5;
    private String getByNameSt;
+   private String pingSt;
    
    static String getName() {
       return "xbstore";
@@ -37,11 +39,12 @@ public class XBStoreFactory extends XBFactory {
       insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?)";
       deleteSt = "delete from ${table} where xbstoreid=?";
       getSt = "select * from ${table} where xbstoreid=?";
-      getByNameSt = "select * from ${table} where xbname=? and xbtype=? and xbpostfix=?";
+      getByNameSt = "select * from ${table} where xbnode=? and xbtype=? and xbpostfix=?";
+      pingSt = "select count(*) from ${table}";
    }
 
 
-   protected String getDefaultCreateStatement() {
+   protected void prepareDefaultStatements() {
       StringBuffer buf = new StringBuffer(512);
       
       if (getDbVendor().equals(POSTGRES)) {
@@ -50,15 +53,17 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbnode varchar(256) not null,\n");
          buf.append("      xbtype varchar(32) not null,\n");
          buf.append("      xbpostfix varchar(256) not null,\n");
-         buf.append("      flag1 varchar(32) default '');\n");
-         buf.append("create unique index on ${table} (xbnode, xbtype, xbpostfix);\n");
+         buf.append("      xbflag1 varchar(32) default '');\n");
+         buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
       else if (getDbVendor().equals(ORACLE)) {
          buf.append("create table ${table} (\n");
          buf.append("      xbstoreid number(20) primary key,\n");
-         buf.append("      xbname varchar(512) not null unique,\n");
+         buf.append("      xbnode varchar(256) not null,\n");
+         buf.append("      xbtype varchar(32) not null,\n");
+         buf.append("      xbpostfix varchar(256) not null,\n");
          buf.append("      xbflag1 varchar(32) default '');\n");
-         buf.append("create unique index on ${table} (xbnode, xbtype, xbpostfix);\n");
+         buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
       /*
       else if (getDbVendor().equals(DB2)) {
@@ -78,17 +83,20 @@ public class XBStoreFactory extends XBFactory {
       }
       */
       else { // if (getDbVendor().equals(HSQLDB))
-         buf.append("create table xbstore (\n");
-         buf.append("      xbstoreid integer primary key,\n");
-         buf.append("      xbname varchar(512) not null ,\n");
-         buf.append("      xbflag1 varchar(32) default '', constraint xbstoreix1 unique(xbname) )\n");
-         
+         buf.append("create table ${table} (\n");
+         buf.append("      xbstoreid bigint primary key,\n");
+         buf.append("      xbnode varchar(256) not null,\n");
+         buf.append("      xbtype varchar(32) not null,\n");
+         buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbflag1 varchar(32) default '');\n");
+         buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
-      return buf.toString();
+      createSt = buf.toString();
    }
    
    protected void doInit(I_Info info) {
       getByNameSt = info.get(prefix + ".getByNameStatement", getByNameSt);
+      pingSt = info.get(prefix + ".pingStatement", pingSt);
    }
    
    protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
@@ -113,10 +121,27 @@ public class XBStoreFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(ID, xbStore.getId());
-         preStatement.setString(NODE, xbStore.getNode());
-         preStatement.setString(TYPE, xbStore.getType());
+         
+         if (xbStore.getNode() != null)
+            preStatement.setString(NODE, xbStore.getNode());
+         else
+            preStatement.setNull(NODE, Types.VARCHAR);
+         
+         if (xbStore.getType() != null)
+            preStatement.setString(TYPE, xbStore.getType());
+         else
+            preStatement.setNull(TYPE, Types.VARCHAR);
+            
+         if (xbStore.getPostfix() == null || xbStore.getPostfix().length() < 1)
+            xbStore.setPostfix("  ");
+
          preStatement.setString(POSTFIX, xbStore.getPostfix());
-         preStatement.setString(FLAG1, xbStore.getFlag1());
+            
+         if (xbStore.getFlag1() != null)
+            preStatement.setString(FLAG1, xbStore.getFlag1());
+         else
+            preStatement.setNull(FLAG1, Types.VARCHAR);
+         
          preStatement.execute();
       }
       finally {
@@ -196,6 +221,26 @@ public class XBStoreFactory extends XBFactory {
       }
       
       return xbStore;
+   }
+   
+   public void ping(Connection conn, int timeout) throws SQLException {
+      if (conn == null)
+         throw new SQLException("ping: The connection was null");
+      PreparedStatement preStatement = conn.prepareStatement(pingSt);
+      try {
+         if (timeout > 0)
+            preStatement.setQueryTimeout(timeout);
+          preStatement.executeQuery();
+      }
+      finally {
+         if (preStatement != null)
+            preStatement.close();
+      }
+   }
+
+
+   protected long getByteSize(ResultSet rs, int offset) throws SQLException {
+      return 0;
    }
    
 }

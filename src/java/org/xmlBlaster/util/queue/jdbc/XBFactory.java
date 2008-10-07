@@ -31,16 +31,22 @@ public abstract class XBFactory extends XBFactoryBase {
    protected String insertSt;
    protected String getSt;
    protected String getAllSt;
+   protected String getCompleteSt;
    protected String deleteAllSt;
+   protected String deleteCompleteSt;
    protected String deleteTransientsSt;
+   protected String getFirstEntriesSt;
+   protected String getNumOfAllSt;
    protected String deleteSt;
    protected String createSt;
+   protected String countSt = "select count(*) from ${table} where xbstoreid=?";
    protected String dropSt = "drop table ${table}";
    protected String prefix = "queue.jdbc";
    protected String table;
    private String tableNameDefault;
    protected String inList;
    protected boolean limitAtEnd;
+   protected String base;
    
    /**
     * 
@@ -61,11 +67,14 @@ public abstract class XBFactory extends XBFactoryBase {
    
    
    public XBFactory(String prefix, String name) {
+      base = prefix;
       tableNameDefault = name;
       if (prefix != null)
          this.prefix = prefix + "." + name;
       else
          prefix += "." + name;
+      
+      
    }
 
    public final I_Info init(I_Info origInfo) throws XmlBlasterException {
@@ -73,6 +82,11 @@ public abstract class XBFactory extends XBFactoryBase {
       I_Info info = super.init(origInfo);
       prepareDefaultStatements();
       info.put("table", table);
+      
+      String tmp = info.get(base + ".table." + XBStoreFactory.getName(), XBStoreFactory.getName());
+      info.put(XBStoreFactory.getName(), tmp);
+      tmp = info.get(base + ".table." + XBMeatFactory.getName(), XBMeatFactory.getName());
+      info.put(XBMeatFactory.getName(), tmp);
       doInit(info);
 
       insertSt = info.get(prefix + ".insertStatement", insertSt);
@@ -83,18 +97,22 @@ public abstract class XBFactory extends XBFactoryBase {
       getAllSt = info.get(prefix + ".getAllStatement", getAllSt);
       createSt = info.get(prefix + ".createStatement", createSt);
       dropSt = info.get(prefix + ".dropStatement", dropSt);
-      
+      countSt = info.get(prefix + ".countStatement", countSt);
+      getNumOfAllSt = info.get(prefix + ".getNumOfAllStatement", getNumOfAllSt);
       return info;
    }
    
-   public int delete(long id, Connection conn, int timeout) throws SQLException {
+   public int delete(long storeId, long id, Connection conn, int timeout) throws SQLException {
       if (conn == null)
          return 0;
       PreparedStatement preStatement = conn.prepareStatement(deleteSt);
       if (timeout > 0)
          preStatement.setQueryTimeout(timeout);
+      
       try {
-         preStatement.setLong(1, id);
+         preStatement.setLong(1, storeId);
+         if (id != 0)
+            preStatement.setLong(2, id);
          return preStatement.executeUpdate();
       }
       finally {
@@ -103,10 +121,11 @@ public abstract class XBFactory extends XBFactoryBase {
       }
    }
 
-   public int deleteTransients(Connection conn, int timeout) throws SQLException {
+   public int deleteTransients(long storeId, Connection conn, int timeout) throws SQLException {
       if (conn == null)
          return 0;
       PreparedStatement preStatement = conn.prepareStatement(deleteTransientsSt);
+      preStatement.setLong(1, storeId);
       if (timeout > 0)
          preStatement.setQueryTimeout(timeout);
       try {
@@ -203,15 +222,12 @@ public abstract class XBFactory extends XBFactoryBase {
       }
    }
    
-   protected final byte[] readStream(InputStream inStream) throws IOException {
+   protected final static byte[] readStream(InputStream inStream) throws IOException {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       int nmax = 262144; // max 200 kb at a time
       int avail = 0;
       byte[] buf = new byte[nmax];
-      while ( (avail = inStream.available()) > 0) {
-         if (avail > nmax)
-            avail = nmax;
-         inStream.read(buf, 0, avail);
+      while ( (avail = inStream.read(buf, 0, nmax)) > -1) {
          baos.write(buf, 0, avail);
       }
       return baos.toByteArray();
@@ -260,7 +276,7 @@ public abstract class XBFactory extends XBFactoryBase {
     * An example of prefix:
     * "delete from tableName where dataId in(";
     */
-   protected final List whereInStatement(String reqPrefix, long[] uniqueIds, int maxStatementLength, int maxNumStatements) {
+   protected final List whereInStatement(String reqPrefix, XBEntry[] entries, int maxStatementLength, int maxNumStatements) {
       final String reqPostfix = ")";
       boolean isFirst = true;
       int initialLength = reqPrefix.length() + reqPostfix.length() + 2;
@@ -270,13 +286,13 @@ public abstract class XBFactory extends XBFactoryBase {
 
       List ret = new ArrayList();
       int count = 0;
-      for (int i=0; i<uniqueIds.length; i++) {
+      for (int i=0; i<entries.length; i++) {
          String req = null;
-         String entryId = Long.toString(uniqueIds[i]);
+         String entryId = Long.toString(entries[i].getId());
          currentLength = entryId.length();
          length += currentLength;
-         if ((length > maxStatementLength) || (i == (uniqueIds.length-1)) || count >= maxNumStatements) { // then make the update
-            if (i == (uniqueIds.length-1)) {
+         if ((length > maxStatementLength) || (i == (entries.length-1)) || count >= maxNumStatements) { // then make the update
+            if (i == (entries.length-1)) {
                if (!isFirst) buf.append(",");
                count++;
                buf.append(entryId);
@@ -306,7 +322,6 @@ public abstract class XBFactory extends XBFactoryBase {
       return ret;
    }
 
-   
    /**
     * Deletes the specified entries. Since all entry may not fit in one single operation,
     * they are splitted over different operations.
@@ -321,9 +336,9 @@ public abstract class XBFactory extends XBFactoryBase {
     * error occurs it stops.
     * 
     */
-   public long deleteList(XBStore store, Connection conn, long[] ids, int maxStLength, int maxNumSt, boolean commitInBetween, int timeout) throws SQLException {
-      String reqPrefix = deleteAllSt + inList;
-      List reqList = whereInStatement(reqPrefix, ids, maxStLength, maxNumSt);
+   public long deleteList(XBStore store, Connection conn, XBEntry[] entries, int maxStLength, int maxNumSt, boolean commitInBetween, int timeout) throws SQLException {
+      String reqPrefix = deleteCompleteSt + " where xbstoreid=" + store.getId() + " " + inList;
+      List reqList = whereInStatement(reqPrefix, entries, maxStLength, maxNumSt);
       commitInBetween = commitInBetween && !conn.getAutoCommit();
       long sum = 0;
       try {
@@ -332,7 +347,8 @@ public abstract class XBFactory extends XBFactoryBase {
             Statement st = null;
             try {
                st = conn.createStatement();
-               st.setQueryTimeout(timeout);
+               if (timeout > 0)
+                  st.setQueryTimeout(timeout);
                int num = st.executeUpdate(req);
                if (commitInBetween)
                   conn.commit();
@@ -355,6 +371,39 @@ public abstract class XBFactory extends XBFactoryBase {
 
    
    /**
+    * Deletes the specified entries. Since all entry may not fit in one single operation,
+    * they are splitted over different operations.
+    * If you specified  commitInBetween or the auto-commit flag is set to true,
+    * It always returns the number of deleted entries. If a batch could not be completely deleted,
+    * it returns the number of operations previously deleted.
+    *
+    * @param  store the store to use.
+    * @param  the connection to be used.
+    * @param   ids the array containing all ids to delete.
+    * @return the number of entries successfully processed. These are the first. If an
+    * error occurs it stops.
+    * 
+    */
+   public long count(XBStore store, Connection conn, int timeout) throws SQLException {
+      PreparedStatement st = null;
+      try {
+         st = conn.prepareStatement(countSt);
+         if (timeout > 0)
+            st.setQueryTimeout(timeout);
+         st.setLong(1, store.getId());
+         ResultSet rs = st.executeQuery();
+         if (rs.next())
+            return rs.getLong(1);
+         return 0L;
+      }
+      finally {
+         if (st != null)
+            st.close();
+      }
+   }
+
+   
+   /**
     * Gets the specified entries. Since all entry may not fit in one single operation,
     * they are splitted over different operations.
     * If you specified  commitInBetween or the auto-commit flag is set to true,
@@ -368,10 +417,10 @@ public abstract class XBFactory extends XBFactoryBase {
     * error occurs it stops.
     * 
     */
-   public XBEntry[] getList(XBStore store, Connection conn, long[] ids, int maxStLength, int maxNumSt, int timeout) throws SQLException, IOException {
-      String reqPrefix = getAllSt + inList;
+   public List/*<XBEntry>*/ getList(XBStore store, Connection conn, XBEntry[] entries, int maxStLength, int maxNumSt, int timeout) throws SQLException, IOException {
+      String reqPrefix = getCompleteSt + " where xbstoreid=" + store.getId() + " " + inList;
       List ret = new ArrayList();
-      List reqList = whereInStatement(reqPrefix, ids, maxStLength, maxNumSt);
+      List reqList = whereInStatement(reqPrefix, entries, maxStLength, maxNumSt);
       try {
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
@@ -393,7 +442,118 @@ public abstract class XBFactory extends XBFactoryBase {
       }
       catch (SQLException ex) {
       }
-      return (XBEntry[])ret.toArray(new XBEntry[ret.size()]);
+      return ret;
+   }
+   
+   protected abstract long getByteSize(ResultSet rs, int offset) throws SQLException;
+   
+   /**
+    * Note that this method returns the list of deleted entries, but they are only filled with the id and
+    * the byteSize.
+    * 
+    * @param store
+    * @param conn
+    * @param numOfEntries
+    * @param numOfBytes
+    * @param timeout
+    * @return
+    * @throws SQLException
+    */
+   public List/*<XBEntry>*/ getFirstEntries(XBStore store, Connection conn, long numOfEntries, long numOfBytes, int timeout)
+      throws SQLException, IOException {
+      PreparedStatement ps = null;
+      try {
+         ps = conn.prepareStatement(getFirstEntriesSt);
+         // to make sure the question marks are filled in the correct order since this depends on the vendor
+         /*
+         int limit = 1;
+         int qId = 1;
+         if (limitAtEnd)
+            limit = 2;
+         else
+            qId = 2;
+         
+         ps.setLong(limit, numOfEntries);
+         ps.setLong(qId, store.getId());
+         */
+         boolean storeMustBeSet = getFirstEntriesSt.indexOf('?') > -1;
+         if (storeMustBeSet)
+            ps.setLong(1, store.getId());
+      
+         ResultSet rs = ps.executeQuery();
+         long countEntries = 0L;
+         long countBytes = 0L;
+         List list = new ArrayList();
+         while ( (rs.next()) && ((countEntries < numOfEntries) || (numOfEntries < 0)) &&
+               ((countBytes < numOfBytes) || (numOfBytes < 0))) {
+            long byteSize = getByteSize(rs, 0);
+            if ( (numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
+               XBEntry entry = rsToEntry(rs);
+               list.add(entry);
+               countBytes += byteSize;
+               countEntries++;
+            }
+         }
+         return list;
+      }
+      finally {
+         if (ps != null)
+            ps.close();
+      }
+   }
+   
+   /**
+    * Gets the real number of entries. 
+    * That is it really makes a call to the DB to find out
+    * how big the size is.
+    * @return never null
+    */
+   public final EntryCount getNumOfAll(XBStore store, Connection conn)
+      throws SQLException {
+
+      PreparedStatement st = null;
+      try {
+         st = conn.prepareStatement(getNumOfAllSt);
+         st.setLong(1, store.getId());
+         ResultSet rs = st.executeQuery();
+         EntryCount entryCount = new EntryCount();
+         if (rs.next()) {
+            long transientOfEntries = 0;
+            long transientOfBytes = 0;
+            boolean persistent = isTrue(rs.getString(1));
+            if (persistent) {
+               entryCount.numOfPersistentEntries = rs.getLong(2);
+               entryCount.numOfPersistentBytes = rs.getLong(3);
+            }
+            else {
+               transientOfEntries = rs.getLong(2);
+               transientOfBytes = rs.getLong(3);
+            }
+            if (rs.next()) {
+               persistent = isTrue(rs.getString(1));
+               if (persistent) {
+                  entryCount.numOfPersistentEntries = rs.getLong(2);
+                  entryCount.numOfPersistentBytes = rs.getLong(3);
+               }
+               else {
+                  transientOfEntries = rs.getLong(2);
+                  transientOfBytes = rs.getLong(3);
+               }
+            }
+            entryCount.numOfEntries = transientOfEntries + entryCount.numOfPersistentEntries;
+            entryCount.numOfBytes = transientOfBytes + entryCount.numOfPersistentBytes;
+         }
+         return entryCount;
+      }
+      finally {
+         if (st != null)
+            st.close();
+      }
    }
 
+   protected final static boolean isTrue(String asTxt) {
+      return "T".equalsIgnoreCase(asTxt);
+   }
+   
+   
 }

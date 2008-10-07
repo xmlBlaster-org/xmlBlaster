@@ -300,15 +300,31 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          // conn.isClosed();
 
-         if (this.pingPrepared == null) {
-            synchronized (this) {
-               if (this.pingPrepared == null) {
-                  this.pingPrepared = conn.prepareStatement("select min("+this.dataIdColName+") from " + this.entriesTableName);
+         if (false) {
+            if (this.pingPrepared == null) {
+               synchronized (this) {
+                  if (this.pingPrepared == null) {
+                     this.pingPrepared = conn.prepareStatement("select min("+this.dataIdColName+") from " + this.entriesTableName);
+                  }
                }
             }
+            this.pingPrepared.executeQuery();
          }
-         this.pingPrepared.executeQuery();
 
+         if (true) {
+            PreparedStatement st = null;
+            try {
+               st = conn.prepareStatement("select min("+dataIdColName+") from " + entriesTableName);
+               st.executeQuery();
+            }
+            finally {
+               if (st != null)
+                  st.close();
+            }
+            
+         }
+         
+         
          // Until v1.5.1+: Did not work with MSSQLServer
          //if (log.isLoggable(Level.FINE)) log.fine("Trying ping ...");
          //conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
@@ -947,8 +963,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             ex.printStackTrace(); // original stack trace
          }
          if (log.isLoggable(Level.FINE)) log.fine("Could not insert entries: " + ex.toString());
-         if ((!this.supportsBatch || !this.enableBatchMode) ||
-            checkIfDBLoss(conn, getLogId(queueName, "addEntries"), ex)) 
+         // if ((!this.supportsBatch || !this.enableBatchMode) ||
+         //       checkIfDBLoss(conn, getLogId(queueName, "addEntries"), ex)) 
+
+         if (checkIfDBLoss(conn, getLogId(queueName, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
          else { // check if the exception was due to an already existing entry by re
             return addEntriesSingleMode(conn, queueName, entries);

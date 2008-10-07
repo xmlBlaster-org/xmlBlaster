@@ -8,9 +8,9 @@ package org.xmlBlaster.util.queue.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -19,7 +19,9 @@ import java.util.logging.Logger;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -27,10 +29,12 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
+import org.xmlBlaster.util.queue.StorageId;
 
 
 /**
@@ -53,8 +57,84 @@ import org.xmlBlaster.util.queue.ReturnDataHolder;
  */
 public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemListener, I_StorageProblemNotifier {
 
+   
+   private class QueueGlobalInfo extends GlobalInfo {
+
+      private String poolId;
+      public QueueGlobalInfo() {
+         super((String[])null);
+      }
+
+      // @Override
+      protected void doInit(Global glob, PluginInfo plugInfo) throws XmlBlasterException {
+         Properties props = plugInfo.getParameters();
+         
+         String size = props.getProperty("connectionPoolSize");
+         if (size != null)
+            put("db.maxInstances", size);
+         // has currently no effect
+         String busyTimeout = props.getProperty("connectionBusyTimeout");
+         if (busyTimeout != null) {
+            put("db.busyToIdleTimeout", busyTimeout);
+            put("db.idleToEraseTimeout", busyTimeout);
+         }
+         String url = props.getProperty("url");
+         String user = props.getProperty("user");
+         String password = props.getProperty("password");
+         if (url != null)
+            put("db.url", url);
+         if (user != null)
+            put("db.user", user);
+         if (password != null)
+            put("db.password", password);
+         
+         /*
+         this.dbUrl = this.info.get("db.url", "");
+         this.dbUser = this.info.get("db.user", "");
+         this.dbPasswd = this.info.get("db.password", "");
+         int maxInstances = this.info.getInt("db.maxInstances", 10);
+         long busyToIdle = this.info.getLong("db.busyToIdleTimeout", 0);
+         long idleToErase = this.info.getLong("db.idleToEraseTimeout", 120*60*1000L);
+         this.maxResourceExhaustRetries = this.info.getInt("db.maxResourceExhaustRetries", 5);
+         this.resourceExhaustSleepGap = this.info.getLong("db.resourceExhaustSleepGap", 1000);
+         this.poolManager = new PoolManager("DbPool", this, maxInstances, busyToIdle, idleToErase);
+         String createInterceptorClass = info.get("db.createInterceptor.class", null);
+         */
+         poolId = "db.pool-" + url + "-" + user + "-" + size + "-" + busyTimeout;
+      }
+      
+      /**
+       * Important: only invoke this method once to initially retrieve the pool. Every invocation results in initializing the
+       * pool with the side effect of increasing the reference counting of it.
+       * @param info
+       * @return
+       * @throws Exception
+       */
+      public I_DbPool getDbPool(I_Info info) throws Exception {
+         synchronized (info) {
+            I_DbPool dbPool = (I_DbPool)info.getObject(poolId);
+            if (dbPool == null) {
+               ClassLoader cl = DbWatcher.class.getClassLoader();
+               String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+               if (dbPoolClass.length() > 0) {
+                   dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
+                   if (log.isLoggable(Level.FINE)) 
+                      log.fine(dbPoolClass + " created and initialized");
+               }
+               else
+                  throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
+               info.putObject(poolId, dbPool);
+            }
+            dbPool.init(info);
+            return dbPool;
+         }
+      }
+      
+      
+   }
+   
    private static final String ME = "XBQueueFactory";
-   private I_Info info;
+   //private I_Info info;
    private static Logger log = Logger.getLogger(XBQueueFactory.class.getName());
    private I_DbPool pool;
    private I_EntryFactory factory;
@@ -64,7 +144,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
    private XBMeatFactory meatFactory;
    private XBRefFactory refFactory;
    
-   
+   private long initCount;
    
    private static String DUMMY_VALUE = "A";
 
@@ -73,8 +153,6 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
 
    private static boolean first = true;
    
-   private String pingSt = null;
-
    /**
     * Counts the queues using this manager.
     */
@@ -86,7 +164,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     private boolean supportsBatch = true;
     
     /** forces the desactivation of batch mode when adding entries */
-    private boolean enableBatchMode = true;
+    private boolean enableBatchMode = false;
 
     private Global glob;
     
@@ -104,10 +182,8 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     private int timeout;
     private boolean dbAdmin = true;
     
-    public XBQueueFactory(I_DbPool pool, I_EntryFactory factory) {
+    public XBQueueFactory() {
        super();
-       this.pool = pool;
-       this.factory = factory;
     }
 
     private final void prepareDefaultStatements() {
@@ -134,6 +210,35 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
        }
     }
     
+    protected synchronized void initFactory(Global global, PluginInfo plugInfo) throws XmlBlasterException {
+       if (initCount > 0) {
+          initCount++;
+          return;
+       }
+       this.factory  = global.getEntryFactory();
+       this.listener = new WeakHashMap();
+
+       QueueGlobalInfo globalInfo = new QueueGlobalInfo();
+       globalInfo.init(global, plugInfo);
+       try {
+          pool = globalInfo.getDbPool(globalInfo);
+          init(globalInfo);
+       }
+       catch (Exception ex) {
+          throw new XmlBlasterException(global, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
+       }
+       initCount++;
+    }
+ 
+    
+    
+    // @Override
+   public I_Info init(I_Info origInfo) throws XmlBlasterException {
+      I_Info info = super.init(origInfo);
+      doInit(info);
+      return info;
+   }
+
    /**
     * @param storage TODO
     * @param JdbcConnectionPool the pool to be used for the connections to
@@ -216,7 +321,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          storeFactory.create(conn);
          meatFactory.create(conn);
          refFactory.create(conn);
-         
+         isConnected = true;
          log.info("Using DB " + dbmd.getDatabaseProductName() + " " + dbmd.getDatabaseProductVersion() + " " + dbmd.getDriverName());
       }
       catch (XmlBlasterException ex) {
@@ -297,8 +402,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          return false; // this could occur if it was not possible to create the connection
 
       try {
-         PreparedStatement pingPrepared = conn.prepareStatement(pingSt);
-         pingPrepared.executeQuery();
+         storeFactory.ping(conn, timeout);
          if (log.isLoggable(Level.FINE)) 
             log.fine("ping successful");
          return true;
@@ -335,12 +439,14 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @see I_StorageProblemListener#storageUnavailable(int)
     */
    public void storageUnavailable(int oldStatus) {
-      if (log.isLoggable(Level.FINER)) log.finer("storageUnavailable (old status '" + oldStatus + "')");
-      this.isConnected = false;
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("storageUnavailable (old status '" + oldStatus + "')");
+      isConnected = false;
 
       I_StorageProblemListener[] listenerArr = getStorageProblemListenerArr();
       for(int i=0; i<listenerArr.length; i++) {
-         if (this.isConnected == true) break;
+         if (isConnected == true) 
+            break;
          I_StorageProblemListener singleListener = listenerArr[i];
          singleListener.storageUnavailable(oldStatus);
       }
@@ -350,13 +456,16 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @see I_StorageProblemListener#storageAvailable(int)
     */
    public void storageAvailable(int oldStatus) {
-      if (log.isLoggable(Level.FINER)) log.finer("storageAvailable (old status '" + oldStatus + "')");
-      this.isConnected = true;
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("storageAvailable (old status '" + oldStatus + "')");
+      isConnected = true;
       //change this once this class implements I_StorageProblemNotifier
-      if (oldStatus == I_StorageProblemListener.UNDEF) return;
+      if (oldStatus == I_StorageProblemListener.UNDEF) 
+         return;
       I_StorageProblemListener[] listenerArr = getStorageProblemListenerArr();
       for(int i=0; i<listenerArr.length; i++) {
-         if (this.isConnected == false) break;
+         if (isConnected == false) 
+            break;
          I_StorageProblemListener singleListener = listenerArr[i];
          singleListener.storageAvailable(oldStatus);
       }
@@ -367,8 +476,8 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * listeners without danger
     */
    public I_StorageProblemListener[] getStorageProblemListenerArr() {
-      synchronized (this.listener) {
-         return (I_StorageProblemListener[])this.listener.keySet().toArray(new I_StorageProblemListener[this.listener.size()]);
+      synchronized (listener) {
+         return (I_StorageProblemListener[])listener.keySet().toArray(new I_StorageProblemListener[listener.size()]);
       }
    }
 
@@ -403,6 +512,64 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       return ret;
    }
 
+   private final boolean isSameString(String str1, String str2) {
+      if (str1 == null && str2 == null)
+         return true;
+      if (str1 == null || str2 == null)
+         return false;
+      return str1.equals(str2);
+   }
+   
+   private final boolean areSameCounters(XBMeat newEntry, XBMeat oldEntry) {
+      if (newEntry.getRefCount() != oldEntry.getRefCount())
+         return false;
+      if (newEntry.getRefCount2() != oldEntry.getRefCount2())
+         return false;
+      return true;
+   }
+   
+   private final boolean isSame(XBMeat newEntry, XBMeat oldEntry, boolean checkCounters, boolean checkContent) {
+      if (newEntry == null || oldEntry == null)
+         return false;
+      if (newEntry.getId() != oldEntry.getId())
+         return false;
+      
+      if (newEntry.getStoreId() != oldEntry.getStoreId())
+         return false;
+      
+      if (newEntry.getByteSize() != oldEntry.getByteSize())
+         return false;
+      
+      if (!isSameString(newEntry.getFlag1(), oldEntry.getFlag1()))
+         return false;
+
+      if (!isSameString(newEntry.getDataType(), oldEntry.getDataType()))
+         return false;
+      if (!isSameString(newEntry.getKey(), oldEntry.getKey()))
+         return false;
+      if (!isSameString(newEntry.getQos(), oldEntry.getQos()))
+         return false;
+      
+      if (checkContent) {
+         byte[] content1 = newEntry.getContent();
+         byte[] content2 = oldEntry.getContent();
+         if (content1 == null && content2 == null)
+            return true;
+         if (content1 == null || content2 == null)
+            return false;
+         for (int i=0; i < content1.length; i++) {
+            if (content1[i] != content2[i])
+               return false;
+         }
+      }
+      
+      if (checkCounters) {
+         if (areSameCounters(newEntry, oldEntry))
+            return false;
+      }
+      return true;
+   }
+   
    /**
     *
     * modifies a row in the specified queue table
@@ -414,7 +581,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @throws XmlBlasterException if an error occurred when trying to get a connection or an SQLException
     *         occurred.
     */
-   public long modifyEntry(XBStore store, XBMeat entry, XBMeat oldEntry, boolean onlyRefCounter)
+   public long modifyEntry(XBStore store, XBMeat entry, XBMeat oldEntry, boolean onlyRefCounters)
       throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
@@ -423,13 +590,33 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
             log.fine("For entry '" + entry.getId() + "' currently not possible. No connection to the DB");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
+
+      if (entry != null)
+         entry.setStoreId(store.getId());
+      if (oldEntry != null)
+         oldEntry.setStoreId(store.getId());
+      
+      /*
+       * TODO
+       * DANGER: DO NOT TRY TO OPTIMIZE THIS SINCE THE OLD AND NEW ENTRY CAN BE THE SAME BUT THE STORED ENTRY IS 
+       * DIFFERENT. MUST BE CLEARED UP
+      if (!onlyRefCounters) {
+         final boolean checkCounters = false;
+         final boolean checkContent = false; // TODO CHECK IF THIS IS CORRECT
+         onlyRefCounters = isSame(entry, oldEntry, checkCounters, checkContent);
+      }
+      */
       
       Connection conn = null;
       boolean success = true;
       try {
          conn = pool.reserve();
-         if (onlyRefCounter)
-            meatFactory.updateRefCounter(entry, conn, timeout);
+         conn.setAutoCommit(true);
+         if (onlyRefCounters) {
+            // if (areSameCounters(entry, oldEntry))
+            //    return 0;
+            meatFactory.updateRefCounters(entry, conn, timeout);
+         }
          else
             meatFactory.update(entry, conn, timeout);
          if (oldEntry == null)
@@ -479,15 +666,19 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       XBRef ref = entry.getRef(); 
 
       StringBuffer buf = new StringBuffer();
-      if (meat != null)
+      if (meat != null) {
+         meat.setStoreId(store.getId());
          buf.append(meat.getId());
-      if (ref != null)
+      }
+      if (ref != null) {
+         ref.setStoreId(store.getId());
          buf.append("-").append(ref.getId());
-      String id = buf.toString();
+      }
+      String logId = buf.toString();
       
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) 
-            log.fine("For entry '" + id + "' currently not possible. No connection to the DB");
+            log.fine("For entry '" + logId + "' currently not possible. No connection to the DB");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addSingleEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
 
@@ -508,7 +699,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
                log.fine("addEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
             }
          }
-         log.severe("Could not insert entry '" + meat.getDataType() + "'-'" +  id + "': " + ex.toString());
+         log.severe("Could not insert entry '" + meat.getDataType() + "'-'" +  logId + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex)) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
          }
@@ -516,9 +707,9 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          try {
             boolean exists = false;
             if (meat != null)
-               exists = meatFactory.get(meat.getId(), conn, timeout) != null;
+               exists = meatFactory.get(store, meat.getId(), conn, timeout) != null;
             if (!exists && ref != null)
-               exists = meatFactory.get(meat.getId(), conn, timeout) != null;
+               exists = refFactory.get(store, ref.getId(), conn, timeout) != null;
             if (!exists)
                throw ex;
          }
@@ -554,6 +745,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       boolean success = true;
       try {
          conn = pool.reserve();
+         conn.setAutoCommit(true);
          return addSingleEntry(store, entry, conn);
       }
       catch (Throwable ex) {
@@ -577,7 +769,8 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       try {
          if (log.isLoggable(Level.FINE)) log.fine("addEntriesSingleMode adding each entry in single mode since an exception occured when using 'batch mode'");
          for (i=0; i < entries.length; i++) {
-            if (addSingleEntry(store, entries[i], conn)) ret[i] = 1; 
+            if (addSingleEntry(store, entries[i], conn)) 
+               ret[i] = 1; 
             else ret[i] = 0;
             if (log.isLoggable(Level.FINE)) 
                log.fine("addEntriesSingleMode adding entry '" + i + "' in single mode succeeded");
@@ -590,10 +783,13 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          try {
             for (int ii=0; ii < i; ii++) {
                if (ret[ii] > 0) {
+                  long refId = -1L;
+                  long meatId = -1L;
                   if (entries[ii].getMeat() != null)
-                     deleteEntry(store, entries[ii].getMeat().getId(), false); 
+                     meatId = entries[ii].getMeat().getId();
                   if (entries[ii].getRef() != null)
-                     deleteEntry(store, entries[ii].getRef().getId(), false); 
+                     refId = entries[ii].getRef().getId();
+                  deleteEntry(store, refId, meatId); 
                }
             }
          }
@@ -629,6 +825,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       boolean success = true;
       try {
          conn = pool.reserve();
+         conn.setAutoCommit(true);
          if (!this.supportsBatch || !this.enableBatchMode)
             return addEntriesSingleMode(conn, store, entries);
          
@@ -676,6 +873,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       boolean success = false;
       try {
          conn = pool.reserve();
+         conn.setAutoCommit(true);
          int num = refFactory.deleteAllStore(store, conn, timeout);
          success = true;
          return (num > 0) ? 1 : 0;
@@ -849,32 +1047,6 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
    }
 
    /**
-    * It accepts result sets with (long dataId, long size)
-    * @param numOfBytes as input is the maximum number of bytes to process. As
-    *        output it stores the number of bytes processed.
-    * @param numOfEntries the maximum number of entries to process
-    *
-    */
-   private final ReturnDataHolder processResultSetForDeleting(ResultSet rs, int numOfEntries, long numOfBytes)
-      throws SQLException, XmlBlasterException {
-
-      if (log.isLoggable(Level.FINER)) log.finer("processResultSetForDeleting invoked");
-      ReturnDataHolder ret = new ReturnDataHolder();
-      long currentAmount = 0L;
-      while ( (rs.next()) && ((ret.countEntries < numOfEntries) || (numOfEntries < 0)) &&
-         ((ret.countBytes < numOfBytes) || (numOfBytes < 0))) {
-         currentAmount = rs.getLong(2);
-         if ( (numOfBytes < 0) || (ret.countBytes+currentAmount < numOfBytes) || (ret.countEntries == 0)) {
-            ret.list.add(new Long(rs.getLong(1)));
-            ret.countBytes += currentAmount;
-            ret.countEntries++;
-         }
-      }
-      return ret;
-   }
-
-
-   /**
     * Returns the pool associated to this object.
     * @return JdbcConnectionPool the pool managing the connections to the DB
     */
@@ -890,14 +1062,15 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       boolean success = false;
       try {
          if (!this.isConnected) {
-            if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("Currently not possible. No connection to the DB");
             return 0;
          }
          conn = pool.reserve();
          conn.setAutoCommit(true);
          
-         long num = refFactory.deleteTransients(conn, timeout);
-         num += meatFactory.deleteTransients(conn, timeout);
+         long num = refFactory.deleteTransients(store.getId(), conn, timeout);
+         num += meatFactory.deleteTransients(store.getId(), conn, timeout);
          success = true;
          return num;
       }
@@ -918,13 +1091,22 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @see org.xmlBlaster.util.queue.I_Queue#takeLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)
     */
    public ReturnDataHolder getAndDeleteLowest(XBStore store, int numOfEntries, long numOfBytes,
-         int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete) throws XmlBlasterException {
+         int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete, I_Storage storage) throws XmlBlasterException {
       
       Connection conn = null;
       boolean success = false;
       try {
+         if (!this.isConnected) {
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("Currently not possible. No connection to the DB");
+            return null;
+         }
+         conn = pool.reserve();
+         conn.setAutoCommit(true);
          ReturnDataHolder ret = null;
          ret = refFactory.getAndDeleteLowest(store, conn, numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, doDelete, maxStatementLength, maxNumStatements, timeout);
+         final I_EntryFilter filter = null;
+         ret.list = (ArrayList)createEntries(store, null, ret.list, filter, storage);
          success = true;
          return ret;
       }
@@ -938,6 +1120,21 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
    }
    
+   private long deleteEntries(Connection conn, XBStore store, XBRef[] refs, XBMeat[] meats) throws SQLException {
+      // no need to commit explicitly here since this is done on each sweep internally
+      long ret = -1L;
+      final boolean commitInBetween = true;
+      if (refs != null)
+         ret = refFactory.deleteList(store, conn, refs, maxStatementLength, maxNumStatements, commitInBetween, timeout);
+      if (meats != null) {
+         long ret1 = meatFactory.deleteList(store, conn, meats, maxStatementLength, maxNumStatements, commitInBetween, timeout);
+         if (ret > -1 && ret1 != ret)
+            throw new SQLException(ME +".deleteEntries: wrong number of entries deleted: meat " + meats.length + " and ref " + refs.length + " but should be the same for both");
+         else
+            ret = ret1;
+      }
+      return ret;
+   }
    
    /**
     * Deletes the entries specified by the entries array. Since all entries
@@ -950,22 +1147,16 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param   refs the array containing all entries to delete for the refs.
     * @param   meats the array containing all entries to delete for the meats.
     */
-   public long deleteEntries(XBStore store, long[] ids, boolean refs) throws XmlBlasterException {
-      // TODO Should this not be done in one single transaction ?
-      if (ids == null || ids.length < 1)
-         return 0L;
+   public long deleteEntries(XBStore store, XBRef[] refs, XBMeat[] meats) throws XmlBlasterException {
+      if (refs != null && meats != null && refs.length != meats.length)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, ".deleteEntries: wrong number of entries : meat " + meats.length + " and ref " + refs.length + " but should be the same for both");
       Connection conn = null;
       long ret = 0L;
       boolean success = false;
       try {
          conn = pool.reserve();
          conn.setAutoCommit(false);
-         // no need to auto-commit since this is done on each sweep internally
-         final boolean commitInBetween = true;
-         if (refs)
-            ret = refFactory.deleteList(store, conn, ids, maxStatementLength, maxNumStatements, commitInBetween, timeout);
-         else
-            ret = meatFactory.deleteList(store, conn, ids, maxStatementLength, maxNumStatements, commitInBetween, timeout);
+         ret = deleteEntries(conn, store, refs, meats);
          success = true;
          return ret;
       }
@@ -979,14 +1170,24 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
    }
 
+   private final void rollback(Connection conn) {
+      try {
+         if (conn != null)
+            conn.rollback();
+      }
+      catch (SQLException ex) {
+         log.severe("Exception occured when trying to roll back " + ex.getMessage());
+         ex.printStackTrace();
+      }
+   }
+   
    /**
     * Deletes the entry specified
     *
     * @param   tableName the name of the table on which to delete the entries
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
-   public int deleteEntry(XBStore store, long uniqueId, boolean isRef)
-      throws XmlBlasterException {
+   public int deleteEntry(XBStore store, long refId, long meatId) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
       if (!this.isConnected) {
@@ -999,13 +1200,19 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       int ret = 0;
       try {
          conn =  pool.reserve();
-         if (isRef)
-            ret = refFactory.delete(uniqueId, conn, timeout);
-         else
-            ret = meatFactory.delete(uniqueId, conn, timeout);
+         conn.setAutoCommit(false);
+         int ret1 = 0;
+         if (refId > -1L)
+            ret = refFactory.delete(store.getId(), refId, conn, timeout);
+         if (meatId > -1L)
+            ret1 = meatFactory.delete(store.getId(), meatId, conn, timeout);
+         if (ret == 0)
+            ret += ret1;
+         conn.commit();
          return ret;
       }
       catch (Throwable ex) {
+         rollback(conn);
          success = false;
          if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteEntry"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
@@ -1028,14 +1235,13 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param amount the maximum amount of bytes to remove. Note that if no entries
     *        fit into this size, the first entry is taken anyway (to avoid deadlocks)
     */
-   public XBRef[] deleteFirstEntries(XBStore store, long numOfEntries, long numOfBytes)
-      throws XmlBlasterException {
+   public long deleteFirstRefs(XBStore store, long numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE))
             log.fine("Currently not possible. No connection to the DB");
-         return new XBRef[0];
+         return 0;
       }
 
       if (numOfEntries >= Integer.MAX_VALUE)
@@ -1047,17 +1253,25 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       
       try {
          conn = pool.reserve();
-         conn.setAutoCommit(true);
-         XBRef[] refs = refFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
-         pool.release(conn);
-         conn = null;
-         long[] ids = new long[refs.length];
-         for (int i=0; i < refs.length; i++)
-            ids[i] = refs[i].getId();
-         deleteEntries(store, ids, true);
-         return refs;
+         conn.setAutoCommit(false);
+         List/*<XBRef>*/ tmp = refFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
+         XBRef[] refs = (XBRef[])tmp.toArray(new XBRef[tmp.size()]);
+         XBMeat[] meats = null;
+         for (int i=0; i < refs.length; i++) {
+            if (meats != null) {
+               meats[i] = refs[i].getMeat();
+               if (meats[i] == null) {
+                  meats[i] = new XBMeat();
+                  meats[i].setId(refs[i].getMeatId());
+               }
+            }
+         }
+         long ret = deleteEntries(conn, store, refs, meats);
+         conn.commit();
+         return ret;
       }
       catch (Throwable ex) {
+         rollback(conn);
          success = false;
          if (checkIfDBLoss(conn, getLogId(store.toString(), "deleteFirstEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteFirstEntries", "", ex); 
@@ -1082,13 +1296,13 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param maxPrio the maximum priority to retrieve (inclusive).
     *
     */
-   public XBRef[] getEntriesByPriority(XBStore store, int numOfEntries,
+   public List/*<I_Entry>*/ getEntriesByPriority(XBStore store, int numOfEntries,
                              long numOfBytes, int minPrio, int maxPrio)
       throws XmlBlasterException {
 
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
-         return new XBRef[0];
+         return null;
       }
 
       Connection conn = null;
@@ -1097,7 +1311,10 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          conn = pool.reserve();
          conn.setAutoCommit(true);
          final boolean onlyId = false;
-         XBRef[] ret = refFactory.getEntriesByPriority(store, conn, numOfEntries, numOfBytes, minPrio, maxPrio, onlyId);
+         List ret = refFactory.getEntriesByPriority(store, conn, numOfEntries, numOfBytes, minPrio, maxPrio, onlyId);
+         final I_Storage storage = null;
+         final I_EntryFilter filter = null;
+         ret = createEntries(store, null, ret, filter, storage);
          return ret;
       }
       catch (Throwable ex) {
@@ -1120,12 +1337,12 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public XBRef[] getEntriesBySamePriority(XBStore store, int numOfEntries, long numOfBytes)
+   public List/*<XBRef>*/ getEntriesBySamePriority(XBStore store, int numOfEntries, long numOfBytes)
       throws XmlBlasterException {
 
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
-         return new XBRef[0];
+         return null;
       }
 
       Connection conn = null;
@@ -1133,7 +1350,10 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         XBRef[] ret = refFactory.getEntriesBySamePriority(store, conn, numOfEntries, numOfBytes);
+         List ret = refFactory.getEntriesBySamePriority(store, conn, numOfEntries, numOfBytes);
+         final I_Storage storage = null;
+         final I_EntryFilter filter = null;
+         ret = createEntries(store, null, ret, filter, storage);
          return ret;
       }
       catch (Throwable ex) {
@@ -1156,12 +1376,10 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param numOfEntries Access num entries, if -1 access all entries currently found
     * @param numOfBytes is the maximum size in bytes of the array to return, -1 is unlimited .
     */
-   public XBRef[] getEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter)
-      throws XmlBlasterException {
-
+   public List/*<I_Entry>*/ getEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter, boolean isRef, I_Storage storage) throws XmlBlasterException {
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
-         return new XBRef[0];
+         return null;
       }
 
       Connection conn = null;
@@ -1169,8 +1387,15 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         XBRef[] ret = refFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
-         // TODO process the I_EntryFilter here on the results
+         List /*<XBEntry>*/ ret = null;
+         if (isRef) {
+            ret = refFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
+            ret = createEntries(store, null, ret, entryFilter, storage);
+         }
+         else {
+            ret = meatFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
+            ret = createEntries(store, ret, null, entryFilter, storage);
+         }
          return ret;
       }
       catch (Throwable ex) {
@@ -1205,9 +1430,34 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     *
     * @param numOfEntries the maximum number of elements to retrieve
     */
-   public XBEntry[] getEntriesWithLimit(XBStore store, I_Entry limitEntry)
+   public List/*<XBEntry[]>*/ getEntriesWithLimit(XBStore store, I_Entry limitEntry, I_Storage storage)
       throws XmlBlasterException {
-      throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME + ".getEntriesWithLimit", "");
+      if (!this.isConnected) {
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Currently not possible. No connection to the DB");
+         return null;
+      }
+
+      Connection conn = null;
+      boolean success = true;
+      try {
+         conn = pool.reserve();
+         conn.setAutoCommit(true);
+         XBRef limitRef = limitEntry.getRef();
+         List list = refFactory.getWithLimit(store, conn, limitRef);
+         final I_EntryFilter filter = null;
+         return createEntries(store, (List)null, list, filter, storage);
+      }
+      catch (Throwable ex) {
+         success = false;
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getEntriesWithLimit"), ex))
+           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesWithLimit", "", ex); 
+        else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesWithLimit", "", ex); 
+      }
+      finally {
+         releaseConnection(conn, success, null);
+      }
+
    }
 
    /**
@@ -1217,7 +1467,8 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
    public long removeEntriesWithLimit(XBStore store, XBRef limitEntry, boolean inclusive)
       throws XmlBlasterException {
       if (!this.isConnected) {
-         if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Currently not possible. No connection to the DB");
          return 0L;
       }
 
@@ -1226,9 +1477,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         long ret = refFactory.deleteWithLimit(store, conn, limitEntry, inclusive);
-         // TODO process the I_EntryFilter here on the results
-         return ret;
+         return refFactory.deleteWithLimit(store, conn, limitEntry, inclusive);
       }
       catch (Throwable ex) {
          success = false;
@@ -1247,12 +1496,12 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * gets all the entries which have the dataid specified in the argument list.
     * If the list is empty or null, an empty ArrayList object is returned.
     */
-   public XBEntry[] getEntries(XBStore store, long[] dataids)
+   public List/*<XBEntry>*/ getEntries(XBStore store, XBRef[] refs, XBMeat[] meats)
       throws XmlBlasterException {
 
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
-         return new XBEntry[0];
+         return null;
       }
 
       Connection conn = null;
@@ -1260,8 +1509,16 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         XBEntry[] ret = refFactory.getList(store, conn, dataids, maxStatementLength, maxNumStatements, timeout);
-         // TODO process the I_EntryFilter here on the results
+         
+         List retRef = null;
+         List retMeat = null;
+         if (refs != null)
+            retRef = refFactory.getList(store, conn, refs, maxStatementLength, maxNumStatements, timeout);
+         else
+            retMeat = meatFactory.getList(store, conn, meats, maxStatementLength, maxNumStatements, timeout);
+         final I_Storage storage = null;
+         final I_EntryFilter filter = null;
+         List ret = createEntries(store, retMeat, retRef, filter, storage);
          return ret;
       }
       catch (Throwable ex) {
@@ -1292,7 +1549,20 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         return refFactory.getNumOfAll(store, conn);
+         if (store.getStoreType() == XBStore.TYPE_REF)
+            return refFactory.getNumOfAll(store, conn);
+         if (store.getStoreType() == XBStore.TYPE_MEAT)
+            return refFactory.getNumOfAll(store, conn);
+         EntryCount ret = refFactory.getNumOfAll(store, conn);
+         if (ret.numOfEntries == 0L) {
+            ret = meatFactory.getNumOfAll(store, conn);
+            if (ret.numOfEntries != 0L)
+               store.setStoreType(XBStore.TYPE_MEAT);
+         }
+         else {
+            store.setStoreType(XBStore.TYPE_REF);
+         }
+         return ret;
       }
       catch (Throwable ex) {
          success = false;
@@ -1333,15 +1603,14 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param properties the properties to use to overwrite the default properties. If you pass null, no 
     *        properties will be overwritten, and the default will be used.
     */
-   public static JdbcManagerCommonTable createInstance(Global glob, I_EntryFactory factory, String confType, String confVersion, Properties properties) 
+   public static XBQueueFactory createInstance(Global glob, String confType, String confVersion, Properties properties) 
       throws XmlBlasterException {
       if (confType == null) confType = "JDBC";
       if (confVersion == null) confVersion = "1.0";
       QueuePluginManager pluginManager = new QueuePluginManager(glob);
       PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, confType, confVersion);
       // clone the properties (to make sure they only belong to us) ...
-      java.util.Properties
-         ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
+      java.util.Properties ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
       //overwrite our onw properties ...
       if (properties != null) {
          java.util.Enumeration enumer = properties.keys();
@@ -1350,34 +1619,22 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
             ownProperties.put(key, properties.getProperty(key));
          }
       }
-      JdbcConnectionPool pool = new JdbcConnectionPool();
-      try {
-         pool.initialize(glob, pluginInfo.getParameters());
-      }
-      catch (ClassNotFoundException ex) {
-         log.severe("wipOutDB class not found: " + ex.getMessage());
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB class not found", ex);
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
-      }
-   
+
       // determine which jdbc manager class to use
       String queueClassName = pluginInfo.getClassName();
       if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
       }
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
-         // then it is a JdbcManagerCommontTable
-         // then it is a JdbcManager
-    	 // AWARE: Used in Main.java as well
-    	 boolean useJdbcManagerDelegate = glob.get("xmlBlaster/useJdbcManagerDelegate", true, properties, pluginInfo); // pluginConfig
-         JdbcManagerCommonTable manager = (useJdbcManagerDelegate) ?
-        		 new JdbcManagerCommonTableDelegate(pool, factory, "cleaner", null) :
-        		 new JdbcManagerCommonTable(pool, factory, "cleaner", null);
-         pool.registerStorageProblemListener(manager);
-         manager.setUp();
-         return manager;
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin is not supported anymore");
+      }
+      else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueue".equals(queueClassName)) {
+         
+         XBQueueFactory queueFactory = new XBQueueFactory();
+         queueFactory.initFactory(glob, pluginInfo);
+         final boolean deleteAllTransients = false; // TODO check if this is correct
+         queueFactory.setUp(deleteAllTransients);
+         return queueFactory;
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
@@ -1398,42 +1655,18 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     */
    public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
       throws XmlBlasterException {
-      JdbcManagerCommonTable manager = createInstance(glob, glob.getEntryFactory(), confType, confVersion,
-                                       properties); 
-      manager.wipeOutDB(setupNewTables);
-   }
-
-   /**
-    * This main method can be used to delete all tables on the db which start
-    * with a certain prefix. It is useful to cleanup the entire DB.
-    * 
-    * </pre>
-    */
-   public static void main(String[] args) {
-      Global glob = Global.instance();
-      glob.init(args);
-
-      String type = glob.getProperty().get("wipeout.pluginType", (String)null);
-      String version = glob.getProperty().get("wipeout.pluginVersion", (String)null);
-
-      if ((type == null) || (version == null)) {
-         System.out.println("usage: java org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable -wipeout.pluginType JDBC -wipeout.pluginVersion 1.0");
-         System.exit(1);
-      }
-
-      try {
-         JdbcManagerCommonTable.wipeOutDB(glob, type, version, null, false);
-      }
-      catch (Exception ex) {
-         System.err.println("Main" + ex.toString());
-      }
-
+      XBQueueFactory factory = createInstance(glob, confType, confVersion, properties); 
+      factory.wipeOutDB(setupNewTables);
    }
 
    synchronized public void shutdown() {
+      initCount--;
+      if (initCount > 0)
+         return;
       try {
          if (this.pool != null)
             pool.shutdown();
+         isConnected = false;
       }
       catch (Exception ex) {
          ex.printStackTrace();
@@ -1459,7 +1692,109 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
 
    
    private I_Entry createEntry(XBStore store, XBMeat meat, XBRef ref) throws XmlBlasterException {
-      return null;
+      return factory.createEntry(store, meat, ref);
    }
    
+   private List createEntries(XBStore store, List/*<XBMeat>*/ meatList, List/*<XBRef>*/ refList, I_EntryFilter filter, I_Storage storage) throws XmlBlasterException {
+      if (meatList != null && refList != null && meatList.size() != refList.size())
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, ".createEntries: wrong number of entries : meat " + meatList.size() + " and ref " + refList.size() + " but should be the same for both");
+      int nmax = 0;
+      if (meatList != null)
+         nmax = meatList.size();
+      else if (refList != null)
+         nmax = refList.size();
+         
+      List ret = new ArrayList();
+      for (int i=0; i < nmax; i++) {
+         XBMeat meat = null;
+         XBRef ref = null;
+         if (meatList != null)
+            meat = (XBMeat)meatList.get(i);
+         if (refList != null) {
+            ref = (XBRef)refList.get(i);
+            if (meat == null)
+               meat = ref.getMeat();
+         }
+         I_Entry entry = createEntry(store, meat, ref);
+         if (filter != null)
+            entry = filter.intercept(entry, storage);
+         if (entry != null)
+            ret.add(entry);
+      }
+      return ret;
+   }
+   
+   
+   public XBStore getXBStore(StorageId uniqueQueueId) throws XmlBlasterException {
+      XBStore store = uniqueQueueId.getXBStore();
+
+      if (!this.isConnected) {
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Currently not possible. No connection to the DB");
+         return null;
+      }
+
+      Connection conn = null;
+      boolean success = true;
+      try {
+         conn = pool.reserve();
+         conn.setAutoCommit(true);
+         XBStore newStore = storeFactory.getByName(store.getNode(), store.getType(), store.getPostfix(), conn, timeout);
+         if (newStore == null) {
+            store.setId(new Timestamp().getTimestamp());
+            storeFactory.insert(store, conn, timeout);
+            newStore = store;
+         }
+         return newStore;
+      }
+      catch (Throwable ex) {
+         success = false;
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getXBStore"), ex))
+           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getXBStore", "", ex); 
+        else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getXBStore", "", ex); 
+      }
+      finally {
+         releaseConnection(conn, success, null);
+      }
+
+   }
+
+   public long clearQueue(XBStore store) throws XmlBlasterException {
+      if (!isConnected) {
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Currently not possible. No connection to the DB");
+         return 0L;
+      }
+      Connection conn = null;
+      boolean success = true;
+      try {
+         conn = pool.reserve();
+         conn.setAutoCommit(false);
+         long countMeats = meatFactory.count(store, conn, timeout);
+         long countRefs = refFactory.count(store, conn, timeout);
+         final long fakeId = 0; // since the argument is not used
+         storeFactory.delete(store.getId(), fakeId, conn, timeout);
+         countMeats -= meatFactory.count(store, conn, timeout);
+         countRefs -= refFactory.count(store, conn, timeout);
+         // add the store entry again since it could be used
+         storeFactory.insert(store, conn, timeout);
+         if (log.isLoggable(Level.FINE))
+           log.fine("cleared " + countMeats + " meats and " + countRefs + " refs when clearing store " + store.getId() + " : " + store.toString());
+         conn.commit();
+         if (countRefs > 0L)
+            return countRefs;
+         return countMeats;
+      }
+      catch (Throwable ex) {
+         success = false;
+         rollback(conn);
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getNumOfAll"), ex))
+           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfAll", "", ex); 
+        else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfAll", "", ex); 
+      }
+      finally {
+         releaseConnection(conn, success, null);
+      }
+
+   }
 }

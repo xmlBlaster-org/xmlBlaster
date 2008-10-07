@@ -30,6 +30,7 @@ public abstract class XBEntry {
    private boolean durable;
    private long byteSize;
    private String flag1;
+   private long storeId;
 
    public XBEntry() {
    }
@@ -42,6 +43,16 @@ public abstract class XBEntry {
    public void setId(long id) {
       this.id = id;
    }
+
+   public long getStoreId() {
+      return storeId;
+   }
+
+
+   public void setStoreId(long storeId) {
+      this.storeId = storeId;
+   }
+
 
    public boolean isDurable() {
       return durable;
@@ -72,4 +83,14 @@ public abstract class XBEntry {
       this.flag1 = flag1;
    }
 
+   
+   protected void toXml(String offset, StringBuffer buf) {
+      buf.append(offset).append("<id>").append(id).append("</id>\n");
+      buf.append(offset).append("<storeId>").append(storeId).append("</storeId>\n");
+      buf.append(offset).append("<durable>").append(durable).append("</durable>\n");
+      buf.append(offset).append("<byteSize>").append(byteSize).append("</byteSize>\n");
+      if (flag1 != null)
+         buf.append(offset).append("<flag1>").append(flag1).append("</flag1>\n");
+   }
+   
 }

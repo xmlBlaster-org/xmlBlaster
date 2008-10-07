@@ -22,10 +22,15 @@ public class XBStore {
  * 
  */
    
+   public final static int TYPE_UNDEF = 0;
+   public final static int TYPE_MEAT = 1;
+   public final static int TYPE_REF = 2;
+   
    private long id;
    private String node;
    private String  type;
    private String postfix;
+   private transient int storeType;
    
    private String flag1;
    
@@ -65,7 +70,9 @@ public class XBStore {
    }
 
    public String getPostfix() {
-      return postfix;
+      if (postfix != null && postfix.length() > 0)
+         return postfix;
+      return "  ";
    }
 
    public void setPostfix(String postfix) {
@@ -73,7 +80,15 @@ public class XBStore {
    }
 
    public String toString() {
-      return node + ":" + type + postfix;
+      return type + ":" + node + postfix;
+   }
+   
+   public int getStoreType() {
+      return this.storeType;
+   }
+   
+   public void setStoreType(int storeType) {
+      this.storeType = storeType;
    }
    
 }

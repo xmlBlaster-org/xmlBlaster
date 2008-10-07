@@ -22,6 +22,6 @@ public class ReturnDataHolder {
    public long countBytes = 0L;
    public long countPersistentEntries = 0;
    public long countPersistentBytes = 0L;
-   public final ArrayList list = new ArrayList();
+   public ArrayList list = new ArrayList();
 
 }

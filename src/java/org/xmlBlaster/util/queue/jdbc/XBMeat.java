@@ -32,26 +32,36 @@ public class XBMeat extends XBEntry {
     * @return
     */
    private long refCount;
+   private long refCount2;
    private String dataType;
    private String qos;
    private byte[] content;
    private String key;
    
-   
+   public XBMeat(long id) {
+      super();
+      setId(id);
+   }
+
    public XBMeat() {
       super();
    }
-
 
    public long getRefCount() {
       return refCount;
    }
 
-
    public void setRefCount(long refCount) {
       this.refCount = refCount;
    }
 
+   public long getRefCount2() {
+      return refCount2;
+   }
+
+   public void setRefCount2(long refCount2) {
+      this.refCount2 = refCount2;
+   }
 
    public String getDataType() {
       return dataType;
@@ -90,6 +100,23 @@ public class XBMeat extends XBEntry {
 
    public void setKey(String key) {
       this.key = key;
+   }
+   
+   
+   public String toXml(String offset) {
+      StringBuffer buf = new StringBuffer(512);
+      buf.append(offset).append("<xbmeat>\n");
+      super.toXml(offset + "  ", buf);
+      buf.append(offset).append("  <refCount>").append(refCount).append("</refCount>\n");
+      if (dataType != null)
+         buf.append(offset).append("  <dataType>").append(dataType).append("</dataType>\n");
+      if (qos != null)
+         buf.append(offset).append("  <qos>").append(qos).append("</qos>\n");
+      // buf.append(offset).append("  <content>").append(content).append("</content>\n");
+      if (key != null)
+         buf.append(offset).append("  <key>").append(key).append("</key>\n");
+      buf.append(offset).append("</xbmeat>\n");
+      return buf.toString();
    }
    
 }
