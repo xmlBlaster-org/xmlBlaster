@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?fileVersion 4.0.0?>
 
 <cproject>
@@ -19,49 +19,49 @@
 <folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189.1122826958" name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1593365266" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1411119951" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-<builder buildPath="${workspace_loc:/Cpp-HelloWorld2/Debug}" id="cdt.managedbuild.target.gnu.builder.exe.debug.126472174" name="Gnu Make Builder.Debug" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+<builder buildPath="${workspace_loc:/Cpp-HelloWorld2/Debug}" id="cdt.managedbuild.target.gnu.builder.exe.debug.126472174" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
-<option id="gnu.cpp.compiler.option.include.paths.40748000" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+<option id="gnu.cpp.compiler.option.include.paths.40748000" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++"/>
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++/generated"/>
 </option>
-<option id="gnu.cpp.compiler.option.warnings.pedantic.348244259" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
-<option id="gnu.cpp.compiler.option.other.other.382333710" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wall -pedantic -Wno-long-long -rdynamic -export-dynamic" valueType="string"/>
-<option id="gnu.cpp.compiler.option.preprocessor.def.1824850307" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+<option id="gnu.cpp.compiler.option.warnings.pedantic.348244259" name="Pedantic (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
+<option id="gnu.cpp.compiler.option.other.other.382333710" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wall -pedantic -Wno-long-long -rdynamic -export-dynamic" valueType="string"/>
+<option id="gnu.cpp.compiler.option.preprocessor.def.1824850307" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 <listOptionValue builtIn="false" value="_REENTRANT "/>
 </option>
-<option id="gnu.cpp.compiler.option.preprocessor.undef.177495716" superClass="gnu.cpp.compiler.option.preprocessor.undef" valueType="stringList">
+<option id="gnu.cpp.compiler.option.preprocessor.undef.177495716" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" valueType="stringList">
 <listOptionValue builtIn="false" value="_ENABLE_STACK_TRACE_"/>
 </option>
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1802115805" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.702342204" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1802115805" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.702342204" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1469829445" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1901933976" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
-<option id="gnu.c.compiler.option.preprocessor.def.symbols.1512317360" superClass="gnu.c.compiler.option.preprocessor.def.symbols"/>
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.204721019" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.debug.option.debugging.level.1745895354" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.preprocessor.def.symbols.1512317360" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols"/>
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.204721019" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.1745895354" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1429093558" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.430559339" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.59829959" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
-<option id="gnu.cpp.link.option.libs.1865768037" superClass="gnu.cpp.link.option.libs" valueType="libs">
+<option id="gnu.cpp.link.option.libs.1865768037" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="xerces-c"/>
 <listOptionValue builtIn="false" value="xmlBlasterClientCD"/>
 <listOptionValue builtIn="false" value="xmlBlasterClientD"/>
 <listOptionValue builtIn="false" value="sqlite"/>
 <listOptionValue builtIn="false" value="z"/>
 </option>
-<option id="gnu.cpp.link.option.paths.1127556089" superClass="gnu.cpp.link.option.paths" valueType="stringList">
+<option id="gnu.cpp.link.option.paths.1127556089" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="stringList">
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/lib"/>
 <listOptionValue builtIn="false" value="${xerces_lib_dir}"/>
 <listOptionValue builtIn="false" value="${zlib_lib_dir}"/>
 <listOptionValue builtIn="false" value="${sqlite_lib_dir}"/>
 <listOptionValue builtIn="false" value="${usr_lib_dir}"/>
 </option>
-<option id="gnu.cpp.link.option.userobjs.1382387840" superClass="gnu.cpp.link.option.userobjs"/>
-<option id="gnu.cpp.link.option.flags.207622879" superClass="gnu.cpp.link.option.flags" value="&quot;-Wl,-rpath=${xerces_lib_dir} -Wl,-rpath=${zlib_lib_dir} -Wl,-rpath=${sqlite_lib_dir} -Wl,-rpath=${usr_lib_dir} -Wl,-rpath=${XMLBLASTER_HOME}/lib&quot;" valueType="string"/>
+<option id="gnu.cpp.link.option.userobjs.1382387840" name="Other objects" superClass="gnu.cpp.link.option.userobjs"/>
+<option id="gnu.cpp.link.option.flags.207622879" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="&quot;-Wl,-rpath=${xerces_lib_dir} -Wl,-rpath=${zlib_lib_dir} -Wl,-rpath=${sqlite_lib_dir} -Wl,-rpath=${usr_lib_dir} -Wl,-rpath=${XMLBLASTER_HOME}/lib&quot;" valueType="string"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.35664435" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.379667904" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
@@ -71,48 +71,48 @@
 </folderInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/MultiConnectDemo.cpp" name="MultiConnectDemo.cpp" rcbsApplicability="disable" resourcePath="MultiConnectDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/MultiConnectDemo.cpp">
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/MultiConnectDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1332886486" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.940493512" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1332886486" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.940493512" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.395089250" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
-</tool>
-</fileInfo>
-<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/TestEmptyContent.cpp" name="TestEmptyContent.cpp" rcbsApplicability="disable" resourcePath="TestEmptyContent.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/TestEmptyContent.cpp">
-<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/TestEmptyContent.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.2104900925" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1034475214" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.230803098" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
-</tool>
-</fileInfo>
-<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/SubscribeDemo.cpp" name="SubscribeDemo.cpp" rcbsApplicability="disable" resourcePath="SubscribeDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/SubscribeDemo.cpp">
-<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/SubscribeDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.4251231" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1233120545" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1562206691" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
-</tool>
-</fileInfo>
-<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/PublishDemo.cpp" name="PublishDemo.cpp" rcbsApplicability="disable" resourcePath="PublishDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/PublishDemo.cpp">
-<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/PublishDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.58522062" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1520370112" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1039458524" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 </fileInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/ExternOrb.cpp" name="ExternOrb.cpp" rcbsApplicability="disable" resourcePath="ExternOrb.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/ExternOrb.cpp">
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/ExternOrb.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1097598070" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1312727066" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1097598070" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1312727066" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2014351805" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+</tool>
+</fileInfo>
+<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/PublishDemo.cpp" name="PublishDemo.cpp" rcbsApplicability="disable" resourcePath="PublishDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/PublishDemo.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/PublishDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.58522062" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1520370112" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1039458524" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+</tool>
+</fileInfo>
+<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/SubscribeDemo.cpp" name="SubscribeDemo.cpp" rcbsApplicability="disable" resourcePath="SubscribeDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/SubscribeDemo.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/SubscribeDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.4251231" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1233120545" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1562206691" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+</tool>
+</fileInfo>
+<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/TestEmptyContent.cpp" name="TestEmptyContent.cpp" rcbsApplicability="disable" resourcePath="TestEmptyContent.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/TestEmptyContent.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/TestEmptyContent.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.2104900925" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1034475214" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.230803098" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 </fileInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/Leak.cpp" name="Leak.cpp" rcbsApplicability="disable" resourcePath="Leak.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/Leak.cpp">
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/Leak.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.539289311" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1346311152" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.539289311" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1346311152" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.724685631" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 </fileInfo>
 <sourceEntries>
-<entry excluding="ExternOrb.cpp|Leak.cpp|MultiConnectDemo.cpp|PublishDemo.cpp|SubscribeDemo.cpp|TestEmptyContent.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+<entry excluding="FileWriterApp.cpp|ExternOrb.cpp|Leak.cpp|MultiConnectDemo.cpp|PublishDemo.cpp|SubscribeDemo.cpp|TestEmptyContent.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 </sourceEntries>
 </configuration>
 </storageModule>
@@ -1047,15 +1047,15 @@
 <folderInfo id="cdt.managedbuild.config.gnu.exe.release.1178659680.613690117" name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.664089039" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.release.301018828" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>
-<builder buildPath="${workspace_loc:/Cpp-HelloWorld2/Release}" id="cdt.managedbuild.target.gnu.builder.exe.release.478338481" name="Gnu Make Builder.Release" superClass="cdt.managedbuild.target.gnu.builder.exe.release"/>
+<builder buildPath="${workspace_loc:/Cpp-HelloWorld2/Release}" id="cdt.managedbuild.target.gnu.builder.exe.release.478338481" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.release"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.818329583" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release">
-<option id="gnu.cpp.compiler.exe.release.option.optimization.level.412514703" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.release.option.debugging.level.1072487117" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.release.option.optimization.level.412514703" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.release.option.debugging.level.1072487117" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1089924206" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1929926386" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release">
-<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.exe.release.option.optimization.level.1198562980" superClass="gnu.c.compiler.exe.release.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.release.option.debugging.level.1009658664" superClass="gnu.c.compiler.exe.release.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.exe.release.option.optimization.level.1198562980" name="Optimization Level" superClass="gnu.c.compiler.exe.release.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.release.option.debugging.level.1009658664" name="Debug Level" superClass="gnu.c.compiler.exe.release.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.364250615" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.40239831" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
@@ -1071,6 +1071,9 @@
 <tool id="cdt.managedbuild.tool.gnu.archiver.base.1720530613" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 </toolChain>
 </folderInfo>
+<sourceEntries>
+<entry excluding="FileWriterApp.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+</sourceEntries>
 </configuration>
 </storageModule>
 <storageModule moduleId="scannerConfiguration">
