@@ -361,8 +361,7 @@ public class XBMeatFactory extends XBFactory {
       }
    }
    
-   /*
-   public void incrementRefCounter(XBStore store, XBMeat meat, long increment, Connection conn, int timeout) throws SQLException, IOException {
+   public void incrementRefCounters(XBStore store, XBMeat meat, long increment, Connection conn, int timeout) throws SQLException, IOException {
       if (increment == 0)
          return;
       if (true && incRefCounterFunction != null && incRefCounterInvoke != null) {
@@ -385,7 +384,6 @@ public class XBMeatFactory extends XBFactory {
          updateRefCounters(meatRet, conn, timeout);
       }
    }
-   */
    
    static final XBMeat buildFromRs(ResultSet rs, int offset) throws SQLException, IOException {
       long meatId = rs.getLong(ID + offset);

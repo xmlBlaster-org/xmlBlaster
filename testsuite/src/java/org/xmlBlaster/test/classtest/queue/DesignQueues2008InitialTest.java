@@ -292,7 +292,7 @@ public class DesignQueues2008InitialTest extends TestCase {
          for (i=1; i < meats.length; i++) {
             Connection conn = pool.reserve();
             conn.setAutoCommit(true);
-            meatFactory.incrementRefCounter(stores[1], meats[i], 1L, conn, 60);
+            meatFactory.incrementRefCounters(stores[1], meats[i], 1L, conn, 60);
             pool.release(conn);
          }
 
@@ -314,7 +314,7 @@ public class DesignQueues2008InitialTest extends TestCase {
             conn.setAutoCommit(true);
             XBMeat meat = meatFactory.get(stores[1], meats[i].getId(), conn, 60);
             meat.setRefCount(meat.getRefCount()+1);
-            meatFactory.updateRefCounter(meat, conn, 60);
+            meatFactory.updateRefCounters(meat, conn, 60);
             pool.release(conn);
          }
 
