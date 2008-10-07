@@ -498,6 +498,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       ref.setId(getUniqueId());
       ref.setMeatId(getUniqueId());
       ref.setPrio(getPriority());
+      ref.setMethodName(entryType);
       return ref;
    }
 
