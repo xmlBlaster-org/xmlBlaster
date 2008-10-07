@@ -257,8 +257,11 @@ public class ClientEntryFactory implements I_EntryFactory
                                             new Timestamp(timestamp), sizeInBytes, disconnectQos);
          }
          else if (methodName == MethodName.DUMMY) { // for testsuite only
-            DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, content, ref.isDurable());
-            //entry.setUniqueId(timestamp);
+            DummyEntry entry = null;
+            if (content != null)
+               entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, content, ref.isDurable());
+            else
+               entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, ref.isDurable());
             return entry;
          }
 
