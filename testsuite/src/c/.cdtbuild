@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="C-TestError.cdt.managedbuild.target.gnu.exe.82554902" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration artifactName="C-TestError" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1122663610" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.540748206" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2114118620" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+<option id="gnu.c.compiler.option.include.paths.1281770736" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="/home/xmlblast/xmlBlaster/src/c"/>
+</option>
+<option id="gnu.c.compiler.option.warnings.pedantic.887297299" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.489948794" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
+<option id="gnu.c.link.option.libs.669172723" superClass="gnu.c.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="z"/>
+<listOptionValue builtIn="false" value="pthread"/>
+<listOptionValue builtIn="false" value="xmlBlasterClientCD"/>
+</option>
+<option id="gnu.c.link.option.paths.1236394062" superClass="gnu.c.link.option.paths" valueType="stringList">
+<listOptionValue builtIn="false" value="/usr/lib64"/>
+<listOptionValue builtIn="false" value="/opt/sqlite-bin/lib"/>
+<listOptionValue builtIn="false" value="/home/xmlblast/xmlBlaster/lib"/>
+</option>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.878806391" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.122913068" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug"/>
+<macros/>
+</toolChain>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestLeaveServer.c" name="TestLeaveServer.c" rcbsApplicability="disable" resourcePath="/C-TestError/TestLeaveServer.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestLeaveServer.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestLeaveServer.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestMethods.c" name="TestMethods.c" rcbsApplicability="disable" resourcePath="/C-TestError/TestMethods.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestMethods.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestMethods.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestQueue.c" name="TestQueue.c" rcbsApplicability="disable" resourcePath="/C-TestError/TestQueue.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestQueue.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestQueue.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestSocket.c" name="TestSocket.c" rcbsApplicability="disable" resourcePath="/C-TestError/TestSocket.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestSocket.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestSocket.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestStress.c" name="TestStress.c" rcbsApplicability="disable" resourcePath="/C-TestError/TestStress.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestStress.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestStress.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestUtil.c" name="TestUtil.c" rcbsApplicability="disable" resourcePath="/C-TestError/TestUtil.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestUtil.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestUtil.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563"/>
+</resourceConfiguration>
+</configuration>
+<configuration artifactName="C-TestError" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.314724239" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.1010864902" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1561564637" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1614639980" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1541638906" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.667657985" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.1021603181" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release"/>
+</toolChain>
+</configuration>
+</project>
+</ManagedProjectBuildInfo>
