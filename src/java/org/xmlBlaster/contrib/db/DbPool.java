@@ -106,6 +106,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
       Global glob = (Global)info.getObject(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
       if (glob == null)
          glob = (Global)info.getObject(Constants.OBJECT_ENTRY_ServerScope);
+      if (glob == null)
+         glob = (Global)info.getObject("org.xmlBlaster.engine.Global"); // ServerScope ?
+      if (glob == null)
+         glob = (Global)info.getObject("org.xmlBlaster.util.Global");
       if (glob != null) {
          String dbInstanceName = glob.getStrippedId();
          dbUrl = ReplaceVariable.replaceFirst(dbUrl, "$_{xmlBlaster_uniqueId}", dbInstanceName);
