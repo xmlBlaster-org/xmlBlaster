@@ -17,6 +17,7 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster queue tests");
       suite.addTest(I_QueueTest.suite());
+      // suite.addTest(JdbcManagerCommonTableTest.suite());
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.queue.CacheQueueTest.class));
       suite.addTest(org.xmlBlaster.test.classtest.queue.QueueThreadingTest.suite());
       suite.addTest(org.xmlBlaster.test.classtest.queue.QueueServerEntryTest.suite());

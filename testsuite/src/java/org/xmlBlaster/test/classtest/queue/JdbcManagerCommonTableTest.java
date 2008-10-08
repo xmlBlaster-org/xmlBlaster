@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
+import org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 import junit.framework.*;
@@ -24,7 +25,8 @@ public class JdbcManagerCommonTableTest extends TestCase {
    protected Global glob;
    private static Logger log = Logger.getLogger(JdbcManagerCommonTableTest.class.getName());
    private JdbcManagerCommonTable manager;
-
+   private boolean doExecute;
+   
    public JdbcManagerCommonTableTest(Global glob, String name) {
       super(name);
       this.glob = glob;
@@ -37,18 +39,35 @@ public class JdbcManagerCommonTableTest extends TestCase {
       try {
          QueuePluginManager pluginManager = new QueuePluginManager(glob);
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
-
+         String className = pluginInfo.getClassName();
+         if (!className.equals(JdbcQueueCommonTablePlugin.class.getName()))
+            doExecute = false;
+         else
+            doExecute = true;
+         if (!doExecute) {
+            log.warning("NOT GOING TO EXECUTE THE TEST SINCE JDBC NOT CONFIGURED FOR THIS TEST");
+            return;
+         }
+         
          java.util.Properties
             prop = (java.util.Properties)pluginInfo.getParameters().clone();
 
          prop.put("tableNamePrefix", "TEST");
          prop.put("entriesTableName", "_entries");
+         prop.put("dbAdmin", "true");
 
          JdbcConnectionPool pool = new JdbcConnectionPool();
          pool.initialize(this.glob, prop);
 
          this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), pluginInfo.getTypeVersion(), null);
-         this.manager.wipeOutDB(false);
+         this.manager.setUp();
+         try {
+            this.manager.wipeOutDB(false);
+         }
+         catch (Exception ex) {
+            log.warning("Could not wipe out the db, probably because the table did not exist");
+            ex.printStackTrace();
+         }
       }
       catch (Exception ex) {
          log.severe("exception occured " + ex.toString());
@@ -58,7 +77,11 @@ public class JdbcManagerCommonTableTest extends TestCase {
 
    public void testManager() {
 //      try {
-         manager();
+      if (!doExecute) {
+         log.warning("NOT GOING TO EXECUTE THE TEST SINCE JDBC NOT CONFIGURED FOR THIS TEST");
+         return;
+      }
+      manager();
 /*
       }
       catch (XmlBlasterException ex) {
@@ -237,7 +260,8 @@ public class JdbcManagerCommonTableTest extends TestCase {
    public void tearDown() {
       String me = ME + ".tearDown";
       try {
-         this.manager.wipeOutDB(false);
+         if (doExecute)
+            this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {
          log.severe("exception occured " + ex.toString());
