@@ -43,6 +43,7 @@ public class TestInfo  extends XMLTestCase {
          }
          
       }
+
    }
 
    private final static Logger log = Logger.getLogger(TestInfo.class.getName());

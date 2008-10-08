@@ -76,7 +76,7 @@ public class DesignQueues2008InitialTest extends TestCase {
          String createInterceptorClass = info.get("db.createInterceptor.class", null);
          */
       }
-      
+
    }
 
    private final static Logger log = Logger.getLogger(DesignQueues2008InitialTest.class.getName());
