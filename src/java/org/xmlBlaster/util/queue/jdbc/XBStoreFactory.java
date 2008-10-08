@@ -44,6 +44,29 @@ public class XBStoreFactory extends XBFactory {
    }
 
 
+   /**
+    * Old: xb_entries.queueName=
+    * <pre>
+ callback_nodefwgwTestclientmarcel28              | UPDATE_REF
+ connection_testecsoftclientfwgwTest1             | connect
+ history_fwgwTestdevice_lkw5@basis_de_cfg         | HISTORY_REF
+ history_fwgwTestHello                            | HISTORY_REF
+ history_fwgwTest__sys__remoteProperties          | HISTORY_REF
+ history_fwgwTestTEST_TOPIC                       | HISTORY_REF
+ msgUnitStore_fwgwTestdevice_lkw5@basis_de_cfg    | MSG_XML
+ msgUnitStore_fwgwTestfwauftrag                   | MSG_XML
+ msgUnitStore_fwgwTest__sys__remoteProperties     | MSG_XML
+ msgUnitStore_fwgwTestTEST_TOPIC                  | MSG_XML
+ session_fwgwTestsubPersistence,1_0               | SESSION
+ subject_nodefwgwTestclient_monito                | UPDATE_REF
+ topicStore_fwgwTest                              | TOPIC_XML
+    * </pre>
+    * 
+    * New:
+    * xbnode=clusterNodeId="fwgwTest"
+    * xbtype="history" | "msgUnitStore" | "session" | ...
+    * xbpostfix="Testclient_monito"
+    */
    protected void prepareDefaultStatements() {
       StringBuffer buf = new StringBuffer(512);
       
