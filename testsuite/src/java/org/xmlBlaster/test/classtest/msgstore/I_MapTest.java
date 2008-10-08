@@ -82,6 +82,7 @@ public class I_MapTest extends TestCase {
          StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
 
          this.currMap = pluginManager.getPlugin(pluginInfo, queueId, storeProp);
+         this.currMap.clear();
          this.currMap.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
