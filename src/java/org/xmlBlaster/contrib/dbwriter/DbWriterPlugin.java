@@ -121,4 +121,5 @@ public class DbWriterPlugin extends GlobalInfo implements DbWriterPluginMBean {
       }
       log.info("Stopped DbWatcher plugin '" + getType() + "'");
    }
+
 }

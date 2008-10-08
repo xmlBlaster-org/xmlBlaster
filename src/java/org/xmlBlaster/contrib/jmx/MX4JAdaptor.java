@@ -414,4 +414,5 @@ public class MX4JAdaptor extends GlobalInfo {
       }
       super.shutdown();
    }
+   
 }

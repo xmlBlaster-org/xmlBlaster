@@ -99,4 +99,5 @@ public class DbWatcherPlugin extends GlobalInfo {
       }
       log.info("Stopped DbWatcher plugin '" + getType() + "'");
    }
+   
 }

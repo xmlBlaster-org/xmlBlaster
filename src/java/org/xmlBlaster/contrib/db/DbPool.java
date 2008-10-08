@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -103,13 +102,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       this.dbUser = this.info.get("db.user", "");
       this.dbPasswd = this.info.get("db.password", "");
       
-      Global glob = (Global)info.getObject(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
-      if (glob == null)
-         glob = (Global)info.getObject(Constants.OBJECT_ENTRY_ServerScope);
-      if (glob == null)
-         glob = (Global)info.getObject("org.xmlBlaster.engine.Global"); // ServerScope ?
-      if (glob == null)
-         glob = (Global)info.getObject("org.xmlBlaster.util.Global");
+      Global glob = GlobalInfo.getOriginalGlobal(info);
       if (glob != null) {
          String dbInstanceName = glob.getStrippedId();
          dbUrl = ReplaceVariable.replaceFirst(dbUrl, "$_{xmlBlaster_uniqueId}", dbInstanceName);

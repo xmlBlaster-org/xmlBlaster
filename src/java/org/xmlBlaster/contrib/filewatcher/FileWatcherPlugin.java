@@ -314,5 +314,4 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
       return publisherClient.isRecursive();
    }
    
-   
 }

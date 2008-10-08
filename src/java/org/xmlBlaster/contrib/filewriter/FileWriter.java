@@ -260,6 +260,8 @@ public class FileWriter extends GlobalInfo implements I_Callback {
          throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_HOLDBACK, "Receiver.update", "user throwable", ex);
       }
    }
+   
+   
 }
 
 

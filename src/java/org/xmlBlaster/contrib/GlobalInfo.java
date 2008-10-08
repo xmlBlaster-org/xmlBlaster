@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -57,7 +56,6 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    /** My JMX registration */
    private Set jmxHandleSet = new HashSet();
    private ContextNode contextNode;
-   private boolean onServer = true;
 
    public static String getStrippedString(String pureVal) {
       String corrected = Global.getStrippedString(pureVal);
@@ -190,8 +188,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @param additionalInfo can be null. If not null, these properties will be added on
     * top of the already set in global.
     */
-   public GlobalInfo(Global otherGlobal, I_Info additionalInfo, boolean onServer) throws XmlBlasterException {
-      this.onServer = onServer;
+   public GlobalInfo(Global otherGlobal, I_Info additionalInfo) throws XmlBlasterException {
       this.propsOfOwnInterest = new HashSet();
       this.helper = new InfoHelper(this);
       init(otherGlobal, null);
@@ -204,8 +201,8 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * top of the already set in global.
     * @throws XmlBlasterException
     */
-   public GlobalInfo(GlobalInfo baseInfo, I_Info additionalInfo, boolean onServer) throws XmlBlasterException {
-      this(baseInfo.global, additionalInfo, onServer);
+   public GlobalInfo(GlobalInfo baseInfo, I_Info additionalInfo) throws XmlBlasterException {
+      this(baseInfo.global, additionalInfo);
    }
    
    /**
@@ -222,21 +219,21 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       String[] additionalAttributes = null;
       // global_.getProperty().getProperties().list(System.out);      
-      
-      if (this.onServer)
+      // boolean wantsClone = wantGlobalClone(global_);
+      // if (this.onServer)
+      if (global_.isServerSide())
          additionalAttributes = global_.getNativeConnectArgs();
-      
-      this.global = global_.getClone(additionalAttributes);
-      if (global_ instanceof ServerScope) {
+      if (global_.isServerSide() /* || wantsClone */) {
+         this.global = global_.getClone(additionalAttributes);
          this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
          this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_);
+         setStrippedHostname(this, UPPER_CASE);
       }
       else {
-         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
+         this.global = global_;
+         putObject("org.xmlBlaster.util.Global", this.global);
       }
-         
 
-      setStrippedHostname(this, UPPER_CASE);
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
       if (this.pluginInfo != null) {
@@ -255,7 +252,8 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
             log.warning("No id has been defined for this info, please add one since this could be used to find your instance: example '" + ID + "=someId'");
       }
       // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
-      if (this.onServer)
+      // if (this.onServer)
+      if (global_.isServerSide())
          putObject("org.xmlBlaster.engine.Global", this.global);
       
       // For JMX instanceName may not contain ","
@@ -533,4 +531,44 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       return this.global;
    }
    
+   private static Global getOriginalGlobal(Global global, boolean recursive) {
+      if (global == null)
+         return null;
+      Global glob = (Global)global.getObjectEntry(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
+      if (glob == null)
+         glob = (Global)global.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+      if (glob == null)
+         glob = (Global)global.getObjectEntry("org.xmlBlaster.engine.Global"); // ServerScope ?
+      if (glob == null)
+         glob = (Global)global.getObjectEntry("org.xmlBlaster.util.Global");
+      if (recursive) {
+         if (glob != null && glob != global)
+            return getOriginalGlobal(glob, recursive);
+      }
+      else {
+         if (glob == null)
+            return global;
+         return glob;
+      }
+      return global;
+   }
+   
+   /**
+    * Returns the Base global. The Base Global is the Global 
+    * @param info
+    * @return
+    */
+   public static Global getOriginalGlobal(I_Info info) {
+      final boolean recursive = false; 
+      Global glob = (Global)info.getObject(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
+      if (glob == null)
+         glob = (Global)info.getObject(Constants.OBJECT_ENTRY_ServerScope);
+      if (glob == null)
+         glob = (Global)info.getObject("org.xmlBlaster.engine.Global"); // ServerScope ?
+      if (glob == null)
+         glob = (Global)info.getObject("org.xmlBlaster.util.Global");
+      if (glob != null)
+         return getOriginalGlobal(glob, recursive);
+      return null;
+   }
 }

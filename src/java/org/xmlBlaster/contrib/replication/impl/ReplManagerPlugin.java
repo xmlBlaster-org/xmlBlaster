@@ -1879,6 +1879,5 @@ public class ReplManagerPlugin extends GlobalInfo
             activateSlaveDispatchers(prefix);
       }
    }
-   
 }
 

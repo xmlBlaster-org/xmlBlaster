@@ -67,15 +67,13 @@ public class ReplicationAgent implements I_InitialUpdateListener {
    
    public class OwnGlobalInfo extends GlobalInfo {
       
-      private final static boolean ON_SERVER = false;
-      
       public OwnGlobalInfo(Global global, I_Info additionalInfo, String infoId) throws Exception {
-         super(global, additionalInfo, ON_SERVER);
+         super(global, additionalInfo);
          put(ID, infoId);
       }
 
       public OwnGlobalInfo(GlobalInfo globalInfo, I_Info additionalInfo, String infoId, I_InitialUpdateListener agent) throws Exception {
-         super(globalInfo, additionalInfo, ON_SERVER);
+         super(globalInfo, additionalInfo);
          put(ID, infoId);
          final String key = "org.xmlBlaster.util.Global";
          if (getObject(key) == null)
@@ -585,5 +583,4 @@ public class ReplicationAgent implements I_InitialUpdateListener {
          this.dbWriter.registerForUpdates(registeredForUpdates);
    }
    
-
 }

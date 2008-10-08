@@ -77,4 +77,5 @@ public class SocketGetterPlugin extends GlobalInfo {
       }
       log.info("Stopped SocketGetter plugin '" + getType() + "'");
    }
+   
 }
