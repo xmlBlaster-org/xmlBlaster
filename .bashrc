@@ -180,7 +180,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    # apache's Base64 encoding (for XmlBlasterApplet) and utils (for token)
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-codec.jar
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-lang-2.0.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-lang-2.4.jar
 
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
