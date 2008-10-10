@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17218 cluster setup: if circular loop (slave -> master -> same slave) an exception is thrown by master already
+          Switch back to old behaviour with cluster/allowDirectLoopback=true
+	  For publishes in Pub/Sub and PtP mode.
+
  o r17176 socket driver: Fix to not ignore <attribute name='updateResponseTimeout' type='long'>7200000</attribute>
           configurations from clients in ConnectQos <callback> section
 
