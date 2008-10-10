@@ -89,11 +89,11 @@ public class DbWriterPlugin extends GlobalInfo implements DbWriterPluginMBean {
          String name = dbWriters[i].getInfo().get("mom.loginName", "???");
          if (loginName.equals(name)) {
             if (dbWriters.length > 1 && dbWriters[i].getPoolOwner()) {
-               dbWriters[i].setPoolOwner(false);
+               DbWriter.setPoolOwner(dbWriters[i], false);
                if (i == 0)
-                  dbWriters[1].setPoolOwner(true);
+                  DbWriter.setPoolOwner(dbWriters[1], true);
                else
-                  dbWriters[0].setPoolOwner(true);
+                  DbWriter.setPoolOwner(dbWriters[0], true);
             }
             this.dbWriterList.remove(i);
             dbWriters[i].shutdown();
@@ -108,6 +108,8 @@ public class DbWriterPlugin extends GlobalInfo implements DbWriterPluginMBean {
     */
    public void shutdown() throws XmlBlasterException {
       super.shutdown();
+      if (dbWriterList == null)
+         return;
       synchronized (this.dbWriterList) {
          for (int i=this.dbWriterList.size()-1; i >=0; i--) {
             try {

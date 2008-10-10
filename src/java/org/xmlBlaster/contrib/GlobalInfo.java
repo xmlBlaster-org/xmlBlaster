@@ -227,12 +227,12 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
          this.global = global_.getClone(additionalAttributes);
          this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
          this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_);
-         setStrippedHostname(this, UPPER_CASE);
       }
       else {
          this.global = global_;
          putObject("org.xmlBlaster.util.Global", this.global);
       }
+      setStrippedHostname(this, UPPER_CASE);
 
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
@@ -403,6 +403,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
              this.global.getProperty().set(prefix + key, value);
           }
           catch (Exception e) {
+             
              log.warning(e.toString() + ": Ignoring setting " + key + "=" + value);
           }
        }

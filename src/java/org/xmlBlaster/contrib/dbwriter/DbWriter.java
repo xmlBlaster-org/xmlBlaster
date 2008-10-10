@@ -23,6 +23,7 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.util.pool.I_PoolManager;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -112,6 +113,9 @@ public class DbWriter implements I_Update {
       String password = "secret";
       StringTokenizer nameTokenizer = new StringTokenizer(loginNames, ",");
       StringTokenizer passwordTokenizer = new StringTokenizer(passwords, ",");
+      
+      ClassLoader cl = DbWriter.class.getClassLoader();
+      createPool(cl, masterInfo);
       while (nameTokenizer.hasMoreTokens()) {
          String loginName = nameTokenizer.nextToken().trim();
          if (passwordTokenizer.hasMoreTokens())
@@ -124,14 +128,33 @@ public class DbWriter implements I_Update {
       return dbWriterList;
    }
    
-   public void setPoolOwner(boolean poolOwner) {
-      this.poolOwner = poolOwner;
+   public static void setPoolOwner(DbWriter writer, boolean poolOwner) {
+      if (writer != null)
+         writer.poolOwner = poolOwner;
    }
    
    public boolean getPoolOwner() {
       return this.poolOwner;
    }
+
    
+   private final static I_DbPool createPool(ClassLoader cl, I_Info info) throws Exception {
+      I_DbPool dbPool = (I_DbPool)info.getObject("db.pool");
+      if (dbPool == null) {
+         String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+         if (dbPoolClass.length() > 0) {
+             dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
+             dbPool.init(info);
+             if (log.isLoggable(Level.FINE)) log.fine(dbPoolClass + " created and initialized");
+         }
+         else
+            throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
+         setPoolOwner(null, true);
+         info.putObject(DB_POOL_KEY, dbPool);
+      }
+      return dbPool;
+   }
+
    /**
     * Creates a processor for changes. 
     * The alert producers need to be started later with a call to
@@ -143,21 +166,8 @@ public class DbWriter implements I_Update {
       if (info == null) throw new IllegalArgumentException("Missing configuration, info is null");
       this.info = info;
       this.info.putObject("org.xmlBlaster.contrib.dbwriter.DbWriter", this);
-      
       ClassLoader cl = this.getClass().getClassLoader();
-      this.dbPool = (I_DbPool)info.getObject("db.pool");
-      if (this.dbPool == null) {
-         String dbPoolClass = this.info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
-         if (dbPoolClass.length() > 0) {
-             this.dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
-             this.dbPool.init(info);
-             if (log.isLoggable(Level.FINE)) log.fine(dbPoolClass + " created and initialized");
-         }
-         else
-            throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
-         setPoolOwner(true);
-         this.info.putObject(DB_POOL_KEY, this.dbPool);
-      }
+      this.dbPool = createPool(cl, info);
 
       // Now we load all plugins to do the job
       String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
