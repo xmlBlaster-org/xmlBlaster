@@ -12,8 +12,10 @@ import org.xmlBlaster.util.qos.address.Destination;
  * @author xmlblast@marcelruff.info
  */
 public class DataHolder {
+
    private final MethodName action;
    private final MsgUnit msgUnit;
+   private transient String notAuthorizedInfo;
 
    /**
     * @param action May not be null
@@ -97,5 +99,15 @@ public class DataHolder {
 	
    public String toString() {
       return this.action + " " + this.msgUnit.getKeyOid();
+   }
+   
+   /**
+    * @return Usuall null, can contain additional info for caller in error case
+    */
+   public String getNotAuthorizedInfo() {
+      return notAuthorizedInfo;
+   }
+   public void setNotAuthorizedInfo(String notAuthorizedInfo) {
+      this.notAuthorizedInfo = notAuthorizedInfo;
    }
 }

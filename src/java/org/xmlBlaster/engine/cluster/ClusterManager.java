@@ -413,9 +413,11 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
 
       if (clusterNode == null && destination.getDestination().isNodeIdExplicitlyGiven() &&
             !glob.getId().equals(destination.getDestination().getNodeIdStr())) {
-         log.warning("PtP message '" + msgUnit.getLogId() +
+         String text = "PtP message '" + msgUnit.getLogId() +
                         "' for destination " + destination.getDestination() +
-                        ": Explicitely given remote destination cluster node '"+destination.getDestination().getNodeIdStr()+"' not found");
+                        ": Explicitely given remote destination cluster node '"+destination.getDestination().getNodeIdStr()+"' not found in cluster configuration";
+         log.severe(text + ", please check your configuration");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, text);
       }
       
       if (clusterNode != null && destination.getDestination().isNodeIdExplicitlyGiven()) {
