@@ -109,6 +109,13 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     * and sends them.
     */
    private boolean lazyConnect = false;
+   
+   /**
+    * If sender node == destination node throw exception back (circular loop)
+    * If configured to true (behaviour befor 2008-10-09) the message is send
+    * back and there the loop is detected and error handled.
+    */
+   private boolean allowDirectLoopback = false;
 
    /**
     * If loaded by RunlevelManager. 
@@ -197,6 +204,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     * To initialize ClusterNode we need the addresses from the protocol drivers.
     */
    public void postInit() throws XmlBlasterException {
+      this.allowDirectLoopback = this.glob.getProperty().get("cluster/allowDirectLoopback", false);
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
       this.loadBalancerPluginManager = new LoadBalancerPluginManager(this.glob, this);
@@ -424,6 +432,18 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
 
       if (clusterNode.isLocalNode())
          return null;
+      
+      if (!this.allowDirectLoopback && clusterNode.getId().equals(msgUnit.getQosData().getSender().getNodeIdStr())) {
+    	  // avoid direct loop back: send dead message or throw exception?
+    	  // (sending back leads to dead lock from publisher->slave->master->loopback->slave in socket tunneling mode)
+    	  log.severe("Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
+        		  + "' as destination cluster '" + destination.getDestination().getAbsoluteName() 
+        		  + "' is sender cluster (circular loop), please check your configuration: topicId=" + msgUnit.getKeyOid() + " " + msgUnit.getQosData().toXmlReadable());
+          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, 
+        		  "Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
+        		  + "' as destination cluster '" + destination.getDestination().getAbsoluteName() 
+        		  + "' is sender cluster (circular loop)");
+      }
 
       I_XmlBlasterAccess con = clusterNode.getXmlBlasterAccess();
       if (con == null) {
@@ -453,9 +473,22 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit);
       if (nodeMasterInfo == null)
          return null;
-      I_XmlBlasterAccess con =  nodeMasterInfo.getClusterNode().getXmlBlasterAccess();
+      ClusterNode clusterNode = nodeMasterInfo.getClusterNode();
+      I_XmlBlasterAccess con =  clusterNode.getXmlBlasterAccess();
       if (con == null)
          return null;
+      
+      if (!this.allowDirectLoopback && clusterNode.getId().equals(msgUnit.getQosData().getSender().getNodeIdStr())) {
+    	  // avoid direct loop back: send dead message or throw exception?
+    	  // (sending back leads to dead lock from publisher->slave->master->loopback->slave in socket tunneling mode)
+    	  log.severe("Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
+        		  + "' as destination cluster '" + clusterNode.getId()
+        		  + "' is sender cluster (circular loop), please check your configuration: topicId=" + msgUnit.getKeyOid() + " " + msgUnit.getQosData().toXmlReadable());
+          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, 
+        		  "Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
+        		  + "' as destination cluster '" + clusterNode.getId() 
+        		  + "' is sender cluster (circular loop)");
+      }
 
       QosData publishQos = msgUnit.getQosData();
       if (nodeMasterInfo.isDirtyRead() == true) {
