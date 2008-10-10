@@ -391,6 +391,13 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * 
     */
    public abstract String toXml(String extraOffset, Properties props);
+   
+   public String toXmlReadable() {
+      Properties props = new Properties();
+      props.put(Constants.TOXML_FORCEREADABLE, ""+true);
+      return toXml("", props);
+   }
+   
    /*
    public String toXml(String extraOffset, Properties props) {
       // Derived classes may implement it
