@@ -30,16 +30,22 @@ public class FileDumper {
    private boolean forceBase64 = false;
    
    public FileDumper(Global glob) throws XmlBlasterException {
-	  this(glob, glob.getProperty().get("xmlBlaster/FileDumper/directoryName", System.getProperty("user.home") + System.getProperty("file.separator") + "FileDumper"));
+	  this(glob, null, glob.getProperty().get("xmlBlaster/FileDumper/forceBase64", false));
    }
    
-   public FileDumper(Global glob, String dirName) throws XmlBlasterException {
+   public FileDumper(Global glob, String dirName, boolean forceBase64) throws XmlBlasterException {
       this.glob = glob;
-      this.directoryName = dirName;
+      this.forceBase64 = forceBase64;
+      if (dirName == null) {
+    	  this.directoryName = glob.getProperty().get("xmlBlaster/FileDumper/directoryName", System.getProperty("user.home") + System.getProperty("file.separator") + "FileDumper");
+          log.info("Created FileDumper instance forceBase64=" + this.forceBase64 + " to dump messages to directory xmlBlaster/FileDumper/directoryName=" + this.directoryName);
+          //log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' forceBase64=" + this.forceBase64 + " to directory " + this.directoryName);
+      }
+      else {
+    	  this.directoryName = dirName;
+          log.info("Created FileDumper instance forceBase64=" + this.forceBase64 + " to dump messages to directory " + this.directoryName);
+      }
       initDirectory(null, "directoryName", this.directoryName);
-      
-      log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
-      this.forceBase64 = this.glob.getProperty().get("xmlBlaster/FileDumper/forceBase64", this.forceBase64);
    }
 
    public String dumpMessage(KeyData keyData, byte[] content, QosData qosData) {
