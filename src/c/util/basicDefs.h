@@ -22,6 +22,17 @@ Note:      cl.exe (Windows) always defines _WIN32
 #ifndef XMLBLASTER_basicDefs_H
 #define XMLBLASTER_basicDefs_H
 
+/*
+  __IPhoneOS__ is used for Apple iPhone
+  __MacOSX__
+  __FreeBSD__
+  __hpux__
+  __linux__
+  _WINDOWS
+  WINCE
+ e.g. #if defined(_WINDOWS) || defined(WINCE)
+ */
+
 #if defined(_WIN32)
 #  if !defined(_WINDOWS)
 #		define _WINDOWS /* We work with _WINDOWS and _MSC_VER in our code */
@@ -89,7 +100,7 @@ Note:      cl.exe (Windows) always defines _WIN32
 /* FreeBSD uses inttypes.h, not stdint.h.  Boost's lib suggests
    this should read  defined(__FreeBSD__) || defined(__IBMCPP__)
 */
-# if defined(__FreeBSD__) 
+# if defined(__FreeBSD__)
 #   include <inttypes.h>
 # elif defined(__sun)
     /*#   include <int_types.h>*/ /* /usr/include/sys/int_types.h */
@@ -148,7 +159,7 @@ Note:      cl.exe (Windows) always defines _WIN32
 #endif
 
 /**
- * Declare function callback pointer about how many bytes are read from socket. 
+ * Declare function callback pointer about how many bytes are read from socket.
  * @param userP A user pointer
  * @param currBytesRead The currently number of bytes read
  * @param nbytes Totally expected bytes
