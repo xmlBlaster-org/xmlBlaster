@@ -106,23 +106,21 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
 bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseUdp)
 {
 #ifdef __IPhoneOS__
-    cb->portCB = 12345;
-	strcpyRealloc(&cb->hostCB, "127.0.0.1"); /* inet_ntoa holds the host in an internal static string */
-	/*
-	cb->listenSocket = CFSocketGetNative(globalIPhoneXb->cfSocketRef);
+   cb->portCB = 12345;
+   strcpyRealloc(&cb->hostCB, "127.0.0.1"); /* inet_ntoa holds the host in an internal static string */
+   /*
+   cb->listenSocket = CFSocketGetNative(globalIPhoneXb->cfSocketRef);
 
-	cb->acceptSocket = CFSocketGetNative(globalIPhoneXb->cfSocketRef);
-	 */
-	cb->listenSocket = 0;
+   cb->acceptSocket = CFSocketGetNative(globalIPhoneXb->cfSocketRef);
+   */
+   cb->listenSocket = 0;
 
-	cb->acceptSocket = 0;
+   cb->acceptSocket = 0;
 
-	cb->socketUdp = socketToUseUdp;
-	cb->reusingConnectionSocket = true; /* we tunnel callback through the client connection socket */
-
-
+   cb->socketUdp = socketToUseUdp;
+   cb->reusingConnectionSocket = true; /* we tunnel callback through the client connection socket */
 #else
-	struct sockaddr_in localAddr;
+   struct sockaddr_in localAddr;
    socklen_t size = (socklen_t)sizeof(localAddr);
    memset((char *)&localAddr, 0, (size_t)size);
    if (getsockname(socketToUse, (struct sockaddr *)&localAddr, &size) == -1) {
@@ -133,11 +131,16 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseU
    cb->portCB = (int)ntohs(localAddr.sin_port);
    strcpyRealloc(&cb->hostCB, inet_ntoa(localAddr.sin_addr)); /* inet_ntoa holds the host in an internal static string */
 
+   cb->listenSocket = socketToUse;
+   cb->acceptSocket = socketToUse;
+   cb->socketUdp = socketToUseUdp;
+   cb->reusingConnectionSocket = true; /* we tunnel callback through the client connection socket */
+
    if (cb->logLevel>=XMLBLASTER_LOG_INFO) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
       "Forced callback server to reuse socket descriptor '%d' on localHostname=%s localPort=%d",
-                         socketToUse, cb->hostCB, cb->portCB);
+                        socketToUse, cb->hostCB, cb->portCB);
 #endif
-	return true;
+   return true;
 }
 
 void freeCallbackServerUnparsed(CallbackServerUnparsed **cb_)
