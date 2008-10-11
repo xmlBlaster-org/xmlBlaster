@@ -53,7 +53,7 @@ static void xmlBlasterNumRead_test(void *xb, const size_t currBytesRead, const s
 
 
 /**
- * See header for a description. 
+ * See header for a description.
  */
 CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* argv,
                         UpdateCbFp updateCb, void *updateCbUserData)
@@ -110,17 +110,17 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseU
 	strcpyRealloc(&cb->hostCB, "127.0.0.1"); /* inet_ntoa holds the host in an internal static string */
 	/*
 	cb->listenSocket = CFSocketGetNative(globalIPhoneXb->cfSocketRef);
-	
+
 	cb->acceptSocket = CFSocketGetNative(globalIPhoneXb->cfSocketRef);
 	 */
 	cb->listenSocket = 0;
-	
+
 	cb->acceptSocket = 0;
-	
+
 	cb->socketUdp = socketToUseUdp;
 	cb->reusingConnectionSocket = true; /* we tunnel callback through the client connection socket */
-	
-	
+
+
 #else
 	struct sockaddr_in localAddr;
    socklen_t size = (socklen_t)sizeof(localAddr);
@@ -237,7 +237,7 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
             MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
             XmlBlasterException exception;
             initializeXmlBlasterException(&exception);
-            
+
             cb->responseListener[i].msgRequestInfoP = 0;
 
             /* Simulate an exception on client side ... */
@@ -250,11 +250,11 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
             SNPRINTF(exception.message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                   "[%.100s:%d] Lost connection to xmlBlaster with server side EOF", __FILE__, __LINE__);
 
-            encodeXmlBlasterException(&socketDataHolder->blob, &exception, false); 
-            
+            encodeXmlBlasterException(&socketDataHolder->blob, &exception, false);
+
             /* Takes a clone of socketDataHolder->blob */
             listener->responseEventFp(msgRequestInfoP, socketDataHolder);
-            
+
             freeBlobHolderContent(&socketDataHolder->blob);
             if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                "Notified pending requestId '%s' about lost socket connection", socketDataHolder->requestId);
@@ -313,7 +313,7 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
          if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "Calling client %s() for requestId '%s' ...",
             socketDataHolder->methodName, socketDataHolder->requestId);
-         
+
          strncpy0(msgUnitArrP->secretSessionId, socketDataHolder->secretSessionId, MAX_SESSIONID_LEN);
          msgUnitArrP->isOneway = (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
          cb->updateCb(msgUnitArrP, cb, xmlBlasterException, socketDataHolder);
@@ -349,7 +349,6 @@ static int listenLoop(ListenLoopArgs* ls)
    SocketDataHolder socketDataHolder;
    bool success;
    bool useUdpForOneway = cb->socketUdp != -1;
-	//sleepMillis(100);
    for(;;) {
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
       /* Here we block until a message arrives, see parseSocketData() */
@@ -385,7 +384,7 @@ static int listenLoop(ListenLoopArgs* ls)
 /**
  * Open a socket, this method is usually called from the new thread (see pthread_create())
  * and only leaves when the connection is lost (on EOF),
- * in this case implicit pthread_exit() is called. 
+ * in this case implicit pthread_exit() is called.
  *
  * xmlBlaster will connect and receive callback messages.
  * @return 0 on success, 1 on error. The return value is the exit value returned by pthread_join()
@@ -453,7 +452,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 
 /**
  * Is only called if we start a dedicated callback server (not tunneling
- * through the connection socket). 
+ * through the connection socket).
  * @return true The callback server is started, false on error
  */
 static bool createCallbackServer(CallbackServerUnparsed *cb)
@@ -469,7 +468,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       strcpyRealloc(&cb->hostCB, "localhost");
       if (gethostname(serverHostName, 125) == 0)
          strcpyRealloc(&cb->hostCB, serverHostName);
-   }   
+   }
 
    if (cb->logLevel>=XMLBLASTER_LOG_INFO) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
       "Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d ...",
@@ -559,7 +558,7 @@ static bool isListening(CallbackServerUnparsed *cb)
 }
 
 /**
- * Parse the update message from xmlBlaster. 
+ * Parse the update message from xmlBlaster.
  * <p>
  * This method blocks until data arrives.
  * </p>
@@ -647,18 +646,18 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    BlobHolder blob;
    MsgUnit msgUnit; /* we (mis)use MsgUnit for simple transformation of the exception into a raw blob */
    memset(&msgUnit, 0, sizeof(MsgUnit));
-   
+
    msgUnit.qos = exception->errorCode;
-   
+
    /* see XmlBlasterException.toByteArr() and parseByteArr() */
    msgUnit.contentLen = strlen(exception->errorCode) + strlen(exception->message) + 11;
    msgUnit.content = (char *)calloc(msgUnit.contentLen, sizeof(char));
-   
+
    memcpy((char *)msgUnit.content, exception->errorCode, strlen(exception->errorCode));
    currpos = strlen(exception->errorCode) + 4;
-   
+
    memcpy((char *)msgUnit.content+currpos, exception->message, strlen(exception->message));
-   
+
    blob = encodeMsgUnit(&msgUnit, cb->logLevel >= XMLBLASTER_LOG_DUMP);
 
    rawMsg = encodeSocketMessage(MSG_TYPE_EXCEPTION, socketDataHolder->requestId,
@@ -773,7 +772,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 
 const char *callbackServerRawUsage()
 {
-   return 
+   return
       "\n   -dispatch/callback/plugin/socket/hostname [localhost]"
       "\n                       The IP where to establish the callback server."
       "\n                       Can be useful on multi homed hosts."
@@ -810,7 +809,7 @@ int main(int argc, char** argv)
 {
    int iarg;
    CallbackServerUnparsed *cb;
-   
+
    for (iarg=0; iarg < argc; iarg++) {
       if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
          const char *pp =
