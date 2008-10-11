@@ -22,12 +22,12 @@ void closeSocket(int fd) {
 }
 
 /**
- * Write the given amount of bytes to socket. 
+ * Write the given amount of bytes to socket.
  * This method blocks until data all data is sent, we loop
  * as the low level write() can return when the socket
  * buffer is full but not all data expected are sent.
  *
- * This code is not thread safe, you need to add a mutex to 
+ * This code is not thread safe, you need to add a mutex to
  * your calling code if two threads simultaneously want to read
  * from the same socket 'fd'.
  *
@@ -46,10 +46,10 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 	ssize_t nleft, nwritten;
 	while(!CFWriteStreamCanAcceptBytes(globalIPhoneXb->writeStream))
 	{
-		// printf("**********   write  can no accept any bytes\n");
+		sleepMillis(10);
     }
-	
-	
+
+
 	nleft = (ssize_t)nbytes;
 	while(nleft > 0) {
 		nwritten =  CFWriteStreamWrite (
@@ -62,12 +62,12 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 		nleft -= nwritten;
 		ptr += nwritten;
 	}
-	printf("Write %d bytes to XmlBlaster\n", nbytes);
+	/*printf("Write %d bytes to XmlBlaster\n", nbytes);*/
 	return (ssize_t)nbytes - nleft;
 #else
 	ssize_t nleft, nwritten;
 	int flag = 0; /* MSG_WAITALL; */
-	
+
 	nleft = (ssize_t)nbytes;
 	while(nleft > 0) {
 		nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
@@ -82,12 +82,12 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 }
 
 /**
- * Read the given amount of bytes from socket. 
+ * Read the given amount of bytes from socket.
  * This method blocks until data arrives, we loop
  * as the low level recv() can return when the socket
  * buffer is empty but not all data expected arrived.
  *
- * This code is not thread safe, you need to add a mutex to 
+ * This code is not thread safe, you need to add a mutex to
  * your calling code if two threads simultaneously want to read
  * from the same socket 'fd'.
  *
@@ -105,31 +105,31 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 	ssize_t nread;
 	ssize_t nleft;
 	nleft = (ssize_t)nbytes;
-	
+
 	if (fpNumRead != 0 && nbytes > 10) { /* Ignore to report the msgLength read (first 10 bytes of a message) */
 		fpNumRead(userP, (ssize_t)0, nbytes); /* Callback with startup status */
 	}
-	
+
 	while(nleft > 0) {
-		
+
 		nread =  CFReadStreamRead (
 								  globalIPhoneXb->readStream,
 								  (UInt8*) ptr,
 								  (CFIndex) nleft
 		);
-		
+
 		if (nread <= 0)  /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
 			break;        /* EOF is -1 */
 		nleft -= nread;
-		
+
 		if (fpNumRead != 0 && nbytes > 10) { /* Ignore to report the msgLength read (first 10 bytes of a message) */
 			fpNumRead(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
 		}
-		
+
 		ptr += nread;
 	}
 	return (ssize_t)nbytes-nleft;
-	
+
 #else
 	ssize_t nread;
    ssize_t nleft;
@@ -158,7 +158,7 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 }
 
 /**
- * Check if the given arguments mark a oneway message. 
+ * Check if the given arguments mark a oneway message.
  * @param msgType The message type like MSG_TYPE_INVOKE
  * @param methodName The name of the invoked message like "publish", can be null
  * @return if true it is treated as oneway
@@ -168,7 +168,7 @@ bool xbl_isOneway(XMLBLASTER_MSG_TYPE msgType, const char *const methodName) {
       return true; /* Responses and exceptions are oneway */
    if (methodName == 0)
       return false;
-   if (   
+   if (
        !strcmp(XMLBLASTER_PUBLISH_ONEWAY, methodName)
        /*|| !strcmp(XMLBLASTER_DISCONNECT, methodName)*/ /* according to protocol.socket it returns an ACK: shall we remove it? */
        ) return true;
@@ -202,10 +202,10 @@ Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
 
    if (msgUnit->qos != 0)
       qosLen = strlen(msgUnit->qos);
-   
+
    if (msgUnit->key != 0)
       keyLen = strlen(msgUnit->key);
-   
+
    blob.dataLen = qosLen + 1 + keyLen + 1 + contentLenStrLen + 1 + msgUnit->contentLen;
 
    blob.data = (char *)malloc(blob.dataLen);
@@ -265,10 +265,10 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
 
       if (msgUnit->qos != 0)
          qosLen = strlen(msgUnit->qos);
-      
+
       if (msgUnit->key != 0)
          keyLen = strlen(msgUnit->key);
-   
+
       blob.dataLen += qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
    }
 
@@ -314,7 +314,7 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
 
 char *encodeSocketMessage(
               enum XMLBLASTER_MSG_TYPE_ENUM msgType,
-              const char * const requestId, 
+              const char * const requestId,
               const char * const methodName,
               const char * const secretSessionId,
               const char *data,
@@ -355,7 +355,7 @@ char *encodeSocketMessage(
    if (secretSessionId == 0) printf("*** assert: xmlBlasterSocket.c secretSessionId is NULL!\n");
    memcpy(rawMsg+currpos, secretSessionId, strlen(secretSessionId)+1); /* inclusive '\0' */
    currpos += strlen(secretSessionId)+1;
-   
+
    snprintf0(tmp, SIZE, "%lu", (unsigned long)lenUnzipped);
    memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); /* inclusive '\0' */
    currpos += strlen(tmp)+1;
@@ -367,7 +367,7 @@ char *encodeSocketMessage(
    snprintf0(lenFormatStr, SIZEF, "%%%d.d", MSG_LEN_FIELD_LEN);
    snprintf0(lenStr, MSG_LEN_FIELD_LEN+1, lenFormatStr, *rawMsgLen);
    memcpy(rawMsg, lenStr, MSG_LEN_FIELD_LEN);
-   
+
    if (debug) {
       rawMsgStr = toReadableDump(rawMsg, *rawMsgLen);
       printf("[xmlBlasterSocket] Sending now %lu bytes -> '%s'\n", (unsigned long)*rawMsgLen, rawMsgStr);
@@ -378,7 +378,7 @@ char *encodeSocketMessage(
 }
 
 /**
- * Read a message from the given socket. 
+ * Read a message from the given socket.
  * This method blocks until data arrives.
  *
  * @param xmlBlasterSocket The socket to read data from (needs to be valid)
@@ -429,7 +429,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    if (udp) {
       memcpy(msgLenPtr,  packet, MSG_LEN_FIELD_LEN);
    }
-   *(msgLenPtr + MSG_LEN_FIELD_LEN) = 0; 
+   *(msgLenPtr + MSG_LEN_FIELD_LEN) = 0;
    trim(msgLenPtr);
    if (strToULong(&msgLenL, msgLenPtr) == false) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -554,7 +554,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
 }
 
 /**
- * The blob data is copied into the given exception object. 
+ * The blob data is copied into the given exception object.
  * Note: exception->remote is always set to true (assuming a remote blob)
  */
 void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug)
@@ -572,7 +572,7 @@ void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterExceptio
 }
 
 /**
- * The given exception is dumped into the blob data. 
+ * The given exception is dumped into the blob data.
  * @param blob The encoded exception, you need to free the blob struct yourself after usage with
  *             freeBlobHolderContent(&blob);
  * @param exception The given exception struct
@@ -640,11 +640,11 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
          unsigned long msgLenL; /* to have 64 bit portable sscanf */
          MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[currIndex++];
          memset(msgUnit, 0, sizeof(MsgUnit));
-        
+
          /* read QoS */
          msgUnit->qos = strcpyAlloc(data+currpos);
          currpos += strlen(msgUnit->qos)+1;
-        
+
          /* read key */
          if (currpos < dataLen) {
             if (strlen(data+currpos) > 0) {
@@ -655,7 +655,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
                currpos++;
             }
          }
-        
+
          /* read content */
          if (currpos < dataLen) {
             char *tmp;
@@ -667,7 +667,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
                printf("[xmlBlasterSocket] WARN MsgUnit content length '%s' is invalid, we continue nevertheless\n", ptr);
             }
             msgUnit->contentLen = (size_t)msgLenL;
-        
+
             tmp = (char *)malloc(msgUnit->contentLen * sizeof(char));
             memcpy(tmp, data+currpos, msgUnit->contentLen);
             msgUnit->content = tmp;
@@ -682,7 +682,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
    }
    else if (currIndex < msgUnitArr->len) {
       msgUnitArr->msgUnitArr = (MsgUnit *)realloc(msgUnitArr->msgUnitArr, currIndex * sizeof(MsgUnit));
-      msgUnitArr->len = currIndex; 
+      msgUnitArr->len = currIndex;
    }
 
    return msgUnitArr;
