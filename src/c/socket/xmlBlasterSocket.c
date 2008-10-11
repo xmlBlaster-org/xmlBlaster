@@ -8,6 +8,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <stdio.h>
 #include <string.h>
 #include <socket/xmlBlasterSocket.h>
+#ifdef __IPhoneOS__
+#include <CoreFoundation/CFSocket.h>
+#include <XmlBlasterConnectionUnparsed.h>
+#endif
 
 void closeSocket(int fd) {
 #ifdef _WINDOWS
@@ -32,19 +36,44 @@ void closeSocket(int fd) {
  */
 ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 {
-   ssize_t nleft, nwritten;
-   int flag = 0; /* MSG_WAITALL; */
-
-   nleft = (ssize_t)nbytes;
-   while(nleft > 0) {
-      nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
-      if (nwritten <= 0) {
-         return nwritten; /* error */
-      }
-      nleft -= nwritten;
-      ptr += nwritten;
-   }
-   return (ssize_t)nbytes - nleft;
+#ifdef __IPhoneOS__
+	/*	CFTimeInterval timeOut = -1;
+	 CFSocketRef socketRef = globalIPhoneXb->cfSocketRef;
+	 CFDataRef dataRef = CFDataCreate(kCFAllocatorDefault, (void*) ptr, nbytes);
+	 CFSocketError cfSocketError = CFSocketSendData(socketRef, globalIPhoneXb->socketAddr, dataRef, timeOut);
+	 if(cfSocketError == kCFSocketError) return -1;
+	 */
+	ssize_t nleft, nwritten;
+		
+	nleft = (ssize_t)nbytes;
+	while(nleft > 0) {
+		nwritten =  CFWriteStreamWrite (
+										globalIPhoneXb->writeStream,
+										(UInt8*) ptr,
+										(CFIndex) nbytes);
+		if (nwritten <= 0) {
+			return nwritten; /* error */
+		}
+		nleft -= nwritten;
+		ptr += nwritten;
+	}
+	printf("Write %d bytes to XmlBlaster\n", nbytes);
+	return (ssize_t)nbytes - nleft;
+#else
+	ssize_t nleft, nwritten;
+	int flag = 0; /* MSG_WAITALL; */
+	
+	nleft = (ssize_t)nbytes;
+	while(nleft > 0) {
+		nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
+		if (nwritten <= 0) {
+			return nwritten; /* error */
+		}
+		nleft -= nwritten;
+		ptr += nwritten;
+	}
+	return (ssize_t)nbytes - nleft;
+#endif
 }
 
 /**
@@ -67,7 +96,37 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
  */
 ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP)
 {
-   ssize_t nread;
+#ifdef __IPhoneOS__
+	ssize_t nread;
+	ssize_t nleft;
+	nleft = (ssize_t)nbytes;
+	
+	if (fpNumRead != 0 && nbytes > 10) { /* Ignore to report the msgLength read (first 10 bytes of a message) */
+		fpNumRead(userP, (ssize_t)0, nbytes); /* Callback with startup status */
+	}
+	
+	while(nleft > 0) {
+		
+		nread =  CFReadStreamRead (
+								  globalIPhoneXb->readStream,
+								  (UInt8*) ptr,
+								  (CFIndex) nleft
+		);
+		
+		if (nread <= 0)  /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
+			break;        /* EOF is -1 */
+		nleft -= nread;
+		
+		if (fpNumRead != 0 && nbytes > 10) { /* Ignore to report the msgLength read (first 10 bytes of a message) */
+			fpNumRead(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
+		}
+		
+		ptr += nread;
+	}
+	return (ssize_t)nbytes-nleft;
+	
+#else
+	ssize_t nread;
    ssize_t nleft;
    int flag = 0; /* MSG_WAITALL; */
    nleft = (ssize_t)nbytes;
@@ -89,6 +148,8 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
       ptr += nread;
    }
    return (ssize_t)nbytes-nleft;
+#endif
+
 }
 
 /**

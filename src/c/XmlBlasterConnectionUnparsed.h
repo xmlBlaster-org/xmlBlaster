@@ -19,7 +19,14 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 extern "C" {
 #endif
 #endif
-
+#ifdef __IPhoneOS__
+#include <CoreFoundation/CFSocket.h>
+#include <CoreFoundation/CFStream.h>
+#include <CoreFoundation/CFString.h>
+#include <CFNetwork/CFHost.h>
+#include <CFNetwork/CFSocketStream.h>
+	
+#endif
 #include <util/msgUtil.h>
 #include <util/queue/QueueInterface.h>
 #include <util/Properties.h>
@@ -53,8 +60,14 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    int argc;
    const char * const*argv;
    Properties *props;
+#ifdef __IPhoneOS__
+	CFSocketRef cfSocketRef;
+	CFDataRef socketAddr;
+	CFReadStreamRef readStream;
+	CFWriteStreamRef writeStream;
+#endif
    int socketToXmlBlaster;
-   int socketToXmlBlasterUdp;
+	int socketToXmlBlasterUdp;
    long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
@@ -91,9 +104,11 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XmlBlasterReadFromSocketFuncHolder readFromSocket; /**< Holding function pointer for compressed/uncompressed socket reads */
    struct XmlBlasterZlibReadBuffers *zlibReadBuf; /**< Is null if no "zlib:stream" compression is switched on */
 };
+#ifdef __IPhoneOS__
 
-
-/**
+	struct Dll_Export XmlBlasterConnectionUnparsedStruct* globalIPhoneXb;
+#endif
+	/**
  * Get an instance of this to get xmlBlaster access. 
  *
  * Every call creates a new and independent client access instance to xmlBlaster

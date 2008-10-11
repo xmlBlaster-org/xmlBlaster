@@ -65,6 +65,12 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
       freeXmlBlasterConnectionUnparsed(&xb);
       return (XmlBlasterConnectionUnparsed *)0;
    }
+#ifdef __IPhoneOS__
+	xb->cfSocketRef = nil;
+	xb->readStream = nil;
+	xb->writeStream = nil;
+	
+#endif
    xb->socketToXmlBlaster = -1;
    xb->socketToXmlBlasterUdp = -1;
    xb->isInitialized = false;
@@ -295,9 +301,32 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                 xmlBlasterAddr.sin_port = (u_short)portP->s_port;
    else
       xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
-
+#ifdef __IPhoneOS__
+	
+/*	
+	xb->cfSocketRef = CFSocketCreate(kCFAllocatorDefault,
+										PF_INET,
+										SOCK_STREAM,
+										0,
+										kCFSocketNoCallBack,                // Callback flags
+										nil,  // Callback method
+										nil);
+	
+	if(xb->cfSocketRef == NULL)
+	{
+		xb->socketToXmlBlaster = -1;
+    }		
+	else
+	{
+		xb->socketToXmlBlaster = 0;
+    }		
+	
+*/	
+	xb->socketToXmlBlaster = 0;
+#else
    xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
-   if (xb->socketToXmlBlaster != -1) {
+#endif
+	if (xb->socketToXmlBlaster != -1) {
       int ret=0;
       const char *localHostName = xb->props->getString(xb->props, "plugin/socket/localHostname", 0);
       int localPort = xb->props->getInt(xb->props, "plugin/socket/localPort", 0);
@@ -353,8 +382,38 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       }
 
       /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
-
-      if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
+#ifdef __IPhoneOS__
+	    globalIPhoneXb = xb;
+		
+		CFStringRef hostnameRef =CFStringCreateWithCString (kCFAllocatorDefault, serverHostName, kCFStringEncodingUTF8);
+		CFHostRef hostRef = CFHostCreateWithName (kCFAllocatorDefault, hostnameRef);
+		CFStreamCreatePairWithSocketToCFHost (kCFAllocatorDefault,hostRef, atoi(servTcpPort), &xb->readStream, &xb->writeStream);
+		
+		if(xb->readStream != nil && xb->writeStream != nil)
+		{
+			ret = 0;
+			if(!CFWriteStreamOpen (xb->writeStream))
+				ret = -1;
+			if(!CFReadStreamOpen (xb->readStream)) 
+				ret = -1;
+	    }
+	    else
+		{
+			   ret = -1;
+		}
+		
+/*
+		CFDataRef cfDataRef = CFDataCreate(kCFAllocatorDefault, (void*)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
+		xb->socketAddr = cfDataRef;
+	//	CFTimeInterval
+	//	Type used to represent elapsed time in seconds.     
+	  CFTimeInterval timeout = 30;
+      CFSocketError cfSocketError = CFSocketConnectToAddress(xb->cfSocketRef, cfDataRef, timeout);
+ */ 
+#else
+		ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
+#endif
+      if(ret != -1) {
          if (xb->logLevel>=XMLBLASTER_LOG_INFO) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
          xb->useUdpForOneway = xb->props->getBool(xb->props, "plugin/socket/useUdpForOneway", xb->useUdpForOneway);
          xb->useUdpForOneway = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/useUdpForOneway", xb->useUdpForOneway);
@@ -594,7 +653,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    MsgRequestInfo *requestInfoP;
    MsgRequestInfo requestInfo;
    memset(&requestInfo, 0, sizeof(MsgRequestInfo));
-
+	printf(data_);
    if (data_ == 0) {
       data_ = "";
       dataLen_ = 0;

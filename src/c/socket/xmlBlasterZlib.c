@@ -10,6 +10,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <assert.h>
 #include <socket/xmlBlasterZlib.h>
 #include <socket/xmlBlasterSocket.h>  /* writen() */
+#ifdef __IPhoneOS__
+#include <CoreFoundation/CFSocket.h>
+#include <XmlBlasterConnectionUnparsed.h>
+#endif
 
 #if XMLBLASTER_ZLIB==1
 
@@ -234,8 +238,18 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
             if (zlibReadBufP->debug) printf("[%s:%d] recv() readBytes=%u, nbytes=%u, currCompBytes=%u\n", __FILE__, __LINE__, readBytes, (unsigned int)nbytes, zlibReadBufP->currCompBytes);
             zlibReadBufP->currCompBufferP = zlibReadBufP->compBuffer;
 			/* currCompBufferP is of type "Bytef *" which is a "unsigned char *" */
-            nCompRead = recv(fd, (char*)zlibReadBufP->currCompBufferP, (int)XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN, flag); /* TODO: do we need at least two bytes?? */
-            if (nCompRead == -1 || nCompRead == 0) { /* 0 is not possible as we are blocking */
+#ifdef __IPhoneOS__
+			// if(CFReadStreamHasBytesAvailable (		globalIPhoneXb->readStream	 ))
+			 nCompRead =  CFReadStreamRead (
+										globalIPhoneXb->readStream,
+										 (UInt8*)zlibReadBufP->currCompBufferP,
+										(CFIndex) 5
+										);
+			
+#else
+			 nCompRead = recv(fd, (char*)zlibReadBufP->currCompBufferP, (int)XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN, flag); /* TODO: do we need at least two bytes?? */
+#endif
+			 if (nCompRead == -1 || nCompRead == 0) { /* 0 is not possible as we are blocking */
                if (zlibReadBufP->debug) printf("[%s:%d] EOF during reading of %u bytes\n", __FILE__, __LINE__, (unsigned int)(nbytes-readBytes));
                return -1;
             }

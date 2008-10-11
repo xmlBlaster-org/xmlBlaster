@@ -48,6 +48,8 @@ extern "C" {
 
 #define  MAX_MSG_LEN 1000000000
 
+
+
 /**
  * Settings for MSG_FLAG_POS_TYPE
  */
