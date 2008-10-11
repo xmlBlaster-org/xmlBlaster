@@ -349,7 +349,7 @@ static int listenLoop(ListenLoopArgs* ls)
    SocketDataHolder socketDataHolder;
    bool success;
    bool useUdpForOneway = cb->socketUdp != -1;
-	sleepMillis(10000);
+	//sleepMillis(100);
    for(;;) {
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
       /* Here we block until a message arrives, see parseSocketData() */

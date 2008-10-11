@@ -44,7 +44,12 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 	 if(cfSocketError == kCFSocketError) return -1;
 	 */
 	ssize_t nleft, nwritten;
-		
+	while(!CFWriteStreamCanAcceptBytes(globalIPhoneXb->writeStream))
+	{
+		// printf("**********   write  can no accept any bytes\n");
+    }
+	
+	
 	nleft = (ssize_t)nbytes;
 	while(nleft > 0) {
 		nwritten =  CFWriteStreamWrite (
