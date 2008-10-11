@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17224 C client library: Ported to iPhone 3G, on Mac OSX compile with 'build -Duse-gcc=true c'
+          uses define __MacOSX__. In XCode please set -D__IPhoneOS__=1 compile define.
+
  o r17218 cluster setup: if circular loop (slave -> master -> same slave) an exception is thrown by master already
           Switch back to old behaviour with cluster/allowDirectLoopback=true
 	  For publishes in Pub/Sub and PtP mode.
