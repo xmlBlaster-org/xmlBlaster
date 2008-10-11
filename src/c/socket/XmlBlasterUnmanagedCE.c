@@ -8,7 +8,8 @@ Todo:      Callback function (update from Dll to C#)
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
-#include <string.h> /* memset */
+#include <string.h> /* memset (ISO C forbids an empty source file) */
+#if defined(_WINDOWS) || defined(WINCE)
 #include <stdio.h>  /* printf */
 #include <XmlBlasterUnmanagedCE.h>
 #ifndef WINCE
@@ -30,12 +31,12 @@ static const bool freeIt = true;
  See: http://www.opennetcf.org/Forums/topic.asp?TOPIC_ID=255
 */
 
-static void myLogger(void *logUserP, 
+static void myLogger(void *logUserP,
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
 
-static void myLogger(void *logUserP, 
+static void myLogger(void *logUserP,
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...)
@@ -69,11 +70,11 @@ static void myLogger(void *logUserP,
          /* Call now the C# logger XmlBlasterUnmanagedCELoggerFp */
 
          (*managedLoggerFp)(lvl, location, p);
-         
-         /* The C# code does not free 'p' during its UNICODE marshalling 
+
+         /* The C# code does not free 'p' during its UNICODE marshalling
             with byteArrayFromIntPtr(false) -> no xmlBlasterUnmanagedCEFree() */
          free(p);
-         
+
          return;
       }
       /* Else try again with more space. */
@@ -108,7 +109,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBl
 
 static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes);
 /**
- * Access the read socket progress. 
+ * Access the read socket progress.
  * You need to register this function pointer if you want to see the progress of huge messages
  * on slow connections.
  */
@@ -191,7 +192,7 @@ XBFORCE_EXTERNC static void convert(XmlBlasterException *in, XmlBlasterUnmanaged
    }
    else {
       out->errorCode = 0;
-   }   
+   }
 }
 
 XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEException *ex) {
@@ -206,7 +207,7 @@ XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanag
 
 /**
  * We intercept the callbacks here and convert it to a more simple form to
- * be easy transferable to C# (Csharp). 
+ * be easy transferable to C# (Csharp).
  */
 XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception) {
    size_t i;
@@ -220,15 +221,15 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update message");
-   
+
    if (userData != 0) ;  /* Supress compiler warning */
    if (unmanagedUpdate == 0) return false;
-   
+
    /*memset(&unmanagedException, 0, sizeof(struct XmlBlasterUnmanagedCEException));*/
    unmanagedException.remote = false;
    unmanagedException.errorCode = (char)0;
    unmanagedException.message = (char)0;
-   
+
    isOneway = msgUnitArr->isOneway;
    for (i=0; i<msgUnitArr->len; i++) {
       const char *cbSessionId = strcpyAlloc(msgUnitArr->secretSessionId);
@@ -237,10 +238,10 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
              xml);
       xmlBlasterFree(xml);
-      
+
       printf("XmlBlasterUnmanaged.c: before update() %d\n", (int)msgUnitArr->len);
       */
-      
+
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update, calling C# ...");
 
       /* Call C# ..., it may allocate errorCode */
@@ -264,7 +265,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
          /* Return QoS: Everything is OK */
       }
    }
-   
+
    return retVal;
 }
 
@@ -307,7 +308,7 @@ XBFORCE_EXTERNC Dll_Export bool xmlBlasterUnmanagedCEInitialize(struct XmlBlaste
    xa->userFp = (XmlBlasterAccessGenericFp)update;
    ret = xa->initialize(xa, interceptUpdate, &e);
    convert(&e, exception);
-   return ret; 
+   return ret;
 }
 
 /**
@@ -323,7 +324,7 @@ XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEConnect(struct XmlBlasterA
    ret = xa->connect(xa, qos, interceptUpdate, &e);
    convert(&e, exception);
    if (freeIt) { xmlBlasterFree(qos); qos=0; }
-   return ret; 
+   return ret;
 }
 
 /**
@@ -335,7 +336,7 @@ XBFORCE_EXTERNC Dll_Export extern bool xmlBlasterUnmanagedCEDisconnect(struct Xm
    bool ret = xa->disconnect(xa, qos, &e);
    convert(&e, exception);
    if (freeIt) { xmlBlasterFree(qos); qos=0; }
-   return ret; 
+   return ret;
 }
 
 XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCEPublish(struct XmlBlasterAccessUnparsed *xa,
@@ -344,14 +345,14 @@ XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCEPublish(struct XmlB
    char *ret = xa->publish(xa, msgUnitUnmanaged, &e);
    convert(&e, exception);
    if (freeIt) freeMsgUnitData(msgUnitUnmanaged);
-   return ret; 
+   return ret;
 }
 
 XBFORCE_EXTERNC Dll_Export extern QosArr *xmlBlasterUnmanagedCEPublishArr(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    QosArr *ret = xa->publishArr(xa, msgUnitArr, &e);
    convert(&e, exception);
-   return ret; 
+   return ret;
 }
 
 XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, void *msgUnitArr, int length, XmlBlasterUnmanagedCEException *exception) {
@@ -382,7 +383,7 @@ XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCESubscribe(struct Xm
    convert(&e, exception);
    if (freeIt) { xmlBlasterFree(key); key=0; }
    if (freeIt) { xmlBlasterFree(qos); qos=0; }
-   return ret; 
+   return ret;
 }
 
 XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEUnSubscribe(struct XmlBlasterAccessUnparsed *xa,
@@ -435,7 +436,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEErase(struct XmlBlasterAcce
       if (cArraySize == 0) {
          *ppStruct = 0;
       }
-      else { 
+      else {
          *ppStruct = (XmlBlasterUnmanagedCEStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedCEStringArr ));
          pCurStruct = *ppStruct;
          for (i=0; i<ret->len; i++, pCurStruct++) {
@@ -467,7 +468,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
          *ppStruct = 0;
          freeMsgUnitArr(msgUnitArr);
          return;
-      } 
+      }
 
       *pSize = cArraySize;
       *ppStruct = (MsgUnitUnmanagedCEget*)malloc( cArraySize * sizeof( MsgUnitUnmanagedCEget ));
@@ -505,7 +506,7 @@ XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAcce
    char *ret = xa->ping(xa, qos, &e);
    convert(&e, exception);
    if (freeIt) { xmlBlasterFree(qos); qos=0; }
-   return ret; 
+   return ret;
 }
 
 XBFORCE_EXTERNC Dll_Export bool xmlBlasterUnmanagedCEIsConnected(struct XmlBlasterAccessUnparsed *xa) {
@@ -546,7 +547,7 @@ static void GetTAPIErrorMsg(TCHAR *szMsg,int nSize, DWORD dwError)
 {
         LPTSTR lpBuffer = 0;
         DWORD dwRet = 0;
-        
+
         dwRet = ::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                 NULL,TAPIERROR_FORMATMESSAGE(dwError),MAKELANGID(LANG_NEUTRAL, LANG_NEUTRAL),
                 (LPTSTR) &lpBuffer,0,NULL);
@@ -564,7 +565,7 @@ static void GetTAPIErrorMsg(TCHAR *szMsg,int nSize, DWORD dwError)
 #endif /* WINCE_EMEI */
 
 /**
- * You need to add cellcore.lib for compilation (WINCE). 
+ * You need to add cellcore.lib for compilation (WINCE).
  * TODO: Not yet tested: What is inside the lineGeneralInfo.dwSerialNumberOffset??
  * TODO: Needs security model?
  * @return malloced string with IMEI, you need to free it
@@ -584,7 +585,7 @@ const char *getXmlBlasterEmei() {
    LONG tapiresult; /* functions return 0 (SUCCESS) */
    LINEINITIALIZEEXPARAMS lineInitializeExParams;
 
-   lineGeneralInfo.dwTotalSize = sizeof(lineGeneralInfo); 
+   lineGeneralInfo.dwTotalSize = sizeof(lineGeneralInfo);
 
    lineInitializeExParams.dwTotalSize = sizeof(lineInitializeExParams);
    lineInitializeExParams.dwOptions = LINEINITIALIZEEXOPTION_USEEVENT; /*The application desires to use the Event Handle event notification mechanism*/
@@ -623,7 +624,7 @@ const char *getXmlBlasterEmei() {
       pLineGeneralInfoBytes = new BYTE[lineGeneralInfo.dwNeededSize];
       LPLINEGENERALINFO plviGeneralInfo;
       plviGeneralInfo = (LPLINEGENERALINFO)pLineGeneralInfoBytes;
-        
+
       if(pLineGeneralInfoBytes != NULL) {
          plviGeneralInfo->dwTotalSize = lineGeneralInfo.dwNeededSize;
          if ((tapiresult = lineGetGeneralInfo(hLine, plviGeneralInfo)) != 0) {
@@ -634,34 +635,34 @@ const char *getXmlBlasterEmei() {
          else {
             LPTSTR tsManufacturer, tsModel, tsRevision, tsSerialNumber, tsSubscriberNumber;
                            TCHAR szUnavailable[] = L"Unavailable";
-                           if(plviGeneralInfo->dwManufacturerSize) { 
+                           if(plviGeneralInfo->dwManufacturerSize) {
                               tsManufacturer = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwManufacturerOffset);
                            }
                            else {
                               tsManufacturer = szUnavailable;
                            }
-                        
-                           if(plviGeneralInfo->dwModelSize)     { 
+
+                           if(plviGeneralInfo->dwModelSize)     {
                               tsModel = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwModelOffset);
                            }
                            else {
                               tsModel = szUnavailable;
                            }
-                        
+
                            if(plviGeneralInfo->dwRevisionSize)  {
                               tsRevision = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwRevisionOffset);
                            }
                            else {
                               tsRevision = szUnavailable;
                            }
-                        
+
                            if(plviGeneralInfo->dwSerialNumberSize) {
                               tsSerialNumber = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwSerialNumberOffset);
                            }
                            else {
                               tsSerialNumber = szUnavailable;
                            }
-                        
+
                            if(plviGeneralInfo->dwSubscriberNumberSize)
                            {
                               tsSubscriberNumber = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwSubscriberNumberOffset);
@@ -676,25 +677,27 @@ const char *getXmlBlasterEmei() {
             /*
             CString sInfo;
                            sInfo.Format(L"Manufacturer: %s\nModel: %s\nRevision: %s\nSerial No: %s\nSubscriber No: %s\n",
-                                   tsManufacturer, 
-                                   tsModel, 
-                                   tsRevision, 
-                                   tsSerialNumber, 
+                                   tsManufacturer,
+                                   tsModel,
+                                   tsRevision,
+                                   tsSerialNumber,
                                    tsSubscriberNumber);
             */
             char *imeiId = (char *)malloc(128);
             strcpy(imeiId, ( ( (char*)plviGeneralInfo) + lineGeneralInfo.dwSerialNumberOffset));
 
             /*MessageBox(NULL, (LPCWSTR)( ( (char*)plviGeneralInfo) + lineGeneralInfo.dwSerialNumberOffset),  _T("Unmanaged"), MB_OK);*/
-            
+
             delete plviGeneralInfo;
             return imeiId;
          }
          delete plviGeneralInfo;
-      }  
+      }
   } /* for */
   return 0;
 #else
    return strcpyAlloc("NotImplemented");
 #endif
 }
+
+#endif /*defined(_WINDOWS) || defined(WINCE)*/
