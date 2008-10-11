@@ -1371,6 +1371,6 @@ int main(int argc, char **argv) {
    return 0;
 }
 #endif /*QUEUE_MAIN*/
-#endif // (__IPhoneOS__)
+#endif /* (__IPhoneOS__) */
 /*=================== TESTCODE =======================*/
 
