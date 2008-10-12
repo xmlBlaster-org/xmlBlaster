@@ -5,63 +5,69 @@ drop table xbref;
 drop table xbmeat;
 drop table xbstore;
 
-create table xbmeat (
-  -- xbmeatid bigserial not null,
-  xbmeatid int8 primary key unique not null,
-  -- creationts timestamp default current_timestamp not null,
-  -- modifiedts timestamp default current_timestamp not null,
-  durable char default 'F' not null,
-  refcount int4,
-  bytesize int4,
-  datatype varchar(32) default '' not null,
-  flag1 varchar(32) default '',
-  msgqos text default '',
-  msgcont bytea default '',
-  msgkey text default ''
-);
-
-insert into xbmeat (xbmeatid,durable,bytesize,datatype,flag1,msgqos,msgcont,msgkey) values (1,'T',344,'TOPIC_XML','NO FLAG','<qos/>','myBlob','<key oid="34"/>');
-
 create table xbstore (
-  xbstoreid int8 primary key unique not null,
+      xbstoreid int8 primary key unique not null,
+      xbnode varchar(256) not null,
+      xbtype varchar(32) not null,
+      xbpostfix varchar(256) not null,
+      xbflag1 varchar(32) default '');
   -- xbstoreid  bigserial not null,
   -- creationts timestamp default current_timestamp not null,
   -- modifiedts timestamp default current_timestamp not null,
   -- nodeId + storeType + storeId ("heron", "callback", "joe17"): Java umbauen ist muehsam
-  storename varchar(512) not null unique,
-  flag1 varchar(32) default ''
-);
--- create index idxstorename on xbstore(storename); -- (nodeId, storeType, storeId)
 
-insert into xbstore (xbstoreid,storename,flag1) values (1,'callbackjoe1','');
+create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);
+-- insert into xbstore (xbstoreid,xbnode,xbtype,xbpostfix,flag1) values (1,'heron','callback','clientjoe1','');
+
+
+create table xbmeat (
+      xbmeatid int8 unique not null,
+      xbdurable char not null default 'F',
+      xbrefcount int4,
+      xbrefcount2 int4,
+      xbbytesize int4,
+      xbdatatype varchar(32) not null default '',
+      xbflag1 varchar(32) default '',
+      xbmsgqos text default '',
+      xbmsgcont bytea default '',
+      xbmsgkey text default '',
+      xbstoreid int8 unique not null, constraint xbmeatpk primary key(xbmeatid));
+-- xbmeatid bigserial not null,
+-- creationts timestamp default current_timestamp not null,
+-- modifiedts timestamp default current_timestamp not null,
+
+alter table xbmeat 
+      add constraint fkxbstoremeat
+      foreign key (xbstoreid) 
+      references xbstore on delete cascade;
+
+create index xbmeatstix on xbmeat(xbmeatid,xbstoreid);
+--insert into xbmeat (xbmeatid,durable,bytesize,datatype,flag1,msgqos,msgcont,msgkey) values (1,'T',344,'TOPIC_XML','NO FLAG','<qos/>','myBlob','<key oid="34"/>');
+
 
 create table xbref (
-  xbrefid int8 primary key unique not null,
-  xbstoreid int8 not null,
-  xbmeatid int8,
-  -- creationts timestamp default current_timestamp not null,
-  -- modifiedts timestamp default current_timestamp not null,
-  durable char(1) default 'F' not null,
-  bytesize int4,
-  metainfo text default '',
-  flag1 varchar(32) default '',
-  prio int4
-);
+    xbrefid int8 primary key unique not null,
+    xbstoreid int8 not null,
+    xbmeatid int8,
+    -- creationts timestamp not null default current_timestamp,
+    -- modifiedts timestamp not null default current_timestamp,
+    xbdurable char(1) not null default 'F',
+    xbbytesize int4,
+    xbmetainfo text default '',
+    xbflag1 varchar(32) default '',
+    xbprio int4,
+    xbmethodname varchar(32) default '',
+    xbonetomany char(1) not null default 'F');
 
 alter table xbref 
-        add constraint fkxbstore
-        foreign key (xbstoreid) 
-        references xbstore;
+            add constraint fkxbstoreref
+            foreign key (xbstoreid) 
+            references xbstore on delete cascade;
 
-alter table xbref 
-        add constraint fkxbmeat
-        foreign key (xbmeatid) 
-        references xbmeat;
+--insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,prio) values (1,1,1,'T',200,'subscriptionId=bla,oid=mytopic','',5);
+--insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,prio) values (2,1,1,'T',200,'subscriptionId=b社会保障la,oid=Übßk','',9);
 
-insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,prio) values (1,1,1,'T',200,'subscriptionId=bla,oid=mytopic','',5);
-insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,prio) values (2,1,1,'T',200,'subscriptionId=b社会保障la,oid=Übßk','',9);
-
-select * from xbref;
+--select * from xbref;
 
 
 -- -- Two ways to work with serial sequence:
