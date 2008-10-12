@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -28,6 +29,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 public abstract class XBFactory extends XBFactoryBase {
 
+   private final static Logger log = Logger.getLogger(XBFactory.class.getName());
    protected String insertSt;
    protected String getSt;
    protected String getAllSt;
@@ -185,12 +187,13 @@ public abstract class XBFactory extends XBFactoryBase {
       Statement st = null;
       try {
          st = conn.createStatement();
-         
          StringTokenizer tokenizer = new StringTokenizer(createSt, ";");
          while (tokenizer.hasMoreTokens()) {
             String sql = tokenizer.nextToken();
-            if (sql.trim().length() > 0)
+            if (sql.trim().length() > 0) {
+               log.info("Executing create statement >" + sql + "<");
                st.executeUpdate(sql);
+            }
          }
       }
       finally {
