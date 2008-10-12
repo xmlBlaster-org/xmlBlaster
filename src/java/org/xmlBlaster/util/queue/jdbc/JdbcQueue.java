@@ -37,12 +37,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-
 /**
  * Persistence queue implementation on a DB based on JDBC.
+ * <p>
+ * Loaded via xmlBlaster.properties, there are three implementation
+ * (the first, using a table per topic, was dropped long ago).
+ * <p>
+ * org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin<br />
+ * was the operational variant up to v1.6.2+ (2008-10) using one XB_ENTRIES table
+ * </p>
+ * <p>
+ * org.xmlBlaster.util.queue.jdbc.JdbcQueue<br />
+ * is the new implementation since v1.6.3 using three tables XBSTORE, XBREF, XBMEAT
+ * </p>
+ * Example:
+ * <pre>
+ * JdbcStorage[postgres]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,\
+                      url=jdbc:postgresql://localhost:5432/test,\
+                      user=postgres,\
+                      password=,\
+                      connectionPoolSize=1,\
+                      connectionBusyTimeout=90000,\
+                      maxWaitingThreads=300,\
+                      tableNamePrefix=XB_,\
+                      entriesTableName=ENTRIES,\
+                      dbAdmin=true
+ * </pre>
  * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html">The queue.jdbc.commontable requirement</a>
+ * @see JdbcQueueCommonTablePlugin
  */
 public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    private String ME;
