@@ -11,6 +11,11 @@ Changes for current svn
           Switch back to old behaviour with cluster/allowDirectLoopback=true
 	  For publishes in Pub/Sub and PtP mode.
 
+ o r17215 First beta of Micheles new JDBC storage layer for xmlBlaster, uses three tables XBSTORE, XBREF, XBMEAT
+          Activate in xmlBlaster.properties with
+	    JdbcStorage[Oracle]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,\
+	    ...
+
  o r17176 socket driver: Fix to not ignore <attribute name='updateResponseTimeout' type='long'>7200000</attribute>
           configurations from clients in ConnectQos <callback> section
 
