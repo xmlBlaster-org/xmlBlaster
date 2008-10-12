@@ -609,6 +609,11 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 #     else
       int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
 #     endif
+#ifdef __IPhoneOS__
+	   CFReadStreamClose(xb->readStream);
+	   CFWriteStreamClose(xb->writeStream);
+	   
+#else
       if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
       shutdown(xb->socketToXmlBlaster, how); 
@@ -619,7 +624,10 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
          closeSocket(xb->socketToXmlBlasterUdp);
          xb->socketToXmlBlasterUdp = -1;
       }
+#endif
    }
+	
+
 }
 
 /**
