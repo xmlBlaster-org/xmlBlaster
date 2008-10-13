@@ -6,9 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.engine.queuemsg;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
+import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timestamp;
@@ -19,6 +20,7 @@ import org.xmlBlaster.util.queue.jdbc.XBRef;
 
 /**
  * SubscribeEntry
+ * 
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class SubscribeEntry implements I_MapEntry {
@@ -29,25 +31,30 @@ public class SubscribeEntry implements I_MapEntry {
    private boolean stored;
    private final long uniqueId;
    private final String uniqueIdStr;
-   private final long size; 
+   private final long size;
    private transient boolean swapped = false;
    private transient Timestamp sortTimestamp;
 
-
    /**
     * this constructor should be used by factories
+    * 
     * @param qos
     * @param uniqueId
     * @param size
     */
-   public SubscribeEntry(String key, String qos, String sessionName, long uniqueId, long size) {
-      if (size < 1L) this.size = qos.length() + key.length() + sessionName.length();
-      else this.size = size;
+   public SubscribeEntry(String key, String qos, String sessionName,
+         long uniqueId, long size) {
+      if (size < 1L)
+         this.size = qos.length() + key.length() + sessionName.length();
+      else
+         this.size = size;
       this.key = key;
       this.qos = qos;
       this.sessionName = sessionName;
-      if (uniqueId < 1L) this.uniqueId = new Timestamp().getTimestamp();  
-      else this.uniqueId = uniqueId;
+      if (uniqueId < 1L)
+         this.uniqueId = new Timestamp().getTimestamp();
+      else
+         this.uniqueId = uniqueId;
       this.uniqueIdStr = "" + this.uniqueId;
    }
 
@@ -63,7 +70,7 @@ public class SubscribeEntry implements I_MapEntry {
     */
    public int getPriority() {
       return PriorityEnum.NORM_PRIORITY.getInt();
-      
+
    }
 
    /**
@@ -148,6 +155,7 @@ public class SubscribeEntry implements I_MapEntry {
 
    /**
     * Enforced by I_Map
+    * 
     * @see I_Map#isSwapped()
     */
    public boolean isSwapped() {
@@ -156,6 +164,7 @@ public class SubscribeEntry implements I_MapEntry {
 
    /**
     * Enforced by I_Map
+    * 
     * @see I_Map#isSwapped(boolean)
     */
    public void isSwapped(boolean swapped) {
@@ -164,6 +173,7 @@ public class SubscribeEntry implements I_MapEntry {
 
    /**
     * Can be used by cache implementation to implement LRU
+    * 
     * @return null if not previously set by setSortTimestamp()
     */
    public final Timestamp getSortTimestamp() {
@@ -172,21 +182,23 @@ public class SubscribeEntry implements I_MapEntry {
 
    /**
     * Can be used by cache implementation to implement LRU
+    * 
     * @return timestamp This is chosen by the cache algorithm
     */
    public final void setSortTimestamp(Timestamp timestamp) {
       this.sortTimestamp = timestamp;
    }
 
-   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+   public final void embeddedObjectToXml(java.io.OutputStream out,
+         java.util.Properties props) throws java.io.IOException {
       if (this.key != null)
          out.write(this.key.getBytes());
       if (this.qos != null)
          out.write(this.qos.getBytes());
    }
-   
+
    /**
-    * For the new queues 
+    * For the new queues
     */
    public XBMeat getMeat() {
       XBMeat meat = new XBMeat();
@@ -198,12 +210,14 @@ public class SubscribeEntry implements I_MapEntry {
       meat.setKey(key);
       meat.setQos(qos);
       meat.setRefCount(1);
-      meat.setDataType(getSessionName());
+      Map m = new TreeMap();
+      m.put(XBMeat.SESSION_NAME, getSessionName());
+      meat.setMetaInfo(StringPairTokenizer.mapToCSV(m));
       return meat;
    }
 
    /**
-    * For the new queues 
+    * For the new queues
     */
    public XBRef getRef() {
       XBRef ref = new XBRef();
