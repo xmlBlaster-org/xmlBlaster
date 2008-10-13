@@ -93,7 +93,7 @@ public class XBMeatFactory extends XBFactory {
       StringBuffer buf = new StringBuffer(512);
       if (getDbVendor().equals(POSTGRES)) {
          buf.append("create table ${table} (\n");
-         buf.append("      xbmeatid int8 unique not null,\n");
+         buf.append("      xbmeatid int8 primary key unique not null,\n");
          buf.append("      xbdurable char not null default 'F',\n");
          buf.append("      xbrefcount int4,\n");
          buf.append("      xbrefcount2 int4,\n");
@@ -103,7 +103,7 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgqos text default '',\n");
          buf.append("      xbmsgcont bytea default '',\n");
          buf.append("      xbmsgkey text default '',\n");
-         buf.append("      xbstoreid int8 unique not null, constraint xbmeatpk primary key(xbmeatid));\n");
+         buf.append("      xbstoreid int8 not null);\n");
 
          buf.append("alter table ${table} \n");
          buf.append("      add constraint fkxbstoremeat\n");
@@ -272,9 +272,9 @@ public class XBMeatFactory extends XBFactory {
          preStatement.setBinaryStream(CONTENT, contentStream, xbMeat.getContent().length);
       }
       else
-         preStatement.setNull(CONTENT, Types.BLOB);
+         preStatement.setNull(CONTENT, Types.BINARY); // Types.BLOB fails on Postgres
          
-      if (xbMeat.getContent() != null) {
+      if (xbMeat.getKey() != null) {
          InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey().getBytes("UTF-8"));
          preStatement.setAsciiStream(KEY, keyStream, xbMeat.getKey().length());
       }
@@ -398,6 +398,7 @@ public class XBMeatFactory extends XBFactory {
       xbMeat.setByteSize(rs.getLong(BYTE_SIZE + offset));
       xbMeat.setDataType(rs.getString(DATA_TYPE + offset));
       xbMeat.setFlag1(rs.getString(FLAG1 + offset));
+      //xbMeat.setQos(rs.getString(QOS + offset));
       InputStream stream = rs.getAsciiStream(QOS + offset);
       if (stream != null)
          xbMeat.setQos(new String(readStream(stream), "UTF-8"));
@@ -408,6 +409,7 @@ public class XBMeatFactory extends XBFactory {
          xbMeat.setContent(readStream(stream));
       else
          xbMeat.setContent(null);
+      //xbMeat.setKey(rs.getString(KEY + offset));
       stream = rs.getAsciiStream(KEY + offset);
       if (stream != null)
          xbMeat.setKey(new String(readStream(stream), "UTF-8"));
