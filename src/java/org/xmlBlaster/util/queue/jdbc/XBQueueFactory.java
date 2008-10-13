@@ -699,7 +699,12 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
                log.fine("addEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
             }
          }
-         log.severe("Could not insert entry '" + meat.getDataType() + "'-'" +  logId + "': " + ex.toString());
+         if (meat != null)
+            log.severe("Could not insert entry '" + meat.getDataType() + "'-'" + logId + "': " + ex.toString());
+         else if (ref != null)
+            log.severe("Could not insert entry '" + ref.getMethodName() + "'-'" + logId + "': " + ex.toString());
+         else
+            log.severe("Could not insert null entry " + logId + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex)) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
          }
