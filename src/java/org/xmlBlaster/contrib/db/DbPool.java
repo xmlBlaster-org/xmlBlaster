@@ -5,33 +5,30 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.db;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.DriverManager;
-
+import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
-import org.xmlBlaster.util.pool.PoolManager;
-import org.xmlBlaster.util.pool.I_PoolManager;
-import org.xmlBlaster.util.pool.ResourceWrapper;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.pool.I_PoolManager;
+import org.xmlBlaster.util.pool.PoolManager;
+import org.xmlBlaster.util.pool.ResourceWrapper;
 
 /**
  * Simple implementation of the database JDBC connection pool. 
@@ -187,13 +184,22 @@ public class DbPool implements I_DbPool, I_PoolManager {
           }
           catch (XmlBlasterException e) {
              if (e.getErrorCode() == ErrorCode.RESOURCE_EXHAUST && ii < this.maxResourceExhaustRetries) {
-                if (ii == 0)
-                   log.warning("Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
-                try { Thread.sleep(this.resourceExhaustSleepGap); } catch (InterruptedException ie) { /* Ignore */ }
+                if (ii == 0) {
+                   log.warning("Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries
+                        + " times every " + resourceExhaustSleepGap
+                        + " millis: " + this.poolManager.toXml() + ": "
+                        + e.getMessage());
+                }
+                if (ii > 0) {
+                  try {
+                     Thread.sleep(this.resourceExhaustSleepGap);
+                  } catch (InterruptedException ie) { /* Ignore */
+                  }
+                }
                 ii++;
              }
              else {
-                log.warning("Other stacks are doing: " + ThreadLister.getAllStackTraces());
+                log.warning("Other stacks are doing: " + ThreadLister.getAllStackTraces() + ": " + e.getMessage());
                 throw e;
              }
          }
