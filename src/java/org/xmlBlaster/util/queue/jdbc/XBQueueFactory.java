@@ -306,7 +306,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          if (this.maxSelectLimit > 0)
             log.info("The maximum results returned by a select is set to '" + maxSelectLimit + "' (MSSQLerver only)");
 
-         timeout = (int)(info.getLong("queue.persistent.queryTimeout", 90000L) / 1000L);
+         timeout = (int)(info.getLong("queue.persistent.queryTimeout", 0L) / 1000L);
          dbAdmin = info.getBoolean("dbAdmin", true);
          
          // the property settings specific to this plugin type / version
