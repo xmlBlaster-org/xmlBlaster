@@ -27,6 +27,7 @@ create table xbmeat (
       xbrefcount2 number(10),
       xbbytesize number(10),
       xbdatatype varchar(32) default '' not null,
+      xbmetainfo clob default '',
       xbflag1 varchar(32) default '',
       xbmsgqos clob default '',
       xbmsgcont blob default '',

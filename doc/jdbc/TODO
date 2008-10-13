@@ -1,0 +1,2 @@
+- Check of CLOB are slow
+- Add 'limit'

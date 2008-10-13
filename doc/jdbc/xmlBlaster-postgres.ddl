@@ -15,26 +15,31 @@ create table xbstore (
   -- creationts timestamp default current_timestamp not null,
   -- modifiedts timestamp default current_timestamp not null,
   -- nodeId + storeType + storeId ("heron", "callback", "joe17"): Java umbauen ist muehsam
+--  NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "xbstore_pkey" for table "xbstore"
 
 create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);
 -- insert into xbstore (xbstoreid,xbnode,xbtype,xbpostfix,flag1) values (1,'heron','callback','clientjoe1','');
 
 
 create table xbmeat (
-      xbmeatid int8 unique not null,
+      xbmeatid int8 primary key unique not null,
       xbdurable char not null default 'F',
       xbrefcount int4,
       xbrefcount2 int4,
       xbbytesize int4,
       xbdatatype varchar(32) not null default '',
+      xbmetainfo text default '',
       xbflag1 varchar(32) default '',
       xbmsgqos text default '',
       xbmsgcont bytea default '',
       xbmsgkey text default '',
-      xbstoreid int8 unique not null, constraint xbmeatpk primary key(xbmeatid));
+      xbstoreid int8 not null);
+--      xbstoreid int8 unique not null, constraint xbmeatpk primary key(xbmeatid));
 -- xbmeatid bigserial not null,
 -- creationts timestamp default current_timestamp not null,
 -- modifiedts timestamp default current_timestamp not null,
+-- NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "xbmeatpk" for table "xbmeat"
+-- NOTICE:  CREATE TABLE / UNIQUE will create implicit index "xbmeat_xbstoreid_key" for table "xbmeat"
 
 alter table xbmeat 
       add constraint fkxbstoremeat
