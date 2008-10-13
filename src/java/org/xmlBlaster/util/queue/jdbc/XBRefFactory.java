@@ -84,7 +84,7 @@ public class XBRefFactory extends XBFactory {
          getCompleteSt = "select * from ${table} left outer join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid)";
 
          buf.append("create table ${table} (\n");
-         buf.append("xbrefid int8 primary key unique not null,\n");
+         buf.append("xbrefid int8 not null,\n");
          buf.append("xbstoreid int8 not null,\n");
          buf.append("xbmeatid int8,\n");
          buf.append("-- creationts timestamp not null default current_timestamp,\n");
@@ -96,7 +96,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("xbprio int4,\n");
          buf.append("xbmethodname varchar(32) default '',\n");
          buf.append("xbonetomany char(1) not null default 'F',\n");
-         buf.append("constraint xbrefpk primary key(xbrefid, xbstoreid);\n");
+         buf.append("constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
          
          buf.append("    alter table ${table} \n");
          buf.append("            add constraint fkxbstoreref\n");
