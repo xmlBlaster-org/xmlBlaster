@@ -13,8 +13,9 @@ package org.xmlBlaster.util.queue.jdbc;
 
 public class XBMeat extends XBEntry {
 
-   public final static String SESSION_NAME="sessionName";
-   
+   /** MetaInfo key values */
+   public final static String SESSION_NAME = "sessionName";
+
    /**
     * 
     * <pre>
@@ -34,10 +35,11 @@ public class XBMeat extends XBEntry {
    private long refCount;
    private long refCount2;
    private String dataType;
+   private String metaInfo;
    private String qos;
    private byte[] content;
    private String key;
-   
+
    public XBMeat(long id) {
       super();
       setId(id);
@@ -67,49 +69,51 @@ public class XBMeat extends XBEntry {
       return dataType;
    }
 
-
    public void setDataType(String dataType) {
       this.dataType = dataType;
    }
 
-
-   public String getQos() {
-      return qos; //(qos == null) ? "" : qos;
+   public String getMetaInfo() {
+      return metaInfo;
    }
 
+   public void setMetaInfo(String metaInfo) {
+      this.metaInfo = metaInfo;
+   }
+
+   public String getQos() {
+      return qos; // (qos == null) ? "" : qos;
+   }
 
    public void setQos(String qos) {
       this.qos = qos;
    }
 
-
    public byte[] getContent() {
       return content; // (content == null) ? new byte[0] : content;
    }
-
 
    public void setContent(byte[] content) {
       this.content = content;
    }
 
-
    public String getKey() {
       return key; // (key == null) ? "" : key;
    }
 
-
    public void setKey(String key) {
       this.key = key;
    }
-   
-   
+
    public String toXml(String offset) {
       StringBuffer buf = new StringBuffer(512);
       buf.append(offset).append("<xbmeat>\n");
       super.toXml(offset + "  ", buf);
-      buf.append(offset).append("  <refCount>").append(refCount).append("</refCount>\n");
+      buf.append(offset).append("  <refCount>").append(refCount).append(
+            "</refCount>\n");
       if (dataType != null)
-         buf.append(offset).append("  <dataType>").append(dataType).append("</dataType>\n");
+         buf.append(offset).append("  <dataType>").append(dataType).append(
+               "</dataType>\n");
       if (qos != null)
          buf.append(offset).append("  <qos>").append(qos).append("</qos>\n");
       // buf.append(offset).append("  <content>").append(content).append("</content>\n");
@@ -118,5 +122,5 @@ public class XBMeat extends XBEntry {
       buf.append(offset).append("</xbmeat>\n");
       return buf.toString();
    }
-   
+
 }
