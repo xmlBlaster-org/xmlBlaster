@@ -74,7 +74,7 @@ public class XBMeat extends XBEntry {
 
 
    public String getQos() {
-      return qos;
+      return qos; //(qos == null) ? "" : qos;
    }
 
 
@@ -84,7 +84,7 @@ public class XBMeat extends XBEntry {
 
 
    public byte[] getContent() {
-      return content;
+      return content; // (content == null) ? new byte[0] : content;
    }
 
 
@@ -94,7 +94,7 @@ public class XBMeat extends XBEntry {
 
 
    public String getKey() {
-      return key;
+      return key; // (key == null) ? "" : key;
    }
 
 

@@ -272,7 +272,7 @@ public class XBMeatFactory extends XBFactory {
          preStatement.setBinaryStream(CONTENT, contentStream, xbMeat.getContent().length);
       }
       else
-         preStatement.setNull(CONTENT, Types.BINARY); // Types.BLOB fails on Postgres
+         preStatement.setNull(CONTENT, Types.BLOB); // Types.BLOB fails on Postgres Types.BINARY is OK
          
       if (xbMeat.getKey() != null) {
          InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey().getBytes("UTF-8"));
