@@ -6,39 +6,36 @@ Comment:   Implementation for the I_EntryFactory
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StringPairTokenizer;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
 import org.xmlBlaster.util.queue.jdbc.XBStore;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
-import org.xmlBlaster.util.key.MsgKeyData;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.engine.MsgUnitWrapper;
-
-import org.xmlBlaster.engine.qos.PublishQosServer; // for main only
-import org.xmlBlaster.client.key.PublishKey;       // for main only
-
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
 
 
 /**
@@ -405,29 +402,32 @@ public class ServerEntryFactory implements I_EntryFactory
       String type = store.getType();
       long timestamp = 0L;
       
-      Map map = null;
+      Map metaInfoMap = null;
       if (ref != null) {
          timestamp = ref.getId();
-         map = getCSV(ref.getMetaInfo());
+         metaInfoMap = getCSV(ref.getMetaInfo());
          if (ref.getMethodName() != null)
             type = ref.getMethodName();
       }
-      else
-         map = new HashMap/*<String,String>*/();
       if (meat != null) {
          timestamp = meat.getId();
          if (meat.getDataType() != null)
             type = meat.getDataType();
+         metaInfoMap = getCSV(meat.getMetaInfo());
       }
-      
+
+      if (metaInfoMap == null) {
+         metaInfoMap = new HashMap/* <String,String> */();
+      }
+
       if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) { // still used
          try {
-            String keyOid = (String)map.get(XBRef.KEY_OID);
-            long msgUnitWrapperUniqueId = Long.parseLong((String)map.get(XBRef.MSG_WRAPPER_ID));
-            String receiverStr = (String)map.get(XBRef.RECEIVER_STR);
-            String subscriptionId = (String)map.get(XBRef.SUB_ID);
-            String flag = (String)map.get(XBRef.FLAG);
-            int redeliverCount = Integer.parseInt((String)map.get(XBRef.REDELIVER_COUNTER));
+            String keyOid = (String) metaInfoMap.get(XBRef.KEY_OID);
+            long msgUnitWrapperUniqueId = Long.parseLong((String) metaInfoMap.get(XBRef.MSG_WRAPPER_ID));
+            String receiverStr = (String) metaInfoMap.get(XBRef.RECEIVER_STR);
+            String subscriptionId = (String) metaInfoMap.get(XBRef.SUB_ID);
+            String flag = (String) metaInfoMap.get(XBRef.FLAG);
+            int redeliverCount = Integer.parseInt((String) metaInfoMap.get(XBRef.REDELIVER_COUNTER));
             
             // We read the message content as well but don't parse it yet:
             String qos = null;
@@ -457,8 +457,8 @@ public class ServerEntryFactory implements I_EntryFactory
       }
       else if (ENTRY_TYPE_HISTORY_REF.equalsIgnoreCase(type)) { // still used
          try {
-            String keyOid = (String)map.get(XBRef.KEY_OID);
-            long msgUnitWrapperUniqueId = Long.parseLong((String)map.get(XBRef.MSG_WRAPPER_ID));
+            String keyOid = (String) metaInfoMap.get(XBRef.KEY_OID);
+            long msgUnitWrapperUniqueId = Long.parseLong((String) metaInfoMap.get(XBRef.MSG_WRAPPER_ID));
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueHistoryEntry(glob,
                                            PriorityEnum.toPriorityEnum(ref.getPrio()), storageId, updateEntryTimestamp,
@@ -516,7 +516,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             String keyLiteral = meat.getKey();
             String qosLiteral = meat.getQos();
-            String sessionName = meat.getDataType();
+            String sessionName = (String) metaInfoMap.get(XBMeat.SESSION_NAME);
             SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, meat.getByteSize());
             return subscribeEntry;
          }
