@@ -6,14 +6,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
 
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -402,6 +400,8 @@ public class StringPairTokenizer {
     * @return
     */
    public static Map/*<String, String>*/ CSVToMap(String csv) {
+      if (csv == null || csv.length() < 1)
+         return new HashMap();
       Map map = parseLine(new String[] {csv}, ',', '"', '=', false, false, true);
       String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
       for (int i=0; i<keys.length; i++) {
