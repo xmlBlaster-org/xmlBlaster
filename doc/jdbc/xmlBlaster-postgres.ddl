@@ -51,7 +51,7 @@ create index xbmeatstix on xbmeat(xbmeatid,xbstoreid);
 
 
 create table xbref (
-    xbrefid int8 primary key unique not null,
+    xbrefid int8 not null,
     xbstoreid int8 not null,
     xbmeatid int8,
     -- creationts timestamp not null default current_timestamp,
@@ -62,7 +62,9 @@ create table xbref (
     xbflag1 varchar(32) default '',
     xbprio int4,
     xbmethodname varchar(32) default '',
-    xbonetomany char(1) not null default 'F');
+    xbonetomany char(1) not null default 'F',
+    constraint xbrefpk primary key(xbrefid, xbstoreid)
+    );
 
 alter table xbref 
             add constraint fkxbstoreref
