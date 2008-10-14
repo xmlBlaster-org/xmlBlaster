@@ -6,41 +6,44 @@ Comment:   Handling global data on server side
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.xmlBlaster.util.IsoDateParser;
-import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.ThreadLister;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.cluster.ClusterManager;
-import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.engine.admin.extern.MomClientGateway;
-import org.xmlBlaster.protocol.CbProtocolManager;
-import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.util.dispatch.DispatchManager;
-import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
-import org.xmlBlaster.engine.dispatch.CbDispatchConnectionsHandler;
-import org.xmlBlaster.engine.distributor.plugins.MsgDistributorPluginManager;
-import org.xmlBlaster.util.property.Property;
-import org.xmlBlaster.util.queue.I_EntryFactory;
-import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.engine.msgstore.StoragePluginManager;
-import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
-import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
-import org.xmlBlaster.engine.runlevel.PluginHolder;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
-
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.engine.admin.extern.MomClientGateway;
+import org.xmlBlaster.engine.cluster.ClusterManager;
+import org.xmlBlaster.engine.dispatch.CbDispatchConnectionsHandler;
+import org.xmlBlaster.engine.distributor.plugins.MsgDistributorPluginManager;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
+import org.xmlBlaster.engine.persistence.MsgFileDumper;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.PluginHolder;
+import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.protocol.CbProtocolManager;
+import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.util.IsoDateParser;
+import org.xmlBlaster.util.ThreadLister;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.property.Property;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.queue.I_Queue;
 
 
 /**
@@ -725,40 +728,54 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    }
 
    public String getDump() throws XmlBlasterException {
-      StringBuffer sb = new StringBuffer(10000);
-      String offset = "\n";
-
-      sb.append(offset).append("<xmlBlaster id='").append(getId()).append("'");
-      sb.append(" version='").append(getVersion()).append("' counter='").append(counter).append("'");
-      sb.append("\n   ");
-      sb.append(" buildTimestamp='").append(getBuildTimestamp()).append("'");
-      sb.append(" buildJavaVendor='").append(getBuildJavaVendor()).append("'");
-      sb.append(" buildJavaVersion='").append(getBuildJavaVersion()).append("'");
-      sb.append("\n   ");
-      sb.append(" java.vendor='").append(System.getProperty("java.vendor")).append("'");
-      sb.append(" java.version='").append(System.getProperty("java.version")).append("'");
-      sb.append("\n   ");
-      sb.append(" os.name='").append(System.getProperty("os.name")).append("'");
-      sb.append(" os.version='").append(System.getProperty("os.version")).append("'");
-      sb.append("\n   ");
-      sb.append(" freeMemory='").append(Runtime.getRuntime().freeMemory()).append("'");
-      sb.append(" totalMemory='").append(Runtime.getRuntime().totalMemory()).append("'");
-      sb.append("\n   ");
-      sb.append(" dumpTimestamp='").append(IsoDateParser.getCurrentUTCTimestamp()).append("'");
-      //sb.append(" ='").append(get()).append("'");
-      sb.append(">");
-      sb.append(getProperty().toXml());
-      sb.append(offset).append(" <ThreadDump><![CDATA[");
-      sb.append(ThreadLister.listAllThreads());
-      sb.append(offset).append(" ]]></ThreadDump>");
-      if (getAuthenticate() != null) {
-         sb.append(getAuthenticate().toXml());
-         if (getAuthenticate().getXmlBlaster() != null) {
-            sb.append(getAuthenticate().getXmlBlaster().toXml());
-         }
+      ByteArrayOutputStream out = new ByteArrayOutputStream(100000);
+      getDump(out);
+      try {
+         return out.toString("UTF-8");
+      } catch (UnsupportedEncodingException e) {
+         return out.toString();
       }
-      sb.append(offset).append("</xmlBlaster>");
-      return sb.toString();
+   }
+
+   public void getDump(OutputStream out) throws XmlBlasterException {
+      try {
+         StringBuffer sb = new StringBuffer(10000);
+         String offset = "\n";
+         sb.append(offset).append("<xmlBlaster id='").append(getId()).append("'");
+         sb.append(" version='").append(getVersion()).append("' counter='").append(counter).append("'");
+         sb.append("\n   ");
+         sb.append(" buildTimestamp='").append(getBuildTimestamp()).append("'");
+         sb.append(" buildJavaVendor='").append(getBuildJavaVendor()).append("'");
+         sb.append(" buildJavaVersion='").append(getBuildJavaVersion()).append("'");
+         sb.append("\n   ");
+         sb.append(" java.vendor='").append(System.getProperty("java.vendor")).append("'");
+         sb.append(" java.version='").append(System.getProperty("java.version")).append("'");
+         sb.append("\n   ");
+         sb.append(" os.name='").append(System.getProperty("os.name")).append("'");
+         sb.append(" os.version='").append(System.getProperty("os.version")).append("'");
+         sb.append("\n   ");
+         sb.append(" freeMemory='").append(Runtime.getRuntime().freeMemory()).append("'");
+         sb.append(" totalMemory='").append(Runtime.getRuntime().totalMemory()).append("'");
+         sb.append("\n   ");
+         sb.append(" dumpTimestamp='").append(IsoDateParser.getCurrentUTCTimestamp()).append("'");
+         // sb.append(" ='").append(get()).append("'");
+         sb.append(">");
+         out.write(sb.toString().getBytes("UTF-8"));
+
+         out.write(getProperty().toXml().getBytes("UTF-8"));
+         out.write((offset + " <ThreadDump><![CDATA[").getBytes("UTF-8"));
+         out.write(ThreadLister.listAllThreads().getBytes("UTF-8"));
+         out.write((offset + " ]]></ThreadDump>").getBytes("UTF-8"));
+         if (getAuthenticate() != null) {
+            out.write(getAuthenticate().toXml().getBytes("UTF-8"));
+            if (getAuthenticate().getXmlBlaster() != null) {
+               out.write(getAuthenticate().getXmlBlaster().toXml().getBytes("UTF-8"));
+            }
+         }
+         out.write((offset + "</xmlBlaster>").getBytes("UTF-8"));
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
    }
 
    /**

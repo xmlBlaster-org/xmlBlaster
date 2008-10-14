@@ -12,30 +12,91 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
+import javax.management.AttributeChangeNotification;
+import javax.management.MBeanNotificationInfo;
+import javax.management.NotificationBroadcasterSupport;
+
+import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.I_ClientListener;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
+import org.xmlBlaster.engine.mime.AccessPluginManager;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.engine.mime.I_PublishFilter;
+import org.xmlBlaster.engine.mime.PublishPluginManager;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin;
+import org.xmlBlaster.engine.qos.EraseQosServer;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.GetReturnQosServer;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.engine.queuemsg.TopicEntry;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.qos.StatusQosData;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
+import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.log.I_LogListener;
 import org.xmlBlaster.util.log.XbNotifyHandler;
+import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.qos.StatusQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
+import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -43,59 +104,6 @@ import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.dispatch.DispatchStatistic;
-import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.TopicProperty;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
-import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
-import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.util.checkpoint.I_Checkpoint;
-import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
-import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.engine.queuemsg.TopicEntry;
-import org.xmlBlaster.engine.mime.I_AccessFilter;
-import org.xmlBlaster.engine.mime.AccessPluginManager;
-import org.xmlBlaster.engine.mime.I_PublishFilter;
-import org.xmlBlaster.engine.mime.PublishPluginManager;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.GetReturnQosServer;
-import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin;
-import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.I_ClientListener;
-import org.xmlBlaster.authentication.ClientEvent;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
-// import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
-import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-
-import java.util.*;
-
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.AttributeChangeNotification;
-import javax.management.MBeanNotificationInfo;
 
 /**
  * This is the central message broker, all requests are routed through this singleton.
@@ -2255,6 +2263,38 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
    public String getBuildJavaVersion() {
       return glob.getBuildJavaVersion();
+   }
+   public String dumpToFile(String reportFileName) {
+      File to_file = null;
+      FileOutputStream out_ = null;
+      try {
+         if (reportFileName == null || reportFileName.equalsIgnoreCase("String")) {
+            reportFileName = glob.getStrippedId() + "-dump.xml";
+         }
+         to_file = new File(reportFileName);
+         if (to_file.getParent() != null) {
+            to_file.getParentFile().mkdirs();
+         }
+         final FileOutputStream out = new FileOutputStream(to_file);
+         out_ = out;
+         glob.getDump(out_);
+      } catch (Throwable e) {
+         log.warning(e.toString());
+         e.printStackTrace();
+      }
+      finally {
+         if (out_ != null) {
+            try {
+               out_.flush();
+               out_.close();
+            } catch (IOException e) {
+               log.warning(e.toString());
+               return e.toString();
+            }
+         }
+      }
+      log.info("Dumped xmlBlaster data to " + reportFileName);
+      return "Dumped xmlBlaster data to " + reportFileName;
    }
    public String dump() throws XmlBlasterException {
       return glob.getDump();

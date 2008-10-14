@@ -82,11 +82,24 @@ public interface I_AdminNode extends I_AdminUsage {
     * Is an operation to not do it automatically on JMX load
     */
    public String dump() throws XmlBlasterException;
+
    /**
-    * Dump the internal xmlBlaster state to the given file. 
-    * @param fn The complete path and file name
+    * Dump the internal xmlBlaster state to the given file.
+    * <p>
+    * deprecated, use {@link #dumpToFile(String, String)} which uses
+    * OutputStream
+    * 
+    * @param fn
+    *           The complete path and file name
     */
    public void setDump(String fn) throws XmlBlasterException;
+
+   /**
+    * @param reportFileName
+    *           e.g. "/tmp/x.xml"
+    * @return
+    */
+   public String dumpToFile(String reportFileName);
 
    /**
     * Access the current run level of xmlBlaster. 
