@@ -115,7 +115,7 @@ public class XBRefFactory extends XBFactory {
          getCompleteSt = "select * from ${table} join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid(+))";
 
          buf.append("create table ${table} (\n");
-         buf.append("      xbrefid NUMBER(20) primary key,\n");
+         buf.append("      xbrefid NUMBER(20) not null,\n");
          buf.append("      xbstoreid NUMBER(20) not null,\n");
          buf.append("      xbmeatid NUMBER(20) ,\n");
          buf.append("      xbdurable char(1) default 'F' not null ,\n");
@@ -124,8 +124,8 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  NUMBER(10),\n");
          buf.append("      xbmethodname varchar(32) default '',\n");
-         buf.append("      xbonetomany char(1) default 'F' not null\n");
-         buf.append("    );\n");
+         buf.append("      xbonetomany char(1) default 'F' not null,\n");
+         buf.append("      constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
         
          buf.append("    alter table ${table} \n");
          buf.append("            add constraint fkxbstoreref\n");
@@ -163,7 +163,7 @@ public class XBRefFactory extends XBFactory {
          getCompleteSt = "select * from ${table} left outer join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid)";
 
          buf.append("create table ${table} (\n");
-         buf.append("      xbrefid bigint primary key,\n");
+         buf.append("      xbrefid bigint not null,\n");
          buf.append("      xbstoreid bigint not null,\n");
          buf.append("      xbmeatid bigint ,\n");
          buf.append("      xbdurable char(1) default 'F' not null ,\n");
@@ -172,7 +172,8 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  integer,\n");
          buf.append("      xbmethodname varchar(32) default '',\n");
-         buf.append("      xbonetomany char(1) default 'F' not null);\n");
+         buf.append("      xbonetomany char(1) default 'F' not null,\n");
+         buf.append("      constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
 
          buf.append("    alter table ${table} \n");
          buf.append("            add constraint fkxbstoreref\n");
