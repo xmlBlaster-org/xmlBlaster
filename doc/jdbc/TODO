@@ -1,2 +1,3 @@
 - Check of CLOB are slow
 - Add 'limit'
+- Increase connectionPoolSize=5
