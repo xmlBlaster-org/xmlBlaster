@@ -1,3 +1,4 @@
 - Check of CLOB are slow
 - Add 'limit'
 - Increase connectionPoolSize=5
+- XB_ENTRIES lookup in Oracle: check other schames as well
