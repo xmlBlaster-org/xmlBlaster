@@ -218,8 +218,9 @@ public class TestPtPPersistent extends TestCase  {
          }
       }
          
-      int ret = this.destination.getUpdateInterceptor().waitOnUpdate(300L*exLimit, (int)exLimit);
+      int ret = this.destination.getUpdateInterceptor().waitOnUpdate(3000L*exLimit, (int)exLimit);
       assertEquals("wrong number of entries arrived", (int)exLimit, ret);
+      // wait half a second more to see if more messages come
       ret = this.destination.getUpdateInterceptor().waitOnUpdate(500L, (int)exLimit+1);
       assertEquals("wrong number of entries arrived", (int)exLimit, ret);
       
