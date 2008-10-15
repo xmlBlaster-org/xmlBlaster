@@ -611,8 +611,12 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 #     endif
 #ifdef __IPhoneOS__
 	   CFReadStreamClose(xb->readStream);
+	   CFRelease(xb->readStream);
+	   xb->readStream = nil;
 	   CFWriteStreamClose(xb->writeStream);
-	   
+	   CFRelease(xb->writeStream);
+	   xb->writeStream = nil;
+	   printf("CFStreams were cosed\n");
 #else
       if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
