@@ -1,26 +1,30 @@
 package org.xmlBlaster.util.property;
 
+import java.applet.Applet;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.Vector;
+
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
-
-import java.io.*;
-import java.util.Properties;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
-//import java.util.logging.Logger;
-import java.net.URL;
-import java.applet.Applet;
 
 
 /**
@@ -1056,13 +1060,16 @@ public class Property implements Cloneable {
    }
 
    /**
-    * Replace dynamic variables, e.g. ${XY} with their values.
+    * Replace dynamic variables, e.g. $_{XY} with their values.
     * <p />
     * The maximum replacement (nesting) depth is 50.
-    * @param key For logging only
-    * @value The value string which may contain zero to many ${...} variables
-    * @return The new value where all resolvable ${} are replaced.
-    * @throws XmlBlasterException if matching "}" is missing
+    * 
+    * @param key
+    *           For logging only
+    * @value The value string which may contain zero to many $_{...} variables
+    * @return The new value where all resolvable $_{} are replaced.
+    * @throws XmlBlasterException
+    *            if matching "}" is missing
     */
    public final String replaceVariableNoException(String key, String value) throws XmlBlasterException {
       if (replaceVariables == false)
