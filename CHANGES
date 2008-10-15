@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17261 C client library: Checking for null pointer in gethostbyname because of iPhone
+
  o r17231 C client library: Ported to iPhone 3G, on Mac OSX compile with 'build -Duse-gcc=true c'
           uses define __MacOSX__. In XCode please set -D__IPhoneOS__=1 compile define.
 
