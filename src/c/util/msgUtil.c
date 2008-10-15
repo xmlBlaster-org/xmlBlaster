@@ -336,7 +336,7 @@ int gethostbyname_r (const char *name,
     /* determine if we have enough space in buf */
 
     /* count how many addresses */
-    for (p = ph->h_addr_list; *p != 0; p++) {
+    for (p = ph->h_addr_list; p != 0 && *p != 0; p++) {
       nbytes += ph->h_length; /* addresses */
       nbytes += sizeof(*p); /* pointers */
       naddr++;
@@ -345,7 +345,7 @@ int gethostbyname_r (const char *name,
 
     /* count how many aliases, and total length of strings */
 
-    for (p = ph->h_aliases; *p != 0; p++) {
+    for (p = ph->h_aliases; p != 0 && *p != 0; p++) {
       nbytes += (strlen(*p)+1); /* aliases */
       nbytes += sizeof(*p);  /* pointers */
       naliases++;
@@ -379,7 +379,7 @@ int gethostbyname_r (const char *name,
     q = (char **)buf; /* pointer to pointers area (type: char **) */
     ret->h_addr_list = q; /* update pointer to address list */
     pbuf = buf + ((naddr+naliases+2)*sizeof(*p)); /* skip that area */
-    for (p = ph->h_addr_list; *p != 0; p++) {
+    for (p = ph->h_addr_list; p != 0 && *p != 0; p++) {
       memcpy(pbuf, *p, ph->h_length); /* copy address bytes */
       *q++ = pbuf; /* the pointer is the one inside buf... */
       pbuf += ph->h_length; /* advance pbuf */
@@ -389,7 +389,7 @@ int gethostbyname_r (const char *name,
     /* copy aliases */
 
     ret->h_aliases = q; /* update pointer to aliases list */
-    for (p = ph->h_aliases; *p != 0; p++) {
+    for (p = ph->h_aliases; p != 0 && *p != 0; p++) {
       strcpy(pbuf, *p); /* copy alias strings */
       *q++ = pbuf; /* the pointer is the one inside buf... */
       pbuf += strlen(*p); /* advance pbuf */
