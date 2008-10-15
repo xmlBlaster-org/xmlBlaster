@@ -605,7 +605,7 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
 Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
 {
    /* take care not to exceed XMLBLASTER_MAX_USAGE_LEN */
-   SNPRINTF(usage, XMLBLASTER_MAX_USAGE_LEN, "%.950s%.950s%s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage(),
+   SNPRINTF(usage, XMLBLASTER_MAX_USAGE_LEN, "%.800s%.800s%.400s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage(),
                   "\n   -plugin/socket/multiThreaded  [true]"
                   "\n                       If true the update() call to your client code is a separate thread."
                   "\n   -plugin/socket/responseTimeout  [60000 (one minute)]"
