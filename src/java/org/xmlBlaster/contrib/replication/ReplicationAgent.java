@@ -28,6 +28,7 @@ import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.contrib.dbwatcher.I_ChangeListener;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
@@ -56,7 +57,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
    // private I_Info readerInfo;
    // private I_Info writerInfo;
    
-   private DbWatcher dbWatcher;
+   private I_ChangeListener dbWatcher;
    private DbWriter dbWriter;
    // private static String replPrefix = "repl_";
    private String slaveName;
@@ -115,7 +116,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
 
          GlobalInfo cfgInfo = agent.prepare(args);
          I_Info readerInfo = agent.createReaderInfo(cfgInfo);
-         I_Info writerInfo = agent.createWriterInfo(cfgInfo);
+         I_Info writerInfo = agent.createWriterInfo(agent.prepare(args));
          
          if (ReplicationAgent.needsHelp(args)) {
             agent.displayHelp(readerInfo, writerInfo);
@@ -147,7 +148,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
       }
    }
 
-   public DbWatcher getDbWatcher() {
+   public I_ChangeListener getDbWatcher() {
       return this.dbWatcher;
    }
 
