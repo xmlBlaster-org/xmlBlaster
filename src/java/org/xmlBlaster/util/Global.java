@@ -254,6 +254,10 @@ public class Global implements Cloneable
       this(args, true, false);
    }
 
+   public Global(String[] args, boolean loadPropFile, boolean checkInstance) {
+      this(args, loadPropFile, checkInstance, true);
+   }
+   
    /**
     * Constructs an initial Global object which is initialized
     * by your args array (usually the command line args).
@@ -278,7 +282,7 @@ public class Global implements Cloneable
     * @param args args array (usually the command line args).
     * @param loadPropFile if automatic loading of xmlBlaster.properties should be done.
     */
-   public Global(String[] args, boolean loadPropFile, boolean checkInstance)
+   public Global(String[] args, boolean loadPropFile, boolean checkInstance, boolean doReplace)
    {
       counter++;
       if (checkInstance == true) {
@@ -291,7 +295,7 @@ public class Global implements Cloneable
          if (firstInstance == null)
             firstInstance = this;
       }
-      initProps(args,loadPropFile);
+      initProps(args,loadPropFile, doReplace);
       initId();
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = new HashMap();
@@ -495,27 +499,27 @@ public class Global implements Cloneable
     * @return -1 on error
     * @exception If no Property instance can be created
     */
-   private int initProps(String[] args, boolean loadPropFile) {
+   private int initProps(String[] args, boolean loadPropFile, boolean doReplace) {
       if (property == null) {
          synchronized (Property.class) {
             if (property == null) {
                try {
                   if (loadPropFile)
-                     property = new Property("xmlBlaster.properties", true, args, true);
+                     property = new Property("xmlBlaster.properties", true, args, doReplace);
                   else
-                     property = new Property(null, true, args, true);
+                     property = new Property(null, true, args, doReplace);
                }
                catch (XmlBlasterException e) {
                   errorText = ME + ": Error in xmlBlaster.properties: " + e.toString();
                   System.err.println(errorText);
                   try {
-                     property = new Property(null, true, args, true);  // initialize without properties file!
+                     property = new Property(null, true, args, doReplace);  // initialize without properties file!
                   }
                   catch (XmlBlasterException e2) {
                      errorText = ME + " ERROR: " + e2.toString();
                      System.err.println(errorText);
                      try {
-                        property = new Property(null, true, new String[0], true);  // initialize without args
+                        property = new Property(null, true, new String[0], doReplace);  // initialize without args
                      }
                      catch (XmlBlasterException e3) {
                         errorText = ME + " ERROR: " + e3.toString();
