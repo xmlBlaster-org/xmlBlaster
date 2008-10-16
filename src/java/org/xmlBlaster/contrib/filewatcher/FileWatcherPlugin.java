@@ -38,6 +38,14 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
    // private PluginInfo pluginConfig;
    private boolean isShutdown;
    
+   /**
+    * This constructor shall be invoked if using this class standalone
+    * @param fakeString
+    */
+   private FileWatcherPlugin(String fakeString) {
+      super((String[])null);
+   }
+   
    public FileWatcherPlugin() {
       super(new String[] {"mom.topicName", 
                            "filewatcher.directoryName", 
@@ -69,9 +77,12 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
    public void doInit(Global global_, PluginInfo pluginInfo_) throws XmlBlasterException {
       // this.glob = global;
       // this.pluginConfig = pluginInfo_;
+      replaceAllEntries();
       this.ME += "-" + getType();
       if (log.isLoggable(Level.FINER))
          log.finer(ME+"init");
+      String tmp = get("host.name", null);
+      log.info("Host name : " + tmp);
       this.publisherClient = new Publisher(global, this.getType(), this);
       this.publisherClient.init();
       if (log.isLoggable(Level.FINEST)) {
@@ -314,4 +325,29 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
       return publisherClient.isRecursive();
    }
    
+   public static void main(String[] args) {
+      try {
+         FileWatcherPlugin fileWatcher = new FileWatcherPlugin("DUMMY STRING TO FORCE REPLACEMENT OF ALL PARAMETERS");
+         final boolean loadPropFile = true;
+         final boolean checkInstance = false;
+         final boolean doReplace = false;
+         Global global = new Global(args, loadPropFile, checkInstance, doReplace);
+         // global.init(args);
+         fileWatcher.init(global, null);
+         while (true) {
+            try {
+               Thread.sleep(5000L);
+            }
+            catch (Exception ex) {
+               
+            }
+         }
+//          agent.shutdown();
+      } 
+      catch (Throwable ex) {
+         log.severe("An exception occured when starting '" + ex.getMessage() + "'");
+         ex.printStackTrace();
+      }
+   }
+
 }

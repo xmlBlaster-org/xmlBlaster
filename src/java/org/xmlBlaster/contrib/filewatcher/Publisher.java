@@ -19,6 +19,7 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.contrib.ContribConstants;
+import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher;
 import org.xmlBlaster.contrib.replication.I_ReplSource;
@@ -202,7 +203,9 @@ public class Publisher implements I_Timeout {
       ME += "-" + name;
       this.name = name;
       this.isShutdown = false;
-      this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
+      // This should already be done by the GlobalInfo
+      // this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); 
+      this.global = globOrig.getClone(null); // sets session.timeout to 0 etc.
       // this.global = globOrig;
       // this.pluginConfig = pluginConfig;
       this.info_ = info;
@@ -783,5 +786,6 @@ public class Publisher implements I_Timeout {
          recursive = rec;
       reCreateDirectoryManagers();
    }
-
+   
+   
 }
