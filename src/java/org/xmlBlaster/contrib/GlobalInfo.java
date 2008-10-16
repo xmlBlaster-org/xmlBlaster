@@ -95,6 +95,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
             }
             log.info("Setting 'host.name' to '" + hostName + "'");
             System.setProperty("host.name", hostName);
+            info.put("host.name", hostName);
          }
          catch (UnknownHostException ex) {
             log.warning("Could not retrieve the local hostname (I wanted it since 'host.name' was not set)");
@@ -271,9 +272,13 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       
       doInit(global_, pluginInfo);
       initJmx();
-      this.helper.replaceAllEntries(this, this.propsOfOwnInterest);
+      replaceAllEntries();
    }
 
+   protected void replaceAllEntries() {
+      helper.replaceAllEntries(this, propsOfOwnInterest);
+   }
+   
    private void initJmx() {
       Map jmxMap = InfoHelper.getObjectsWithKeyStartingWith(JMX_PREFIX, this, null);
       if (jmxMap.size() < 1)

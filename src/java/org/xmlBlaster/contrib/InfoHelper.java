@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.apache.tools.ant.taskdefs.Replace;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -63,27 +62,45 @@ public class InfoHelper {
    
    public void replaceAllEntries(I_Info info, Set keysToIgnore) {
       synchronized (info) {
-         Set set = info.getKeys();
-         String[] keys = (String[])set.toArray(new String[set.size()]);
-         for (int i=0; i < keys.length; i++) {
-            String key = keys[i];
-            if (key == null) {
-               log.warning("entry found which had a null key");
-               continue;
+         int count = 1;
+         int nmax = 50;
+         while (count > 0 && nmax > 0) {
+            count = 0;
+            Set set = info.getKeys();
+            String[] keys = (String[])set.toArray(new String[set.size()]);
+            for (int i=0; i < keys.length; i++) {
+               String key = keys[i];
+               if (key == null) {
+                  log.warning("entry found which had a null key");
+                  continue;
+               }
+               if (keysToIgnore != null && keysToIgnore.contains(key))
+                  continue;
+               String newKey = replace(key);
+               if (newKey != null && !newKey.equals(key)) { // then the key had a token
+                  count++;
+                  String val = replace(info.getRaw(key)); // get the cleaned old value
+                  // check if the cleaned key is already in use
+                  String oldValueOfNewKey = info.get(newKey, null);
+                  if (oldValueOfNewKey == null || oldValueOfNewKey.equals(val)) {
+                     count++;
+                     info.putRaw(key, null); // erase the old entry
+                     info.put(newKey, val);
+                  } // otherwise keep the old one.
+               }
+               else { // the key has no token but how is it with the value ?
+                  String oldVal = info.getRaw(key);
+                  String val = replace(oldVal); // get the cleaned old value
+                  if (oldVal != null && !oldVal.equals(val)) {
+                     count++;
+                     info.put(key, val);
+                  }
+               }
             }
-            if (keysToIgnore != null && keysToIgnore.contains(key))
-               continue;
-            String newKey = replace(key);
-            if (newKey != null && !newKey.equals(key)) { // then the key had a token
-               String val = replace(info.getRaw(key)); // get the cleaned old value
-               // check if the cleaned key is already in use
-               String oldValueOfNewKey = info.get(newKey, null);
-               if (oldValueOfNewKey == null || oldValueOfNewKey.equals(val)) {
-                  info.putRaw(key, null); // erase the old entry
-                  info.put(newKey, val);
-               } // otherwise keep the old one.
-            }
+            nmax--;
          }
+         if (nmax < 1)
+            log.warning("The replacement of all entries could not be completely done: still " + count + " entries to replace after 50 trials");
       }
    }
    
