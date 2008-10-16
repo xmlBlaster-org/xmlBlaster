@@ -255,6 +255,18 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
+    * @return e.g. "client/joe/2" or "client/joe", never null
+    */
+   public String getRelativeNameWithoutSessionMarker() {
+      StringBuffer buf = new StringBuffer(126);
+      buf.append(ContextNode.SUBJECT_MARKER_TAG).append("/").append(subjectId);
+      if (isSession()) {
+         buf.append("/").append(""+this.pubSessionId);
+      }
+      return buf.toString();
+   }
+
+   /**
     * Check if the address string given to our constructor had an explicit specified nodeId
     */
    public boolean isNodeIdExplicitlyGiven() {
