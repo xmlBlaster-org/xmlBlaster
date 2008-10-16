@@ -1,4 +1,4 @@
-/*-----t-------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
 Name:      TestPollerPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
