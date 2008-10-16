@@ -15,16 +15,16 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="so" artifactName="xmlBlasterClientCD" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.219208913" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postannouncebuildStep="Copy lib to xmlBlaster/lib directory" postbuildStep="cp ${XMLBLASTER_HOME}/src/c/Debug/lib${BuildArtifactFileName} ${XMLBLASTER_HOME}/lib">
-<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.219208913.45916997" name="/" resourcePath="">
-<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1438910986" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
-<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.628423030" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-<builder buildPath="${workspace_loc:/xmlBlasterClientC/Debug}" id="cdt.managedbuild.target.gnu.builder.exe.debug.441450511" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+<configuration artifactExtension="so" artifactName="xmlBlasterClientCD" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="" id="cdt.managedbuild.config.gnu.exe.debug.219208913" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postannouncebuildStep="Copy lib to xmlBlaster/lib directory" postbuildStep="cp ${XMLBLASTER_HOME}/src/c/Debug/lib${BuildArtifactFileName} ${XMLBLASTER_HOME}/lib" preannouncebuildStep="" prebuildStep="">
+<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.219208913.922840919" name="/" resourcePath="">
+<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.1438910986" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.exe.debug.1288016523" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
+<builder buildPath="${workspace_loc:/xmlBlasterClientC/Debug}" enableAutoBuild="true" errorParsers="org.eclipse.cdt.core.MakeErrorParser" id="cdt.managedbuild.target.gnu.builder.exe.debug.532888971" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.91148311" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
-<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1893106746" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1018195036" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.2072954806" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1416352762" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+<tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
 <option id="gnu.c.compiler.option.preprocessor.def.symbols.981984303" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 <listOptionValue builtIn="false" value="XMLBLASTER_PERSISTENT_QUEUE=1"/>
 <listOptionValue builtIn="false" value="XMLBLASTER_ZLIB=1"/>
@@ -37,11 +37,11 @@
 </option>
 <option id="gnu.c.compiler.option.warnings.pedantic.1416751142" name="Pedantic (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 <option id="gnu.c.compiler.option.misc.other.1312870158" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fPIC" valueType="string"/>
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.779660286" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.debug.option.debugging.level.589026107" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.205579222" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.729094329" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.360187340" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.998034984" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.795644704" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
+<tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.795644704" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
 <option id="gnu.c.link.option.libs.1488208309" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="z"/>
 <listOptionValue builtIn="false" value="pthread"/>
@@ -55,24 +55,24 @@
 <option id="gnu.c.link.option.shared.783582631" name="Shared (-shared)" superClass="gnu.c.link.option.shared" value="true" valueType="boolean"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1555864514" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
-<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1540984953" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
-<inputType id="cdt.managedbuild.tool.gnu.assembler.input.92988187" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+<tool command="as" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1540984953" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
+<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1494984963" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.archiver.base.852811829" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+<tool id="cdt.managedbuild.tool.gnu.archiver.base.170763550" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 </toolChain>
 </folderInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c" name="XmlBlasterConnectionUnparsedMain.c" rcbsApplicability="disable" resourcePath="XmlBlasterConnectionUnparsedMain.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c">
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479">
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1092287120" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.debug.option.debugging.level.1111016656" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.373141056" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+<tool errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479">
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.589708691" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.766915844" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.2044562808" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 </fileInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/HelloWorld.c" name="HelloWorld.c" rcbsApplicability="disable" resourcePath="HelloWorld.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c">
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479">
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1952542545" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.debug.option.debugging.level.878060660" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.778925699" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+<tool errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479">
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1568333174" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.1591887581" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1180345865" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 </fileInfo>
 <sourceEntries>
@@ -80,8 +80,8 @@
 </sourceEntries>
 </configuration>
 </storageModule>
-<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 <storageModule moduleId="scannerConfiguration">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
@@ -164,7 +164,7 @@
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
-<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.219208913;cdt.managedbuild.config.gnu.exe.debug.219208913.45916997;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479;cdt.managedbuild.tool.gnu.c.compiler.input.205579222">
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.219208913;cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/HelloWorld.c;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c;cdt.managedbuild.tool.gnu.c.compiler.input.1180345865">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
@@ -247,7 +247,7 @@
 </scannerInfoProvider>
 </profile>
 </scannerConfigBuildInfo>
-<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.219208913;cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c;cdt.managedbuild.tool.gnu.c.compiler.input.373141056">
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.219208913;cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c;cdt.managedbuild.tool.gnu.c.compiler.input.2044562808">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
@@ -330,7 +330,7 @@
 </scannerInfoProvider>
 </profile>
 </scannerConfigBuildInfo>
-<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.219208913;cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/HelloWorld.c;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c;cdt.managedbuild.tool.gnu.c.compiler.input.778925699">
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.219208913;cdt.managedbuild.config.gnu.exe.debug.219208913.922840919;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479;cdt.managedbuild.tool.gnu.c.compiler.input.998034984">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
@@ -414,8 +414,6 @@
 </profile>
 </scannerConfigBuildInfo>
 </storageModule>
-<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
-<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
