@@ -1,4 +1,23 @@
 - Check of CLOB are slow
+
 - Add 'limit'
+
 - Increase connectionPoolSize=5
+
 - XB_ENTRIES lookup in Oracle: check other schames as well
+
+- select * from xbstore; xbnode contains "node" ???
+
+- Make StorageId.splitPostfix xbtype specific
+
+- clientpubisher   | connection   | 2
+  How to distinguish one client connecting to two different clusters with same login name
+  -> Possibility to force the xbnode
+
+- Leak analysis on database
+  select xbmeatid from xbmeat, xbref where xbref.xbmeatid = xbmeat.xbmeatid and xbmeat.xbdurable='F';
+
+  Check if ref lost meat ('F' is one to one)
+  select * from xbref left outer join xbmeat on (xbref.xbmeatid=xbmeat.xbmeatid) where xbref.xbonetomany='F';
+
+- 
