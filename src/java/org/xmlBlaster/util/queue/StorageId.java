@@ -8,6 +8,7 @@ package org.xmlBlaster.util.queue;
 import java.util.StringTokenizer;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -21,6 +22,7 @@ import org.xmlBlaster.util.queue.jdbc.XBStore;
 public class StorageId implements java.io.Serializable
 {
    private static final long serialVersionUID = 485407826616456805L;
+   private Global glob;
    private transient final String prefix;
    private transient final String postfix;
    private String strippedId;
@@ -55,6 +57,7 @@ public class StorageId implements java.io.Serializable
     * @exception XmlBlasterException if no separator ":" was found
     */
    public StorageId(Global glob, String id) throws XmlBlasterException {
+      this.glob = glob;
       this.id = id;
       int pos = this.id.indexOf(":");
       if (pos < 0)
@@ -68,6 +71,20 @@ public class StorageId implements java.io.Serializable
 
    
    private final void splitPostfix(String post) {
+      if (Constants.RELATING_CALLBACK.equals(this.prefix)) { // "callback"
+         //callback_nodemarcelclientsubscriber1  | UPDATE_REF
+         SessionName sn = new SessionName(this.glob, post);
+         xbNode = sn.getNodeIdStr();
+         xbPostfix = sn.getRelativeNameWithoutSessionMarker();
+         return;
+      }
+      else if (Constants.RELATING_SUBJECT.equals(this.prefix)) { // "subject"
+         //subject_nodemarcelclientsomebody
+         SessionName sn = new SessionName(this.glob, post);
+         xbNode = sn.getNodeIdStr();
+         xbPostfix = sn.getLoginName();
+         return;
+      }
       int pos = post.indexOf('/');
       if (pos < 0) {
          xbNode = post;
