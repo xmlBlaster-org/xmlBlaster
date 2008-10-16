@@ -169,7 +169,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
                if (xa->callbackP->isShutdown)
                   break;
                /*pthread_yield(0);*/
-               // sleepMillis(interval);
+               sleepMillis(interval);
                if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                    "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for callback thread to join. %d/%d", interval, i, num);
             }
