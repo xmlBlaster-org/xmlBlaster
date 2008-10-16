@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ 
+ o r17272 FileWatcherPlugin: can now be run standalone (for that getNativeConnectArgs() has been removed since 
+          it is already invoked in GlobalInfo). 
 
  o r17261 C client library: Checking for null pointer in gethostbyname because of iPhone
 
