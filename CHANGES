@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o r17285 Checkpoint plugin: added client-cluster check point 'client.publish.enter'.
  
  o r17272 FileWatcherPlugin: can now be run standalone (for that getNativeConnectArgs() has been removed since 
           it is already invoked in GlobalInfo). 
