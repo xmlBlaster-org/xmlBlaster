@@ -1,5 +1,8 @@
 xmlBlaster/demo/javaclients/cluster/gateway/README  2008-04-14, marcel
 
+Connect cluster slaves to a master and the master reuses the socket
+to tunnel messages back to the slaves. Works with or without SSL configuration.
+
 Please read the cluster requirement
 
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
@@ -130,6 +133,9 @@ java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/conn
 
 Publish to heron without domain:
 java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7700 -numPublish 2000 -session.name pubisherToHeron/2 -persistent true -oid Hello
+
+Publish to heron with avalon domain:
+java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7700 -numPublish 2000 -session.name pubisherToHeron/2 -persistent true -oid Hello -domain avalonDomain
 
 Subscribe to heron with avalon domain:
 java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7700 -oid Hello -session.name subscriberToHeron/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -domain avalonDomain
