@@ -70,6 +70,7 @@ logging.properties:
 # Trace flow of messages
 # See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
 # Checkpoints: "publish.enter", "publish.ack", "update.queue.add", "update.ack"
+# on cluster-client side: "client.publish.enter", "client.publish.ack"
 # INFO dumps the most important data
 # FINEST dumps the complete message
 # OFF switches a checkpoint off
@@ -135,6 +136,18 @@ trace intensity.
 
 <p>If the Checkstyle plugin does not fullfill your requirements you can extend the class or write a specific one for your needs.</p>
 
+
+<p class="celltitel">The xmlBlaster code contains following checkpoints</p>
+
+<ol>
+  <li>publish.enter: When the publish call enters the server, processing starts. Only if successfully authorized.</li>
+  <li>publish.ack: The published message is successfully processed by the xmlBlaster core. The ACK is now returned to the client.</li>
+  <li>update.queue.add: When the message is put to a callback queue (to be delivered to a subscriber or PtP destination).</li>
+  <li>update.ack: The receiving client has acknowledged the delivered message.</li>
+  <li>client.publish.enter: On cluster client side: When the message is going to be forwarded to the next cluster node.</li>
+  <li>client.publish.ack: On cluster client side: The receiving cluster node has acknowleged the message.</li>
+</ol>
+
 </description>
 
 
@@ -172,7 +185,7 @@ trace intensity.
             <td>excludeIfClientPropertyKey</td>
             <td></td>
             <td>If the client property key is found in the message the message is not logged.
-	    You can specify a comma separated list of such keys like 'table,description,quickKey'.
+            You can specify a comma separated list of such keys like 'table,description,quickKey'.
              </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -193,7 +206,7 @@ trace intensity.
             <td>---</td>
             <td>Currently we have following checkpoints:<br />
             <i>"publish.enter", "publish.ack", "update.queue.add", "update.ack"</i> and additionally 
-            <i>"client.publish.ack"</i> in cluster environments.
+            <i>"client.publish.enter", "client.publish.ack"</i> in cluster environments.
             <br />
             In <code>logging.properties</code> you can choose the log level of each
             checkpoint individually: Choosing INFO dumps the logging output as described above,
