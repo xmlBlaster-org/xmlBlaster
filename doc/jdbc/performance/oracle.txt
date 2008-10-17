@@ -1,0 +1,12 @@
+First performance test with 2008-queues in oracle:
+
+term 1) java org.xmlBlaster.Main
+term 2-11) 10 different terminals where on each the following command:
+   java javaclients.HelloWorldSubscribe -session.name mic
+term 12) time java javaclients.HelloWorldPublish -persitent true -interactive false -sleep 10 -contentSize 300000 -numPublish 5000
+
+
+Results:
+old queues: 09:41 Minutes => 8.6 msg / sec
+new queues: 14:21 Minutes => 5.8 msg / sec
+
