@@ -38,9 +38,20 @@ public interface I_Checkpoint extends I_Plugin, CheckpointMBean {
     */
    public static final int CP_UPDATE_ACK = 3;
    
-   public static final int CP_CONNECTION_PUBLISH_ACK = 4;
+   /**
+    * On client side (or client of a cluster setup) before sending or putting to
+    * connection queue (if offline)
+    */
+   public static final int CP_CONNECTION_PUBLISH_ENTER = 4;
+
+   /**
+    * On client side (or client of a cluster setup) after the message is
+    * acknowledged by the remote server.
+    */
+   public static final int CP_CONNECTION_PUBLISH_ACK = 5;
    
-   public static final String[] CP_NAMES = { "publish.enter", "publish.ack", "update.queue.add", "update.ack", "client.publish.ack"};
+   public static final String[] CP_NAMES = { "publish.enter", "publish.ack", "update.queue.add", "update.ack",
+      "client.publish.enter", "client.publish.ack" };
 
    /**
     * A message is passing a checkpoint.

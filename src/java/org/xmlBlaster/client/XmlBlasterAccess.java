@@ -52,6 +52,7 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -124,6 +125,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private SynchronousCache synchronousCache;
    private boolean disconnectInProgress;
    private boolean connectInProgress;
+   private String[] checkPointContext;
 
    /** this I_XmlBlasterAccess is valid until a 'leaveServer' invocation is done.*/
    private boolean isValid = true;
@@ -940,7 +942,17 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
       catch (XmlBlasterException e) {
           log.warning(getLogId()+"Ignoring problem during JMX registration: " + e.toString());
-       }
+      }
+
+      setCheckpointContext(getLogId());
+   }
+
+   private void setCheckpointContext(String id) {
+      if (id == null || id.length() < 1) {
+         this.checkPointContext = null;
+         return;
+      }
+      this.checkPointContext = new String[] { "sessionName", id };
    }
 
    /**
@@ -948,6 +960,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    private Object queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       try {
+         final I_Checkpoint cp = glob.getCheckpointPlugin();
+         if (cp != null) {
+            cp.passingBy(I_Checkpoint.CP_CONNECTION_PUBLISH_ENTER, entry.getMsgUnit(), null, this.checkPointContext);
+         }
          this.clientQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
          if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
          return entry.getReturnObj();
