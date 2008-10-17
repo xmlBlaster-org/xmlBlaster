@@ -37,10 +37,10 @@ public interface I_Checkpoint extends I_Plugin, CheckpointMBean {
     * For none oneway messages after the client has returned its ACK.
     */
    public static final int CP_UPDATE_ACK = 3;
-   
+
    /**
-    * On client side (or client of a cluster setup) before sending or putting to
-    * connection queue (if offline)
+    * On cluster - client side before sending or putting to connection queue (if
+    * offline)
     */
    public static final int CP_CONNECTION_PUBLISH_ENTER = 4;
 
