@@ -92,6 +92,7 @@ typedef int32_t (XB_CALLBACK_DECL *FPTR)( int32_t i );
 Dll_Export extern const char *getXmlBlasterEmei();
 
 Dll_Export extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
+Dll_Export extern void callbackProgressListener_stdout(void *userP, const size_t currBytesRead, const size_t nbytes);
 Dll_Export extern void xmlBlasterUnmanagedCERegisterProgressListener(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCECallbackProgressListenerFp progressListener);
 
 Dll_Export extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanagedCE(int argc, char** argv);
