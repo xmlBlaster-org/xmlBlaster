@@ -5,10 +5,10 @@
 
 @prepare  Linux:    cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
 @compile  Linux:    mcs /unsafe /d:"XMLBLASTER_MONO" /d:CF1 -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs Key.cs Qos.cs
-                    gmcs /unsafe /d:XMLBLASTER_MONO /d:FORCE_PINVOKECE_PLUGIN -debug+ -out:Hello.exe PInvokeCE.cs XmlBlasterAccess.cs Hello.cs Key.cs Qos.cs
+                    gmcs /unsafe /d:XMLBLASTER_MONO /d:FORCE_PINVOKECE_PLUGIN -debug+ -out:Hello.exe PInvokeCE.cs XmlBlasterAccess* Hello.cs Key.cs Qos.cs util/*.cs client/*.cs
 
 @prepare  Windows:  Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
-@compile  Windows:  csc /unsafe -debug+ -out:Hello.exe XmlBlasterAccess.cs PInvokeCE.cs Hello.cs
+@compile  Windows:  csc /unsafe -debug+ -out:Hello.exe XmlBlasterAccess*.cs PInvokeCE.cs Hello.cs util\*.cs client\*.cs
 
 @prepare  WindowsCE:  Compile the C client library first (see xmlBlaster\src\c\WindowsCE\xmlBlasterCE.sln)
                       or download the dll binaries xmlBlasterClientC-Arm4.dll, pthreads270-Arm4.dll, zlib123-Arm4.dll
@@ -23,6 +23,7 @@
 */
 using System;
 using System.Runtime.InteropServices;
+using System.Collections;
 using org.xmlBlaster.client;
 
 public class Hello : I_Callback, I_ConnectionStateListener
@@ -36,6 +37,7 @@ public class Hello : I_Callback, I_ConnectionStateListener
    public Hello(string[] argv) {
       I_XmlBlasterAccess nc = XmlBlasterAccessFactory.CreateInstance();
       nc.Initialize(argv);
+      nc.Initialize(new Hashtable());
       nc.RegisterConnectionListener(this);
 
       string connectQos = String.Format(
