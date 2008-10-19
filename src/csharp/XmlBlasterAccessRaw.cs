@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-Name:      XmlBlasterAccess.cs
+Name:      XmlBlasterAccessRaw.cs
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Provides abstraction to xmlBlaster access from C#
