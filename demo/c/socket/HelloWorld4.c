@@ -35,8 +35,8 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
-      printf("[client4] CALLBACK update(): %x Asynchronous message update arrived:%s\n",
-             (unsigned int)xa, xml);
+      printf("[client4] CALLBACK update(): %p Asynchronous message update arrived:%s\n",
+             (void *)xa, xml);
       xmlBlasterFree(xml);
       msgUnitArr->msgUnitArr[i].responseQos =
                   strcpyAlloc("<qos><state id='OK'/></qos>");
