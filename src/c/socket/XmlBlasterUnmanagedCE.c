@@ -31,12 +31,12 @@ static const bool freeIt = true;
  See: http://www.opennetcf.org/Forums/topic.asp?TOPIC_ID=255
 */
 
-static void myLogger(void *logUserP,
+static void myLogger(XmlBlasterLogging logUserP,
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
 
-static void myLogger(void *logUserP,
+static void myLogger(XmlBlasterLogging logUserP,
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...)
