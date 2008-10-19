@@ -15,7 +15,7 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="so" artifactName="xmlBlasterClientCD" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="" id="cdt.managedbuild.config.gnu.exe.debug.219208913" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postannouncebuildStep="Copy lib to xmlBlaster/lib directory" postbuildStep="cp ${XMLBLASTER_HOME}/src/c/Debug/lib${BuildArtifactFileName} ${XMLBLASTER_HOME}/lib" preannouncebuildStep="" prebuildStep="">
+<configuration artifactExtension="so" artifactName="xmlBlasterClientCD" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.sharedLib" cleanCommand="rm -rf" description="" errorParsers="" id="cdt.managedbuild.config.gnu.exe.debug.219208913" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postannouncebuildStep="Copy lib to xmlBlaster/lib directory" postbuildStep="cp ${XMLBLASTER_HOME}/src/c/Debug/lib${BuildArtifactFileName} ${XMLBLASTER_HOME}/lib" preannouncebuildStep="" prebuildStep="">
 <folderInfo id="cdt.managedbuild.config.gnu.exe.debug.219208913.922840919" name="/" resourcePath="">
 <toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.1438910986" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 <targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.exe.debug.1288016523" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
@@ -52,9 +52,11 @@
 <listOptionValue builtIn="false" value="${sqlite_lib_dir}"/>
 <listOptionValue builtIn="false" value="${usr_lib_dir}"/>
 </option>
-<option id="gnu.c.link.option.shared.783582631" name="Shared (-shared)" superClass="gnu.c.link.option.shared" value="true" valueType="boolean"/>
+<option defaultValue="true" id="gnu.c.link.option.shared.783582631" name="Shared (-shared)" superClass="gnu.c.link.option.shared" value="true" valueType="boolean"/>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1555864514" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1555864514" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+<option defaultValue="true" id="gnu.cpp.link.option.shared.1290877988" superClass="gnu.cpp.link.option.shared" valueType="boolean"/>
+</tool>
 <tool command="as" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1540984953" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.1494984963" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
@@ -82,6 +84,8 @@
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+
+<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 <storageModule moduleId="scannerConfiguration">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
