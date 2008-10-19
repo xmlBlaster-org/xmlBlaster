@@ -43,16 +43,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Key.cs" />
     <Compile Include="NativeC.cs" />
     <Compile Include="PInvokeCE.cs" />
-    <Compile Include="Qos.cs" />
     <Compile Include="service\PropTO.cs" />
     <Compile Include="service\ServiceListTO.cs" />
     <Compile Include="service\ServiceTO.cs" />
     <Compile Include="util\FileLocator.cs" />
     <Compile Include="util\Serialization.cs" />
-    <Compile Include="XmlBlasterAccess.cs" />
     <Compile Include="client\XbPinger.cs" />
     <Compile Include="client\XbPoller.cs" />
     <Compile Include="util\I_GprsManager.cs" />
@@ -62,8 +59,10 @@
     <Compile Include="util\Stuff.cs" />
     <Compile Include="util\XmlBuffer.cs" />
     <Compile Include="Hello.cs" />
-    <Compile Include="XmlBlasterAccessRaw.cs" />
-    <None Include="Fifo.cs" />
+    <Compile Include="client\Key.cs" />
+    <Compile Include="client\Qos.cs" />
+    <Compile Include="client\XmlBlasterAccess.cs" />
+    <Compile Include="client\XmlBlasterAccessRaw.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
