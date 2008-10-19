@@ -6,6 +6,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlunit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
-	<classpathentry kind="lib" path="XMLBLASTER_HOME/lib/javax.jms.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/javax.jms.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
