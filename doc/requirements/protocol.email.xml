@@ -538,6 +538,7 @@ ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConne
                                  mail.smtp.url=smtp://demo:demo@localhost,\
                                  mail.smtp.from=demo@localhost,\
                                  mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+				 mail.smtp.to=xmlBlaster@localhost,\
                                  pop3PollingInterval=500,\
                                  holdbackExpireTimeout=20000,\
                                  compress/type=zlib,\
@@ -606,6 +607,16 @@ Click <a href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/
              </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>mail.smtp.to</td>
+            <td>xmlBlaster@localhost</td>
+            <td>The Address to which the server we want to contact is listening to.
+             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+
          <tr>
             <td>messageIdForceBase64</td>
             <td>false</td>
