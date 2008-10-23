@@ -59,6 +59,35 @@ public interface I_AdminSubject extends I_AdminUsage {
     * @param max The maximum number of sessions for this subject
     */
    public void setMaxSessions(int max);
+
+   /**
+    * Prevent client from login.
+    * 
+    * @return true if client may not login, existing sessions are not destroyed
+    * 
+    */
+   public boolean isBlockClientLogin();
+
+   /**
+    * Allow or prevent client login. Note this is for going into maintenance
+    * mode only as you can't hit this button (there is no Subject showing this
+    * button) if the client hasn't been here and is not a fail save client.
+    * 
+    * @param blockClient
+    *           true to prevent client logins
+    */
+   public String setBlockClientLogin(boolean blockClient);
+
+   /**
+    * Prevent client login and reset all its ALIVE protocol connections. The
+    * callback queue entries remain for fail save clients
+    * <p />
+    * Note this is for going into maintenance mode only as you can't hit this
+    * button (there is no Subject showing this button) if the client hasn't been
+    * here and is not a fail save client.
+    */
+   public String blockClientAndResetConnections();
+
    /**
     * Get a list of all session names for this subject. 
     * @return Comma separated list of sessions

@@ -215,6 +215,20 @@ final public class Authenticate implements I_RunlevelListener
                    ME+".connect()", text);
       }
 
+      {
+         SubjectInfo si = getSubjectInfoByName(connectQos.getSessionQos().getSessionName());
+         if (si != null && si.isBlockClientLogin()) {
+            // Future todo: Throw out existing session, not only block new
+            // logins
+            log.warning("Access for " + connectQos.getSessionQos().getSessionName().toString() + " is blocked and denied (jconsole->blockClientLogin)");
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY, ME + ".connect()",
+                  "Access for "
+                  + connectQos.getSessionQos().getSessionName().toString()
+                  + " is currently not possible, please contact the server administrator");
+         }
+      }
+
+
       // [1] Try reconnecting with secret sessionId
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Entering connect(sessionName=" + connectQos.getSessionName().getAbsoluteName() + ")"); // " secretSessionId=" + secretSessionId + ")");

@@ -201,6 +201,10 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public final String killSession() throws XmlBlasterException {
       return this.sessionInfo.killSession();
    }
+   
+   public String disconnectClientKeepSession() {
+      return this.sessionInfo.disconnectClientKeepSession();
+   }
 
    public void setDispatcherActive(boolean dispatcherActive) {
       this.sessionInfo.setDispatcherActive(dispatcherActive);

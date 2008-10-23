@@ -57,6 +57,18 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
       this.subjectInfo.setMaxSessions(maxSessions);
    }
 
+   public boolean isBlockClientLogin() {
+      return this.subjectInfo.isBlockClientLogin();
+   }
+
+   public String setBlockClientLogin(boolean blockClient) {
+      return this.subjectInfo.setBlockClientLogin(blockClient);
+   }
+
+   public String blockClientAndResetConnections() {
+      return this.subjectInfo.blockClientAndResetConnections();
+   }
+
    public String getSessionList() {
       return this.subjectInfo.getSessionList();
    }

@@ -290,4 +290,6 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @param acceptWrongSenderAddress the acceptWrongSenderAddress to set
     */
    public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress);
+
+   public String disconnectClientKeepSession();
 }

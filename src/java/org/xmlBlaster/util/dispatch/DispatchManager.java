@@ -4,32 +4,32 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueuePutListener;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
-import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
-import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropString;
-
-import java.util.ArrayList;
-import java.util.HashSet;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.I_QueuePutListener;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * Manages the sending of messages and commands and does error recovery
@@ -891,7 +891,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       pingCallbackServer(false);
    }
 
-   public void pingCallbackServer(boolean sync) {
+   public boolean pingCallbackServer(boolean sync) {
       DispatchConnection dispatchConnection = this.dispatchConnectionsHandler.getCurrentDispatchConnection();
       if (dispatchConnection != null) {
          if (sync) {
@@ -901,7 +901,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
             // force a ping via another thread
             this.glob.getPingTimer().addTimeoutListener(dispatchConnection, 0L, null);
          }
+         return true;
       }
+      return false;
    }
 
    /**

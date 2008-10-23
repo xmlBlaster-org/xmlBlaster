@@ -77,6 +77,9 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    private SessionName subjectName;
    /** The partner class from the security framework */
    private I_Subject securityCtx = null;
+   
+   private boolean blockClientLogin;
+   
    /**
     * All sessions of this subject are stored in this map.
     * The absoluteSessionName == sessionInfo.getId() is the key,
@@ -1128,12 +1131,52 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       return subjectQueue.getMaxNumOfEntries();
    }
 
+   public boolean isBlockClientLogin() {
+      return blockClientLogin;
+   }
+
+   public String setBlockClientLogin(boolean blockClient) {
+      if (this.blockClientLogin == blockClient)
+         return "Client is alread in state blocking=" + blockClient;
+      this.blockClientLogin = blockClient;
+      String text = blockClient ? "" + getNumAliveSessions() + " ALIVE clients remain logged in, new ones are blocked"
+            : "Blocking of " + getId() + " is switched off";
+      log.info(text);
+      return text;
+   }
+
+   public String blockClientAndResetConnections() {
+      setBlockClientLogin(true);
+      StringBuffer buf = new StringBuffer(512);
+      SessionInfo[] sessionInfos = getSessions();
+      for (int i = 0; i < sessionInfos.length; i++) {
+         if (i > 0)
+            buf.append("\n");
+         String ret = sessionInfos[i].disconnectClientKeepSession();
+         buf.append(ret);
+      }
+      if (buf.length() < 1)
+         buf.append("No client connections to shutdown");
+      log.info(buf.toString());
+      return buf.toString();
+   }
+
    /**
     * Access the number of sessions of this user.
     * @return The number of sessions of this user
     */
    int getNumSessions() {
       return getSessions().length;
+   }
+
+   public int getNumAliveSessions() {
+      int countAlive = 0;
+      SessionInfo[] sessionInfos = getSessions();
+      for (int i = 0; i < sessionInfos.length; i++) {
+         if (sessionInfos[i].isAlive())
+            countAlive++;
+      }
+      return countAlive;
    }
 
    /**

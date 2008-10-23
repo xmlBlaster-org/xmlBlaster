@@ -11,59 +11,54 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.checkpoint.I_Checkpoint;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.util.IsoDateParser;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
+import org.xmlBlaster.engine.MsgErrorHandler;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
+import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.IsoDateParser;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.ReentrantLock;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.I_Storage;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.engine.MsgErrorHandler;
-
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.contrib.ClientPropertiesInfo;
-
-import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-
-//import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
-import org.xmlBlaster.util.ReentrantLock;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 
 /**
@@ -872,8 +867,12 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    public String pingClientCallbackServer() {
       DispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {
-         dispatchManager.pingCallbackServer(true);
-         return "Ping done in " + getPingRoundTripDelay() + " millis, current state is " + dispatchManager.getDispatchConnectionsHandler().getState().toString();
+         boolean isSend = dispatchManager.pingCallbackServer(true);
+         if (isSend)
+            return "Ping done in " + getPingRoundTripDelay() + " millis, current state is "
+                  + dispatchManager.getDispatchConnectionsHandler().getState().toString();
+         else
+            return "Ping is not possible, no callback available";
       }
       return "No ping because of no callback";
    }
@@ -1248,5 +1247,28 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    public void setAuthorizationCache(Object authorizationCache) {
       this.authorizationCache = authorizationCache;
+   }
+   
+   public String disconnectClientKeepSession() {
+      if (this.dispatchManager.isPolling()) {
+         String text = "Client " + getId() + " is in POLLING state already";
+         log.info(text);
+         return text;
+      }
+      
+      // try {
+         DispatchConnection dc = this.dispatchManager.getDispatchConnectionsHandler().getCurrentDispatchConnection();
+         dc.resetConnection();
+         // dc.shutdown();
+      // } catch (XmlBlasterException e) {
+      // log.warning("disconnectClientKeepSession for " + getId() + " failed: "
+      // + e.getMessage());
+      // return e.toString();
+      // }
+
+      // this.dispatchManager.shutdown();
+      String text = "Client " + getId() + " is disconnected";
+      log.info(text);
+      return text;
    }
 }

@@ -10,32 +10,32 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.checkpoint.I_Checkpoint;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
+import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
-import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.authentication.plugins.CryptDataHolder;
-import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
 
 /**
@@ -391,6 +391,14 @@ public final class CbDispatchConnection extends DispatchConnection
     * Nothing to do here
     */
    public final void resetConnection() {
+      glob.removeNativeCallbackDriver(cbKey);
+      if (this.cbDriver != null) {
+         try {
+            this.cbDriver.shutdown();
+         } catch (XmlBlasterException e) {
+            e.printStackTrace();
+         }
+      }
    }
 
    /**
