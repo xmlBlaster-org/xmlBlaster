@@ -1142,6 +1142,12 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       String text = blockClient ? "" + getNumAliveSessions() + " ALIVE clients remain logged in, new ones are blocked"
             : "Blocking of " + getId() + " is switched off";
       log.info(text);
+      if (blockClient == false) {
+         SessionInfo[] sessionInfos = getSessions();
+         for (int i = 0; i < sessionInfos.length; i++) {
+            sessionInfos[i].setBlockClientSessionLogin(false);
+         }
+      }
       return text;
    }
 

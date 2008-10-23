@@ -215,7 +215,7 @@ final public class Authenticate implements I_RunlevelListener
                    ME+".connect()", text);
       }
 
-      {
+      { // Administrative block clients
          SubjectInfo si = getSubjectInfoByName(connectQos.getSessionQos().getSessionName());
          if (si != null && si.isBlockClientLogin()) {
             // Future todo: Throw out existing session, not only block new
@@ -225,6 +225,18 @@ final public class Authenticate implements I_RunlevelListener
                   "Access for "
                   + connectQos.getSessionQos().getSessionName().toString()
                   + " is currently not possible, please contact the server administrator");
+         }
+         {
+            SessionInfo sesi = getSessionInfoByName(connectQos.getSessionQos().getSessionName());
+            if (sesi != null && sesi.isBlockClientSessionLogin()) {
+               // Future todo: Throw out existing session, not only block new
+               // logins
+               log.warning("Access for " + connectQos.getSessionQos().getSessionName().toString()
+                     + " is blocked and denied (jconsole->blockClientSessionLogin)");
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY, ME + ".connect()",
+                     "Access for " + connectQos.getSessionQos().getSessionName().toString()
+                           + " session is currently not possible, please contact the server administrator");
+            }
          }
       }
 

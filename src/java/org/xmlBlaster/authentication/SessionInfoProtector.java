@@ -205,6 +205,14 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public String disconnectClientKeepSession() {
       return this.sessionInfo.disconnectClientKeepSession();
    }
+   
+   public boolean isBlockClientSessionLogin() {
+      return this.sessionInfo.isBlockClientSessionLogin();
+   }
+
+   public String setBlockClientSessionLogin(boolean blockClient) {
+      return this.sessionInfo.setBlockClientSessionLogin(blockClient);
+   }
 
    public void setDispatcherActive(boolean dispatcherActive) {
       this.sessionInfo.setDispatcherActive(dispatcherActive);

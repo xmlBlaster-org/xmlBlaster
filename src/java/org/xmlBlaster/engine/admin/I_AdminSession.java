@@ -291,5 +291,23 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     */
    public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress);
 
+   /**
+    * Prevent clients session from login.
+    * 
+    * @return true if clients session may not login
+    */
+   public boolean isBlockClientSessionLogin();
+
+   /**
+    * Allow or prevent the clients session to login. Note this is for going into
+    * maintenance mode only as you can't hit this button (there is no Session
+    * showing this button) if the client hasn't been here and is not a fail save
+    * client.
+    * 
+    * @param blockClient
+    *           true to prevent this clients session login
+    */
+   public String setBlockClientSessionLogin(boolean blockClient);
+
    public String disconnectClientKeepSession();
 }

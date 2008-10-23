@@ -110,6 +110,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    private boolean transientWarn;
    /** Can be optionally used by authorization frameworks */
    private Object authorizationCache;
+   private boolean blockClientSessionLogin;
 
    private XmlBlasterException transportConnectFail;
 
@@ -1247,6 +1248,20 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    public void setAuthorizationCache(Object authorizationCache) {
       this.authorizationCache = authorizationCache;
+   }
+   
+   public boolean isBlockClientSessionLogin() {
+      return blockClientSessionLogin;
+   }
+
+   public String setBlockClientSessionLogin(boolean blockClient) {
+      if (this.blockClientSessionLogin == blockClient)
+         return "Session " + getId() + " is alread in state blocking=" + blockClient;
+      this.blockClientSessionLogin = blockClient;
+      String text = blockClient ? "The ALIVE client remains logged in, reconnects are blocked" : "Blocking of "
+            + getId() + " is switched off";
+      log.info(text);
+      return text;
    }
    
    public String disconnectClientKeepSession() {
