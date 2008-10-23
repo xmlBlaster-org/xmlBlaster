@@ -1255,17 +1255,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             return;
          }
 
-         synchronized(this.smtpDestinationMonitor) {
-            // Build the email, if timer is active append new logging to the content of the existing mail ...
-            EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
-            emailData.setSubject(replaceTokens(
-                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode, sessionName));
-            String old = (emailData.getContent().length() == 0) ? "" :
-                  emailData.getContent() + this.smtpDestinationHelper.contentSeparator;
-            emailData.setContent(old
-                  + replaceTokens(
-                        this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode, sessionName));
+         // Must be outside of sync as getting data from inside xmlBlaster e..g. on queue can block long time
+         // and prevent other mails from being send
+         
+         // Build the email, if timer is active append new logging to the content of the existing mail ...
+         EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
+         emailData.setSubject(replaceTokens(
+               this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode, sessionName));
+         String old = (emailData.getContent().length() == 0) ? "" :
+               emailData.getContent() + this.smtpDestinationHelper.contentSeparator;
+         emailData.setContent(old
+               + replaceTokens(
+                     this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode, sessionName));
 
+         synchronized(this.smtpDestinationMonitor) {
             // If no timer was active send immeditately (usually the first email)
             if (this.smtpTimeoutHandle == null) {
                try {
