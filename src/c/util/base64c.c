@@ -6,7 +6,7 @@ Adapted to work with char* by Marcel Ruff 2008-10-16
 */
 #include <string.h>
 #include <stdlib.h>
-#include "base64.h"
+#include "base64c.h"
 
 /**
  * Translation Table as described in RFC1113
@@ -38,7 +38,7 @@ static void encodeblock( unsigned char in[3], unsigned char out[4], int len )
  * You need to free(outStr) it after usage.
  */
 Dll_Export extern char *Base64Encode(int inLen, const char *inBytes) {
-	return Base64EncodeLen(inLen, inBytes, 60);
+        return Base64EncodeLen(inLen, inBytes, 60);
 }
 
 
@@ -57,7 +57,7 @@ Dll_Export char *Base64EncodeLen(int inLen, const char *inBytes, int lineSize) {
     int i, len, blocksout = 0, inPos, outPos;
     /*inLen == 0 will produce an empty return string */
     if (inBytes == 0)
-    	return 0;
+        return 0;
     outStr = calloc(3*inLen+2, sizeof(char));
     for (inPos=0, outPos=0; inPos<inLen;) {
         len = 0;
@@ -79,8 +79,8 @@ Dll_Export char *Base64EncodeLen(int inLen, const char *inBytes, int lineSize) {
         }
         if(lineSize != -1 && blocksout >= (lineSize/4)/* || inPos>=inLen*/) {
             if( blocksout ) {
-            	outStr[outPos++] = '\r';
-            	outStr[outPos++] = '\n';
+                outStr[outPos++] = '\r';
+                outStr[outPos++] = '\n';
             }
             blocksout = 0;
         }
