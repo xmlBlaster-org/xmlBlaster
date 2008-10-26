@@ -403,6 +403,7 @@ Dll_Export const char *getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize
                         st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec);
 #  endif
         *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
+        return timeStr;
 }
 
 Dll_Export char *strtok_r2(char *src, const char *delim, char **saveptr, const char quotechar) {
