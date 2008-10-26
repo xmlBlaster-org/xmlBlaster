@@ -114,6 +114,8 @@ static void *timeoutMainLoop(void *ptr)
         	ret = pthread_cond_timedwait(&timeout->condition_cond, &timeout->condition_mutex, &abstime);
         	/* check if delay reached */
         	timeElapsed = (getTimestamp()-startNanos) >= timeout->timeoutContainer.delay*1000000L;
+        	/* ret == 110 for timed wake up on Linux */
+        	/* ret == 0 for signal wake up on Linux */
         	/*if (ret == ETIMEDOUT) { Not found on my Linux box?! */
         		if (timeElapsed)
         			break;
@@ -144,22 +146,23 @@ static void *timeoutMainLoop(void *ptr)
  * gcc -g -Wall -pedantic -DTIMEOUT_UTIL_MAIN=1 -lpthread -I../../ -o Timeout Timeout.c helper.c -I../
  */
 static void onTimeout(Timeout *timeout, void *userData) {
-	const char *data = (char *)userData;
-	printf("Timeout occurred, timer=%s delay=%ld userData=%s\n",
-			timeout->name, timeout->timeoutContainer.delay, data);
+	const char *data = (char *) userData;
+	char timeStr[64];
+	printf("%s Timeout occurred, timer=%s delay=%ld userData=%s\n",
+			getCurrentTimeStr(timeStr, 64), timeout->name,
+			timeout->timeoutContainer.delay, data);
 }
 int main()
 {
-   const long millisecs = 500;
-   printf("millisec=%ld\n", millisecs);
-   {
-	   Timeout *timeout = createTimeout("TestTimer");
-	   timeout->setTimeoutListener(timeout, onTimeout, 4000, "dummyData");
-	   printf("Sleeping for 30sec\n");
-	   sleepMillis(30000);
-	   freeTimeout(timeout);
-	   printf("Bye\n");
-   }
+	const long millisecs = 1000;
+	printf("millisec=%ld\n", millisecs);
+	{
+		Timeout *timeout = createTimeout("TestTimer");
+		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData");
+		while (getInputKey("Hit 'q' to quit") != 'q');
+		freeTimeout(timeout);
+		printf("Bye\n");
+	}
    return 0;
 }
 # endif
