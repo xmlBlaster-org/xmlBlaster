@@ -20,7 +20,7 @@ static int countTimeouts = 0;
 /**
  * Callback function on timeout.
  */
-static void onTimeout(Timeout *timeout, void *userData) {
+static void onTimeout(Timeout *timeout, void *userData, void *userData2) {
 	const char *data = (char *) userData;
 	char timeStr[64];
 	printf("%s Timeout occurred, timer=%s delay=%ld userData=%s\n",
@@ -36,7 +36,7 @@ static const char * test_timeout() {
 	printf("millisec=%ld\n", millisecs);
 	{
 		Timeout *timeout = createTimeout("TestTimer");
-		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData");
+		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData", 0);
 		sleepMillis(5000);
 		mu_assert("test_timeout()", 2==countTimeouts);
 		freeTimeout(timeout);
@@ -51,7 +51,7 @@ static const char * test_timeoutNoCb() {
 	printf("millisec=%ld\n", millisecs);
 	{
 		Timeout *timeout = createTimeout("TestTimerNoCb");
-		timeout->setTimeoutListener(timeout, 0, millisecs, "dummyData");
+		timeout->setTimeoutListener(timeout, 0, millisecs, "dummyData", 0);
 		sleepMillis(3000);
 		mu_assert("test_timeout()", 0==countTimeouts);
 		freeTimeout(timeout);
@@ -66,11 +66,11 @@ static const char * test_timeoutErr() {
 	printf("millisec=%ld\n", millisecs);
 	{
 		Timeout *timeout = createTimeout("TestTimerErr");
-		timeout->setTimeoutListener(timeout, 0, 200, 0);
+		timeout->setTimeoutListener(timeout, 0, 200, 0, 0);
 		sleepMillis(1000);
-		timeout->setTimeoutListener(timeout, onTimeout, 200, 0);
+		timeout->setTimeoutListener(timeout, onTimeout, 200, 0, 0);
 		sleepMillis(1000);
-		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData");
+		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData", 0);
 		countTimeouts = 0;
 		sleepMillis(5000);
 		mu_assert("test_timeout()", 2==countTimeouts);
@@ -83,7 +83,7 @@ static const char * test_timeoutErr() {
 /**
  * Callback function on timeout.
  */
-static void onTimeoutTwice(Timeout *timeout, void *userData) {
+static void onTimeoutTwice(Timeout *timeout, void *userData, void *userData2) {
 	int *data = (int *) userData;
 	char timeStr[64];
 	*data += 1;
@@ -101,10 +101,10 @@ static const char * test_timeoutTwice() {
 	countTimeouts = 0;
 
 	timeout1 = createTimeout("TestTimer1");
-	timeout1->setTimeoutListener(timeout1, onTimeoutTwice, millisecs, &count1);
+	timeout1->setTimeoutListener(timeout1, onTimeoutTwice, millisecs, &count1, 0);
 
 	timeout2 = createTimeout("TestTimer2");
-	timeout2->setTimeoutListener(timeout2, onTimeoutTwice, millisecs, &count2);
+	timeout2->setTimeoutListener(timeout2, onTimeoutTwice, millisecs, &count2, 0);
 
 	sleepMillis(5000);
 
