@@ -78,9 +78,18 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp, 
     timeout->timeoutContainer.delay = delay;
     timeout->timeoutContainer.userData = userData;
 
+    if (timeout->timeoutContainer.delay < 1) {
+    	timeout->timeoutContainer.delay = 1;
+    	printf("Timeout.c Warning: calling setTimeoutListener with delay=%ld, setting to %ld\n", delay, timeout->timeoutContainer.delay);
+    }
+
     if (timeout->thread != 0) {
     	printf("Timeout.c Calling setTimeoutListener twice is not tested\n");
     	return -1;
+    }
+
+    if (timeout->timeoutContainer.timeoutCbFp == 0) {
+    	printf("Timeout.c Warning: calling setTimeoutListener with 0 callback pointer\n");
     }
 
     /* pthread_attr.name before calling pthread_create() ? pthread_setname(timeout->name) pthread_attr_setname() */
