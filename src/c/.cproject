@@ -55,7 +55,7 @@
 <option defaultValue="true" id="gnu.c.link.option.shared.783582631" name="Shared (-shared)" superClass="gnu.c.link.option.shared" value="true" valueType="boolean"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1555864514" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
-<option defaultValue="true" id="gnu.cpp.link.option.shared.1290877988" superClass="gnu.cpp.link.option.shared" valueType="boolean"/>
+<option defaultValue="true" id="gnu.cpp.link.option.shared.1290877988" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" valueType="boolean"/>
 </tool>
 <tool command="as" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1540984953" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.1494984963" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>

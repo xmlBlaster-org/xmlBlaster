@@ -27,6 +27,7 @@ extern "C" {
 
 #include <util/msgUtil.h>
 #include <util/Properties.h>
+#include <util/Timeout.h>
 #include <XmlBlasterAccessUnparsed.h>
 
 #ifdef XB_USE_PTHREADS
@@ -36,39 +37,6 @@ extern "C" {
 #    include <pthread.h>      /* The original pthreads.h from the OS */
 #  endif
 #endif
-
-/* The following comment is used by doxygen for the main html page: */
-/*! \mainpage Hints about the C client library usage.
- *
- * \section intro_sec The C client library
- *
- * The xmlBlaster C client library supports access to xmlBlaster with asynchronous callbacks.
- * Details about compilation and its usage can be found in the
- * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html requirement.
- *
- * As a C developer your entry point to use is the struct XmlBlasterAccess and
- * a complete overview demo code is HelloWorld3.c
- *
- * \section queue_sec The C persistent queue
- *
- * There is a C based persistent queue available. Currently this C client library and
- * the queue implementation are used in the C++ client library for easy xmlBlaster connection
- * and client side queuing.
- * As a C developer your entry point to use is the struct I_QueueStruct and a source code example
- * is TestQueue.c
- *
- * For details read the
- * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html requirement.
- *
- * \section cpp_sec The C++ client library
- * The C++ client library offers many extended client side features compared to the C library.
- * If you need those additional features and the library size is not the primary concern
- * you should consider to use the C++ library.
- *
- * For details read the
- * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html requirement
- * and look at the API documentation at http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/index.html
- */
 
 
 /*
@@ -148,6 +116,26 @@ typedef MsgUnitArr *( * XmlBlasterAccessGet)(struct XmlBlasterAccess *xb, const 
 typedef PingReturnQos *( * XmlBlasterAccessPing)(struct XmlBlasterAccess *xb, const PingQos * pingQos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessIsConnected)(struct XmlBlasterAccess *xb);
 
+#define XBCONSTATE_UNDEF -1
+#define XBCONSTATE_ALIVE 0 /**< socket is connected */
+#define XBCONSTATE_POLLING 1 /**< trying to reconnect */
+#define XBCONSTATE_DEAD 2 /**< we have given up */
+#define XBCONSTATE_LOGGEDIN 3 /**< socket is connected and connectQos was successful (~postAlive) */
+typedef void ( * ConnectionListenerCbFp)(struct XmlBlasterAccess *xa, int oldState, int newState, void *userData);
+/**
+ * Register a listener to get events about connection status changes.
+ * @param xa   The this pointer
+ * @param cbFp NULL or your listener implementation on connection state changes (XBCONSTATE_ALIVE | XBCONSTATE_POLLING | XBCONSTATE_DEAD)
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">client.failsafe requirement</a>
+ */
+typedef void (* XmlBlasterAccessRegisterConnectionListener)(struct XmlBlasterAccess *xa, ConnectionListenerCbFp cbFp, void *userData);
+/**
+ * Ge human readable connection state.
+ * @param state XBCONSTATE_ALIVE etc
+ * @return "ALIVE" etc
+ */
+Dll_Export extern const char *connectionStateToStr(int state);
+
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers.
  *
@@ -170,6 +158,9 @@ typedef struct Dll_Export XmlBlasterAccess {
    const char * const *argv;  /**< Environment configuration, usually from the command line */
    Properties *props;         /**< Further configuration parameters */
    void *userObject;          /**< A client can use this pointer to point to any client specific information */
+
+   XmlBlasterAccessRegisterConnectionListener registerConnectionListener;
+
    XmlBlasterAccessGenericFp userFp; /**< A client can use this function pointer to do any client specific handling */
    /**
     * Connect to the server.
@@ -279,7 +270,16 @@ typedef struct Dll_Export XmlBlasterAccess {
    void *logUserP;                /**< For outside users to pass a user object back to the logging implementation */
   /* private: */
    XmlBlasterAccessUnparsed *connectionP;
+   Timeout *pingPollTimer;
+   ConnectionListenerCbFp connectionListenerCbFp;
+   void *connectionListenerUserData;
    bool isInitialized;
+
+   long pingInterval;
+   long retries;
+   long delay;
+   int connnectionState; /*XBCONSTATE_ALIVE*/
+
    bool isShutdown;
 } XmlBlasterAccess;
 
