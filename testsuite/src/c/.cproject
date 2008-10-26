@@ -26,11 +26,15 @@
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
 <option id="gnu.c.compiler.option.include.paths.1281770736" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="/home/xmlblast/xmlBlaster/src/c"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xmlBlasterClientC}&quot;"/>
 </option>
 <option id="gnu.c.compiler.option.warnings.pedantic.887297299" name="Pedantic (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 <option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1304875021" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
 <option id="gnu.c.compiler.exe.debug.option.debugging.level.1410847014" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.preprocessor.def.symbols.1340132976" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="_REENTRANT"/>
+</option>
+<option id="gnu.c.compiler.option.misc.ansi.1183945892" name="Support ANSI programs (-ansi)" superClass="gnu.c.compiler.option.misc.ansi" value="true" valueType="boolean"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.570825872" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.489948794" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
@@ -42,9 +46,9 @@
 <option id="gnu.c.link.option.paths.1236394062" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="stringList">
 <listOptionValue builtIn="false" value="/usr/lib64"/>
 <listOptionValue builtIn="false" value="/opt/sqlite-bin/lib"/>
-<listOptionValue builtIn="false" value="/home/xmlblast/xmlBlaster/lib"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xmlBlasterClientC/Debug}&quot;"/>
 </option>
-<option id="gnu.c.link.option.ldflags.1047415905" superClass="gnu.c.link.option.ldflags" value="&quot;-Wl,-rpath=${zlib_lib_dir} -Wl,-rpath=${sqlite_lib_dir} -Wl,-rpath=${usr_lib_dir} -Wl,-rpath=${XMLBLASTER_HOME}/lib&quot;" valueType="string"/>
+<option id="gnu.c.link.option.ldflags.1047415905" name="Linker flags" superClass="gnu.c.link.option.ldflags" value="&quot;-Wl,-rpath=${zlib_lib_dir} -Wl,-rpath=${sqlite_lib_dir} -Wl,-rpath=${usr_lib_dir} -Wl,-rpath=${XMLBLASTER_HOME}/lib&quot;" valueType="string"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.878806391" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.122913068" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
@@ -74,18 +78,18 @@
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.915554542" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 </fileInfo>
-<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestUtil.c" name="TestUtil.c" rcbsApplicability="disable" resourcePath="TestUtil.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestUtil.c">
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestUtil.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563">
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1229013119" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.debug.option.debugging.level.1368658264" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1171446964" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
-</tool>
-</fileInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestStress.c" name="TestStress.c" rcbsApplicability="disable" resourcePath="TestStress.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestStress.c">
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestStress.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563">
 <option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1031631479" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
 <option id="gnu.c.compiler.exe.debug.option.debugging.level.364042036" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1566075450" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+</tool>
+</fileInfo>
+<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestUtil.c" name="TestUtil.c" rcbsApplicability="disable" resourcePath="TestUtil.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestUtil.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestUtil.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563">
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.1229013119" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.1368658264" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1171446964" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 </fileInfo>
 <fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1122663610./C-TestError/TestLeaveServer.c" name="TestLeaveServer.c" rcbsApplicability="disable" resourcePath="TestLeaveServer.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.553067563./C-TestError/TestLeaveServer.c">
@@ -96,13 +100,14 @@
 </tool>
 </fileInfo>
 <sourceEntries>
-<entry excluding="TestLeaveServer.c|TestMethods.c|TestQueue.c|TestSocket.c|TestStress.c|TestUtil.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+<entry excluding="TestError.c|TestLeaveServer.c|TestMethods.c|TestQueue.c|TestSocket.c|TestStress.c|TestUtil.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 </sourceEntries>
 </configuration>
 </storageModule>
 <storageModule moduleId="scannerConfiguration"/>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 </cconfiguration>
 <cconfiguration id="cdt.managedbuild.config.gnu.exe.release.314724239">
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.release.314724239" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -143,11 +148,15 @@
 <tool id="cdt.managedbuild.tool.gnu.archiver.base.429544403" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 </toolChain>
 </folderInfo>
+<sourceEntries>
+<entry excluding="TestError.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+</sourceEntries>
 </configuration>
 </storageModule>
 <storageModule moduleId="scannerConfiguration"/>
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
