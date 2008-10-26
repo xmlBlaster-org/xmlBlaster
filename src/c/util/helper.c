@@ -732,6 +732,20 @@ Dll_Export void trimEnd(char *s)
 }
 
 Dll_Export
+bool startsWith(const char * const str, const char * const token) {
+	int i;
+	if (str == 0 || token == 0)
+		return false;
+	for (i = 0; ; i++) {
+		if (token[i] == 0)
+			return true;
+		if (str[i] != token[i])
+			return false;
+	}
+	return true;
+}
+
+Dll_Export
 bool endsWith(const char * const str, const char * const token) {
 	int i, count=0, lenStr, len;
 	if (str == 0 || token == 0)
