@@ -53,6 +53,13 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
    return true;
 }
 
+static void connectionListenerCb(struct XmlBlasterAccess *xa, int oldState, int newState, void *userData) {
+	const char *conStateUserData = (const char *)userData;
+    printf("[%s] connectionListenerCb transition %s to %s\n",
+    		conStateUserData, connectionStateToStr(oldState), connectionStateToStr(newState));
+}
+
+
 #if defined(WINCE)
 int _tmain(int argc, _TCHAR** argv_wcs) { /* wchar_t==_TCHAR */
    char **argv = convertWcsArgv(argv_wcs, argc);
@@ -71,6 +78,7 @@ int main(int argc, const char* const* argv) {
       * (Is different from the xmlBlaster secret session ID)
       */
    const char *callbackSessionId = "topSecret";
+   const char *conStateUserData = "client4";
    XmlBlasterException xmlBlasterException;
    XmlBlasterAccess *xa = 0;
    int sleepInterval = 0;
@@ -96,12 +104,11 @@ int main(int argc, const char* const* argv) {
    }
 
    xa = getXmlBlasterAccess(argc, (const char* const*)argv);
+   xa->registerConnectionListener(xa, connectionListenerCb, (void*)conStateUserData);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       printf("[client4] Connection to xmlBlaster failed,"
-             " please start the server or check your configuration:\n%s %s\n",
+             " please start the server or check your configuration:\n%s %s, we are polling now\n",
              xmlBlasterException.errorCode, xmlBlasterException.message);
-      freeXmlBlasterAccess(xa);
-      exit(EXIT_FAILURE);
    }
 
    {  /* connect */
