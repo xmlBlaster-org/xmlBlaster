@@ -65,9 +65,13 @@ static const char * test_timeoutErr() {
 	countTimeouts = 0;
 	printf("millisec=%ld\n", millisecs);
 	{
-		Timeout *timeout = createTimeout("TestTimer");
-		timeout->setTimeoutListener(timeout, 0, 6000, "bla");
+		Timeout *timeout = createTimeout("TestTimerErr");
+		timeout->setTimeoutListener(timeout, 0, 200, 0);
+		sleepMillis(1000);
+		timeout->setTimeoutListener(timeout, onTimeout, 200, 0);
+		sleepMillis(1000);
 		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData");
+		countTimeouts = 0;
 		sleepMillis(5000);
 		mu_assert("test_timeout()", 2==countTimeouts);
 		freeTimeout(timeout);
@@ -114,8 +118,8 @@ static const char * test_timeoutTwice() {
 }
 
 static const char *all_tests() {
-	mu_run_test(test_timeoutNoCb);
 	mu_run_test(test_timeoutErr);
+	mu_run_test(test_timeoutNoCb);
 	mu_run_test(test_timeout);
 	mu_run_test(test_timeoutTwice);
 	return 0;
