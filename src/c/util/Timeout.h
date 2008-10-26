@@ -33,10 +33,10 @@ struct TimeoutStruct;
 typedef Dll_Export struct TimeoutStruct Timeout;
 
 /* Declare function pointers to use in struct to simulate object oriented access */
-typedef void (*TimeoutCbFp)(Timeout *timeout, void *userData);
+typedef void (*TimeoutCbFp)(Timeout *timeout, void *userData, void *userData2);
 
 typedef int (* XmlBlasterTimeoutSetTimeoutListener)(Timeout *xb,
-		TimeoutCbFp timeoutCbFp, const long int delay, void *userData);
+		TimeoutCbFp timeoutCbFp, const long int delay, void *userData, void *userData2);
 
 /**
  * Callback specific data is hold here.
@@ -45,6 +45,7 @@ typedef int (* XmlBlasterTimeoutSetTimeoutListener)(Timeout *xb,
 typedef struct Dll_Export TimeoutContainerStruct {
 	long int delay;
 	void *userData;
+	void *userData2;
 	TimeoutCbFp timeoutCbFp;
 } TimeoutContainer;
 
@@ -57,7 +58,16 @@ struct Dll_Export TimeoutStruct {
 	bool running;
 	bool ready; /**< On creation wait until thread started */
 	TimeoutContainer timeoutContainer;
-	XmlBlasterTimeoutSetTimeoutListener setTimeoutListener; /**< Add listener and span timer */
+	/**
+	 * Add listener and span timer.
+	 * @param timeout The this pointer
+	 * @param timeoutCbFp The function pointer to call back on timeout
+	 * @param delay Repeated call of timeoutCbFp of given delay in millisconds
+	 *        If < 1 the timer is reset (set inactive)
+	 * @param userData is passed back to your timeoutCbFp
+	 * @param userData2 is passed back to your timeoutCbFp
+	 */
+	XmlBlasterTimeoutSetTimeoutListener setTimeoutListener;
 	pthread_mutex_t condition_mutex; /*= PTHREAD_MUTEX_INITIALIZER; */
 	pthread_cond_t  condition_cond; /*  = PTHREAD_COND_INITIALIZER;*/
 };
