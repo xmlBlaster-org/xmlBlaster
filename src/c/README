@@ -4,7 +4,7 @@
 
 This is the C based SOCKET client for xmlBlaster.
 
-It should compile on Linux, Windows (XP, PocketPC, WinCE etc), MAC OSX and other UNIX OS.
+It should compile on Linux, Windows (XP, PocketPC, WinCE etc), MAC OSX, iPhone and other UNIX OS.
 
 Please read 
 
