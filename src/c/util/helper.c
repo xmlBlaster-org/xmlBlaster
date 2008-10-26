@@ -366,9 +366,10 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
  * Get current timestamp string in ISO 8601 notation.
  * @param bufSize at least 26
  * @param timeStr out parameter, filled with e.g. "1997-07-16T19:20:30.45-02:00"
+ * @return Your param timeStr for easy usage in printf() and such
  * @see http://en.wikipedia.org/wiki/ISO_8601
  */
-Dll_Export void getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize) {
+Dll_Export const char *getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize) {
 #  if defined(WINCE)
         /*http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcekernl/html/_wcesdk_win32_systemtime_str.asp*/
         SYSTEMTIME st;
@@ -789,11 +790,28 @@ long get_pthread_id(pthread_t t)
 #endif
 
 /**
+ * Console helper to get key hit.
+ * New lines are ignored
+ * @param str The text displayed on the console
+ * @return the key hit
+ */
+Dll_Export char getInputKey(const char *str) {
+	char c = 0;
+	printf("%s >\n", str);
+	do {
+		c = getchar();
+	}
+	while (c == '\n'); /* Ignore enter hits */
+	return c;
+}
+
+/**
  * Get a human readable time string for logging.
  * @param timeStr out parameter, e.g. "12:34:46" or "2006-11-14 12:34:46"
  * @param bufSize The size of timeStr
+ * @return timeStr Your parameter given (for easy usage in printf())
  */
-Dll_Export void getCurrentTimeStr(char *timeStr, int bufSize) {
+Dll_Export const char *getCurrentTimeStr(char *timeStr, int bufSize) {
 #  if defined(WINCE)
       /*http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcekernl/html/_wcesdk_win32_systemtime_str.asp*/
       SYSTEMTIME st;
@@ -820,6 +838,7 @@ Dll_Export void getCurrentTimeStr(char *timeStr, int bufSize) {
       ctime_r(&t1, (char *)timeStr);
 #  endif
    *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
+   return timeStr;
 }
 
 /**
