@@ -327,6 +327,12 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 
    memset(abstime, 0, sizeof(struct timespec));
 
+   /* Better?
+	if (clock_gettime(CLOCK_REALTIME, &abstime) == -1) {
+		printf("Timeout.c clock_gettime failed%d\n", errno);
+	}
+   */
+
    gettimeofday(&tv, 0);
    abstime->tv_sec = tv.tv_sec;
    abstime->tv_nsec = tv.tv_usec * 1000;  /* microseconds to nanoseconds */
