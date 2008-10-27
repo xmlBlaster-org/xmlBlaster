@@ -53,17 +53,20 @@ typedef struct Dll_Export TimeoutContainerStruct {
  * All client access to Timeout goes over this struct and its function pointers.
  */
 struct Dll_Export TimeoutStruct {
+   bool verbose;
 	const char *name; /**< The timer/thread name */
 	pthread_t threadId;
 	bool running;
 	bool ready; /**< On creation wait until thread started */
+	bool selfCleanup;
 	TimeoutContainer timeoutContainer;
 	/**
 	 * Add listener and span timer.
 	 * @param timeout The this pointer
 	 * @param timeoutCbFp The function pointer to call back on timeout
 	 * @param delay Repeated call of timeoutCbFp of given delay in millisconds
-	 *        If < 1 the timer is reset (set inactive)
+	 *        If < 1 the timer is reset (set inactive), this can be called
+	 *        from a separate thread of from the callback itself
 	 * @param userData is passed back to your timeoutCbFp
 	 * @param userData2 is passed back to your timeoutCbFp
 	 */

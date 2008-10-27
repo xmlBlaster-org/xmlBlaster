@@ -41,6 +41,7 @@ static void initTimeout(Timeout *timeout) {
    timeout->threadId = 0;
    timeout->ready = false;
    timeout->running = true;
+   timeout->selfCleanup = false;
    pthread_mutex_init(&timeout->condition_mutex, NULL); /* int rc return is always 0 */
    pthread_cond_init(&timeout->condition_cond, NULL);
 }
@@ -51,6 +52,7 @@ static void initTimeout(Timeout *timeout) {
  */
 Timeout *createTimeout(const char* const name) {
    Timeout *timeout = (Timeout *) calloc(1, sizeof(Timeout));
+   timeout->verbose = false;
    timeout->name = (name != 0) ? strcpyAlloc(name) : 0;
    timeout->setTimeoutListener = setTimeoutListener;
    initTimeout(timeout);
@@ -58,16 +60,24 @@ Timeout *createTimeout(const char* const name) {
 }
 
 static void stopThread(Timeout *timeout) {
+   pthread_t threadId = 0;
+   pthread_t callingThreadId = pthread_self();
    if (timeout == 0 || timeout->threadId == 0)
       return;
+   if (callingThreadId == timeout->threadId) {
+      /* to avoid memory leak on needs to call pthread_join() or pthread_detach() */
+      pthread_detach(threadId);
+      timeout->running = false;
+      return;
+   }
+   threadId = timeout->threadId;
    pthread_mutex_lock(&timeout->condition_mutex);
    timeout->running = false;
    pthread_cond_broadcast(&timeout->condition_cond);
    pthread_mutex_unlock(&timeout->condition_mutex);
-   pthread_join(timeout->threadId, NULL);
-   printf("Timeout.c Joined threadId=%ld\n", get_pthread_id(timeout->threadId));
-   pthread_cancel(timeout->threadId);
-   timeout->threadId = 0;
+   if (threadId != 0)
+      pthread_join(threadId, NULL);
+   if (timeout->verbose) printf("Timeout.c Joined threadId=%ld\n", get_pthread_id(threadId));
    initTimeout(timeout);
 }
 
@@ -81,6 +91,7 @@ void freeTimeout(Timeout *timeout) {
 
 /**
  * See header Timeout.h for documentation
+ * May not be call from within a timeout as this would destroy the thread during this call
  */
 static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
       const long int delay, void * const userData, void * const userData2) {
@@ -95,18 +106,31 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
    timeout->timeoutContainer.userData = userData;
    timeout->timeoutContainer.userData2 = userData2;
 
+   /* delay==0: cancel timer */
    if (delay < 1) {
-      printf("Timeout.c Stopping timer %s threadId=%ld\n", timeout->name, get_pthread_id(timeout->threadId));
-      stopThread(timeout);
+      pthread_t callingThreadId = pthread_self();
+      if (callingThreadId == timeout->threadId) {
+         if (timeout->verbose)
+            printf("Timeout.c Calling setTimeoutListener from timer thread callback\n");
+         /*
+          The timeoutMainLoop called us here: it is at the end of the while loop
+          and like this the thread will die as soon as the user cb returns
+         */
+         timeout->selfCleanup = true;
+         timeout->running = false;
+      }
+      else {
+         /* Another thread called us, so clean up immediately */
+         if (timeout->verbose)
+            printf("Timeout.c Stopping timer %s threadId=%ld, callingThreadId=%ld\n", timeout->name, get_pthread_id(timeout->threadId), get_pthread_id(callingThreadId));
+         stopThread(timeout);
+      }
       return 0;
-      /*
-       timeout->timeoutContainer.delay = 1;
-       printf("Timeout.c Warning: calling setTimeoutListener with delay=%ld, setting to %ld\n", delay, timeout->timeoutContainer.delay);
-       */
    }
 
    if (timeout->threadId != 0) {
-      printf("Timeout.c Warning: Calling setTimeoutListener twice is not reinitializing immediately the timer\n");
+      if (timeout->verbose)
+         printf("Timeout.c Warning: Calling setTimeoutListener twice is not reinitializing immediately the timer timeout time\n");
       return -1;
    }
 
@@ -121,7 +145,6 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
    for (i=0; i<50; i++) {
       if (timeout->ready)
          break;
-      /*printf("Timeout.c Warning: TESTING setTimeoutListener is not getting ready\n");*/
       sleepMillis(1);
    }
    if (i >= 50)
@@ -147,7 +170,7 @@ static void *timeoutMainLoop(void *ptr) {
 
       timeout->ready = true;
 
-      /* calculate absolute time from relaive delay millis */
+      /* calculate absolute time from relative delay millis */
       getAbsoluteTime(timeout->timeoutContainer.delay, &abstime);
 
       /* protect against spurious wake ups */
@@ -163,11 +186,6 @@ static void *timeoutMainLoop(void *ptr) {
          /*if (ret == ETIMEDOUT) { Not found on my Linux box?! */
          if (timeElapsed)
             break;
-         /*}
-          else {
-          printf("Timeout.c signaled");
-          break;
-          }*/
       }
 
       pthread_mutex_unlock(&timeout->condition_mutex);
@@ -177,10 +195,17 @@ static void *timeoutMainLoop(void *ptr) {
 
       /*sleepMillis(timeout->timeoutContainer.delay);*/
 
-      if (timeout->timeoutContainer.timeoutCbFp != 0) { /* Client has registered to receive callback */
+      if (timeout->timeoutContainer.timeoutCbFp != 0) {
+         /* Callback client, has registered to receive callback */
          timeout->timeoutContainer.timeoutCbFp(timeout, timeout->timeoutContainer.userData,
                timeout->timeoutContainer.userData2);
       }
+   }
+
+   if (timeout->selfCleanup) {
+      /* to avoid memory leak one needs to call pthread_join() or pthread_detach() */
+      pthread_detach(timeout->threadId);
+      initTimeout(timeout); /* Thread dies, reset timeout struct */
    }
    return 0;
 }
