@@ -403,15 +403,6 @@ static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, UpdateFp cli
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Invoking connect()");
 
-   /* Register our function responseEvent() to be notified when the response arrives,
-      this is done by preSendEvent() callback called during connect() */
-
-   printf("_xmlBlasterReConnect connectionP=%p\n", xa->connectionP);
-   printf("_xmlBlasterReConnect clientUpdateFp=%p\n", clientUpdateFp);
-   printf("_xmlBlasterReConnect exception=%p\n", exception);
-   printf("_xmlBlasterReConnect connectQos=%p\n", xa->connectQos);
-   printf("_xmlBlasterReConnect xa->connectionP->connect=%p\n", xa->connectionP->connect);
-
    response = xa->connectionP->connect(xa->connectionP, (xa->connectQos==0)?0:xa->connectQos->qos, clientUpdateFp, exception);
 
    if (checkPost(xa, "connect", response, exception) == false ) return 0;
