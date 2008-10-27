@@ -54,7 +54,7 @@ typedef struct Dll_Export TimeoutContainerStruct {
  */
 struct Dll_Export TimeoutStruct {
 	const char *name; /**< The timer/thread name */
-	pthread_t thread;
+	pthread_t threadId;
 	bool running;
 	bool ready; /**< On creation wait until thread started */
 	TimeoutContainer timeoutContainer;

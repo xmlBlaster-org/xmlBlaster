@@ -38,7 +38,7 @@ static int setTimeoutListener(Timeout *timeout, TimeoutCbFp timeoutCbFp, const l
 static void initTimeout(Timeout *timeout) {
    if (timeout == 0)
       return;
-   timeout->thread = 0;
+   timeout->threadId = 0;
    timeout->ready = false;
    timeout->running = true;
    pthread_mutex_init(&timeout->condition_mutex, NULL); /* int rc return is always 0 */
@@ -58,14 +58,16 @@ Timeout *createTimeout(const char* const name) {
 }
 
 static void stopThread(Timeout *timeout) {
-   if (timeout == 0 || timeout->thread == 0)
+   if (timeout == 0 || timeout->threadId == 0)
       return;
    pthread_mutex_lock(&timeout->condition_mutex);
    timeout->running = false;
    pthread_cond_broadcast(&timeout->condition_cond);
    pthread_mutex_unlock(&timeout->condition_mutex);
-   pthread_join(timeout->thread, NULL);
-   timeout->thread = 0;
+   pthread_join(timeout->threadId, NULL);
+   printf("Timeout.c Joined threadId=%ld\n", get_pthread_id(timeout->threadId));
+   pthread_cancel(timeout->threadId);
+   timeout->threadId = 0;
    initTimeout(timeout);
 }
 
@@ -94,7 +96,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
    timeout->timeoutContainer.userData2 = userData2;
 
    if (delay < 1) {
-      printf("Timeout.c Stopping timer %s\n", timeout->name);
+      printf("Timeout.c Stopping timer %s threadId=%ld\n", timeout->name, get_pthread_id(timeout->threadId));
       stopThread(timeout);
       return 0;
       /*
@@ -103,7 +105,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
        */
    }
 
-   if (timeout->thread != 0) {
+   if (timeout->threadId != 0) {
       printf("Timeout.c Warning: Calling setTimeoutListener twice is not reinitializing immediately the timer\n");
       return -1;
    }
@@ -113,7 +115,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
    }
 
    /* pthread_attr.name before calling pthread_create() ? pthread_setname(timeout->name) pthread_attr_setname() */
-   iret = pthread_create(&timeout->thread, NULL, timeoutMainLoop, (void*) timeout);
+   iret = pthread_create(&timeout->threadId, NULL, timeoutMainLoop, (void*) timeout);
 
    /* Block until timer thread is ready */
    for (i=0; i<50; i++) {
