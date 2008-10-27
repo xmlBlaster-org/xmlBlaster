@@ -73,7 +73,6 @@ Dll_Export XmlBlasterAccess *getXmlBlasterAccess(int argc, const char* const* ar
       freeXmlBlasterAccess(xa);
       return (XmlBlasterAccess *)0;
    }
-   //xa->isInitialized = false;
    xa->isShutdown = false;
    xa->connectionP = 0;
    xa->userObject = 0; /* A client can use this pointer to point to any client specific information */
@@ -340,7 +339,6 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
    if (checkArgs(xa, "initialize", false, exception) == false) return false;
 
    if (xa->connectionP) {
-   //if (xa->isInitialized) {
       return true;
    }
 
@@ -386,10 +384,9 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
    }
    checkPost(xa, "initialize", 0, exception);
 
-   //xa->isInitialized = true;
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "initialize() successful");
-   return true;//xa->isInitialized;
+   return true;
 }
 
 /** Called internally only */
@@ -420,8 +417,8 @@ static void onPingPollTimeout(Timeout *timeout, void *userData, void *userData2)
    char timeStr[64];
    /*ConnectionListenerCbFp cb = xa->connectionListenerCbFp;*/
 
-   if (xa->logLevel>=XMLBLASTER_LOG_INFO)
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
           "%s Timeout occurred, timer=%s delay=%ld type=%s\n",
          getCurrentTimeStr(timeStr, 64), timeout->name,
          timeout->timeoutContainer.delay, (type==XBTYPE_PING?"PING":"POLL"));
@@ -631,7 +628,7 @@ static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
             xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO,
                   __FILE__, "Connected to xmlBlaster server, pinging now every %ld milli seconds", xa->pingInterval);
          /* reset timer */
-         //xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_PING);
+         /*xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_PING);*/
          /* start pinging */
          xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, xa->pingInterval, xa, (void*)&XBTYPE_PING);
       }
@@ -649,7 +646,7 @@ static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
          _freeConnectionP(xa);
          changeConnectionStateTo(xa, XBCONSTATE_POLLING, exception);
          /* reset timer */
-         //xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_POLL);
+         /*xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_POLL);*/
          /* start poller */
          xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, xa->delay, xa, (void*)&XBTYPE_POLL);
       }

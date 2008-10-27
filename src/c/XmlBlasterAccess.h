@@ -279,7 +279,6 @@ typedef struct Dll_Export XmlBlasterAccess {
    Timeout *pingPollTimer;
    ConnectionListenerCbFp connectionListenerCbFp;
    void *connectionListenerUserData;
-   //bool isInitialized;
 
    UpdateFp clientsUpdateFp; /**< Remember clients callback function during polling */
 
