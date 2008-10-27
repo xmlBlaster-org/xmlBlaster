@@ -104,7 +104,6 @@ typedef struct QosStruct PingQos;
 /* Design decision: The qos and key remain char* and not ConnectQosStruct* to simplify usage */
 /* Declare function pointers to use in struct to simulate object oriented access */
 typedef ConnectReturnQos *( * XmlBlasterAccessConnect)(struct XmlBlasterAccess *xb, const ConnectQos * connectQos, UpdateFp update, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterAccessInitialize)(struct XmlBlasterAccess *xa, UpdateFp update, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessDisconnect)(struct XmlBlasterAccess *xb, const DisconnectQos * disconnectQos, XmlBlasterException *exception);
 typedef PublishReturnQos *( * XmlBlasterAccessPublish)(struct XmlBlasterAccess *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
 typedef PublishReturnQosArr *( * XmlBlasterAccessPublishArr)(struct XmlBlasterAccess *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
@@ -121,7 +120,14 @@ typedef bool  ( * XmlBlasterAccessIsConnected)(struct XmlBlasterAccess *xb);
 #define XBCONSTATE_POLLING 1 /**< trying to reconnect */
 #define XBCONSTATE_DEAD 2 /**< we have given up */
 #define XBCONSTATE_LOGGEDIN 3 /**< socket is connected and connectQos was successful (~postAlive) */
-typedef void ( * ConnectionListenerCbFp)(struct XmlBlasterAccess *xa, int oldState, int newState, void *userData);
+/**
+ * @param xa This pointer
+ * @param oldState e.g. XBCONSTATE_ALIVE
+ * @param newState e.g. XBCONSTATE_POLLING
+ * @param exception Is NULL if no exception is related
+ * @param userData Bounced back pointer from registerConnectionListener()
+ */
+typedef void ( * ConnectionListenerCbFp)(struct XmlBlasterAccess *xa, int oldState, int newState, XmlBlasterException *exception, void *userData);
 /**
  * Register a listener to get events about connection status changes.
  * @param xa   The this pointer
@@ -158,6 +164,8 @@ typedef struct Dll_Export XmlBlasterAccess {
    const char * const *argv;  /**< Environment configuration, usually from the command line */
    Properties *props;         /**< Further configuration parameters */
    void *userObject;          /**< A client can use this pointer to point to any client specific information */
+   ConnectQos *connectQos;
+   ConnectReturnQos *connectReturnQos;
 
    XmlBlasterAccessRegisterConnectionListener registerConnectionListener;
 
@@ -165,7 +173,7 @@ typedef struct Dll_Export XmlBlasterAccess {
    /**
     * Connect to the server.
     * @param xa The 'this' pointer
-    * @param qos The QoS xml markup string to connect, typically
+    * @param qos The QoS struct which contains the xml markup string to connect, typically
     * <pre>
     * &lt;qos>
     *  &lt;securityService type='htpasswd' version='1.0'>
@@ -179,6 +187,7 @@ typedef struct Dll_Export XmlBlasterAccess {
     * &lt;/queue>
     * &lt;/qos>
     * </pre>
+    * You can safely destroy the stuct after this call
     * @param clientUpdateFp The clients callback function pointer #UpdateFp, if NULL our default handler is used
     *                       Is ignored if set by initialize already.
     * @param The exception struct, exception->errorCode is filled on exception
@@ -186,15 +195,6 @@ typedef struct Dll_Export XmlBlasterAccess {
     * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
     */
    XmlBlasterAccessConnect connect;
-   /**
-    * Creates client side connection object and the callback server and does the low level IP connection.
-    * This method is automatically called by #connect() so you usually only
-    * call it explicitly if you are interested in the callback server settings.
-    * @param xa The 'this' pointer
-    * @param clientUpdateFp The clients callback handler function #UpdateFp. If NULL our default handler is used
-    * @return true on success
-    */
-   XmlBlasterAccessInitialize initialize;
    /**
     * Disconnect from server.
     * @param xa The 'this' pointer
@@ -274,6 +274,8 @@ typedef struct Dll_Export XmlBlasterAccess {
    ConnectionListenerCbFp connectionListenerCbFp;
    void *connectionListenerUserData;
    bool isInitialized;
+
+   UpdateFp clientsUpdateFp; /**< Remember clients callback function during polling */
 
    long pingInterval;
    long retries;
