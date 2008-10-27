@@ -249,6 +249,69 @@ public class TestC extends TestCase implements I_ExecuteListener
    }
 
    /**
+    * Test all C method invocations against a running xmlBlaster. 
+    */
+   public void test_C_XmlUtil()
+   {
+      String[] commandArr = { pathToCBinary+sep+"TestXmlUtil" };
+      String[] envArr = { "" };
+
+      log.info("######## Start test_C_XmlUtil('" + commandArr[0] + "')");
+
+      Execute e = new Execute(commandArr, envArr);
+      e.setExecuteListener(this);
+      e.run();
+
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info("######## SUCCESS test_C_XmlUtil('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
+   }
+
+   public void test_C_Timeout()
+   {
+      String[] commandArr = { pathToCBinary+sep+"TestTimeout" };
+      String[] envArr = { "" };
+
+      log.info("######## Start test_C_Timeout('" + commandArr[0] + "')");
+
+      Execute e = new Execute(commandArr, envArr);
+      e.setExecuteListener(this);
+      e.run();
+
+      if (e.getExitValue() != 0) {
+         fail("C client library test '" + commandArr[0] + "' + failed exit=" + e.getExitValue() + ": " + e.getStderr());
+      }
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info("######## SUCCESS test_C_Timeout('" + commandArr[0] + "') exit=" +
+               e.getExitValue() + " : " + e.getStdout());
+   }
+
+   /**
     * Test the C API persistent queue implementation. 
     */
    public void test_C_Queue()
@@ -367,6 +430,8 @@ public class TestC extends TestCase implements I_ExecuteListener
       TestC test = new TestC("TestC");
       test.setUp();
       test.test_C_Util();
+      test.test_C_XmlUtil();
+      test.test_C_Timeout();
       test.test_C_MethodInvocations();
       test.test_C_IllegalArguments();
       test.test_C_Queue();
