@@ -65,6 +65,7 @@ static void stopThread(Timeout *timeout) {
    pthread_cond_broadcast(&timeout->condition_cond);
    pthread_mutex_unlock(&timeout->condition_mutex);
    pthread_join(timeout->thread, NULL);
+   timeout->thread = 0;
    initTimeout(timeout);
 }
 
@@ -82,6 +83,7 @@ void freeTimeout(Timeout *timeout) {
 static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
       const long int delay, void * const userData, void * const userData2) {
    int iret;
+   int i;
 
    if (timeout == 0)
       return -1;
@@ -91,7 +93,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
    timeout->timeoutContainer.userData = userData;
    timeout->timeoutContainer.userData2 = userData2;
 
-   if (timeout->timeoutContainer.delay < 1) {
+   if (delay < 1) {
       printf("Timeout.c Stopping timer %s\n", timeout->name);
       stopThread(timeout);
       return 0;
@@ -102,7 +104,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
    }
 
    if (timeout->thread != 0) {
-      printf("Timeout.c Calling setTimeoutListener twice is not tested\n");
+      printf("Timeout.c Warning: Calling setTimeoutListener twice is not reinitializing immediately the timer\n");
       return -1;
    }
 
@@ -112,6 +114,16 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
 
    /* pthread_attr.name before calling pthread_create() ? pthread_setname(timeout->name) pthread_attr_setname() */
    iret = pthread_create(&timeout->thread, NULL, timeoutMainLoop, (void*) timeout);
+
+   /* Block until timer thread is ready */
+   for (i=0; i<50; i++) {
+      if (timeout->ready)
+         break;
+      /*printf("Timeout.c Warning: TESTING setTimeoutListener is not getting ready\n");*/
+      sleepMillis(1);
+   }
+   if (i >= 50)
+      printf("Timeout.c Warning: calling setTimeoutListener is not getting ready\n");
 
    return iret; /* 0 == success */
 }
@@ -130,6 +142,8 @@ static void *timeoutMainLoop(void *ptr) {
       struct timespec abstime;
 
       pthread_mutex_lock(&timeout->condition_mutex);
+
+      timeout->ready = true;
 
       /* calculate absolute time from relaive delay millis */
       getAbsoluteTime(timeout->timeoutContainer.delay, &abstime);
@@ -171,7 +185,7 @@ static void *timeoutMainLoop(void *ptr) {
 
 # ifdef TIMEOUT_UTIL_MAIN
 /*
- * gcc -g -Wall -pedantic -DTIMEOUT_UTIL_MAIN=1 -lpthread -I../../ -o Timeout Timeout.c helper.c -I../
+ * gcc -g -Wall -pedantic -DTIMEOUT_UTIL_MAIN=1 -lpthread -I.. -o Timeout Timeout.c helper.c
  */
 static void onTimeout(Timeout *timeout, void *userData, void *userData2) {
    const char *data = (char *) userData;
