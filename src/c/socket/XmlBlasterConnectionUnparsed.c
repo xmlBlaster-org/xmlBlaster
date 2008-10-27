@@ -50,7 +50,7 @@ static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_
 static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
 
 /**
- * Create a new instance to handle a synchronous connection to the server. 
+ * Create a new instance to handle a synchronous connection to the server.
  * This is usually the first call of a client.
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
@@ -69,7 +69,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
 	xb->cfSocketRef = nil;
 	xb->readStream = nil;
 	xb->writeStream = nil;
-	
+
 #endif
    xb->socketToXmlBlaster = -1;
    xb->socketToXmlBlasterUdp = -1;
@@ -166,7 +166,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       strncpy0(exception->errorCode, "resource.unavailable", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Couldn't find a usable WinSock DLL which supports version 2.2", __FILE__, __LINE__);
       if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
-      return false; 
+      return false;
    }
 # endif
    *errP = 0;
@@ -180,7 +180,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       compressType = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/compress/type", compressType);
 
       if (!strcmp(compressType, "zlib:stream")) {
-         
+
          xb->zlibWriteBuf = (XmlBlasterZlibWriteBuffers *)malloc(sizeof(struct XmlBlasterZlibWriteBuffers));
          xb->zlibReadBuf = (XmlBlasterZlibReadBuffers *)malloc(sizeof(struct XmlBlasterZlibReadBuffers));
 
@@ -302,8 +302,8 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    else
       xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
 #ifdef __IPhoneOS__
-	
-/*	
+
+/*
 	xb->cfSocketRef = CFSocketCreate(kCFAllocatorDefault,
 										PF_INET,
 										SOCK_STREAM,
@@ -311,17 +311,17 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 										kCFSocketNoCallBack,                // Callback flags
 										nil,  // Callback method
 										nil);
-	
+
 	if(xb->cfSocketRef == NULL)
 	{
 		xb->socketToXmlBlaster = -1;
-    }		
+    }
 	else
 	{
 		xb->socketToXmlBlaster = 0;
-    }		
-	
-*/	
+    }
+
+*/
 	xb->socketToXmlBlaster = 0;
 #else
    xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
@@ -384,32 +384,32 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
 #ifdef __IPhoneOS__
 	    globalIPhoneXb = xb;
-		
+
 		CFStringRef hostnameRef =CFStringCreateWithCString (kCFAllocatorDefault, serverHostName, kCFStringEncodingUTF8);
 		CFHostRef hostRef = CFHostCreateWithName (kCFAllocatorDefault, hostnameRef);
 		CFStreamCreatePairWithSocketToCFHost (kCFAllocatorDefault,hostRef, atoi(servTcpPort), &xb->readStream, &xb->writeStream);
-		
+
 		if(xb->readStream != nil && xb->writeStream != nil)
 		{
 			ret = 0;
 			if(!CFWriteStreamOpen (xb->writeStream))
 				ret = -1;
-			if(!CFReadStreamOpen (xb->readStream)) 
+			if(!CFReadStreamOpen (xb->readStream))
 				ret = -1;
 	    }
 	    else
 		{
 			   ret = -1;
 		}
-		
+
 /*
 		CFDataRef cfDataRef = CFDataCreate(kCFAllocatorDefault, (void*)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
 		xb->socketAddr = cfDataRef;
 	//	CFTimeInterval
-	//	Type used to represent elapsed time in seconds.     
+	//	Type used to represent elapsed time in seconds.
 	  CFTimeInterval timeout = 30;
       CFSocketError cfSocketError = CFSocketConnectToAddress(xb->cfSocketRef, cfDataRef, timeout);
- */ 
+ */
 #else
 		ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
 #endif
@@ -489,7 +489,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
 
 /**
- * Set the queue properties. 
+ * Set the queue properties.
  * Example:
  * <pre>
    QueueProperties queueProperties;
@@ -577,7 +577,7 @@ const char *xmlBlasterConnectionUnparsedUsage()
    /* we have a static variable */
    enum { SIZE=2048 };
    static char usage[SIZE];
-   strncpy0(usage, 
+   strncpy0(usage,
       "\n   -dispatch/connection/plugin/socket/hostname [localhost]"
       "\n                       Where to find xmlBlaster."
       "\n   -dispatch/connection/plugin/socket/port [7607]"
@@ -620,7 +620,7 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 #else
       if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
-      shutdown(xb->socketToXmlBlaster, how); 
+      shutdown(xb->socketToXmlBlaster, how);
       closeSocket(xb->socketToXmlBlaster);
       xb->socketToXmlBlaster = -1;
       if (xb->socketToXmlBlasterUdp != -1) {
@@ -630,13 +630,13 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
       }
 #endif
    }
-	
+
 
 }
 
 /**
  * Send a message over the socket to xmlBlaster.
- * @param xb The this pointer 
+ * @param xb The this pointer
  * @param methodName The name of the remote method to invoke e.g. "connect"
  * @param msgType The type of message: INVOKE, RESPONSE, EXCEPTION
  * @param data The message payload to send, we take a clone so you can do with it what you want
@@ -649,7 +649,7 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
  * @return true if OK and response is filled (if not oneway or exception or response itself)<br />
            false on error and exception is filled
  */
-static bool sendData(XmlBlasterConnectionUnparsed *xb, 
+static bool sendData(XmlBlasterConnectionUnparsed *xb,
               const char * const methodName,
               enum XMLBLASTER_MSG_TYPE_ENUM msgType,
               const char *data_,
@@ -665,7 +665,6 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    MsgRequestInfo *requestInfoP;
    MsgRequestInfo requestInfo;
    memset(&requestInfo, 0, sizeof(MsgRequestInfo));
-	printf(data_);
    if (data_ == 0) {
       data_ = "";
       dataLen_ = 0;
@@ -736,7 +735,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       rawMsg = encodeSocketMessage(msgType, requestInfo.requestIdStr, requestInfo.methodName, xb->secretSessionId,
                              data_, dataLen_, xb->logLevel >= XMLBLASTER_LOG_DUMP, &rawMsgLen);
    }
-   
+
    /* send the header ... */
    if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Lowlevel writing data to socket ...");
    numSent = xb->writeToSocket.writeToSocketFuncP(xb->writeToSocket.userP, udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
@@ -840,7 +839,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
 }
 
 /**
- * Parse the returned message from xmlBlaster. 
+ * Parse the returned message from xmlBlaster.
  * This method blocks until data arrives.
  * <br />
  * The responseSocketDataHolder holds all informations about the returned data from xmlBlaster,
@@ -857,7 +856,7 @@ static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *resp
 }
 
 /**
- * Connect to the server. 
+ * Connect to the server.
  * @param qos The QoS to connect
  * @param The exception struct, exception->errorCode is filled on exception
  * @return The raw ConnectReturnQos XML string returned from xmlBlaster,
@@ -873,7 +872,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    char *response;
    char *qos2;
    char timestampStr[256];
-   
+
    if (qos == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterConnect()", __FILE__, __LINE__);
@@ -884,7 +883,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    if (initConnection(xb, exception) == false) {
       return (char *)0;
    }
-   
+
    /** Append current client UTC timestamp */
    qos2 = strcpyAlloc(qos);
    trimEnd(qos2);
@@ -895,7 +894,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
       strcatAlloc(&qos2, timestampStr);
       strcatAlloc(&qos2, "</clientProperty></qos>");
    }
-   
+
    if (sendData(xb, XMLBLASTER_CONNECT, MSG_TYPE_INVOKE, (const char *)qos2,
                 (qos2 == (const char *)0) ? 0 : strlen(qos2),
                 &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
@@ -934,7 +933,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
 }
 
 /**
- * Disconnect from server. 
+ * Disconnect from server.
  * @param qos The QoS to disconnect
  * @param The exception struct, exception->errorCode is filled on exception
  * @return false on exception
@@ -947,7 +946,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 
    if (checkArgs(xb, XMLBLASTER_DISCONNECT, true, exception) == false ) return 0;
 
-   if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
+   if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
       return false;
@@ -963,7 +962,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 
 #if XMLBLASTER_PERSISTENT_QUEUE_TEST==1
 /**
- * Extracts the priority from the given QoS. 
+ * Extracts the priority from the given QoS.
  * @return NORM=5 on error
  */
 static int parsePriority(const char *qos) {
@@ -1044,7 +1043,7 @@ static char *xmlBlasterQueuePut(XmlBlasterConnectionUnparsed *xb, int priority, 
 #endif /*XMLBLASTER_PERSISTENT_QUEUE_TEST==1*/
 
 /**
- * Publish a message to the server. 
+ * Publish a message to the server.
  * @return The raw XML string returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
@@ -1056,7 +1055,7 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    char *response = 0;
 
    BlobHolder blob = encodeMsgUnit(msgUnit, xb->logLevel >= XMLBLASTER_LOG_DUMP);
-   msgUnit->responseQos = 0; /* In case no initial memset(&msgUnit, 0, sizeof(MsgUnit)); was made */ 
+   msgUnit->responseQos = 0; /* In case no initial memset(&msgUnit, 0, sizeof(MsgUnit)); was made */
 
    if (checkArgs(xb, "publish", true, exception) == false ) return 0;
 
@@ -1086,7 +1085,7 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
 }
 
 /**
- * Publish a message array in a bulk to the server. 
+ * Publish a message array in a bulk to the server.
  * @return The raw XML string array returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
@@ -1119,7 +1118,7 @@ static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
 }
 
 /**
- * Publish oneway a message array in a bulk to the server without receiving an ACK. 
+ * Publish oneway a message array in a bulk to the server without receiving an ACK.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
@@ -1156,7 +1155,7 @@ static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
 }
 
 /**
- * Subscribe a message. 
+ * Subscribe a message.
  * @return The raw XML string returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free() it
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html
@@ -1171,7 +1170,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    char *response;
 
    if (checkArgs(xb, "subscribe", true, exception) == false ) return 0;
-   
+
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterSubscribe()", __FILE__, __LINE__);
@@ -1212,7 +1211,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
 }
 
 /**
- * UnSubscribe a message from the server. 
+ * UnSubscribe a message from the server.
  * @return The raw QoS XML strings returned from xmlBlaster, only NULL if an exception is thrown
  *         You need to free it with freeQosArr() after usage
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html
@@ -1273,7 +1272,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
 }
 
 /**
- * Erase a message from the server. 
+ * Erase a message from the server.
  * @return A struct holding the raw QoS XML strings returned from xmlBlaster,
  *         only NULL if an exception is thrown.
  *         You need to freeQosArr() it
@@ -1335,7 +1334,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
 }
 
 /**
- * Ping the server. 
+ * Ping the server.
  * @param qos The QoS or 0
  * @param exception *errorCode!=0 on failure
  * @return The ping return QoS raw xml string, you need to free() it
@@ -1348,7 +1347,7 @@ static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const
    char *response;
 
    if (checkArgs(xb, "ping", true, exception) == false ) return 0;
-   
+
    if (sendData(xb, XMLBLASTER_PING, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
                 &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
@@ -1363,10 +1362,10 @@ static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const
 }
 
 /**
- * Get a message. 
+ * Get a message.
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.get.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- * @return NULL on error, please check exception in such a case, you need to 
+ * @return NULL on error, please check exception in such a case, you need to
  *         call freeMsgUnitArr(msgUnitArr); after usage.
  */
 static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception)
@@ -1426,7 +1425,7 @@ static ssize_t writenPlain(void *userP, const int fd, const char *ptr, const siz
 }
 
 /**
- * Compress data and send to socket. 
+ * Compress data and send to socket.
  */
 static ssize_t writenCompressed(void *userP, const int fd, const char *ptr, const size_t nbytes) {
    XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
@@ -1444,7 +1443,7 @@ static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nby
 }
 
 /**
- * Compress data and send to socket. 
+ * Compress data and send to socket.
  */
 static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
    XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
@@ -1455,7 +1454,7 @@ static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_
 /**
  * Checks the given arguments to be valid.
  * @param methodName For logging
- * @param checkIsConnected If true does check the connection state as well 
+ * @param checkIsConnected If true does check the connection state as well
  * @return false if the parameters are not usable,
  *         in this case 'exception' is filled with detail informations
  */
