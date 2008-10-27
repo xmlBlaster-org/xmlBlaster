@@ -706,6 +706,10 @@ static bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
               __FILE__, __LINE__, methodName, stack);
          free(stack);
       }
+      strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] No connection to xmlBlaster, %s() connectionState=%s",
+                __FILE__, __LINE__, methodName, connectionStateToStr(xa->connnectionState));
       return false;
    }
 
