@@ -121,8 +121,8 @@ int main(int argc, const char* const * argv) {
 		char callbackQos[1024];
 		sprintf(
 				callbackQos,
-				"<queue relating='callback' maxEntries='50000' maxEntriesCache='10000' pingInterval='30000'>"
-					"  <callback type='SOCKET' sessionId='%.120s'>"
+				"<queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"
+					"  <callback type='SOCKET' sessionId='%.120s' pingInterval='30000'>"
 					"    socket://127.0.0.1"
 					"  </callback>"
 					"</queue>", callbackSessionId);
