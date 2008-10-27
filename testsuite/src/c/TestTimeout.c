@@ -83,7 +83,7 @@ static const char * test_timeoutErr() {
 static const char * test_timeoutReset() {
 	const long millisecs = 2000;
 	countTimeouts = 0;
-	printf("millisec=%ld\n", millisecs);
+	printf("selfThreadId=%ld millisec=%ld\n",  (long int)pthread_self(), millisecs);
 	{
 		Timeout *timeout = createTimeout("TestTimerReset");
 		timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData", 0);
@@ -96,6 +96,42 @@ static const char * test_timeoutReset() {
 	}
 	return 0;
 }
+
+
+/**
+ * Callback function on timeout.
+ */
+static void onTimeoutResetCall(Timeout *timeout, void *userData, void *userData2) {
+	char timeStr[64];
+	countTimeouts++;
+	printf("%s Timeout occurred, timer=%s delay=%ld count=%d\n",
+			getCurrentTimeStr(timeStr, 64), timeout->name,
+			timeout->timeoutContainer.delay, countTimeouts);
+	/* Reset timer */
+	if (countTimeouts == 1)
+		timeout->setTimeoutListener(timeout, onTimeout, 0, "onTimeoutResetCall", 0);
+}
+static const char * test_timeoutResetFromCallback() {
+	const long millisecs = 1000;
+	int i;
+	printf("selfThreadId=%ld millisec=%ld\n",  (long int)pthread_self(), millisecs);
+	for (i=0; i<1; i++) {
+		Timeout *timeout = createTimeout("TestTimerResetFromCallback");
+		countTimeouts = 0;
+		timeout->setTimeoutListener(timeout, onTimeoutResetCall, millisecs, "test_timeoutResetFromCallback", 0);
+		/* resets timer */
+		sleepMillis(2500);
+		mu_assert("test_timeoutReset()", 1==countTimeouts);
+		timeout->setTimeoutListener(timeout, onTimeoutResetCall, millisecs, "test_timeoutResetFromCallback", 0);
+		/* keeps timer */
+		sleepMillis(2500);
+		mu_assert("test_timeoutReset()", 3==countTimeouts);
+		freeTimeout(timeout);
+		printf("SUCCESS test_timeoutResetFromCallback\n");
+	}
+	return 0;
+}
+
 
 /**
  * Callback function on timeout.
@@ -135,6 +171,7 @@ static const char * test_timeoutTwice() {
 }
 
 static const char *all_tests() {
+	mu_run_test(test_timeoutResetFromCallback);
 	mu_run_test(test_timeoutReset);
 	mu_run_test(test_timeoutErr);
 	mu_run_test(test_timeoutNoCb);
