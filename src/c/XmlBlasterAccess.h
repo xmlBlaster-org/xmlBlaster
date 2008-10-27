@@ -115,11 +115,13 @@ typedef MsgUnitArr *( * XmlBlasterAccessGet)(struct XmlBlasterAccess *xb, const 
 typedef PingReturnQos *( * XmlBlasterAccessPing)(struct XmlBlasterAccess *xb, const PingQos * pingQos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessIsConnected)(struct XmlBlasterAccess *xb);
 
-#define XBCONSTATE_UNDEF -1
-#define XBCONSTATE_ALIVE 0 /**< socket is connected */
-#define XBCONSTATE_POLLING 1 /**< trying to reconnect */
-#define XBCONSTATE_DEAD 2 /**< we have given up */
-#define XBCONSTATE_LOGGEDIN 3 /**< socket is connected and connectQos was successful (~postAlive) */
+typedef enum XBCONSTATE_ENUM {
+   XBCONSTATE_UNDEF = -1,
+   XBCONSTATE_SOCKALIVE = 0, /**< socket is connected */
+   XBCONSTATE_POLLING = 1, /**< trying to reconnect */
+   XBCONSTATE_DEAD = 2, /**< we have given up */
+   XBCONSTATE_LOGGEDINALIVE = 3 /**< socket is connected and connectQos was successful (~postAlive) */
+} XBCONSTATE;
 /**
  * @param xa This pointer
  * @param oldState e.g. XBCONSTATE_ALIVE
@@ -127,7 +129,7 @@ typedef bool  ( * XmlBlasterAccessIsConnected)(struct XmlBlasterAccess *xb);
  * @param exception Is NULL if no exception is related
  * @param userData Bounced back pointer from registerConnectionListener()
  */
-typedef void ( * ConnectionListenerCbFp)(struct XmlBlasterAccess *xa, int oldState, int newState, XmlBlasterException *exception, void *userData);
+typedef void ( * ConnectionListenerCbFp)(struct XmlBlasterAccess *xa, XBCONSTATE oldState, XBCONSTATE newState, XmlBlasterException *exception, void *userData);
 /**
  * Register a listener to get events about connection status changes.
  * @param xa   The this pointer
@@ -260,9 +262,13 @@ typedef struct Dll_Export XmlBlasterAccess {
    XmlBlasterAccessGet get;
    XmlBlasterAccessPing ping;
    /**
-    * Check if we are connected to xmlBlaster.
+    * Has the connect() method successfully passed?
+    * <p>
+    * Note that this contains no information about the current connection state
+    * of the protocol layer.
+    * </p>
     * @param xa The 'this' pointer
-    * @return #bool true or false
+    * @return true If the connection() method was invoked without exception
     */
    XmlBlasterAccessIsConnected isConnected;
    XMLBLASTER_LOG_LEVEL logLevel;
@@ -273,14 +279,14 @@ typedef struct Dll_Export XmlBlasterAccess {
    Timeout *pingPollTimer;
    ConnectionListenerCbFp connectionListenerCbFp;
    void *connectionListenerUserData;
-   bool isInitialized;
+   //bool isInitialized;
 
    UpdateFp clientsUpdateFp; /**< Remember clients callback function during polling */
 
    long pingInterval;
    long retries;
    long delay;
-   int connnectionState; /*XBCONSTATE_ALIVE*/
+   XBCONSTATE connnectionState; /*XBCONSTATE_SOCKALIVE etc.*/
 
    bool isShutdown;
 } XmlBlasterAccess;

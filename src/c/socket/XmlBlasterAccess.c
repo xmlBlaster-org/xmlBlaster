@@ -73,7 +73,7 @@ Dll_Export XmlBlasterAccess *getXmlBlasterAccess(int argc, const char* const* ar
       freeXmlBlasterAccess(xa);
       return (XmlBlasterAccess *)0;
    }
-   xa->isInitialized = false;
+   //xa->isInitialized = false;
    xa->isShutdown = false;
    xa->connectionP = 0;
    xa->userObject = 0; /* A client can use this pointer to point to any client specific information */
@@ -104,6 +104,15 @@ Dll_Export XmlBlasterAccess *getXmlBlasterAccess(int argc, const char* const* ar
    return xa;
 }
 
+static void _freeConnectionP(XmlBlasterAccess *xa) {
+   XmlBlasterAccessUnparsed *cP = xa->connectionP;
+   if (xa == 0) return;
+   if (cP != 0) {
+      xa->connectionP = 0;
+      freeXmlBlasterAccessUnparsed(cP);
+   }
+}
+
 Dll_Export void freeXmlBlasterAccess(XmlBlasterAccess *xa)
 {
    if (xa == 0) {
@@ -125,10 +134,7 @@ Dll_Export void freeXmlBlasterAccess(XmlBlasterAccess *xa)
    freeTimeout(xa->pingPollTimer);
    xa->pingPollTimer = 0;
 
-   if (xa->connectionP != 0) {
-      freeXmlBlasterAccessUnparsed(xa->connectionP);
-      xa->connectionP = 0;
-   }
+   _freeConnectionP(xa);
 
    freeProperties(xa->props);
    free(xa);
@@ -139,11 +145,11 @@ static void xmlBlasterRegisterConnectionListener(struct XmlBlasterAccess *xa, Co
 	xa->connectionListenerUserData = userData;
 }
 
-Dll_Export const char *connectionStateToStr(int state) {
-   if (state == XBCONSTATE_ALIVE)
-      return "ALIVE";
-   else if (state == XBCONSTATE_LOGGEDIN)
-      return "LOGGEDIN";
+Dll_Export const char *connectionStateToStr(XBCONSTATE state) {
+   if (state == XBCONSTATE_SOCKALIVE)
+      return "SOCKALIVE";
+   else if (state == XBCONSTATE_LOGGEDINALIVE)
+      return "LOGGEDINALIVE";
    else if (state == XBCONSTATE_POLLING)
       return "POLLING";
    else if (state == XBCONSTATE_DEAD)
@@ -184,12 +190,20 @@ static int changeConnectionStateTo(XmlBlasterAccess *xa, int newState, XmlBlaste
    return newState;
 }
 
+/**
+ * Has the connect() method successfully passed?
+ * <p>
+ * Note that this contains no information about the current connection state
+ * of the protocol layer.
+ * </p>
+ * @return true If the connection() method was invoked without exception
+ */
 static bool isConnected(XmlBlasterAccess *xa)
 {
-   if (xa == 0 || xa->isShutdown || xa->connectionP == 0) {
+   if (xa == 0 || xa->isShutdown/* || xa->connectionP == 0*/) {
       return false;
    }
-   return xa->connectionP->isConnected(xa->connectionP);
+   return xa->connectReturnQos != 0; /*xa->connectionP->isConnected(xa->connectionP);*/
 }
 
 
@@ -325,16 +339,14 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
 {
    if (checkArgs(xa, "initialize", false, exception) == false) return false;
 
-   if (xa->isInitialized) {
+   if (xa->connectionP) {
+   //if (xa->isInitialized) {
       return true;
    }
 
    xa->clientsUpdateFp = clientUpdateFp;
 
-   if (xa->connectionP) {
-      freeXmlBlasterAccessUnparsed(xa->connectionP);
-      xa->connectionP = 0;
-   }
+   _freeConnectionP(xa);
    xa->connectionP = getXmlBlasterAccessUnparsed(xa->argc, xa->argv);
    if (xa->connectionP == 0) {
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -374,10 +386,10 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
    }
    checkPost(xa, "initialize", 0, exception);
 
-   xa->isInitialized = true;
+   //xa->isInitialized = true;
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "initialize() successful");
-   return xa->isInitialized;
+   return true;//xa->isInitialized;
 }
 
 /** Called internally only */
@@ -394,10 +406,18 @@ static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, UpdateFp cli
    /* Register our function responseEvent() to be notified when the response arrives,
       this is done by preSendEvent() callback called during connect() */
 
+   printf("_xmlBlasterReConnect connectionP=%p\n", xa->connectionP);
+   printf("_xmlBlasterReConnect clientUpdateFp=%p\n", clientUpdateFp);
+   printf("_xmlBlasterReConnect exception=%p\n", exception);
+   printf("_xmlBlasterReConnect connectQos=%p\n", xa->connectQos);
+   printf("_xmlBlasterReConnect xa->connectionP->connect=%p\n", xa->connectionP->connect);
+
    response = xa->connectionP->connect(xa->connectionP, (xa->connectQos==0)?0:xa->connectQos->qos, clientUpdateFp, exception);
 
    if (checkPost(xa, "connect", response, exception) == false ) return 0;
 
+   freeXmlBlasterReturnQos(xa->connectReturnQos);
+   xa->connectReturnQos = 0;
    xa->connectReturnQos = createXmlBlasterReturnQos(response); /* reuses response memory */
 
    return xa->connectReturnQos;
@@ -407,7 +427,7 @@ static void onPingPollTimeout(Timeout *timeout, void *userData, void *userData2)
    XmlBlasterAccess *xa = (XmlBlasterAccess *)userData;
    int type = (int)(*((int*)userData2)); /* XBTYPE_PING=0 | XBTYPE_POLL=1 */
    char timeStr[64];
-   ConnectionListenerCbFp cb = xa->connectionListenerCbFp;
+   /*ConnectionListenerCbFp cb = xa->connectionListenerCbFp;*/
 
    if (xa->logLevel>=XMLBLASTER_LOG_INFO)
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
@@ -417,8 +437,11 @@ static void onPingPollTimeout(Timeout *timeout, void *userData, void *userData2)
 
    if (type == XBTYPE_PING) {
       PingQos *pingQos = 0;
+      PingReturnQos *pingReturnQos = 0;
       XmlBlasterException exception;
-      xa->ping(xa, pingQos, &exception);
+      pingReturnQos = xa->ping(xa, pingQos, &exception); /* Does error handling */
+      freeXmlBlasterReturnQos(pingReturnQos);
+      /*
       if (*exception.errorCode != 0) {
          if (xa->logLevel>=XMLBLASTER_LOG_WARN)
             xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN,
@@ -429,13 +452,16 @@ static void onPingPollTimeout(Timeout *timeout, void *userData, void *userData2)
       else {
          if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Ping success");
       }
+      */
    }
 
-   if (type == XBTYPE_POLL) {
+   else if (type == XBTYPE_POLL) {
       XmlBlasterException xmlBlasterException;
-      if (xa->logLevel>=XMLBLASTER_LOG_WARN)
-         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN,
-               __FILE__, "Lost server connection, polling now every %ld milli seconds", xa->delay);
+      initializeXmlBlasterException(&xmlBlasterException);
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE,
+               __FILE__, "Polling again (every %ld milli seconds)", xa->delay);
+      _freeConnectionP(xa);
       _xmlBlasterReConnect(xa, xa->clientsUpdateFp, &xmlBlasterException);
    }
 }
@@ -595,6 +621,9 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccess *xa, const GetKey * const getK
    return msgUnitArr;
 }
 
+/**
+ * Post processing of remote calls: check connection status and lauch ping or poll thread.
+ */
 static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
             void *returnObj, XmlBlasterException *exception)
 {
@@ -602,15 +631,20 @@ static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
    if (exception == 0 || *exception->errorCode == 0) {
       if (!strcmp("initialize", methodName)) {
          /* raw socket connected */
-         changeConnectionStateTo(xa, XBCONSTATE_ALIVE, exception);
+         changeConnectionStateTo(xa, XBCONSTATE_SOCKALIVE, exception);
          return true;
       }
-      if (xa->pingInterval > 0 && xa->connnectionState != XBCONSTATE_LOGGEDIN
+      if (xa->pingInterval > 0 && xa->connnectionState != XBCONSTATE_LOGGEDINALIVE
             && !strcmp("connect", methodName)) {
+         if (xa->logLevel>=XMLBLASTER_LOG_INFO)
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO,
+                  __FILE__, "Connected to xmlBlaster server, pinging now every %ld milli seconds", xa->pingInterval);
+         /* reset timer */
+         //xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_PING);
          /* start pinging */
          xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, xa->pingInterval, xa, (void*)&XBTYPE_PING);
       }
-      changeConnectionStateTo(xa, XBCONSTATE_LOGGEDIN, exception);
+      changeConnectionStateTo(xa, XBCONSTATE_LOGGEDINALIVE, exception);
       return true;
    }
 
@@ -618,11 +652,21 @@ static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
    if (xa->retries == -1 || xa->retries > 0) {
       /* start polling */
       if (xa->connnectionState != XBCONSTATE_POLLING) {
+         if (xa->logLevel>=XMLBLASTER_LOG_WARN)
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN,
+                  __FILE__, "Lost server connection during %s, polling now every %ld milli seconds", methodName, xa->delay);
+         _freeConnectionP(xa);
          changeConnectionStateTo(xa, XBCONSTATE_POLLING, exception);
+         /* reset timer */
+         //xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_POLL);
+         /* start poller */
          xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, xa->delay, xa, (void*)&XBTYPE_POLL);
       }
    }
    else {
+      if (xa->logLevel>=XMLBLASTER_LOG_ERROR)
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR,
+               __FILE__, "Lost server connection during %s, giving up as no fail safe mode is configured (-dispatch/connection/retries -1).", methodName);
       /* stop timer */
       xa->pingPollTimer->setTimeoutListener(xa->pingPollTimer, onPingPollTimeout, 0, xa, (void*)&XBTYPE_POLL);
       changeConnectionStateTo(xa, XBCONSTATE_DEAD, exception);
@@ -660,15 +704,23 @@ static bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
       free(stack);
       return false;
    }
-/*
-   if (xa->connectionP == 0) {
-      char *stack = getStackTrace(10);
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%s:%d] No valid connectionP pointer %s() %s",
+
+   initializeXmlBlasterException(exception);
+
+   if (strcmp("connect", methodName) && strcmp("initialize", methodName) && xa->connectionP == 0) {
+      if (xa->retries == -1 || xa->retries > 0) {
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "[%s:%d] We are polling %s",
+              __FILE__, __LINE__, methodName);
+      }
+      else {
+         char *stack = getStackTrace(10);
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%s:%d] No valid connectionP pointer %s() %s",
               __FILE__, __LINE__, methodName, stack);
-      free(stack);
+         free(stack);
+      }
       return false;
    }
-*/
+
    if (xa->isShutdown || (checkIsConnected && !xa->isConnected(xa))) {
       char *stack = getStackTrace(10);
       strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -679,8 +731,6 @@ static bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
       return false;
    }
-
-   initializeXmlBlasterException(exception);
 
    return true;
 }
