@@ -53,8 +53,8 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 	return true;
 }
 
-static void connectionListenerCb(struct XmlBlasterAccess *xa, int oldState,
-		int newState, XmlBlasterException *exception, void *userData) {
+static void connectionListenerCb(struct XmlBlasterAccess *xa, XBCONSTATE oldState,
+		XBCONSTATE newState, XmlBlasterException *exception, void *userData) {
 	const char *conStateUserData = (const char *) userData;
 	const char *errorCode = (exception == 0 || exception->errorCode == 0) ? ""
 			: exception->errorCode;
