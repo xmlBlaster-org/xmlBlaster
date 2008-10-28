@@ -74,6 +74,12 @@ class omni_thread;
 #elif defined(__aix__)
 #include <omnithread/posix.h>
 
+#elif defined(__MacOSX__)
+#include <omnithread/posix.h>
+
+#elif defined(__IPhoneOS__)
+#include <omnithread/posix.h>
+
 #elif defined(__hpux__)
 #include <omnithread/posix.h>
 
