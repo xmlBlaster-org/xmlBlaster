@@ -853,7 +853,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   }
                }
                else {
-                  receiverSessionInfo.getLock().release();
+                  receiverSessionInfo.releaseLockAssertOne("Topic=" + getId());
                   receiverSessionInfo = null;
                }
             }
@@ -889,7 +889,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   if (receiverSessionInfo == null) continue;
                   receiverSessionInfo.getLock().lock();
                   if (!receiverSessionInfo.isAlive()) {
-                     receiverSessionInfo.getLock().release();
+                     receiverSessionInfo.releaseLockAssertOne("Topic=" + getId());
                      receiverSessionInfo = null;
                      continue;
                   }
@@ -907,8 +907,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             continue;
          }
          finally {
-            if (receiverSessionInfo != null)
-               receiverSessionInfo.getLock().release();
+            if (receiverSessionInfo != null) {
+               receiverSessionInfo.releaseLockAssertOne("Topic=" + getId());
+            }
          }
       } // for destinationArr.length
    }
