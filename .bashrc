@@ -208,8 +208,21 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    PATH=${PATH}:${XMLBLASTER_HOME}/bin:${XMLBLASTER_HOME}/testsuite/src/c/bin:${XMLBLASTER_HOME}/testsuite/src/c++/bin:${XMLBLASTER_HOME}/demo/c/socket/bin:${XMLBLASTER_HOME}/demo/c++/bin
    export PATH
 
+   # Linux
    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${XMLBLASTER_HOME}/lib
    export LD_LIBRARY_PATH
+
+   # HPUX
+   SHLIB_PATH=$SHLIB_PATH:${XMLBLASTER_HOME}/lib
+   export SHLIB_PATH
+
+   # AIX
+   LIBPATH=$LIBPATH:${XMLBLASTER_HOME}/lib
+   export LIBPATH
+
+   # Mac OSX
+   DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:${XMLBLASTER_HOME}/lib
+   export DYLD_LIBRARY_PATH
 
    alias cdx='cd $XMLBLASTER_HOME'
    alias cdxs='cd $XMLBLASTER_HOME/src'
