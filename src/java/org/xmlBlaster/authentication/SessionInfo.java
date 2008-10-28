@@ -31,6 +31,7 @@ import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnit;
@@ -234,7 +235,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    public final boolean isAlive() {
-      return !this.isShutdown;
+      return !isShutdown();
    }
 
    /**
@@ -310,12 +311,33 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    public ReentrantLock getLock() {
       return this.lock;
    }
+   
+   /**
+    * Freeing sessionInfo lock with test/assert code. 
+    * @param errorInfo
+    * @return number of holds released
+    */
+   public long releaseLockAssertOne(String errorInfo) {
+      long holds = this.lock.holds();
+      if (holds != 1) {
+         log.severe("Topic=" + getId() + " receiverSession=" + getId() +". Not expected lock holds=" + holds + "\n" + Global.getStackTraceAsString(null));
+      }
+      if (holds > 0) {
+         try {
+            this.lock.release(holds);
+         }
+         catch (Throwable e) {
+            log.severe("Free lock failed: " + e.toString() + " " + errorInfo + " receiverSession=" + getId() +". Not expected lock holds=" + holds + "\n" + Global.getStackTraceAsString(null));
+         }
+      }
+      return holds;
+   }
 
    /**
     * Check if a callback was configured (if client has passed a callback address on connect).
     */
    public final boolean hasCallback() {
-      return this.dispatchManager != null && this.isShutdown == false;
+      return this.dispatchManager != null && isShutdown() == false;
    }
 
    public final I_MsgErrorHandler getMsgErrorHandler() {
@@ -372,33 +394,35 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    public void shutdown() {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": shutdown() of session");
-      this.glob.unregisterMBean(this.mbeanHandle);
       this.lock.lock();
       try {
+         if (this.isShutdown)
+            return;
          this.isShutdown = true;
-         removeExpiryTimer();
-
-         I_Queue sessionQueue = this.sessionQueue;
-         if (sessionQueue != null) {
-            sessionQueue.shutdown();
-            //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
-         }
-
-         if (this.msgErrorHandler != null)
-            this.msgErrorHandler.shutdown();
-
-         DispatchManager dispatchManager = this.dispatchManager;
-         if (dispatchManager != null)
-            dispatchManager.shutdown();
-
-         this.subjectInfo = null;
-         // this.securityCtx = null; We need it in finalize() getSecretSessionId()
-         // this.connectQos = null;
-         this.expiryTimer = null;
       }
       finally {
          this.lock.release();
       }
+      this.glob.unregisterMBean(this.mbeanHandle);
+      removeExpiryTimer();
+
+      I_Queue sessionQueue = this.sessionQueue;
+      if (sessionQueue != null) {
+         sessionQueue.shutdown();
+         //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
+      }
+
+      if (this.msgErrorHandler != null)
+         this.msgErrorHandler.shutdown();
+
+      DispatchManager dispatchManager = this.dispatchManager;
+      if (dispatchManager != null)
+         dispatchManager.shutdown();
+
+      this.subjectInfo = null;
+      // this.securityCtx = null; We need it in finalize() getSecretSessionId()
+      // this.connectQos = null;
+      this.expiryTimer = null;
    }
 
    /**
@@ -449,21 +473,27 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
     *                 with Timeout.addTimeoutListener()
     */
    public final void timeout(Object userData) {
-      this.lock.lock();
-      try {
+      // lock could cause deadlock with topicHandler.lock()
+      // it is not needed here as the disconnect from remote clients
+      // also can come at any time and the core must be capable to handle this.
+      //this.lock.lock();
+      //try {
+      synchronized (this.EXPIRY_TIMER_MONITOR) {
          this.timerKey = null;
-         log.warning(ME+": Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
-         DisconnectQosServer qos = new DisconnectQosServer(glob);
-         qos.deleteSubjectQueue(true);
-         try {
-            glob.getAuthenticate().disconnect(getAddressServer(), getSecretSessionId(), qos.toXml());
-         } catch (XmlBlasterException e) {
-            log.severe(ME+": Internal problem with disconnect: " + e.toString());
-         }
       }
-      finally {
-         this.lock.release();
+      log.warning(ME+": Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
+      DisconnectQosServer qos = new DisconnectQosServer(glob);
+      qos.deleteSubjectQueue(true);
+      try {
+         glob.getAuthenticate().disconnect(getAddressServer(), getSecretSessionId(), qos.toXml());
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         log.severe(ME+": Internal problem with disconnect: " + e.toString());
       }
+      //}
+      //finally {
+      //   this.lock.release();
+      //}
    }
 
    /**
