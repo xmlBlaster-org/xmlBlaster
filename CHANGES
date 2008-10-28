@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17347 Deadlock fix in SessionInfo.java
+          Removed synchronized to prevent dead lock, see discussion with Balázs Póka 2008-10-28
+
  o r17340 C-client library: Supports now fail safe reconnect polling and client side ping
 
  o r17302 Administrative control to block client logins and reset the connection of a client (jconsole)
