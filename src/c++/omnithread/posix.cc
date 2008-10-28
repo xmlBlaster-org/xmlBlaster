@@ -80,7 +80,7 @@
 #include <time.h>
 #include <omnithread.h>
 
-#if (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__SCO_VERSION__) || defined(__aix__) || defined (__cygwin__) || defined(__darwin__) || defined(__macos__)
+#if (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__SCO_VERSION__) || defined(__aix__) || defined (__cygwin__) || defined(__darwin__) || defined(__macos__) || defined(__MacOSX__) || defined(__IPhoneOS__) || defined(__APPLE__)
 // typedef of struct timeval and gettimeofday();
 #include <sys/time.h>
 #include <unistd.h>
@@ -882,7 +882,7 @@ omni_thread::sleep(unsigned long secs, unsigned long nanosecs)
 	usleep(secs * 1000000 + (nanosecs / 1000));
     }
 
-#elif defined(__darwin__) || defined(__macos__)
+#elif defined(__darwin__) || defined(__macos__) || defined(__MacOSX__) || defined(__IPhoneOS__) || defined(__APPLE__)
 
     // Single UNIX Specification says argument of usleep() must be
     // less than 1,000,000.
@@ -915,7 +915,7 @@ omni_thread::get_time(unsigned long* abs_sec, unsigned long* abs_nsec,
 
 #else
 
-#if defined(__linux__) || defined(__GLIBC__) || defined(__aix__) || defined(__SCO_VERSION__) || defined(__darwin__) || defined(__macos__)
+#if defined(__linux__) || defined(__GLIBC__) || defined(__aix__) || defined(__SCO_VERSION__) || defined(__darwin__) || defined(__macos__) || defined(__MacOSX__) || defined(__IPhoneOS__) || defined(__APPLE__)
 
     struct timeval tv;
     gettimeofday(&tv, NULL); 

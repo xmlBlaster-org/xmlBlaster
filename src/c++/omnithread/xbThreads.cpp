@@ -13,6 +13,9 @@
 #elif defined(__aix__)
 #include "posix.cc"
 
+#elif defined(__MacOSX__) || defined(__IPhoneOS__) || defined(__APPLE__)
+#include "posix.cc"
+
 #elif defined(__hpux__)
 #include "posix.cc"
 
