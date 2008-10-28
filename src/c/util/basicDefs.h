@@ -18,13 +18,14 @@ Note:      cl.exe (Windows) always defines _WIN32
            _WIN32    (x86 specific) Defined for applications for WIN32. Always defined.
            _MT       Defined when /MD or /MT is specified.
            http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vccore98/HTML/_core_.2f.u.2c_2f.u.asp
+	   http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
 -----------------------------------------------------------------------------*/
 #ifndef XMLBLASTER_basicDefs_H
 #define XMLBLASTER_basicDefs_H
 
 /*
   __IPhoneOS__ is used for Apple iPhone
-  __MacOSX__
+  __MacOSX__   (__OBJC__ __APPLE__ are predefined)
   __FreeBSD__
   __hpux__
   __linux__
