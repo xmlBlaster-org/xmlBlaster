@@ -369,6 +369,7 @@ TODO
           COMPILE_SOCKET_PLUGIN=1
           __macos__
           __MacOSX__
+	  __IPhoneOS__
   -->
 
 
@@ -2166,6 +2167,9 @@ TODO
             </switch>
          </case>                                     <!-- Probably we need to set it all the time in build.properties -->
          <case value="OSF1">                         <!-- Giglio Federico: OSF1 V5.1 1885 alpha machine using gcc (GCC) 3.3.1 -->
+            <property name="use-gcc" value="true" />
+         </case>
+         <case value="Mac OS X">                     <!-- __IPhoneOS__ __MacOSX__ __OBJC__ __APPLE__ http://developer.apple.com/documentation/DeveloperTools/gcc-4.2.1/cpp/Standard-Predefined-Macros.html#Standard-Predefined-Macros -->
             <property name="use-gcc" value="true" />
          </case>
          <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
