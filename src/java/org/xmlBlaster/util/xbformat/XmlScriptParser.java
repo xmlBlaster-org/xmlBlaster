@@ -42,6 +42,11 @@ import java.util.logging.Logger;
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script">The
  *      protocol.socket requirement used with scripting protocol.</a>
+ * @see <a
+ *      href="http://www.xmlBlaster.org/xmlBlaster/doc/examples/xmlScriptMsgExamples.txt">Some examples
+ *      of xmlScript messages.</a>
+ * @see <a
+ *      href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/client/script/XmlBlasterScript.xsd">XSD For XmlScript Messages.</a>
  *      
  */
 public class XmlScriptParser extends XmlScriptInterpreter implements
