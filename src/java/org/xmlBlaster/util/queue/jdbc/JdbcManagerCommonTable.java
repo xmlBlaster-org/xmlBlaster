@@ -259,122 +259,47 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * pings the jdbc connection to check if the DB is up and running. It returns
-    * 'true' if the connection is OK, false otherwise. The ping is done by invocation 
+    * pings with a newly created jdbc connection to check if the DB is up and running. It returns
+    * 'true' if the database is available, false otherwise. The ping is done by invocation
+    * <p>
+    * We don't use a connection from the pool for this check
+    * as it could be stale even if the database is alive. 
     */
-   public boolean ping() {
+   public boolean pingDatabase() {
       Connection conn = null;
+      PreparedStatement st = null;
       boolean success = true;
       try {
-         conn = this.pool.getConnection();
-         boolean ret = ping(conn);
-         return ret;
+         conn = this.pool.createNewConnection(false);
+         if (isPostgres() || isMicrosoftSQLServer()) {
+            st = conn.prepareStatement("select 1");
+         }
+         else {
+            st = conn.prepareStatement("select min("+this.dataIdColName+") from " + this.entriesTableName);
+         }
+         st.executeQuery();
       }
-      catch (XmlBlasterException ex) {
+      catch (Throwable ex) {
          success = false;
-         log.warning("ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'. Reason :" + ex.getMessage());
-         return false;
+         log.warning("ping failed due to problems with backend database. Reason:" + ex.getMessage());
       }
       finally {
          try {
-            if (conn != null) 
-               this.pool.releaseConnection(conn, success);
+            if (st != null)
+               st.close();
          }
-         catch (XmlBlasterException e) {
+         catch (Throwable e) {
+            log.severe("ping: releaseConnection failed: " + e.getMessage());
+         }
+         try {
+            if (conn != null) 
+               conn.close();
+         }
+         catch (Throwable e) {
             log.severe("ping: releaseConnection failed: " + e.getMessage());
          }
       }
-   }
-
-
-   /**
-    * pings the jdbc connection to check if the DB is up and running. It returns
-    * 'true' if the connection is OK, false otherwise. The ping is done by invocation 
-    */
-// isClosed() does not work
-   private boolean ping(Connection conn) {
-      if (log.isLoggable(Level.FINER)) log.finer("ping");
-      if (conn == null) return false; // this could occur if it was not possible to create the connection
-
-//      Statement st = null;
-      try {
-         // conn.isClosed();
-
-         if (false) {
-            if (this.pingPrepared == null) {
-               synchronized (this) {
-                  if (this.pingPrepared == null) {
-                     this.pingPrepared = conn.prepareStatement("select min("+this.dataIdColName+") from " + this.entriesTableName);
-                  }
-               }
-            }
-            this.pingPrepared.executeQuery();
-         }
-
-         if (true) {
-            PreparedStatement st = null;
-            try {
-               st = conn.prepareStatement("select min("+dataIdColName+") from " + entriesTableName);
-               st.executeQuery();
-            }
-            finally {
-               if (st != null)
-                  st.close();
-            }
-            
-         }
-         
-         
-         // Until v1.5.1+: Did not work with MSSQLServer
-         //if (log.isLoggable(Level.FINE)) log.fine("Trying ping ...");
-         //conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
-
-         /*
-         if (false) {  // Postgres: 1 millis   Oracle: 2 millis
-            if (this.pingPrepared == null) {
-               //this.pingPrepared = conn.prepareStatement("SELECT count(nodeid) from " + this.nodesTableName);
-               this.pingPrepared = conn.prepareStatement("SELECT nodeid from " + this.nodesTableName + " where nodeid='bla'");
-            }
-            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
-            this.pingPrepared.executeQuery();
-            log.info(ME, "ping on Prepared select nodeid elapsed=" + stopWatchToBlob.nice());
-         }
-         {  // Postgres: 1 millis   Oracle: 4 millis
-            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
-            Statement st = null;
-            st = conn.createStatement();
-            st.setQueryTimeout(this.pool.getQueryTimeout());
-            st.execute("SELECT nodeid from " + this.nodesTableName + " where nodeid='bla'");// + this.tablesTxt);
-            log.info(ME, "ping on select nodeid elapsed=" + stopWatchToBlob.nice());
-         }
-         {  // Postgres: 6 millis    Oracle: 9 millis
-            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
-            ResultSet rs = conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
-            log.info(ME, "ping xy elapsed=" + stopWatchToBlob.nice());
-         }
-         {  // Postgres: 14 millis   Oracle: 2 sec 527
-            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
-            conn.getMetaData().getTables(null, null, null, null);
-            log.info(ME, "ping null elapsed=" + stopWatchToBlob.nice());
-         }
-         */
-         if (log.isLoggable(Level.FINE)) log.fine("ping successful");
-         return true;
-      }
-      catch (Throwable ex) {
-         if (log.isLoggable(Level.FINE)) log.fine("ping to DB failed. DB may be down. Reason " + ex.toString());
-         return false;
-      }
-/*
-      finally {
-         try {
-            if (st != null) st.close();
-         }
-         catch (Throwable e) {
-            log.warn(ME, "ping exception when closing the statement " + e.toString());
-         }
-      }
-*/
+      return success;
    }
 
   /**
@@ -457,14 +382,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * 
     */
    protected final boolean checkIfDBLoss(Connection conn, String location, Throwable ex, String trace) {
-      boolean ret = false;
-
-      if (conn != null) ret = !ping(conn);
-      else ret = !ping();
-
+      boolean ret = !pingDatabase();
       if (ret) {
          log.severe(location + ": the connection to the DB has been lost. Going in polling modus");
-         this.pool.setConnectionLost();
+         this.pool.setDatabaseLost();
       }
       return ret;
    }

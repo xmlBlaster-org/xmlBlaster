@@ -355,6 +355,23 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       return false;
    }
    
+   /**
+    * Independend of pool. 
+    * @param doLog
+    * @return
+    * @throws SQLException
+    */
+   public Connection createNewConnection(boolean doLog) throws SQLException {
+      Connection conn = DriverManager.getConnection(url, user, password);
+      if (doLog) {
+         log.info(getIsolationLevel(conn));
+      }
+      if (this.forceIsolationLevel != -1)
+         conn.setTransactionIsolation(this.forceIsolationLevel);
+      return conn;
+   }
+   
+
    private synchronized void addConnectionToPool(boolean doLog) throws SQLException {
       try {
          if (this.connections.size() == this.connections.capacity()) {
@@ -827,7 +844,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    /**
     * informs this pool that the connection to the DB has been lost
     */
-   public final void setConnectionLost() {
+   public final void setDatabaseLost() {
       if (this.status != I_StorageProblemListener.UNAVAILABLE) {
          int oldStatus = this.status;
          synchronized (this) {
