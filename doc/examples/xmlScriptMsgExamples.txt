@@ -165,5 +165,11 @@ http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/script/XmlBl
 
 
 
+<!-- Example of an Update Return Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<update sessionId='unknown' requestId='update1225396704106000000' type='R'>
+ <qos><state id='OK'/></qos>
+</update>
 
 
+					 
