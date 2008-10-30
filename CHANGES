@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17351 Changed ping to check database with new created connection, as Connection from pool could be stale
+          e.g. com.microsoft.sqlserver.jdbc.SQLServerException: Connection reset by peer: socket write error
+
  o r17347 Deadlock fix in SessionInfo.java
           Removed synchronized to prevent dead lock, see discussion with Balázs Póka 2008-10-28
 
