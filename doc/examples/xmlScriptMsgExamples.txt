@@ -1,0 +1,169 @@
+<!--
+
+These examples all should follow the schema defined in 
+
+${XMLBLASTER}/java/org/xmlBlaster/client/script/XmlBlasterScript.xsd
+http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/client/script/XmlBlasterScript.xsd
+
+-->
+
+
+<!-- Example of a Callback Ping Return Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<ping sessionId='unknown' requestId='ping1225389877154000000' type='R'>
+   <qos><state id='OK'/></qos>
+</ping>
+
+
+
+
+<!-- Example of a Connection Ping Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<ping sessionId='sessionId:83.226.23.159-null-1225389862140-1261279121-3' requestId='ping1225389877930000000' type='I'>
+</ping>
+
+
+<!-- Example of a Publish Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<publish sessionId='sessionId:83.226.23.159-null-1225389862140-1261279121-3' requestId='publish1225389893074000001' type='I'>
+ <qos>
+  <subscribable/>
+  <expiration lifeTime='-1' forceDestroy='false'/>
+  <persistent/>
+  <forceUpdate/>
+  <isPublish/>
+ </qos>
+ 
+ <key oid='Hello' contentMime='text/xml' contentMimeExtended='1.0'>
+  <org.xmlBlaster><demo/></org.xmlBlaster>
+ </key>
+  <content type='String'>Hi-3</content>
+</publish>
+
+
+
+<!-- Example of an Erase Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<erase sessionId='sessionId:83.226.23.159-null-1225389862140-1261279121-3' requestId='erase1225390032860000000' type='I'>
+ <qos>
+  <erase forceDestroy='false'/>
+  <isErase/>
+ </qos>
+ 
+ <key oid='Hello'/>
+</erase>
+
+
+
+<!-- Example of a Disconnect Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<disconnect sessionId='sessionId:83.226.23.159-null-1225389862140-1261279121-3' requestId='disconnect1225390037008000001' type='I'>
+   <qos>
+   </qos>
+</disconnect>
+
+
+
+<!-- Example of a Connect Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<connect sessionId='unknown' requestId='connect1225390204287000000' type='I'>
+ <qos>
+  <securityService type="htpasswd" version="1.0"><![CDATA[
+   <user>mic</user>
+   <passwd>secret</passwd>
+  ]]></securityService>
+  <instanceId>/xmlBlaster/node/clientmic1/instanceId/1225390194489</instanceId>
+  <session name='client/mic/1' timeout='86400000' maxSessions='10' clearSessions='false' reconnectSameClientOnly='false'/>
+  <queue relating='connection' maxEntries='10000000' maxEntriesCache='1000'>
+   <address type='email' pingInterval='15000' retries='-1' dispatchPlugin='undef'>
+    
+   </address>
+  </queue>
+  <queue relating='subject'/>
+  <queue relating='callback' maxEntries='1000' maxEntriesCache='1000' maxBytes='4147483647' maxBytesCache='200555666'>
+   <callback type='email' pingInterval='15000' retries='-1' delay='10000' dispatchPlugin='undef'>
+    demo@localhost
+   </callback>
+  </queue>
+  <clientProperty name='__remoteProperties' type='boolean'>true</clientProperty>
+  <clientProperty name='__UTC'>2008-10-30 18:10:01.551Z</clientProperty>
+ </qos>
+</connect>
+
+
+
+<!-- Example of a Connect Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<connect sessionId='unknown' requestId='connect1225390308762000000' type='I'>
+ <qos>
+  <securityService type="htpasswd" version="1.0"><![CDATA[
+   <user>mic</user>
+   <passwd>secret</passwd>
+  ]]></securityService>
+  <refreshSession>false</refreshSession>
+  <instanceId>/xmlBlaster/node/clientmic1/instanceId/1225390306650</instanceId>
+  <persistent>false</persistent>
+  <session name='client/mic/1' timeout='86400000' maxSessions='10' clearSessions='false' reconnectSameClientOnly='false'/>
+  <queue relating='connection' maxEntries='10000000' maxEntriesCache='1000'>
+   <address type='email' pingInterval='15000' retries='-1' dispatchPlugin='undef'>
+    
+   </address>
+  </queue>
+  <queue relating='subject'/>
+  <queue relating='callback' maxEntries='1000' maxEntriesCache='1000' maxBytes='4147483647' maxBytesCache='200555666'>
+   <callback type='email' pingInterval='15000' retries='-1' delay='10000' dispatchPlugin='undef'>
+    demo@localhost
+   </callback>
+  </queue>
+  <clientProperty name='__UTC'>2008-10-30 18:11:48.759Z</clientProperty>
+ </qos>
+</connect>
+
+
+
+
+<!-- example of a Subscribe Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<subscribe sessionId='sessionId:83.226.23.159-null-1225390210037--1698004615-4' requestId='subscribe1225390312256000001' type='I'>
+ <qos>
+  <content/>
+  <multiSubscribe/>
+  <local/>
+  <initialUpdate/>
+  <updateOneway>false</updateOneway>
+  <notify/>
+  <persistent>false</persistent>
+  <isSubscribe/>
+ </qos>
+ 
+ <key oid='Hello'/>
+</subscribe>
+
+
+
+<!-- Example of an Unsubscribe Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<unSubscribe sessionId='sessionId:83.226.23.159-null-1225390210037--1698004615-4' requestId='unSubscribe1225390315867000000' type='I'>
+ <qos>
+  <isUnSubscribe/>
+ </qos>
+ <key oid='__subId:1225390312976000000'/>
+</unSubscribe>
+
+
+
+<!-- Example of a Get Message -->
+<?xml version='1.0' encoding='UTF-8'?>
+<get sessionId='sessionId:83.226.23.159-null-1225390398796--1906035769-5' requestId='get1225390400692000001' type='I'>
+ <qos>
+  <content/>
+  <isGet/>
+ </qos>
+ 
+ <key oid='Hello'/>
+</get>
+
+
+
+
+
