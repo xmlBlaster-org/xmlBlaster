@@ -235,14 +235,14 @@ public class JdbcManagerCommonTableTest extends TestCase {
 
 //         int retNum = this.manager.cleanUp(queueName);
 //         assertEquals(me + " cleaning up the queue should remove all queue entries", 1, retNum);
-         boolean pingOK = this.manager.ping();
+         boolean pingOK = this.manager.pingDatabase();
          assertEquals(me + " check ping command", true, pingOK);
 
          // can be run manually by adding -numOfPings 10 at the command line ...
          int numOfPings = glob.getProperty().get("numOfPings", 0);
          for (int i=0; i < numOfPings; i++) {
             log.info("going to ping");
-            this.manager.ping();
+            this.manager.pingDatabase();
             try {
                Thread.sleep(200L);
             }
