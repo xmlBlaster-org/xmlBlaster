@@ -90,7 +90,7 @@ public class CacheQueueTest extends TestCase {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
 
          cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
+         StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "SetupQueue");
 
          this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
          QueuePluginManager pluginManager = new QueuePluginManager(glob);
@@ -157,7 +157,7 @@ public class CacheQueueTest extends TestCase {
       prop.setMaxBytes(maxBytes);
       prop.setMaxBytesCache(maxBytesCache);
 
-      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/config");
+      StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "CacheQueueTest/config");
 
       // this.queue = new CacheQueueInterceptorPlugin();
       this.queue.initialize(queueId, prop);
@@ -247,7 +247,7 @@ public class CacheQueueTest extends TestCase {
                prop.setMaxEntriesCache(1000L);
                prop.setMaxBytes(maxNumOfBytes[is]);
                prop.setMaxBytesCache(maxNumOfBytesCache[ic]);
-               StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
+               StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
 
 //               this.queue = new CacheQueueInterceptorPlugin();
                refQueue.clear();
@@ -395,7 +395,7 @@ public class CacheQueueTest extends TestCase {
       prop.setMaxEntriesCache(1000L);
       prop.setMaxBytes(maxNumOfBytes);
       prop.setMaxBytesCache(maxNumOfBytesCache);
-      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes + "/ram" + maxNumOfBytesCache);
+      StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes + "/ram" + maxNumOfBytesCache);
       this.queue.clear();
       this.queue.shutdown();
       this.queue.initialize(queueId, prop);

@@ -191,7 +191,7 @@ public class QueueThreadingTest extends TestCase {
 
       for (int i=0; i < numOfQueues; i++) {
          try {
-            StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
+            StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
             this.queues[i] = this.glob.getQueuePluginManager().getPlugin(PLUGIN_TYPES[i], "1.0", queueId, prop);
             queues[i].clear();
          }

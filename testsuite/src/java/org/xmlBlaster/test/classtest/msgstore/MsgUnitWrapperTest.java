@@ -79,7 +79,7 @@ public class MsgUnitWrapperTest extends TestCase {
 
          PublishQosServer publishQosServer = new PublishQosServer(glob, xml, true); // true prevents new timestamp
          MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
-         StorageId storageId = new StorageId("mystore", "someid");
+         StorageId storageId = new StorageId(glob, "mystore", "someid");
          MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
 
          I_EntryFactory factory = glob.getEntryFactory(); // storageId.getStrippedId()

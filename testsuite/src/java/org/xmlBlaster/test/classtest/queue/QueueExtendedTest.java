@@ -158,7 +158,7 @@ public class QueueExtendedTest extends TestCase {
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
+         StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "perfomance/Put_" + i);
          this.queues[i] = this.glob.getQueuePluginManager().getPlugin(PLUGIN_TYPES[this.count], "1.0", queueId, prop);
          this.queues[i].clear();
       }
@@ -226,7 +226,7 @@ public class QueueExtendedTest extends TestCase {
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "perfomance/MultiPut_" + i);
+         StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "perfomance/MultiPut_" + i);
          this.queues[i] = this.glob.getQueuePluginManager().getPlugin(PLUGIN_TYPES[this.count], "1.0", queueId, prop);
          this.queues[i].clear();
       }

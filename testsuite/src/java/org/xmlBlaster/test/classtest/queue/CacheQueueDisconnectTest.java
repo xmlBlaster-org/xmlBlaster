@@ -105,7 +105,7 @@ public class CacheQueueDisconnectTest extends TestCase {
          prop.put("entriesTableName", "_entries");
 
          CbQueueProperty cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SetupQueue");
+         StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "SetupQueue");
 
          this.queue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
          this.queue.shutdown(); // to allow to initialize again
@@ -168,7 +168,7 @@ public class CacheQueueDisconnectTest extends TestCase {
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       prop.setMaxEntries(10000);
-      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "putWithBreak");
+      StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "putWithBreak");
       queue.initialize(queueId, prop);
       queue.clear();
 

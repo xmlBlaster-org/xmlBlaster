@@ -79,7 +79,7 @@ public class I_MapTest extends TestCase {
             pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
 
          MsgUnitStoreProperty storeProp = new MsgUnitStoreProperty(glob, "/node/test");
-         StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "SomeMapId");
 
          this.currMap = pluginManager.getPlugin(pluginInfo, queueId, storeProp);
          this.currMap.clear();
@@ -160,7 +160,7 @@ public class I_MapTest extends TestCase {
          prop1.setMaxEntriesCache(max);
          assertEquals(ME+": Wrong capacity", max, prop1.getMaxEntries());
          assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxEntriesCache());
-         StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "SomeMapId");
 
          i_map.initialize(queueId, prop1);
          assertEquals(ME+": Wrong queue ID", queueId, i_map.getStorageId());
@@ -223,7 +223,7 @@ public class I_MapTest extends TestCase {
       try {
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/putMsg");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "MapPlugin/putMsg");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + "wrong size before starting ", 0L, this.currMap.getNumOfEntries());
@@ -294,7 +294,7 @@ public class I_MapTest extends TestCase {
       ME = "I_MapTest.testByteOverflow(" + i_map.getStorageId() + ")[" + i_map.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
-         StorageId storageId = new StorageId("msgUnitStore", "ByteOverflowMapId");
+         StorageId storageId = new StorageId(glob, "msgUnitStore", "ByteOverflowMapId");
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
 
          MsgUnitWrapper mu = new MsgUnitWrapper(glob, createMsgUnit(false, 0),  storageId);
@@ -345,7 +345,7 @@ public class I_MapTest extends TestCase {
       try {
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getMsg");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "MapPlugin/getMsg");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + "wrong size before starting ", 0, this.currMap.getNumOfEntries());
@@ -448,7 +448,7 @@ public class I_MapTest extends TestCase {
       try {
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getAllMsgs");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "MapPlugin/getAllMsgs");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + "wrong size before starting ", 0, this.currMap.getNumOfEntries());
@@ -541,7 +541,7 @@ public class I_MapTest extends TestCase {
       try {
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getAllSwappedMsgs");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "MapPlugin/getAllSwappedMsgs");
          prop.setMaxEntries(10);      // Overall size (RAM or JDBC or CACHE)
          prop.setMaxEntriesCache(2);  // Is only interpreted for cache implementations (-> the size of the RAM map)
          this.currMap.initialize(queueId, prop);
@@ -627,7 +627,7 @@ public class I_MapTest extends TestCase {
       try {
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
-         StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/putEntriesTwice");
+         StorageId queueId = new StorageId(glob, "msgUnitStore", "MapPlugin/putEntriesTwice");
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + " wrong size before starting ", 0, this.currMap.getNumOfEntries());

@@ -68,7 +68,7 @@ public class EntrySize {
     */
    public void updateEntry() {
       log.info("************ Starting updateEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
-      StorageId storageId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
+      StorageId storageId = new StorageId(glob, Constants.RELATING_CALLBACK, "updateEntry");
       try {
          SessionName receiver = new SessionName(glob, "receiver1");
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
@@ -112,7 +112,7 @@ public class EntrySize {
     */
    public void historyEntry() {
       log.info("************ Starting historyEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
-      StorageId storageId = new StorageId(Constants.RELATING_HISTORY, "historyEntry");
+      StorageId storageId = new StorageId(glob, Constants.RELATING_HISTORY, "historyEntry");
       try {
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
          MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQosServer.toXml());
@@ -161,7 +161,7 @@ public class EntrySize {
       log.info("************ Starting msgUnitWrapperEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
-         StorageId storageId = new StorageId(Constants.RELATING_MSGUNITSTORE, "msgUnitWrapperEntry");
+         StorageId storageId = new StorageId(glob, Constants.RELATING_MSGUNITSTORE, "msgUnitWrapperEntry");
 
          int step = 1000;
          int numCreate = 1000000;
@@ -208,7 +208,7 @@ public class EntrySize {
       log.info("************ Starting publishEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
          PublishQos publishQos = new PublishQos(glob);
-         StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "publishEntry");
+         StorageId storageId = new StorageId(glob, Constants.RELATING_CLIENT, "publishEntry");
 
          int step = 1000;
          int numCreate = 1000000;
@@ -250,7 +250,7 @@ public class EntrySize {
    public void subscribeEntry() {
       log.info("************ Starting subscribeEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
-         StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "subscribeEntry");
+         StorageId storageId = new StorageId(glob, Constants.RELATING_CLIENT, "subscribeEntry");
 
          int step = 1000;
          int numCreate = 1000000;
@@ -301,7 +301,7 @@ public class EntrySize {
    public void connectEntry() {
       log.info("************ Starting connectEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
-         StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "connectEntry");
+         StorageId storageId = new StorageId(glob, Constants.RELATING_CLIENT, "connectEntry");
 
          int step = 1000;
          int numCreate = 1000000;
