@@ -22,7 +22,7 @@ create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);
 
 
 create table xbmeat (
-      xbmeatid int8 primary key unique not null,
+      xbmeatid int8 not null,
       xbdurable char not null default 'F',
       xbrefcount int4,
       xbrefcount2 int4,
@@ -33,7 +33,8 @@ create table xbmeat (
       xbmsgqos text default '',
       xbmsgcont bytea default '',
       xbmsgkey text default '',
-      xbstoreid int8 not null);
+      xbstoreid int8 not null,
+      constraint xbmeatpk primary key(xbmeatid, xbstoreid));
 --      xbstoreid int8 unique not null, constraint xbmeatpk primary key(xbmeatid));
 -- xbmeatid bigserial not null,
 -- creationts timestamp default current_timestamp not null,
@@ -41,34 +42,32 @@ create table xbmeat (
 -- NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "xbmeatpk" for table "xbmeat"
 -- NOTICE:  CREATE TABLE / UNIQUE will create implicit index "xbmeat_xbstoreid_key" for table "xbmeat"
 
-alter table xbmeat 
+alter table xbmeat
       add constraint fkxbstoremeat
-      foreign key (xbstoreid) 
+      foreign key (xbstoreid)
       references xbstore on delete cascade;
 
 create index xbmeatstix on xbmeat(xbmeatid,xbstoreid);
 --insert into xbmeat (xbmeatid,durable,bytesize,datatype,flag1,msgqos,msgcont,msgkey) values (1,'T',344,'TOPIC_XML','NO FLAG','<qos/>','myBlob','<key oid="34"/>');
 
-
 create table xbref (
-    xbrefid int8 not null,
-    xbstoreid int8 not null,
-    xbmeatid int8,
-    -- creationts timestamp not null default current_timestamp,
-    -- modifiedts timestamp not null default current_timestamp,
-    xbdurable char(1) not null default 'F',
-    xbbytesize int4,
-    xbmetainfo text default '',
-    xbflag1 varchar(32) default '',
-    xbprio int4,
-    xbmethodname varchar(32) default '',
-    xbonetomany char(1) not null default 'F',
-    constraint xbrefpk primary key(xbrefid, xbstoreid)
-    );
+	xbrefid int8 not null,
+	xbstoreid int8 not null,
+	xbmeatid int8,
+	-- creationts timestamp not null default current_timestamp,
+	-- modifiedts timestamp not null default current_timestamp,
+	xbdurable char(1) not null default 'F',
+	xbbytesize int4,
+	xbmetainfo text default '',
+	xbflag1 varchar(32) default '',
+	xbprio int4,
+	xbmethodname varchar(32) default '',
+	xbonetomany char(1) not null default 'F',
+constraint xbrefpk primary key(xbrefid, xbstoreid));
 
-alter table xbref 
+alter table xbref
             add constraint fkxbstoreref
-            foreign key (xbstoreid) 
+            foreign key (xbstoreid)
             references xbstore on delete cascade;
 
 --insert into xbref (xbrefid,xbstoreid,xbmeatid,durable,bytesize,metainfo,flag1,prio) values (1,1,1,'T',200,'subscriptionId=bla,oid=mytopic','',5);
