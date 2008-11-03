@@ -1,6 +1,6 @@
 -- xmlBlaster.org database schema 2008 laghi/ruff
 -- SQLServer 2005/2008
--- http://msdn.microsoft.com/en-us/library/ms187752.aspx
+-- Data types: http://msdn.microsoft.com/en-us/library/ms187752.aspx
 -- osql -E -d xmlblaster -i xmlBlaster\doc\jdbc\xmlBlaster-sqlserver.ddl
 
 drop table xbref
@@ -22,7 +22,27 @@ create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix)
 go
 -- insert into xbstore (xbstoreid,xbnode,xbtype,xbpostfix,xbflag1) values (1,'heron','callback','clientjoe1','')
 
+-- Large data: http://msdn.microsoft.com/en-us/library/ms189574.aspx
+-- With VARCHAR(MAX) one can't spcify number of bytes??
+-- sp_tableoption N'xbmeat', 'text in row', 'ON';  (the limit defaults to 256 bytes)
+-- sp_tableoption N'xbmeat', 'text in row', '1000';
+--drop table xbtest
+--go
+--create table xbtest (
+--      xbchar varchar(MAX) default ''
+--)
+--go
+----Error:
+--EXEC sp_tableoption 'xbtest', 'varchar(MAX) in row', '1000';
+----Ok:
+--EXEC sp_tableoption 'xbtest', 'large value types out of row', 0;
+--go
+--insert into xbtest (xbchar) values ('blabla')
+--go
+--select len(xbchar) from xbtest
+--go
 
+-- How to COLLATE UTF-8
 create table xbmeat (
       xbmeatid bigint not null,
       xbdurable char not null default 'F',
@@ -30,10 +50,13 @@ create table xbmeat (
       xbrefcount2 int,
       xbbytesize int,
       xbdatatype varchar(32) not null default '',
+--Only subscribe remembers sessionName      
+--    xbmetainfo varchar(156) default '',
       xbmetainfo varchar(MAX) default '',
       xbflag1 varchar(32) default '',
       xbmsgqos varchar(MAX) default '',
       xbmsgcont varbinary(MAX),
+--    xbmsgkey varchar(200) default '',
       xbmsgkey varchar(MAX) default '',
       xbstoreid bigint not null,
       constraint xbmeatpk primary key(xbmeatid, xbstoreid))
@@ -54,6 +77,8 @@ create table xbref (
 	xbmeatid bigint,
 	xbdurable char(1) not null default 'F',
 	xbbytesize int,
+--ServerEntryFactory UPDATE remembers sessionName, oid, subscribeId and short fields      
+--  xbmetainfo varchar(600) default '',
 	xbmetainfo varchar(MAX) default '',
 	xbflag1 varchar(32) default '',
 	xbprio int,
