@@ -140,7 +140,7 @@ public class XBRefFactory extends XBFactory {
          */
          // "select * from (select * from ${table}) where rownum <= ?";
       }
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
+      else if (getDbVendor().equals(SQLSERVER_2005)) {
          getCompleteSt = "select * from ${table} left outer join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid)";
 
          buf.append("create table ${table} (\n");

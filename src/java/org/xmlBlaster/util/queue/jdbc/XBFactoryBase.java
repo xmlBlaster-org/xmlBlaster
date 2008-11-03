@@ -27,7 +27,7 @@ public abstract class XBFactoryBase {
    public final static String DB2 = "db2";
    public final static String FIREBIRD = "firebird";
    public final static String SQLSERVER_2000 = "sqlserver2000";
-   public final static String SQLSERVER_2005 = "sqlserver2005";
+   public final static String SQLSERVER_2005 = "sqlserver2005"; // and 2008, TODO: Does check jdbc url BUT should check real database version (our DDL syntax does not support SQLServer 2000)
    public final static String HSQLDB = "hsqldb";
    public final static String MYSQL = "mysql";
    public final static String LDBC = "ldbc";

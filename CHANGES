@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17366 Added DDL for SQLServer 2005 and 2008 for new storage plugin 'JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,...'
+          Does not support 2000, you would need to configure TEXT and IMAGE instead of VARCHAR(MAX) and VARBINARY(MAX)
+
  o r17358 Changed I_Map interface by adding a new method updateCounters
 
  o r17351 Changed ping to check database with new created connection, as Connection from pool could be stale

@@ -153,7 +153,7 @@ public class XBMeatFactory extends XBFactory {
          // buf.append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
 
       }
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
+      else if (getDbVendor().equals(SQLSERVER_2005)) { // and 2008
          buf.append("create table ${table} (\n");
          buf.append("      xbmeatid bigint not null,\n");
          buf.append("      xbdurable char not null default 'F',\n");
