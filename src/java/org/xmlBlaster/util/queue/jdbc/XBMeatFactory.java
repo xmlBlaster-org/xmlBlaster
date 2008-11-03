@@ -72,7 +72,7 @@ public class XBMeatFactory extends XBFactory {
       updateRefCounterSt = "update ${table} set xbrefcount=?,xbrefcount2=? where xbmeatid=? and xbstoreid=?";
       inList = " and xbmeatid in (";
    }
-
+   
    protected void prepareDefaultStatements() {
       super.prepareDefaultStatements();
       incRefCounterFunction = null;
@@ -80,7 +80,7 @@ public class XBMeatFactory extends XBFactory {
       StringBuffer buf = new StringBuffer(512);
       if (getDbVendor().equals(POSTGRES)) {
          buf.append("create table ${table} (\n");
-         buf.append("      xbmeatid int8 primary key unique not null,\n");
+         buf.append("      xbmeatid int8 not null,\n");
          buf.append("      xbdurable char not null default 'F',\n");
          buf.append("      xbrefcount int4,\n");
          buf.append("      xbrefcount2 int4,\n");
@@ -91,16 +91,16 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgqos text default '',\n");
          buf.append("      xbmsgcont bytea default '',\n");
          buf.append("      xbmsgkey text default '',\n");
-         buf.append("      xbstoreid int8 not null);\n");
+         buf.append("      xbstoreid int8 not null,\n");
+         buf.append("      constraint xbmeatpk primary key(xbmeatid, xbstoreid));\n");
 
          buf.append("alter table ${table} \n");
          buf.append("      add constraint fkxbstoremeat\n");
          buf.append("      foreign key (xbstoreid) \n");
          buf.append("      references ${xbstore} on delete cascade;\n");
-
-         buf
-               .append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
-
+         // since already in primary key
+         // buf.append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
+         
       } else if (getDbVendor().equals(ORACLE)) {
          // currently disabled since not really performant and since I do not
          // know how to use fetch with multiparams
@@ -108,8 +108,7 @@ public class XBMeatFactory extends XBFactory {
          incRefCounterInvoke = null;
          StringBuffer buf1 = new StringBuffer(512);
 
-         buf1
-               .append("CREATE OR REPLACE PROCEDURE ${table}incr(id number, storeid number, incr number, incr2 number) AS\n");
+         buf1.append("CREATE OR REPLACE PROCEDURE ${table}incr(id number, storeid number, incr number, incr2 number) AS\n");
          buf1.append("   oldCounter NUMBER(10);\n");
          buf1.append("   newCounter NUMBER(10);\n");
          buf1.append("   oldCounter2 NUMBER(10);\n");
@@ -133,7 +132,7 @@ public class XBMeatFactory extends XBFactory {
 
          // and here the create statement ...
          buf.append("create table ${table} (\n");
-         buf.append("      xbmeatid number(20),\n");
+         buf.append("      xbmeatid number(20) not null,\n");
          buf.append("      xbdurable char default 'F' not null,\n");
          buf.append("      xbrefcount number(10),\n");
          buf.append("      xbrefcount2 number(10),\n");
@@ -144,16 +143,14 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgqos clob default '',\n");
          buf.append("      xbmsgcont blob default '',\n");
          buf.append("      xbmsgkey clob default '',\n");
-         buf
-               .append("      xbstoreid number(20), constraint xbmeatpk primary key(xbmeatid));\n");
+         buf.append("      xbstoreid number(20), constraint xbmeatpk primary key(xbmeatid, xbstoreid));\n");
 
          buf.append("alter table ${table} \n");
          buf.append("      add constraint fkxbstoremeat\n");
          buf.append("      foreign key (xbstoreid) \n");
          buf.append("      references ${xbstore} on delete cascade;\n");
-
-         buf
-               .append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
+         // already in pk
+         // buf.append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
 
       }
       /*
@@ -172,7 +169,7 @@ public class XBMeatFactory extends XBFactory {
        */
       else { // if (getDbVendor().equals(HSQLDB))
          buf.append("create table ${table} (\n");
-         buf.append("      xbmeatid bigint,\n");
+         buf.append("      xbmeatid bigint not null,\n");
          buf.append("      xbdurable char default 'F' not null,\n");
          buf.append("      xbrefcount integer,\n");
          buf.append("      xbrefcount2 integer,\n");
@@ -183,8 +180,7 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgqos varchar default '',\n");
          buf.append("      xbmsgcont binary default '',\n");
          buf.append("      xbmsgkey varchar default '',\n");
-         buf
-               .append("      xbstoreid bigint, constraint xbmeatpk primary key(xbmeatid));\n");
+         buf.append("      xbstoreid bigint, constraint xbmeatpk primary key(xbmeatid, xbstoreid));\n");
 
          buf.append("alter table ${table} \n");
          buf.append("      add constraint fkxbstoremeat\n");
@@ -335,12 +331,24 @@ public class XBMeatFactory extends XBFactory {
     * @param conn
     * @throws SQLException
     */
-   public void updateRefCounters(XBMeat xbMeat, Connection conn, int timeout)
+   public void updateRefCounters(XBStore store, XBMeat xbMeat, Connection conn, int timeout)
          throws SQLException {
       if (xbMeat == null || conn == null)
          return;
-      PreparedStatement preStatement = conn
-            .prepareStatement(updateRefCounterSt);
+      
+      if (false) {
+         try {
+            XBMeat tmp = get(store, xbMeat.getId(), conn, timeout);
+            if (tmp == null) {
+               throw new SQLException("Entry to increment not found " + xbMeat.toXml(""));
+            }
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+      }
+      
+      PreparedStatement preStatement = conn.prepareStatement(updateRefCounterSt);
       try {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
@@ -384,6 +392,7 @@ public class XBMeatFactory extends XBFactory {
 
    public void incrementRefCounters(XBStore store, XBMeat meat, long increment,
          Connection conn, int timeout) throws SQLException, IOException {
+      checkSameStore(store, meat);
       if (increment == 0)
          return;
       if (true && incRefCounterFunction != null && incRefCounterInvoke != null) {
@@ -401,7 +410,7 @@ public class XBMeatFactory extends XBFactory {
       } else {
          XBMeat meatRet = get(store, meat.getId(), conn, timeout);
          meatRet.setRefCount(meatRet.getRefCount() + increment);
-         updateRefCounters(meatRet, conn, timeout);
+         updateRefCounters(store, meatRet, conn, timeout);
       }
    }
 

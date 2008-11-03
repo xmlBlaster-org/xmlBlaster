@@ -93,4 +93,6 @@ public abstract class XBEntry {
          buf.append(offset).append("<flag1>").append(flag1).append("</flag1>\n");
    }
    
+   public abstract String toXml(String offset);
+   
 }

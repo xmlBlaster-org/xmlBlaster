@@ -558,5 +558,16 @@ public abstract class XBFactory extends XBFactoryBase {
       return "T".equalsIgnoreCase(asTxt);
    }
    
+   protected final boolean checkSameStore(XBStore store, XBEntry entry) {
+      if (store == null)
+         return false;
+      if (entry == null)
+         return false;
+      boolean ret = entry.getStoreId() == store.getId();
+      if (!ret)
+         log.severe("Meat and Store are inconsistent " + entry.toXml("") + " store " + store.getId());
+      return ret;
+   }
+
    
 }

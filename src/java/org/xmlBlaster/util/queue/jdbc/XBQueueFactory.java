@@ -88,6 +88,13 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          if (password != null)
             put("db.password", password);
          
+         String tmp = props.getProperty("maxResourceExhaustRetries");
+         if (tmp != null)
+            put("db.maxResourceExhaustRetries", tmp);
+         tmp = props.getProperty("resourceExhaustSleepGap");
+         if (tmp != null)
+            put("db.resourceExhaustSleepGap", tmp);
+         
          /*
          this.dbUrl = this.info.get("db.url", "");
          this.dbUser = this.info.get("db.user", "");
@@ -615,7 +622,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          if (onlyRefCounters) {
             // if (areSameCounters(entry, oldEntry))
             //    return 0;
-            meatFactory.updateRefCounters(entry, conn, timeout);
+            meatFactory.updateRefCounters(store, entry, conn, timeout);
          }
          else
             meatFactory.update(entry, conn, timeout);
