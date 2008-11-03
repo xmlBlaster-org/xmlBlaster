@@ -5,8 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
-import java.util.StringTokenizer;
-
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -34,10 +32,12 @@ public class StorageId implements java.io.Serializable
    
    /**
     * Create a unique id, e.g. "history:/node/heron/client/joe/-2"
+    * @param glob TODO
     * @param prefix e.g. "history"
     * param postfix unique string e.g. "/node/heron/client/joe/-2"
     */
-   public StorageId(String prefix, String postfix) {
+   public StorageId(Global glob, String prefix, String postfix) {
+      this.glob = Global.instance();
       this.prefix = prefix;
       this.postfix = postfix;
       this.id = this.prefix + ":" + this.postfix;
@@ -57,7 +57,7 @@ public class StorageId implements java.io.Serializable
     * @exception XmlBlasterException if no separator ":" was found
     */
    public StorageId(Global glob, String id) throws XmlBlasterException {
-      this.glob = glob;
+      this.glob = (glob == null) ? Global.instance() : glob;
       this.id = id;
       int pos = this.id.indexOf(":");
       if (pos < 0)
@@ -113,7 +113,7 @@ public class StorageId implements java.io.Serializable
     * @param strippedStorageId
     * @return storageId.getId() is not recovered properly, can be null
     */
-   public static StorageId valueOf(String strippedStorageId) {
+   public static StorageId valueOf(Global glob, String strippedStorageId) {
       if (strippedStorageId == null) return null;
       String prefix = null;
       if (strippedStorageId.startsWith(Constants.RELATING_CALLBACK))
@@ -138,7 +138,7 @@ public class StorageId implements java.io.Serializable
       // "topicStore_xmlBlaster_172_23_254_15_10412"
       // "msgUnitStore_xmlBlaster_172_23_254_15_10412lidb"
       String postfix = strippedStorageId;
-      StorageId tmp = new StorageId(prefix, postfix);
+      StorageId tmp = new StorageId(glob, prefix, postfix);
       tmp.strippedId = strippedStorageId;
       return tmp;
    }

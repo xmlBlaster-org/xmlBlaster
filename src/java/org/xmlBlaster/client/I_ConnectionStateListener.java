@@ -40,7 +40,9 @@ public interface I_ConnectionStateListener
     * </p>
     *
     * <p>
-    * This method is invoked by the login polling thread from I_XmlBlasterAccess.
+    * This method is invoked by the login polling thread from I_XmlBlasterAccess in which case it is a
+    * physical Alive, and by the connect method on successful login in which case it is a logical Alive.
+    * 
     * </p>
     * @param oldState The previous state of the connection.
     * @param connectionHandler An interface which allows you to control the queue and the connection

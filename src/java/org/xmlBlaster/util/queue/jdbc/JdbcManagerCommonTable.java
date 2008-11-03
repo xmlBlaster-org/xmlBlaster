@@ -1164,7 +1164,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             InputStream is = rs.getBinaryStream(BLOB);
             // byte[] blob = rs.getBytes(7); // preStatement.setObject(5, blob);
             if (storageId == null)
-               storageId = StorageId.valueOf(queueName);
+               storageId = StorageId.valueOf(this.glob, queueName);
             if (is == null) {
                String txt = "dataId='" + dataId + "' prio='" + prio + "' typeName='" + typeName + "' persistent='" + persistent + "' sizeInBytes='" + sizeInBytes + "'";
                log.warning("The stream for the blob of data: " + txt + " is null");

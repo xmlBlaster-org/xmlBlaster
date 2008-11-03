@@ -398,7 +398,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                String type = queueProperties.getType();
                String version = queueProperties.getVersion();
                String typeVersion = glob.getProperty().get("PriorizedDispatchPlugin.queue.plugin", type+","+version);
-               StorageId storageId = new StorageId("PriorizedDispatchPlugin", managerEntry.getDispatchManager().getQueue().getStorageId().getPostfix());
+               StorageId storageId = new StorageId(glob, "PriorizedDispatchPlugin", managerEntry.getDispatchManager().getQueue().getStorageId().getPostfix());
                queue = glob.getQueuePluginManager().getPlugin(typeVersion, storageId, queueProperties);
                queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting (otherwise we have memory leaks)
                managerEntry.setHoldbackQueue(queue);

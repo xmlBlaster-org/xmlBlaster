@@ -1366,6 +1366,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
    }
 
+   /**
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
+    */
+   public void updateCounters(I_MapEntry entry) throws XmlBlasterException {
+      change(entry, null);
+   }
+
 
    /**
     * @see I_Map#change(long, I_ChangeCallback)

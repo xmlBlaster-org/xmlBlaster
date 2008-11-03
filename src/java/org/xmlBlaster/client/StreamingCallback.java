@@ -556,7 +556,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
             // having no public sessionId we need to generate a unique queue name
             storageIdStr += System.currentTimeMillis()+Global.getCounter();
          }
-         StorageId queueId = new StorageId(Constants.RELATING_CLIENT_UPDATE, storageIdStr);
+         StorageId queueId = new StorageId(global, Constants.RELATING_CLIENT_UPDATE, storageIdStr);
          try {
             this.queue = this.global.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                   connectQos.getClientQueueProperty());

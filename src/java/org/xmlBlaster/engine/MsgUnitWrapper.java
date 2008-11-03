@@ -558,7 +558,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       }
       
       if (this.historyReferenceCounter > 0) {
-         StorageId st = new StorageId(Constants.RELATING_HISTORY, "dummy");
+         StorageId st = new StorageId(glob, Constants.RELATING_HISTORY, "dummy");
          incrementReferenceCounter((-1)*this.historyReferenceCounter, st);
       }
    }

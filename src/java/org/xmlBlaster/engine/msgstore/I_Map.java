@@ -187,4 +187,18 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
     */
    I_MapEntry change(long uniqueId, I_ChangeCallback callback) throws XmlBlasterException;
 
+  /**
+   * @param entry the entry to change. This is the old entry, i.e. the entry on which the modification
+   *        has to take place by callback.
+   *        Or it is the new entry and you can pass null for callback.
+   *        IMPORTANT: This method is not threadsafe since it does not make a lookup
+   *        to get the actual entry. The specified entry could be a dirty read, in which case the 
+   *        current entry would be overwritten with this dirty value. If you want to work threadsafe 
+   *        you should invoke change(long, callback). That method makes a lookup within the same 
+   *        synchronization point.
+   * @throws XmlBlasterException if something goes wrong when making the change (for example if the
+   *         entry is not in the map) or if the callback throws an exception.
+   */
+   void updateCounters(I_MapEntry entry) throws XmlBlasterException;
+
 }

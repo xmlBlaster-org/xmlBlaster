@@ -145,7 +145,7 @@ public final class SessionName implements java.io.Serializable
             this.nodeIdExplicitlyGiven = true;
          }
          else if (this.glob.isServerSide()) { // if nodeId still not known we set it to the servers nodeId
-            this.nodeId = glob.getNodeId();
+            this.nodeId = this.glob.getNodeId();
             this.nodeIdExplicitlyGiven = false;
          }
          //else {

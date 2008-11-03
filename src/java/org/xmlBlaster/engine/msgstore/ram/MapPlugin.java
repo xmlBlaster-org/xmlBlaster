@@ -489,6 +489,14 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
 
    /**
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
+    */
+   public void updateCounters(I_MapEntry entry) throws XmlBlasterException {
+      change(entry, null);
+   }
+
+
+   /**
     * @see I_Map#change(long, I_ChangeCallback)
     */
    public I_MapEntry change(long uniqueId, I_ChangeCallback callback) throws XmlBlasterException {
@@ -566,7 +574,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       try {
          Global glob = new Global(args);
          MapPlugin pl = new MapPlugin();
-         StorageId mapId = new StorageId("msgUnitStore", "/node/unknown");
+         StorageId mapId = new StorageId(glob, "msgUnitStore", "/node/unknown");
          pl.initialize(mapId, new org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty(glob, glob.getId()));
       }
       catch (XmlBlasterException e) {

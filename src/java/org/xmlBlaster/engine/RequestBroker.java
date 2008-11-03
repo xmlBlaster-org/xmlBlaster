@@ -430,7 +430,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             String type = topicStoreProperty.getType();
             String version = topicStoreProperty.getVersion();
             // e.g. "topicStore:/node/heron" is the unique name of the data store:
-            StorageId topicStoreId = new StorageId("topicStore", glob.getStrippedId());
+            StorageId topicStoreId = new StorageId(glob, "topicStore", glob.getStrippedId());
             this.topicStore = glob.getStoragePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
             log.info("Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");

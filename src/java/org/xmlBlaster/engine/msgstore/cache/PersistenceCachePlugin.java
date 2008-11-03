@@ -32,6 +32,7 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -256,7 +257,6 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   }
                }
             }
-
          }
          this.isDown = false;
          if (log.isLoggable(Level.FINE)) log.fine("Successful initialized: " + toXml(""));
@@ -1111,6 +1111,30 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             }
          }
          return retEntry;
+      }
+   }
+
+
+   /**
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
+    */
+   public void updateCounters(I_MapEntry entry) throws XmlBlasterException {
+      if (entry == null) 
+         return;
+      synchronized(this) { // is this the correct synchronization ??
+         entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
+         transientStore.updateCounters(entry);
+         
+         if (entry.isPersistent()) {
+            if (persistentStore != null && isConnected) {
+               persistentStore.updateCounters(entry);
+            }
+            else {
+               if (log.isLoggable(Level.FINE)) 
+                  log.fine("Can't update entry '" + entry.getLogId() + "' on persistence");
+               //throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "Can't update entry '" + entry.getLogId() + "' on persistence");
+            }
+         }
       }
    }
 

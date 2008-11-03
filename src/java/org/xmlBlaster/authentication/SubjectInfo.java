@@ -273,7 +273,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       String type = prop.getType();
       String version = prop.getVersion();
       I_Queue queue = glob.getQueuePluginManager().getPlugin(type, version,
-                           new StorageId(Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
+                           new StorageId(glob, Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
       queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
       return queue;
    }

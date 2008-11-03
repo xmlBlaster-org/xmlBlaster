@@ -336,7 +336,7 @@ public class ServerEntryFactory implements I_EntryFactory
                PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
                publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
                MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
-               StorageId storageId = new StorageId("mystore", "someid");
+               StorageId storageId = new StorageId(glob, "mystore", "someid");
                MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, null, storageId, 0, 0, persistType[jj], -1);
                msgUnitWrapper.startExpiryTimer();
                I_EntryFactory factory = glob.getEntryFactory();
@@ -391,7 +391,7 @@ public class ServerEntryFactory implements I_EntryFactory
          pre.trim();
       String post = store.getNode() + store.getPostfix();
       post = post.trim();
-      return new StorageId(pre, post);
+      return new StorageId(glob, pre, post);
    }
    
    

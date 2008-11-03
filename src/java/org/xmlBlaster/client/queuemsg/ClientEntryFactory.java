@@ -200,7 +200,7 @@ public class ClientEntryFactory implements I_EntryFactory
    }
    
    private StorageId getStorageId(XBStore store) {
-      return new StorageId(store.getType(), store.getType() + store.getPostfix());
+      return new StorageId(glob, store.getType(), store.getType() + store.getPostfix());
    }
    
    

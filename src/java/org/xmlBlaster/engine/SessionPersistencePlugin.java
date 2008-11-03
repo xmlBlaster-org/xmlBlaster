@@ -257,7 +257,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          if (sessionProp.getMaxEntries() > 0L) {
             String type = sessionProp.getType();
             String version = sessionProp.getVersion();
-            this.sessionStorageId = new StorageId(Constants.RELATING_SESSION, this.global.getStrippedId() +"/" + this.info.getId());
+            this.sessionStorageId = new StorageId(glob, Constants.RELATING_SESSION, this.global.getStrippedId() +"/" + this.info.getId());
             this.sessionStore = this.global.getStoragePluginManager().getPlugin(type, version, this.sessionStorageId, sessionProp);
          }
          else {
@@ -268,7 +268,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          if (subscribeProp.getMaxEntries() > 0L) {
             String type = subscribeProp.getType();
             String version = subscribeProp.getVersion();
-            this.subscribeStorageId = new StorageId(Constants.RELATING_SUBSCRIBE, this.global.getStrippedId() +"/" + this.info.getId());
+            this.subscribeStorageId = new StorageId(glob, Constants.RELATING_SUBSCRIBE, this.global.getStrippedId() +"/" + this.info.getId());
             this.subscribeStore = this.global.getStoragePluginManager().getPlugin(type, version, this.subscribeStorageId, subscribeProp);
          }
          else if (log.isLoggable(Level.FINE))

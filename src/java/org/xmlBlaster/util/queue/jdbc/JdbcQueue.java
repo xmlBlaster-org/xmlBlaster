@@ -1321,6 +1321,24 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
 
 
    /**
+    * @see I_Map#change(I_MapEntry, I_ChangeCallback)
+    */
+   public void updateCounters(I_MapEntry entry) throws XmlBlasterException {
+      if (entry == null)
+         return;
+      synchronized(this) { // is this the correct synchronization ??
+         entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
+         final boolean onlyRefCounter = true;
+         XBMeat newMeat = entry.getMeat();
+         long diffSize = queueFactory.modifyEntry(xbStore, newMeat, null, onlyRefCounter);
+         this.numOfBytes += diffSize;
+         if (entry.isPersistent())
+            this.numOfPersistentBytes += diffSize;
+      }
+   }
+
+
+   /**
     * @see I_Map#change(long, I_ChangeCallback)
     */
    public I_MapEntry change(long uniqueId, I_ChangeCallback callback) throws XmlBlasterException {

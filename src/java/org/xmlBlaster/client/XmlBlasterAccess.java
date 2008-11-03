@@ -390,7 +390,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                      storageIdStr = getStorageIdStr();
                   }
                }
-               StorageId queueId = new StorageId(Constants.RELATING_CLIENT, storageIdStr);
+               StorageId queueId = new StorageId(glob, Constants.RELATING_CLIENT, storageIdStr);
                this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                                                       this.connectQos.getClientQueueProperty());
                if (this.clientQueue == null) {
