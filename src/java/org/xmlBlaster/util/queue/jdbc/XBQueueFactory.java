@@ -779,7 +779,6 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       int i = 0;
       int[] ret = new int[entries.length];
       try {
-         if (log.isLoggable(Level.FINE)) log.fine("addEntriesSingleMode adding each entry in single mode since an exception occured when using 'batch mode'");
          for (i=0; i < entries.length; i++) {
             if (addSingleEntry(store, entries[i], conn)) 
                ret[i] = 1; 

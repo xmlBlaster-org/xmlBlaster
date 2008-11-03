@@ -88,14 +88,20 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '');\n");
          buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
+      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
+         buf.append("create table ${table} (\n");
+         buf.append("      xbstoreid bigint primary key not null,\n");
+         buf.append("      xbnode varchar(256) not null,\n");
+         buf.append("      xbtype varchar(32) not null,\n");
+         buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbflag1 varchar(32) default '');\n");
+         buf.append("create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);\n");
+      }
       /*
       else if (getDbVendor().equals(DB2)) {
          
       }
       else if (getDbVendor().equals(FIREBIRD)) {
-         
-      }
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
          
       }
       else if (getDbVendor().equals(MYSQL)) {

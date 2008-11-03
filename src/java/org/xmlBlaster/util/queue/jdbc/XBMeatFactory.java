@@ -153,13 +153,31 @@ public class XBMeatFactory extends XBFactory {
          // buf.append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
 
       }
+      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
+         buf.append("create table ${table} (\n");
+         buf.append("      xbmeatid bigint not null,\n");
+         buf.append("      xbdurable char not null default 'F',\n");
+         buf.append("      xbrefcount int,\n");
+         buf.append("      xbrefcount2 int,\n");
+         buf.append("      xbbytesize int,\n");
+         buf.append("      xbdatatype varchar(32) not null default '',\n");
+         buf.append("      xbmetainfo varchar(MAX) default '',\n");
+         buf.append("      xbflag1 varchar(32) default '',\n");
+         buf.append("      xbmsgqos varchar(MAX) default '',\n");
+         buf.append("      xbmsgcont varbinary(MAX),\n");
+         buf.append("      xbmsgkey varchar(MAX) default '',\n");
+         buf.append("      xbstoreid bigint not null,\n");
+         buf.append("      constraint xbmeatpk primary key(xbmeatid, xbstoreid));\n");
+
+         buf.append("alter table ${table} \n");
+         buf.append("      add constraint fkxbstoremeat \n");
+         buf.append("      foreign key (xbstoreid) \n");
+         buf.append("      references xbstore on delete cascade;\n");
+      }
       /*
        * else if (getDbVendor().equals(DB2)) {
        * 
        * } else if (getDbVendor().equals(FIREBIRD)) {
-       * 
-       * } else if (getDbVendor().equals(SQLSERVER_2000) ||
-       * getDbVendor().equals(SQLSERVER_2005)) {
        * 
        * } else if (getDbVendor().equals(MYSQL)) {
        * 

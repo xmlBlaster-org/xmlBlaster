@@ -140,6 +140,27 @@ public class XBRefFactory extends XBFactory {
          */
          // "select * from (select * from ${table}) where rownum <= ?";
       }
+      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
+         getCompleteSt = "select * from ${table} left outer join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid)";
+
+         buf.append("create table ${table} (\n");
+         buf.append("      xbrefid bigint not null,\n");
+         buf.append("      xbstoreid bigint not null,\n");
+         buf.append("      xbmeatid bigint,\n");
+         buf.append("      xbdurable char(1) not null default 'F',\n");
+         buf.append("      xbbytesize int,\n");
+         buf.append("      xbmetainfo varchar(MAX) default '',\n");
+         buf.append("      xbflag1 varchar(32) default '',\n");
+         buf.append("      xbprio int,\n");
+         buf.append("      xbmethodname varchar(32) default '',\n");
+         buf.append("      xbonetomany char(1) not null default 'F',\n");
+         buf.append("constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
+
+         buf.append(" alter table ${table} \n");
+         buf.append("      add constraint fkxbstoreref\n");
+         buf.append("      foreign key (xbstoreid)\n");
+         buf.append("      references xbstore on delete cascade;\n");
+      }
       /*
       else if (getDbVendor().equals(DB2)) {
          // create statements
@@ -147,10 +168,6 @@ public class XBRefFactory extends XBFactory {
       else if (getDbVendor().equals(FIREBIRD)) {
          // create statements
          // "select first ? * from ${table}";
-      }
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
-         // create statements
-         // "select top ? * from ${table}";
       }
       else if (getDbVendor().equals(MYSQL)) {
          // "select * from ${table} limit ?";
