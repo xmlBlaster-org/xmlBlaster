@@ -11,9 +11,6 @@ package org.xmlBlaster.util.checkpoint;
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
