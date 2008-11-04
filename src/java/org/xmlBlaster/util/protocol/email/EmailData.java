@@ -66,6 +66,9 @@ public class EmailData {
    protected InternetAddress from;
    
    protected String subject;
+   
+   // TODO: Not yet supported
+   protected boolean sendContentAsText;
 
    protected String content;
 
@@ -863,4 +866,12 @@ public class EmailData {
          System.out.println("Is " + ((msg.isExpired()) ? "" : "not ") + "expired");
       }
    }
+
+public boolean isSendContentAsText() {
+	return sendContentAsText;
+}
+
+public void setSendContentAsText(boolean sendContentAsText) {
+	this.sendContentAsText = sendContentAsText;
+}
 }
