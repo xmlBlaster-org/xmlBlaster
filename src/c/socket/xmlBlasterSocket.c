@@ -169,7 +169,7 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 									1000,
 									kCFStringEncodingUTF8
 									);
-				printf("\n===================> Warning recv failed, description is  %s nread is %d\n", buff, nread);
+				printf("\n===================> Warning recv failed, nread is %d, description is '%s'\n", nread, buff);
 				
 				CFStringRef reasonRef = CFErrorCopyFailureReason (
 																  errorRef
