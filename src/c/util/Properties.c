@@ -21,14 +21,15 @@ static bool getBool(Properties *props, const char *key, bool defaultValue);
 static int getInt(Properties *props, const char *key, int defaultValue);
 static long getLong(Properties *props, const char *key, long defaultValue);
 static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue);
+static double getDouble(Properties *props, const char *key, double defaultValue);
 
 /**
- * Create an instance of a property struct. 
+ * Create an instance of a property struct.
  * NOTE: Our properties point on the passed argv memory, so you should
  * not free the original argv memory.
  * @param argc The number of command line args
  * @param argv The command line arguments, argv[0] is expected to be the
- *             name of the process, argv[1] should start with '-' and 
+ *             name of the process, argv[1] should start with '-' and
  *             argv[2] is the value of the argv[1] key ...
  *             argv can be NULL if argc == 0
  */
@@ -43,6 +44,7 @@ Properties *createProperties(int argc, const char* const* argv) {
    props->getInt = getInt;
    props->getLong = getLong;
    props->getInt64 = getInt64;
+   props->getDouble = getDouble;
 
    if (argc > 1) {
       /* strip the executable name and the dash '-' */
@@ -93,13 +95,13 @@ static const char *getString(Properties *props, const char *key, const char *def
 {
    int iarg;
 
-   if (key == 0) return defaultValue;
+   if (props == 0 || key == 0) return defaultValue;
 
    for (iarg=0; iarg < props->argc-1; iarg++) {
       if (strcmp(props->argv[iarg], key) == 0)
          return props->argv[++iarg];
    }
-   
+
 /*
 WIN32
    char *pValue;
@@ -165,6 +167,17 @@ static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue
    if (valP != 0) {
       int64_t val;
       if (strToInt64(&val, valP) == true)
+         return val;
+   }
+   return defaultValue;
+}
+
+static double getDouble(Properties *props, const char *key, double defaultValue)
+{
+   const char *valP = getString(props, key, 0);
+   if (valP != 0) {
+      double val;
+      if (sscanf(valP, "%lf", &val) == 1)
          return val;
    }
    return defaultValue;

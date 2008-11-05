@@ -2,7 +2,7 @@
 Name:      Properties.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Hold environment and command line properties. 
+Comment:   Hold environment and command line properties.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      06/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
@@ -27,9 +27,11 @@ typedef bool ( * XmlBlasterPropertiesGetBool)(Properties *xb, const char * key, 
 typedef int ( * XmlBlasterPropertiesGetInt)(Properties *xb, const char * key, int defaultValue);
 typedef long ( * XmlBlasterPropertiesGetLong)(Properties *xb, const char * key, long defaultValue);
 typedef int64_t ( * XmlBlasterPropertiesGetInt64)(Properties *xb, const char * key, int64_t defaultValue);
+typedef double ( * XmlBlasterPropertiesGetDouble)(Properties *xb, const char * key, double defaultValue);
 
 /**
- * All client access to Properties goes over this struct and its function pointers. 
+ * Parses argv and has accessor methods for different data types.
+ * All client access to Properties goes over this struct and its function pointers.
  */
 struct PropertiesStruct {
    int argc;             /**< Number of #argv */
@@ -48,10 +50,11 @@ struct PropertiesStruct {
    XmlBlasterPropertiesGetInt getInt;       /**< Access a property converted to int */
    XmlBlasterPropertiesGetLong getLong;     /**< Access a property converted to long */
    XmlBlasterPropertiesGetInt64 getInt64;   /**< Access a property converted to a 64 bit long */
+   XmlBlasterPropertiesGetDouble getDouble; /**< Access a property converted to double */
 };
 
 /**
- * Get an instance of this Properties struct. 
+ * Get an instance of this Properties struct.
  * NOTE: Every call creates a new and independent instance
  * @param argc Number of argv entries
  * @param argv The first entry is expected to be the executable name, the others are tuples of form "-logLevel" "TRACE"
@@ -61,12 +64,12 @@ struct PropertiesStruct {
 Dll_Export extern Properties *createProperties(int argc, const char* const* argv);
 
 /**
- * Free your instance after accessing xmlBlaster. 
+ * Free your instance after accessing xmlBlaster.
  */
 Dll_Export extern void freeProperties(Properties *props);
 
 /**
- * Dump properties to console, for debugging only. 
+ * Dump properties to console, for debugging only.
  */
 Dll_Export extern void dumpProperties(Properties *props);
 
