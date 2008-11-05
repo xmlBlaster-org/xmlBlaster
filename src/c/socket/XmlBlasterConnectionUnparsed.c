@@ -392,7 +392,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 		if(xb->readStream != nil && xb->writeStream != nil)
 		{
 			ret = 0;
-			if(!CFWriteStreamOpen (xb->writeStream))
+			if(!CFWriteStreamOpen (xb->writeStream)) /* true if stream was successfully opened */
 				ret = -1;
 			if(!CFReadStreamOpen (xb->readStream))
 				ret = -1;
@@ -610,19 +610,25 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
       int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
 #     endif
 #ifdef __IPhoneOS__
-	   CFReadStreamClose(xb->readStream);
-	   CFRelease(xb->readStream);
-	   xb->readStream = nil;
-	   CFWriteStreamClose(xb->writeStream);
-	   CFRelease(xb->writeStream);
-	   xb->writeStream = nil;
-	   printf("CFStreams were cosed\n");
+	   if (xb->readStream != nil) {
+		  CFReadStreamClose(xb->readStream);
+	      CFRelease(xb->readStream);
+	      xb->readStream = nil;
+	   }
+	   if (xb->writeStream != nil) {
+		  CFWriteStreamClose(xb->writeStream);
+	      CFRelease(xb->writeStream);
+	      xb->writeStream = nil;
+	      printf("CFStreams were cosed\n");
+       }
 #else
-      if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+      if (xb->socketToXmlBlaster != -1 && xb->socketToXmlBlaster != 0) { 
+         if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
-      shutdown(xb->socketToXmlBlaster, how);
-      closeSocket(xb->socketToXmlBlaster);
-      xb->socketToXmlBlaster = -1;
+         shutdown(xb->socketToXmlBlaster, how);
+         closeSocket(xb->socketToXmlBlaster);
+         xb->socketToXmlBlaster = -1;
+      }
       if (xb->socketToXmlBlasterUdp != -1) {
          shutdown(xb->socketToXmlBlasterUdp, how);
          closeSocket(xb->socketToXmlBlasterUdp);
