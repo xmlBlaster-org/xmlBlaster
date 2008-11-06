@@ -67,4 +67,20 @@
       </attribute>
    </plugin>
 
+   <plugin create='false' id='heartbeatEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>
+         heartbeat.72000000,
+         logging/severe/*,
+         service/RunlevelManager/event/shutdownRunlevel8
+      </attribute>
+      <attribute id='destination.smtp'>
+         mail.smtp.from=xmlBlaster@localhost,
+         mail.smtp.to=xmlBlaster@localhost,
+         mail.content=$_{xml},
+         mail.collectMillis=0
+      </attribute>
+   </plugin>
+
 </xmlBlaster>
