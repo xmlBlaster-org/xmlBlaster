@@ -1,0 +1,68 @@
+<node id='heron'>
+  <_summary>Heartbeat event from /xmlBlaster/node/heron, runlevel=RUNNING (9)</_summary>
+  <_description>Heartbeat event from /xmlBlaster/node/heron, runlevel=RUNNING (9)</_description>
+  <_eventType>heartbeat.manuallyTriggered</_eventType>
+  <uptime>32</uptime>
+  <runlevel>9</runlevel>
+  <instanceId>/xmlBlaster/node/heron/instanceId/1225998586690</instanceId>
+  <version>1.6.2</version>
+  <revisionNumber>1.6.2</revisionNumber>
+  <freeMem>57369096</freeMem>
+  <maxFreeMem>390291976</maxFreeMem>
+  <maxMem>399572992</maxMem>
+  <usedMem>9281016</usedMem>
+  <serverTimestamp>2008-11-06 20:10:18.858</serverTimestamp>
+  <numClients>5</numClients>
+  <clientList>subscriberToHeron,frodo,__RequestBroker_internal[heron],avalon,pubisherToHeron</clientList>
+  <client id='subscriberToHeron'>
+   <session id='1'>
+    <state>POLLING</state>
+    <queue relating='callback' numOfEntries='254' numOfBytes='45466'/>
+    <DispatchStatistic numSubscribe='1'/>
+   </session>
+  </client>
+  <client id='frodo'>
+   <session id='1'>
+    <state>POLLING</state>
+    <queue relating='callback' numOfEntries='0' numOfBytes='0'/>
+    <DispatchStatistic/>
+   </session>
+  </client>
+  <client id='avalon'>
+   <session id='1'>
+    <state>ALIVE</state>
+    <queue relating='callback' numOfEntries='0' numOfBytes='0'/>
+    <DispatchStatistic overallBytesWritten='3044' currBytesWritten='67' numBytesToWrite='67' overallBytesRead='1447' currBytesRead='1447' numBytesToRead='1447'/>
+   </session>
+  </client>
+  <client id='pubisherToHeron'>
+   <session id='2'>
+    <state>ALIVE</state>
+    <remoteProperty name='__timeOffset'>PT0.430S</remoteProperty>
+    <queue relating='callback' numOfEntries='0' numOfBytes='0'/>
+    <DispatchStatistic overallBytesWritten='3380' currBytesWritten='94' numBytesToWrite='94' overallBytesRead='134' currBytesRead='67' numBytesToRead='67'/>
+   </session>
+  </client>
+  <connection clusterId='avalon' id='heron'>
+   <session id='1'>
+    <state>ALIVE</state>
+    <queue relating='connection' numOfEntries='0' maxNumOfEntries='10000000' numOfBytes='0' maxNumOfBytes='2147483647'/>
+   </session>
+  </connection>
+  <connection clusterId='frodo' id='heron'>
+   <session id='1'>
+    <state>POLLING</state>
+    <queue relating='connection' numOfEntries='24' maxNumOfEntries='10000000' numOfBytes='57600' maxNumOfBytes='2147483647'/>
+   </session>
+  </connection>
+  <numTopics>1</numTopics>
+  <topicList>Hello</topicList>
+  <numGet>0</numGet>
+  <numPublish>1</numPublish>
+  <numUpdate>0</numUpdate>
+  <lastWarning><![CDATA[[2008-11-06 20:09:50.416 WARNING XmlBlaster.MainThread-10 org.xmlBlaster.engine.cluster.ClusterNode.reachedPolling] I_ConnectionStateListener: No connection to xmlBlaster node 'frodo', we are polling ...]]></lastWarning>
+  <lastError><![CDATA[]]></lastError>
+  <versionInfo><![CDATA[version=1.6.2,revision=1.6.2,os.name=Linux,os.version=2.6.25.16-0.1-default,java.vm.vendor=Sun Microsystems Inc.,java.vm.version=11.0-b15,os.arch=i386,build.timestamp=@build.timestamp@,build.java.vendor=@build.java.vendor@,build.java.version=@build.java.version@]]></versionInfo>
+  <see>http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html</see>
+ </node>
+
