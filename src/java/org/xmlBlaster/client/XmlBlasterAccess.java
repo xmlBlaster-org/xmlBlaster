@@ -145,6 +145,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private FileDumper fileDumper;
 
    private boolean shutdown = false;
+   
+   private Object userObject;
 
    /**
     * Create an xmlBlaster accessor.
@@ -1192,6 +1194,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       this.dispatchManager.pingCallbackServer(false);
    }
 
+   /**
+    * Force a async ping to re-check connection to server. Status change can be
+    * got asynchronously via registerConnectionListener()
+    */
+   public void ping() {
+      this.dispatchManager.pingCallbackServer(false);
+   }
 
    /**
     * This is the callback method invoked from xmlBlaster
@@ -2256,5 +2265,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
    }
    
+   public Object getUserObject() {
+      return userObject;
+   }
+
+   public void setUserObject(Object userObject) {
+      this.userObject = userObject;
+   }
 }
 

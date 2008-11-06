@@ -5,18 +5,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.context;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.StringPairTokenizer;
-import org.xmlBlaster.util.def.Constants;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.management.ObjectName;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.StringPairTokenizer;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * This represents one node in the administrative hierarchy, and is a linked
@@ -417,6 +417,23 @@ public final class ContextNode
       return sb.toString();
    }
 
+   /**
+    * Access the absolute name but without root tag /xmlBlaster. <br>
+    * Can be parsed by SessionName
+    * 
+    * @return e.g. "/node/heron/client/joe/session/2", never null
+    */
+   public String getSessionNameCompatible() {
+      String abs = getAbsoluteName();
+      if (abs == null)
+         return "";
+      abs = ReplaceVariable.replaceFirst(abs, "/connection/", "/client/");
+      int index = abs.indexOf("/xmlBlaster");
+      if (index == 0)
+         return abs.substring(11);
+      return abs;
+   }
+   
    /**
     * Access the absolute name in standard notation
     * @param schema Currently only "xpath"

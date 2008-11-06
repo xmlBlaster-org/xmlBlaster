@@ -65,7 +65,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    private static Logger log = Logger.getLogger(ClusterNode.class.getName());
    private final SessionInfo sessionInfo;
 
-   private I_XmlBlasterAccess xmlBlasterConnection = null;
+   private I_XmlBlasterAccess xmlBlasterConnection;
    private boolean available;
 
    /** Holds address and backup informations */
@@ -73,6 +73,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /** Holds performance informations for load balancing */
    private NodeStateInfo state;
+   
+   private I_ConnectionStateListener connectionStateListener;
 
    /**
     * Hold mapping informations to map a message to a master node.
@@ -135,6 +137,35 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
+    * Register a listener to get events about connection status changes.
+    * 
+    * @param connectionListener
+    *           null or your listener implementation on connection state changes
+    *           (ALIVE | POLLING | DEAD)
+    * @see <a
+    *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">client.failsafe
+    *      requirement</a>
+    */
+   public void registerConnectionListener(I_ConnectionStateListener connectionListener) {
+      this.connectionStateListener = connectionListener;
+   }
+
+   /**
+    * Force a async ping to re-check connection to server. Status change is got
+    * asynchronously via registerConnectionListener()
+    */
+   public void ping() {
+      I_XmlBlasterAccess xb = null;
+      try {
+         xb = getXmlBlasterAccess();
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+      }
+      if (xb != null)
+         xb.ping();
+   }
+
+   /**
     * On first invocation we connect to the other xmlBlaster cluster node.
     * <p />
     * The failsafe mode is switched on, you can configure it with a connect qos markup.
@@ -162,6 +193,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          //</address>
          boolean useRemoteLoginAsTunnel = connectQosData.getAddress().getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
          if (useRemoteLoginAsTunnel) { // The cluster master tries to tunnel using the slaves connection
+            // globalKey="ClusterManager[cluster]/SocketExecutorclient/heron/session/1"
+            // Aware: is unique only in remoteGlob
             final String globalKey = SocketExecutor.getGlobalKey(connectQosData.getSessionName());
             final String secretSessionId = null;
             final int pubSessionId = 1;
@@ -275,10 +308,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
                       log.warning("toPolling(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+                      if (oldState == ConnectionStateEnum.ALIVE)
+                        ping(); // Force our client connection to POLLING as
+                                // well
                    }
                    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
                       log.severe("toDead(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+                      if (oldState == ConnectionStateEnum.ALIVE)
+                        ping(); // Force our client connection to POLLING
                    }
                 }, fireInitial);
              }
@@ -300,6 +338,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          }
 
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
+         this.xmlBlasterConnection.setUserObject(this);
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.registerConnectionListener(this);
          final XmlBlasterAccess xbAccess = (XmlBlasterAccess)this.xmlBlasterConnection;
@@ -478,12 +517,30 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
+    * @return null if not known
+    */
+   public SessionName getSessionName() {
+      if (isLocalNode())
+         return null;
+      I_XmlBlasterAccess con = null;
+      try {
+         con = getXmlBlasterAccess();
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         return null;
+      }
+      if (con != null)
+         return con.getSessionName();
+      return null;
+   }
+
+   /**
     * Check if we have currently a functional connection to this node.
     * <p />
-    * Note: A call to this check does try to login if the connection
-    *       was not initialized before. This is sometimes an unwanted behavior.
-    *       On the other hand, without trying to login it is difficult to
-    *       determine the connection state.
+    * Note: A call to this check does try to login if the connection was not
+    * initialized before. This is sometimes an unwanted behavior. On the other
+    * hand, without trying to login it is difficult to determine the connection
+    * state.
     */
    public boolean isConnected() throws XmlBlasterException {
       if (isLocalNode())
@@ -606,6 +663,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       else {
          log.info("Connected to " + getId() + ", no backup messages to flush");
       }
+      I_ConnectionStateListener connectionListener = this.connectionStateListener;
+      if (connectionListener != null)
+         connectionListener.reachedAlive(oldState, connection);
    }
 
    /**
@@ -617,6 +677,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       this.available = false;
       log.warning("I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', we are polling ...");
+      I_ConnectionStateListener connectionListener = this.connectionStateListener;
+      if (connectionListener != null)
+         connectionListener.reachedPolling(oldState, connection);
    }
 
    /**
@@ -628,6 +691,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       this.available = false;
       log.severe("I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', state=DEAD, giving up.");
+      I_ConnectionStateListener connectionListener = this.connectionStateListener;
+      if (connectionListener != null)
+         connectionListener.reachedDead(oldState, connection);
    }
 
    /**

@@ -6,8 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.xmlBlaster.util.I_EventDispatcher;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -141,7 +141,9 @@ public abstract class StorageEventHandler {
    }
 
    /**
-    * Create an EventHelper instance which matches exactly the givne storageId (no wildcards).
+    * Create an EventHelper instance which matches exactly the given storageId
+    * (no wildcards).
+    * 
     * @param storageId
     * @return null if unknown storageId format
     * @throws XmlBlasterException
@@ -159,7 +161,7 @@ public abstract class StorageEventHandler {
          else
             return null;
       }
-      else if (Constants.RELATING_CALLBACK.equals(type)) {
+      else if (Constants.RELATING_CALLBACK.equals(type) || Constants.RELATING_CLIENT.equals(type)) {
          int pos = postfix.lastIndexOf('/');
          if (pos > -1) {
             String sessionId = postfix.substring(pos+1);

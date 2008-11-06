@@ -13,13 +13,28 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import javax.mail.internet.InternetAddress;
 import javax.management.NotificationBroadcasterSupport;
 
+import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.I_ClientListener;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.engine.cluster.ClusterManager;
+import org.xmlBlaster.engine.cluster.ClusterNode;
+import org.xmlBlaster.engine.msgstore.MapEventHandler;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_EventDispatcher;
 import org.xmlBlaster.util.I_Timeout;
@@ -28,6 +43,7 @@ import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.context.ContextNode;
@@ -39,9 +55,9 @@ import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.log.I_LogListener;
 import org.xmlBlaster.util.log.XbNotifyHandler;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -52,124 +68,191 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueueEventHandler;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.StorageEventHandler;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.authentication.ClientEvent;
-import org.xmlBlaster.authentication.I_ClientListener;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.SubjectInfo;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.engine.msgstore.MapEventHandler;
-import org.xmlBlaster.engine.msgstore.StoragePluginManager;
-import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 /**
  * Registers for events from the xmlBlaster core and forwards them as
  * configured.
  * <p>
- * This is useful for clients or administrators to be notified on certain core events.
+ * This is useful for clients or administrators to be notified on certain core
+ * events.
  * </p>
  * <p>
  * This <tt>EventPlugin</tt> plugin is started with the run level manager as
  * configured in <code>xmlBlasterPlugins.xml</code>, for example:
  * </p>
- *
+ * 
  * <pre>
- *&lt;plugin id='EventPlugin' className='org.xmlBlaster.engine.EventPlugin'&gt;
+ * lt;plugin id='EventPlugin' className='org.xmlBlaster.engine.EventPlugin'&gt;
  *   &lt;action do='LOAD' onStartupRunlevel='7' sequence='11'
  *                        onFail='resource.configuration.pluginFailed'/&gt;
  *   &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
- *
- *   &lt;attribute id='eventTypes'>
+ *   &lt;attribute id='eventTypes'&gt;
  *      logging/severe/*,
  *      logging/warning/*,
  *      service/RunlevelManager/event/startupRunlevel8,
  *      client/joe/session/1/event/connect
- *   &lt;/attribute>
- *
- *   &lt;attribute id='destination.smtp'>
+ *   &lt;/attribute&gt;
+ *   &lt;attribute id='destination.smtp'&gt;
  *      mail.smtp.from=xmlBlaster@localhost,
  *      mail.smtp.to=demo@localhost,
  *      mail.collectMillis=10000
- *   &lt;/attribute>
- *   &lt;attribute id='destination.jmx'/>
- *&lt;/plugin&gt;
+ *   &lt;/attribute&gt;
+ *   &lt;attribute id='destination.jmx'/&gt;
+ * lt;/plugin&gt;
  * </pre>
- *
+ * 
  * <p>
- * In the above example an email is send if any logging/severe/* (==log/error) or logging/warning/* occurs.
- * Further an event is emitted on xmlBlaster startup in run level 8
- * and if a new client logs in.
- * Those events are send as JMX notifications as well.
- * Adding <code>&lt;attribute id='destination.publish'/></code> would send
- * the event as a xmlBlaster message as well, but take care to not send logging events
- * as such messages will most certainly loop (if they log something they will trigger another message and so forth)!
+ * In the above example an email is send if any logging/severe/* (==log/error)
+ * or logging/warning/* occurs. Further an event is emitted on xmlBlaster
+ * startup in run level 8 and if a new client logs in. Those events are send as
+ * JMX notifications as well. Adding <code>&lt;attribute id='destination.publish'/></code> would send the
+ * event as a xmlBlaster message as well, but take care to not send logging
+ * events as such messages will most certainly loop (if they log something they
+ * will trigger another message and so forth)!
  * </p>
  * <p>
- * List of supported event sources, note that this plugin must be active on
- * a runlevel early enough depending on the event you want to capture:
+ * List of supported event sources, note that this plugin must be active on a
+ * runlevel early enough depending on the event you want to capture:
  * </p>
  * <table border="1">
- * <tr><td>logging/severe/*</td><td>Captures all errors logged</td></tr>
- * <tr><td>logging/warning/*</td><td>Captures all warnings logged</td></tr>
- * <tr><td>service/RunlevelManager/event/startupRunlevel9</td><td>Captures event when startup run level reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- * <tr><td>service/RunlevelManager/event/shutdownRunlevel8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other run level is possible as well (note that this plugin must be active beforehand)</td></tr>
- * <tr><td>client/* /session/* /event/connect</td><td>Captures event on client login (all clients)</td></tr>
- * <tr><td>client/[subjectId]/session/[publicSessionId]/event/connect</td><td>Captures event on given client login, e.g. "client/joe/session/1/event/connect"</td></tr>
- * <tr><td>client/* /session/* /event/disconnect</td><td>Captures event on client logout (all clients)</td></tr>
- * <tr><td>client/[subjectId]/session/[publicSessionId]/event/disconnect</td><td>Captures event on given client logout, e.g. "client/joe/session/1/event/disconnect"</td></tr>
- * <tr><td>topic/* /event/subscribe</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
- * <tr><td>topic/[topicId]/event/subscribe</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
- * <tr><td>client/[subjectId]/session/[publicSessionId]/event/subscribe</td><td>Captures if the given client has invoked subscribe(), e.g. "client/joe/session/1/event/subscribe". The publicSessionId can be a wildcard "*".</td></tr>
- * <tr><td>topic/* /event/unSubscribe</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
- * <tr><td>topic/[topicId]/event/unSubscribe</td><td>Captures if unSubscribe() on the specified topic is invoked</td></tr>
- * <tr><td>client/[subjectId]/session/[publicSessionId]/event/unSubscribe</td><td>Captures if the given client has invoked unSubscribe(), e.g. "client/joe/session/1/event/unSubscribe". The publicSessionId can be a wildcard "*".</td></tr>
- * <tr><td>topic/* /event/alive</td><td>Captures if a topic is created (on all topics)</td></tr>
- * <tr><td>topic/hello/event/alive</td><td>Captures event if the topic 'hello' is created</td></tr>
- * <tr><td>topic/* /event/dead</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
- * <tr><td>topic/hello/event/dead</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
- * <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING. Note that the status change to DEAD is currently not implemented (it is reported as POLLING). Wildcards are not supported.</td></tr>
- * <tr><td>heartbeat.360000</td><td>Sends a heartbeat notification every given milli seconds. Setting <code>heartbeat</code> defaults to one notification per day (86400000 millis).</td></tr>
+ * <tr>
+ * <td>logging/severe/*</td>
+ * <td>Captures all errors logged</td>
+ * </tr>
+ * <tr>
+ * <td>logging/warning/*</td>
+ * <td>Captures all warnings logged</td>
+ * </tr>
+ * <tr>
+ * <td>service/RunlevelManager/event/startupRunlevel9</td>
+ * <td>Captures event when startup run level reaches 9 (RUNNING), any other
+ * runlevel is possible as well (note that this plugin must be active
+ * beforehand)</td>
+ * </tr>
+ * <tr>
+ * <td>service/RunlevelManager/event/shutdownRunlevel8</td>
+ * <td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other
+ * run level is possible as well (note that this plugin must be active
+ * beforehand)</td>
+ * </tr>
+ * <tr>
+ * <td>client/* /session/* /event/connect</td>
+ * <td>Captures event on client login (all clients)</td>
+ * </tr>
+ * <tr>
+ * <td>client/[subjectId]/session/[publicSessionId]/event/connect</td>
+ * <td>Captures event on given client login, e.g.
+ * "client/joe/session/1/event/connect"</td>
+ * </tr>
+ * <tr>
+ * <td>client/* /session/* /event/disconnect</td>
+ * <td>Captures event on client logout (all clients)</td>
+ * </tr>
+ * <tr>
+ * <td>client/[subjectId]/session/[publicSessionId]/event/disconnect</td>
+ * <td>Captures event on given client logout, e.g.
+ * "client/joe/session/1/event/disconnect"</td>
+ * </tr>
+ * <tr>
+ * <td>topic/* /event/subscribe</td>
+ * <td>Captures if subscribe() is invoked (on all topics)</td>
+ * </tr>
+ * <tr>
+ * <td>topic/[topicId]/event/subscribe</td>
+ * <td>Captures if subscribe() on the specified topic is invoked</td>
+ * </tr>
+ * <tr>
+ * <td>client/[subjectId]/session/[publicSessionId]/event/subscribe</td>
+ * <td>Captures if the given client has invoked subscribe(), e.g.
+ * "client/joe/session/1/event/subscribe". The publicSessionId can be a wildcard
+ * "*".</td>
+ * </tr>
+ * <tr>
+ * <td>topic/* /event/unSubscribe</td>
+ * <td>Captures if unSubscribe() is invoked (on all topics)</td>
+ * </tr>
+ * <tr>
+ * <td>topic/[topicId]/event/unSubscribe</td>
+ * <td>Captures if unSubscribe() on the specified topic is invoked</td>
+ * </tr>
+ * <tr>
+ * <td>client/[subjectId]/session/[publicSessionId]/event/unSubscribe</td>
+ * <td>Captures if the given client has invoked unSubscribe(), e.g.
+ * "client/joe/session/1/event/unSubscribe". The publicSessionId can be a
+ * wildcard "*".</td>
+ * </tr>
+ * <tr>
+ * <td>topic/* /event/alive</td>
+ * <td>Captures if a topic is created (on all topics)</td>
+ * </tr>
+ * <tr>
+ * <td>topic/hello/event/alive</td>
+ * <td>Captures event if the topic 'hello' is created</td>
+ * </tr>
+ * <tr>
+ * <td>topic/* /event/dead</td>
+ * <td>Captures if a topic is destroyed (on all topics)</td>
+ * </tr>
+ * <tr>
+ * <td>topic/hello/event/dead</td>
+ * <td>Captures event if the topic 'hello' is destroyed</td>
+ * </tr>
+ * <tr>
+ * <td>client/[subjectId]/session/[publicSessionId]/event/connectionState</td>
+ * <td>Captures event if the cluster client connection chages between ALIVE |
+ * POLLING | DEAD. Wildcards are supported.</td>
+ * </tr>
+ * <tr>
+ * <td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td>
+ * <td>Captures event if the client callback server goes to ALIVE or POLLING.
+ * Note that the status change to DEAD is currently not implemented (it is
+ * reported as POLLING). Wildcards are not supported.</td>
+ * </tr>
+ * <tr>
+ * <td>heartbeat.360000</td>
+ * <td>Sends a heartbeat notification every given milli seconds. Setting
+ * <code>heartbeat</code> defaults to one notification per day (86400000
+ * millis).</td>
+ * </tr>
  * </table>
  * <p>
  * List of supported event sinks:
  * </p>
  * <table border="1">
  * <tr>
- *    <td>destination.smtp</td>
- *    <td>Sends an email about the occurred event.
- *    Collects multiple events to one mail depending on configuration.
- *    You need to configure at least the email address parameters
- *    <code>mail.stmp.from</code> and <code>mail.smtp.to</code> and
- *    activate the <code>SmtpClient</code> plugin in <code>xmlBlasterPlugins.xml</code>.
- *    If you have a reasonable email provider you can configure it to
- *    forward the mail as an SMS (mine offers this feature).</td>
+ * <td>destination.smtp</td>
+ * <td>Sends an email about the occurred event. Collects multiple events to one
+ * mail depending on configuration. You need to configure at least the email
+ * address parameters <code>mail.stmp.from</code> and <code>mail.smtp.to</code>
+ * and activate the <code>SmtpClient</code> plugin in
+ * <code>xmlBlasterPlugins.xml</code>. If you have a reasonable email provider
+ * you can configure it to forward the mail as an SMS (mine offers this
+ * feature).</td>
  * </tr>
  * <tr>
- *    <td>destination.publish</td>
- *    <td>Publishes an xmlBlaster message which contains the occurred event,
- *     currently all messages are published into a topic named '__sys__Event'</td>
+ * <td>destination.publish</td>
+ * <td>Publishes an xmlBlaster message which contains the occurred event,
+ * currently all messages are published into a topic named '__sys__Event'</td>
  * </tr>
  * <tr>
- *    <td>destination.jmx</td>
- *    <td>Emits an JMX notification for the occurred event.
- *     Open 'jconsole' and 'MBeans->org.xmlBlaster->node->xxx->service->EventPlugin[yyy]'
- *     there choose the 'Notifications[0]' tabulator and click the 'Subscribe' button.
- *     Now you receive the configured events.</td>
+ * <td>destination.jmx</td>
+ * <td>Emits an JMX notification for the occurred event. Open 'jconsole' and
+ * 'MBeans->org.xmlBlaster->node->xxx->service->EventPlugin[yyy]' there choose
+ * the 'Notifications[0]' tabulator and click the 'Subscribe' button. Now you
+ * receive the configured events.</td>
  * </tr>
  * </table>
- *
+ * 
  * <p>
  * We access the xmlBlaster core directly to register the supported internal
- * events, hence this plugin works only if it is in the same virtual
- * machine (JVM) as the xmlBlaster server.
+ * events, hence this plugin works only if it is in the same virtual machine
+ * (JVM) as the xmlBlaster server.
  * </p>
  * <p>
- * All events don't throw any exceptions as this plugin should have
- * no influence on the regular work-flow of xmlBlaster.
+ * All events don't throw any exceptions as this plugin should have no influence
+ * on the regular work-flow of xmlBlaster.
  * </p>
- *
+ * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The
@@ -178,7 +261,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
       I_LogListener, I_SubscriptionListener, I_TopicListener,
-      I_ConnectionStatusListener, I_RemotePropertiesListener, I_EventDispatcher, Comparable {
+      I_ConnectionStatusListener, I_RemotePropertiesListener, I_EventDispatcher, I_ConnectionStateListener, Comparable {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -576,11 +659,42 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (this.runlevelSet == null) this.runlevelSet = new TreeSet();
                this.runlevelSet.add(event);
             }
+            else if (isConnectionStateEvent(event)) {
+               // client/[subjectId]/session/[publicSessionId]/event/connectionState
+               ClusterManager clusterManager = requestBroker.getServerScope().getClusterManager();
+               if (clusterManager == null) {
+                  log.warning("Configuration of '" + event + "' is ignored, no cluster manager available");
+                  continue;
+               }
+               if (!clusterManager.isReady()) {
+                  log.warning("Configuration of '" + event + "' is ignored, cluster manager is not ready");
+                  continue;
+               }
+               int index = event.lastIndexOf("/event/");
+               if (index == -1) {
+                  log.warning("Configuration of '" + event + "' is ignored, wrong syntax");
+                  continue;
+               }
+               // strip "event/connectionState"
+               String name = event.substring(0, index);
+               ClusterNode[] nodes = clusterManager.getClusterNodes();
+               for (int ic=0; ic<nodes.length; ic++) {
+                  ClusterNode node = nodes[ic];
+                  SessionName destination = node.getSessionName();
+                  if (destination != null && destination.matchRelativeName(name)) {
+                     node.registerConnectionListener(this);
+                  }
+               }
+            }
             else if (isCallbackStateEvent(event)) {
             //else if (event.endsWith("/event/callbackState") || event.endsWith("/event/callbackAlive") || event.endsWith("/event/callbackPolling") || event.endsWith("/event/callbackDead")) {
                // OK: "client/joe/session/1/event/callbackState"
                // Not yet supported: "client/joe/session/1/event/callbackAlive", "client/joe/session/1/event/callbackPolling"
                int index = event.lastIndexOf("/event/");
+               if (index == -1) {
+                  log.warning("Configuration of '" + event + "' is ignored, wrong syntax");
+                  continue;
+               }
                String name = event.substring(0, index);
                SessionName sessionName = new SessionName(this.engineGlob, name);
                this.requestBroker.getAuthenticate().addClientListener(this);
@@ -627,6 +741,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   }
                   this.callbackSessionStateSet.add(sessionName.getRelativeName());
                }
+            }
+            else if (isConnectionQueueEvent(event)) {
+               // client/[subjectId]/session/[publicSessionId]/queue/connection/event/threshold.90%
+               // TODO: register in xmlBlasterAccess of each ClusterNode client
+               log.severe("Event " + event + " is not implemented");
             }
             else if (isQueueEvent(event)) {
                if (queueEventHandler == null) {
@@ -713,8 +832,18 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
    }
 
+   // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
+   // client/[subjectId]/session/[publicSessionId]/queue/connection/event/threshold.90%
+   // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
+   // topic/[topicId]/queue/history/event/threshold.90%
+   // */queue/*/event/threshold*
    public static boolean isQueueEvent(String txt) {
       return matchesRegex(".*/queue/.*/event/threshold.*", txt);
+   }
+
+   // client/[subjectId]/session/[publicSessionId]/queue/connection/event/threshold.90%
+   public static boolean isConnectionQueueEvent(String txt) {
+      return matchesRegex(".*/queue/connection/event/threshold.*", txt);
    }
 
    public static boolean isPersistenceEvent(String txt) {
@@ -723,6 +852,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    public static boolean isCallbackStateEvent(String txt) {
 	   return matchesRegex("client/.*/session/.*/event/callbackState", txt);
+   }
+   
+   /** Cluster client side (ClusterNode.java) */
+   public static boolean isConnectionStateEvent(String txt) {
+      // client/[subjectId]/session/[publicSessionId]/event/connectionState
+      return matchesRegex("client/.*/session/.*/event/connectionState", txt);
    }
 
 	public final boolean isWildcard(String pattern) {
@@ -962,10 +1097,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       str = ReplaceVariable.replaceAll(str, "$_{summary}", (summary==null)?"":summary);
       str = ReplaceVariable.replaceAll(str, "$_{description}", (description==null)?"":description);
       str = ReplaceVariable.replaceAll(str, "$_{instanceId}", this.engineGlob.getInstanceId()); // "/xmlBlaster/node/heron/instanceId/1136220586692"
+      // own cluster node id
       str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getId()); // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{id}", this.engineGlob.getId());  // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{eventType}", (eventType==null)?"":eventType);
       str = ReplaceVariable.replaceAll(str, "$_{errorCode}", (errorCode==null)?"":errorCode);
+      // remote cluster node id
+      str = ReplaceVariable.replaceAll(str, "$_{clusterId}", (sessionName == null) ? "" : sessionName.getNodeIdStr());
       str = ReplaceVariable.replaceAll(str, "$_{loginName}", (sessionName==null)?"":sessionName.getLoginName());
       str = ReplaceVariable.replaceAll(str, "$_{pubSessionId}", (sessionName==null)?"":""+sessionName.getPublicSessionId());
       if (str.indexOf("$_{clientList}") != -1) { // To support backward compatibility with "userListEvent=true" __sys__UserList
@@ -2172,6 +2310,56 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   // Cluster client connections "/event/connectionState"
+   protected void connectionStateChange(I_XmlBlasterAccess connection, ConnectionStateEnum oldState,
+         ConnectionStateEnum newState) {
+      SessionName sessionName = connection.getSessionName();
+      String foundEvent = "/event/connectionState";
+
+      try {
+         XmlBlasterAccess xb = (XmlBlasterAccess) connection;
+         SessionName absoluteName = new SessionName(glob, xb.getContextNode().getSessionNameCompatible());
+         String clname = absoluteName.getAbsoluteName();
+         // connection.getServerNodeId().toString()+ "/" +
+         // sessionName.getAbsoluteName();
+         String summary = "Connection state has changed to " + newState.toString() + " for cluster client "
+               + clname;
+         String description = (oldState.equals(newState)) ? ("Connection has state changed" + " to "
+               + newState.toString() + " for client " + clname)
+               : ("Connection state has changed from " + oldState.toString() + " to " + newState.toString()
+                     + " for cluster client " + " " + clname);
+         String eventType = foundEvent + " " + newState.toString();
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            sendEmail(summary, description, eventType, null, absoluteName, false);
+         }
+
+         if (this.publishDestinationHelper != null) {
+            ClientProperty[] clientProperties = null;
+            if (newState == ConnectionStateEnum.ALIVE) {
+               SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+               if (sessionInfo != null) {
+                  clientProperties = sessionInfo.getRemotePropertyArr();
+                  ArrayList list = new ArrayList();
+                  for (int i = 0; i < clientProperties.length; i++)
+                     list.add(clientProperties[i]);
+                  list.add(new ClientProperty("_DispatchStatistic", Constants.TYPE_STRING, Constants.ENCODING_NONE,
+                        ((XmlBlasterAccess) connection).getDispatchStatistic().toXml("")));
+                  clientProperties = (ClientProperty[]) list.toArray(new ClientProperty[list.size()]);
+               }
+            }
+            sendMessage(summary, description, eventType, errorCode, sessionName, clientProperties);
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            sendJmxNotification(summary, description, eventType, null, false);
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
@@ -2226,4 +2414,35 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       this.publishDestinationConfiguration = publishDestinationConfiguration;
    }
 
+   /**
+    * This is the callback method invoked from I_XmlBlasterAccess for cluster
+    * client connections "client/heron/session/1/event/connectionState"
+    * <p />
+    * This method is enforced through interface I_ConnectionStateListener
+    */
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      connectionStateChange(connection, oldState, ConnectionStateEnum.ALIVE);
+   }
+
+   /**
+    * This is the callback method invoked from I_XmlBlasterAccess informing the
+    * client in an asynchronous mode if the connection was lost. For cluster
+    * client connections
+    * <p />
+    * This method is enforced through interface I_ConnectionStateListener
+    */
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      connectionStateChange(connection, oldState, ConnectionStateEnum.POLLING);
+   }
+
+   /**
+    * This is the callback method invoked from I_XmlBlasterAccess informing the
+    * client in an asynchronous mode if the connection was lost. For cluster
+    * client connections
+    * <p />
+    * This method is enforced through interface I_ConnectionStateListener
+    */
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      connectionStateChange(connection, oldState, ConnectionStateEnum.DEAD);
+   }
 }

@@ -30,6 +30,20 @@ public class EventHelper implements I_StorageSizeListener {
 
    }
 
+   /**
+    * @param eventType
+    *           "client/joe/session/1/queue/callback/event/threshold.90%"
+    * @param type
+    *           callback
+    * @param id1
+    *           joe
+    * @param id2
+    *           1
+    * @param val
+    *           90%
+    * @param eventDispatcher
+    * @throws XmlBlasterException
+    */
    public EventHelper(String eventType, String type, String id1, String id2, String val, I_EventDispatcher eventDispatcher) throws XmlBlasterException {
       if (id2 == null)
          id2 = "";

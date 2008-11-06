@@ -8,34 +8,34 @@ package org.xmlBlaster.client;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_ReplaceContent;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.dispatch.I_PostSendListener;
-import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.client.protocol.I_XmlBlaster;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 
 /**
@@ -590,9 +590,19 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    EraseReturnQos[] erase(EraseKey eraseKey, EraseQos eraseQos) throws XmlBlasterException;
 
    /**
+    * Force a async ping to re-check connection to server. Status change can be
+    * got asynchronously via registerConnectionListener()
+    */
+   public void ping();
+
+   /**
     * Access the environment settings of this connection.
-    * <p>Enforced by interface I_ConnectionHandler</p>
-    * @return The global handle (like a stack with local variables for this connection)
+    * <p>
+    * Enforced by interface I_ConnectionHandler
+    * </p>
+    * 
+    * @return The global handle (like a stack with local variables for this
+    *         connection)
     */
    Global getGlobal();
 
@@ -601,4 +611,21 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @return internal state
     */
    String toXml();
+
+   /**
+    * Can be freely used by client code to store an object and later retrieve
+    * it.
+    * 
+    * @return the object from setUserObject or null
+    */
+   public Object getUserObject();
+
+   /**
+    * Can be freely used by client code to store an object and later retrieve
+    * it.
+    * 
+    * @param userObject
+    *           any user object
+    */
+   public void setUserObject(Object userObject);
 }

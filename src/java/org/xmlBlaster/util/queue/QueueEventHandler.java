@@ -19,18 +19,19 @@ public class QueueEventHandler extends StorageEventHandler {
     */
    public void registerEventType(I_EventDispatcher dispatcher, String eventType) throws XmlBlasterException {
       // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
+      // client/[subjectId]/session/[publicSessionId]/queue/connection/event/threshold.90%
       // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
       // topic/[topicId]/queue/history/event/threshold.90%
       // */queue/*/event/threshold*
 
       String end = "/event/threshold.";
       int index = eventType.lastIndexOf(end);
-      String value = eventType.substring(index + end.length());
+      String value = eventType.substring(index + end.length()); // "90%"
 
       String tmp = eventType.substring(0, index);
       end = "/queue/";
       index = tmp.lastIndexOf(end);
-      String type = tmp.substring(index + end.length());
+      String type = tmp.substring(index + end.length()); // "callback"
       String id1 = null;
       String id2 = null;
       if (Constants.RELATING_HISTORY.equals(type)) { // we need only the topicId
@@ -42,20 +43,21 @@ public class QueueEventHandler extends StorageEventHandler {
          id1 = tmp.substring(index + end.length());
          id2 = "";
       }
-      else if (Constants.RELATING_CALLBACK.equals(type)) {
+      // CLIENT is cluster connection client side queue
+      else if (Constants.RELATING_CALLBACK.equals(type) || Constants.RELATING_CLIENT.equals(type)) {
          // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
          tmp = tmp.substring(0, index);
          // sessionId or topicId or subjectId
          end = "/";
          index = tmp.lastIndexOf(end);
-         id2 = tmp.substring(index + end.length());
+         id2 = tmp.substring(index + end.length()); // 1 (pubSessionId)
          tmp = tmp.substring(0, index);
          index = tmp.lastIndexOf(end);
          if (index > -1)
             tmp = tmp.substring(0, index);
          index = tmp.lastIndexOf(end);
          if (index > -1)
-            id1 = tmp.substring(index+1);
+            id1 = tmp.substring(index + 1); // "*" (subjectId)
          else
             id1 = tmp;
       }
