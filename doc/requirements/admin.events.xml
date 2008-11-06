@@ -87,6 +87,7 @@
  <tr><td>topic/[topicId]/event/alive</td><td>Captures event if the given topic is created, e.g. "topic/hello/event/alive"</td></tr>
  <tr><td>topic/*/event/dead</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  <tr><td>topic/[topicId]/event/dead</td><td>Captures event if the given topic is destroyed, e.g. "topic/hello/event/dead"</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/connectionState</td><td>Captures event if cluster client connection status changes between ALIVE or POLLING or DEAD, e.g. "client/heron/session/1/event/connectionState". The subjectId and/or the publicSessionId can be a wildcard "*".</td></tr>
  <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING, e.g. "client/joe/session/1/event/callbackState". Note that the status change to DEAD is currently not implemented (it is reported as POLLING). The subjectId and/or the publicSessionId can be a wildcard "*".</td></tr>
  <tr><td>client/*/session/*/event/remoteProperties</td><td>Captures event when the remote properties of a client change (all clients, triggered when a client publishes a message to topic <code>__sys__remoteProperties</code>)</td></tr>
  <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a logging/severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'logging/severe/*' to detect this.</td></tr>
