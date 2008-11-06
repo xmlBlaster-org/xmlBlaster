@@ -276,6 +276,21 @@
       </attribute>
    </plugin>
 
+   <!-- In cluster environment only: Observes the client connection status of cluster slaves -->
+   <plugin create='false' id='clusterEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>
+         client/*/session/1/event/connectionState
+      </attribute>
+      <attribute id='destination.smtp'>
+         mail.subject=[XmlBlaster event: $_{eventType}] $_{nodeId} - $_{clusterId},
+         mail.smtp.from=xmlBlaster@localhost,
+         mail.smtp.to=demo@localhost,
+         mail.collectMillis=2000
+      </attribute>
+   </plugin>
+
    <!-- Get event before a callback queue runs full -->
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
    <plugin create='false' id='thresholdEventsCbQueue' className='org.xmlBlaster.engine.EventPlugin'>
