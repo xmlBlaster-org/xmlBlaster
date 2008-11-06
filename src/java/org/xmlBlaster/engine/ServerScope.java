@@ -346,6 +346,14 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       return this.clusterManager;
    }
 
+   public final ClusterManager getClusterManagerNoEx() {
+      try {
+         return getClusterManager();
+      } catch (XmlBlasterException e) {
+         return null;
+      }
+   }
+
    /**
     * Is cluster support switched on?
     */

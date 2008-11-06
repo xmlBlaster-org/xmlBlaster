@@ -1041,6 +1041,34 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
          buf.append("\n  ").append("</client>");
       }
+
+      ClusterManager clusterManager = g.getClusterManagerNoEx();
+      if (clusterManager != null && clusterManager.isReady()) {
+         ClusterNode[] nodes = clusterManager.getClusterNodes();
+         for (int ic = 0; ic < nodes.length; ic++) {
+            ClusterNode node = nodes[ic];
+            SessionName destination = node.getRemoteSessionName();
+            if (destination == null)
+               continue;
+            buf.append("\n  ").append("<connection clusterId='").appendEscaped(destination.getNodeIdStr()).append(
+                  "' id='").appendEscaped(destination.getLoginName()).append("'>");
+            buf.append("\n   ").append("<session id='").append(destination.getPublicSessionId()).append("'>");
+            buf.append("\n    ").append("<state>").append(node.getConnectionStateStr()).append("</state>");
+            I_Queue clientQueue = node.getConnectionQueue();
+            if (clientQueue != null) {
+               buf.append("\n    <queue relating='" + Constants.RELATING_CLIENT + "'"); // "connection"
+               buf.append(" numOfEntries='").append(clientQueue.getNumOfEntries()).append("'");
+               buf.append(" maxNumOfEntries='").append(clientQueue.getMaxNumOfEntries()).append("'");
+               buf.append(" numOfBytes='").append(clientQueue.getNumOfBytes()).append("'");
+               buf.append(" maxNumOfBytes='").append(clientQueue.getMaxNumOfBytes()).append("'");
+               buf.append("/>");
+            }
+            // buf.append(clientQueue.getDispatchStatistic().toXml("   "));
+            buf.append("\n   ").append("</session>");
+            buf.append("\n  ").append("</connection>");
+         }
+      }
+      
       buf.append("\n  ").append("<numTopics>").append(r.getNumTopics()).append("</numTopics>");
       buf.append("\n  ").append("<topicList>").appendEscaped(r.getTopicList()).append("</topicList>");
       buf.append("\n  ").append("<numGet>").append(r.getNumGet()).append("</numGet>");

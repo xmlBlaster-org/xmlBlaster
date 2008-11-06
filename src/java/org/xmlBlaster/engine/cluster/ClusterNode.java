@@ -46,6 +46,7 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
@@ -515,8 +516,49 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          this.masterInfoMap.remove(""+domainInfo.getCount());
       }
    }
+   
+   public I_Queue getConnectionQueue() {
+      if (isLocalNode())
+         return null;
+      I_XmlBlasterAccess con = null;
+      try {
+         con = getXmlBlasterAccess();
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         return null;
+      }
+      if (con != null) {
+         return con.getQueue();
+      }
+      return null;
+   }
+   
+   /**
+    * Contains remote clusterNodeId
+    * 
+    * @return null if not known
+    */
+   public SessionName getRemoteSessionName() {
+      if (isLocalNode())
+         return null;
+      I_XmlBlasterAccess con = null;
+      try {
+         con = getXmlBlasterAccess();
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         return null;
+      }
+      if (con != null) {
+         SessionName absoluteName = new SessionName(remoteGlob, ((XmlBlasterAccess) con).getContextNode()
+               .getSessionNameCompatible());
+         return absoluteName;
+      }
+      return null;
+   }
 
    /**
+    * Directly from xmlBlasterAccess, may not contain clusterNodeId
+    * 
     * @return null if not known
     */
    public SessionName getSessionName() {

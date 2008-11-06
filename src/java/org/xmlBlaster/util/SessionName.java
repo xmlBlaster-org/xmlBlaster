@@ -5,11 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * Handles unified naming convention of login names and user sessions.
@@ -216,6 +214,21 @@ public final class SessionName implements java.io.Serializable
          this.absoluteName = buf.toString();
       }
       return this.absoluteName;
+   }
+
+   /**
+    * If the nodeId is not known, the relative name is returned a possible
+    * session is ommitted
+    * 
+    * @return e.g. "/node/heron/client/joe", never null
+    */
+   public String getAbsoluteSubjectName() {
+      StringBuffer buf = new StringBuffer(256);
+      if (this.nodeId != null) {
+         buf.append("/node/").append(this.nodeId.getId()).append("/");
+      }
+      buf.append(ContextNode.SUBJECT_MARKER_TAG).append("/").append(subjectId);
+      return buf.toString();
    }
 
    /**
