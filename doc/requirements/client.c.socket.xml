@@ -13,8 +13,8 @@
      </p>
      <p class="celltitel" id="features">Features</p>
      <ul>
-        <li> Support on many OS like Windows, Windows-CE / Pocket PC,
-             UNIX, Linux and the code is easy portable to embedded devices</li>
+        <li> Support on many OS like MAC OSX, iPhone, Windows, Windows-CE / Pocket PC,
+             Sun-UNIX, HPUX, Linux and the code is easy portable to embedded devices</li>
 
         <li> Compiles with C or with C++ compiler</li>
 
