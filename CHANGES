@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17372 Cluster SSL callback tunnel: fixed client side connectionState transition
+          Added EventPlugin support for cluster client connectionState:
+	   "client/[subjectId]/session/[publicSessionId]/event/connectionState"
+
  o r17366 Added DDL for SQLServer 2005 and 2008 for new storage plugin 'JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,...'
           Does not support 2000, you would need to configure TEXT and IMAGE instead of VARCHAR(MAX) and VARBINARY(MAX)
 
