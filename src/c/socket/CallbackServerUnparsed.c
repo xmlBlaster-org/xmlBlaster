@@ -235,7 +235,12 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
          if (cb->responseListener[i].msgRequestInfoP == 0) {
             continue;
          }
-         if (true) {  /* Handle waiting MSG_TYPE_INVOKE threads (oneways are not in this list) */
+#ifdef __IPhoneOS__
+         if (false) { /* BADACCESS when accessing mutex later on */
+#else
+         if (true) {
+#endif
+            /* Handle waiting MSG_TYPE_INVOKE threads (oneways are not in this list) */
             ResponseListener *listener = &cb->responseListener[i];
             MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
             XmlBlasterException exception;

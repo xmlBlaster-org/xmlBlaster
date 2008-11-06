@@ -445,6 +445,9 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
    SocketDataHolder *s = (SocketDataHolder *)socketDataHolder;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
+   if (msgRequestInfoP == 0)
+      return;	
+
    if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to lock responseMutex in responseEvent() failed %d", retVal);
       /* return; */

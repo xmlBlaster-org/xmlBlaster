@@ -610,15 +610,17 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
       int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
 #     endif
 #ifdef __IPhoneOS__
-	   if (xb->readStream != nil) {
-		  CFReadStreamClose(xb->readStream);
-	      CFRelease(xb->readStream);
-	      xb->readStream = nil;
+	   CFReadStreamRef readStream = xb->readStream;
+	   if (readStream != nil) {
+              xb->readStream = nil;
+              CFReadStreamClose(readStream);
+              CFRelease(readStream);
 	   }
-	   if (xb->writeStream != nil) {
-		  CFWriteStreamClose(xb->writeStream);
-	      CFRelease(xb->writeStream);
+	   CFWriteStreamRef writeStream = xb->writeStream;
+	   if (writeStream != nil) {
 	      xb->writeStream = nil;
+	      CFWriteStreamClose(writeStream);
+	      CFRelease(writeStream);
 	      printf("CFStreams were cosed\n");
        }
 #else

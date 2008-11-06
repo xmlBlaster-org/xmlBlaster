@@ -150,6 +150,8 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 	 }
 	 */
 	while(nleft > 0) {
+		if (globalIPhoneXb->readStream == nil)
+			return -1;
 		
 		nread =  CFReadStreamRead (
 								   globalIPhoneXb->readStream,
