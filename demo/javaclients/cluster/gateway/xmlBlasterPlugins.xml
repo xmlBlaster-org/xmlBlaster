@@ -44,4 +44,27 @@
       <attribute id='showAllClientProperties'>true</attribute>
    </plugin>
 
+   <plugin create='false' id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='7' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='4' sequence='9'/>
+      <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- 1 h -->
+      <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
+      <attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25</attribute>
+   </plugin>
+
+   <plugin create='false' id='clusterEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>
+         client/*/session/1/event/connectionState
+      </attribute>
+      <attribute id='destination.smtp'>
+         mail.subject=[XmlBlaster event: $_{eventType}] $_{nodeId} - $_{clusterId},
+         mail.smtp.from=xmlBlaster@localhost,
+         mail.smtp.to=xmlBlaster@localhost,
+         mail.collectMillis=2000
+      </attribute>
+   </plugin>
+
 </xmlBlaster>
