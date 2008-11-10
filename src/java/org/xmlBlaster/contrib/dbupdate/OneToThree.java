@@ -18,8 +18,8 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Storage;
-import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 
@@ -40,14 +40,23 @@ public class OneToThree {
        * this.globOne.getProperty().addArgs2Props(args);
        */
    }
-   
-   public void transform() throws XmlBlasterException {
+
+   public JdbcManagerCommonTable createInstance() throws Exception {
       ServerEntryFactory sf = new ServerEntryFactory();
-      QueuePluginManager pluginManager = new QueuePluginManager(globOne);
-      PluginInfo pluginInfo = new PluginInfo(globOne, null, "JDBC", "1.0");
-      pluginInfo.getParameters().setProperty("QueuePlugin[JDBC][1.0]",
-            "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin");
-      final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(globOne, sf, null, null, null);
+      PluginInfo pluginInfoTmp = new PluginInfo(globOne, null, "JDBC", "1.0");
+      PluginInfo pluginInfo = new PluginInfo(globOne, "JDBC",
+            "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin", pluginInfoTmp.getParameters());
+      JdbcConnectionPool pool = new JdbcConnectionPool();
+      pool.initialize(globOne, pluginInfo.getParameters());
+
+      JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, sf, "cleaner", null);
+      pool.registerStorageProblemListener(manager);
+      manager.setUp();
+      return manager;
+   }
+
+   public void transform() throws Exception {
+      final JdbcManagerCommonTable manager = createInstance();
       String queueNamePattern = Constants.RELATING_CALLBACK + "%";
       String flag = "UPDATE_REF";
       manager.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
@@ -79,7 +88,7 @@ public class OneToThree {
       final FileOutputStream out = new FileOutputStream(to_file);
       out_ = out;
       out_.write(("XmlBlaster " + new Timestamp().toString()).getBytes());
-      out_.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
+      out_.write(("\n" + XmlBlasterException.createVersionInfo() + "\n").getBytes());
 
       log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
    }
@@ -91,7 +100,7 @@ public class OneToThree {
          e.printStackTrace();
       }
    }
-   
+
    public JdbcQueue getJdbcQueue(String oldQueueName) throws XmlBlasterException {
       String key = oldQueueName;
       JdbcQueue jdbcQueue = (JdbcQueue) jdbcQueueMap.get(key);
@@ -103,7 +112,7 @@ public class OneToThree {
       }
       return jdbcQueue;
    }
-   
+
    // java org.xmlBlaster.contrib.dbupdate.OneToThree -cluster.node.id heron
    public static void main(String[] args) {
       OneToThree ott = null;
