@@ -47,5 +47,6 @@ III.B) connectionPoolSize=5
   Elapsed since starting to publish:  [ 5 min 29 sec 130 millis ] for 500 iterations -> 2 iterations/second
 300kB => Pub: 192sec => 2.6 msg/sec  (mit connectionPoolSize=5 WARNINGS)
 300kB => Pub: 162sec => 3.1 msg/sec  (mit connectionPoolSize=15)
+300kB => Pub: 151sec => 3.3 msg/sec  (mit connectionPoolSize=15)
 3Bytes=> Pub:  23sec =>22.0 msg/sec  (mit connectionPoolSize=15)
 
