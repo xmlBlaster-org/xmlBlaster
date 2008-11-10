@@ -28,7 +28,7 @@ public class XBStoreFactory extends XBFactory {
    private final static int POSTFIX = 4;
    private final static int FLAG1 = 5;
    private String getByNameSt;
-   private String pingSt;
+   protected String pingSt = "select 1";
    
    static String getName() {
       return "xbstore";
@@ -40,7 +40,6 @@ public class XBStoreFactory extends XBFactory {
       deleteSt = "delete from ${table} where xbstoreid=?";
       getSt = "select * from ${table} where xbstoreid=?";
       getByNameSt = "select * from ${table} where xbnode=? and xbtype=? and xbpostfix=?";
-      pingSt = "select count(*) from ${table}";
    }
 
 
@@ -80,6 +79,7 @@ public class XBStoreFactory extends XBFactory {
          buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
       else if (getDbVendor().equals(ORACLE)) {
+         pingSt = "select count(*) from ${table}";
          buf.append("create table ${table} (\n");
          buf.append("      xbstoreid number(20) primary key,\n");
          buf.append("      xbnode varchar(256) not null,\n");
