@@ -1,8 +1,8 @@
-Having a prefilled SQLServer 2005 with JDBC driver 1.2 in adaptive mode (770'000 xb_entries)
+Having a prefilled Microsoft SQL Server 2005 9.00.3042 with JDBC driver 1.2 in adaptive mode (770'000 xb_entries)
 
 
-I: Old xb_entries
-==================
+I: Old xb_entries 770thousand entries
+=====================================
 Server: Windows Vista 1GB-Lan, 3GB-RAM, 2.1GHz Dual Core
 Load avg. 
   15% CPU java
@@ -30,4 +30,22 @@ I.C) connectionPoolSize=5
 1. 10 Subscribers on separate machine (MAC OSX, 1GBLAN, 50% CPU)
 2. Publisher 500 msgs with 3Bytes each
 => 14.7 msg/sec (147 msg/sec update)
+
+
+II: Old xb_entries empty
+=====================================
+
+
+
+III: New Tables empty
+=====================================
+
+III.B) connectionPoolSize=5
+1GBit LAN
+1. 10 Subscribers on separate machine (MAC OSX, 1GBLAN, 50% CPU)
+2. Publisher 500 msgs with 300kB each
+  Elapsed since starting to publish:  [ 5 min 29 sec 130 millis ] for 500 iterations -> 2 iterations/second
+300kB => Pub: 192sec => 2.6 msg/sec  (mit connectionPoolSize=5 WARNINGS)
+300kB => Pub: 162sec => 3.1 msg/sec  (mit connectionPoolSize=15)
+3Bytes=> Pub:  23sec =>22.0 msg/sec  (mit connectionPoolSize=15)
 

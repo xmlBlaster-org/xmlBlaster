@@ -4,7 +4,7 @@ Having a prefilled PostgreSQL 8.3.4 (770'000 xb_entries)
 I: Old xb_entries
 ==================
 Server: Windows Vista 1GB-Lan, 3GB-RAM, 2.1GHz Dual Core
-Load avg. 
+Load avg (300kB messags). 
   5% CPU java
   5% CPU postgres
   14MB/s HD -> 100% load!
@@ -22,10 +22,23 @@ I.B) connectionPoolSize=5 1GB LAN
 1. 10 Subscribers on separate machine (Linux)
 2. Publisher 500 msgs with 300kB each (5% CPU)
 300kB  => 0.80 msg/sec
-300kB  =>
+300kB => Pub: 398sec Up: 398sec => 1.3msg/sec (5*MAC OSX, 5*Linux)
 
 I.C) connectionPoolSize=5 1GBit LAN
 1. 10 Subscribers on separate machine (MAC OSX, 1GBLAN, 50% CPU)
 2. Publisher 500 msgs with 3Bytes each
 3Bytes => Pub: 32sec  Up: 32sec => 15.6 msg/sec
+
+
+
+
+III: New Tables empty (Marcel Setup):
+================================
+
+III.B) connectionPoolSize=15
+No CPU/RAM/HD saturation, LAN 30-101MBit
+300kB => Pub: 183sec =>  2.7 msg/sec (Subscribers: 5*MAC OSX, 5*Linux)
+300kB => Pub: 171sec =>  2.9 msg/sec (Subscribers: 5*MAC OSX, 5*Linux)
+300kB => Pub: 169sec =>  3.0 msg/sec (Subscribers: 5*MAC OSX, 5*Linux)
+3Bytes=> Pub:  22sec => 22.7 msg/sec (Subscribers: 5*MAC OSX, 5*Linux)
 
