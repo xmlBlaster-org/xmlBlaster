@@ -15,8 +15,6 @@ import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -46,20 +44,12 @@ public class OneToThree {
 
    public JdbcManagerCommonTable createInstance() throws Exception {
       ServerEntryFactory sf = new ServerEntryFactory();
-      //PluginInfo pluginInfoTmp = new PluginInfo(globOne, null, "JDBC", "1.0");
-      //PluginInfo pluginInfo = new PluginInfo(globOne, "JDBC",
-      //      "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin", pluginInfoTmp.getParameters());
+      sf.initialize(globOne);
       String queueCfg = globOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String)null);
-      // String storeCfg = globOne.getProperty().get("StoragePlugin[JDBC][1.0]", (String)null);
-      
       Properties queueProps = parsePropertyValue(queueCfg);
-      // Properties storeProps = parsePropertyValue(storeCfg);
-      // modify accordingly queueProps and storeProps as you wish
-      
       JdbcConnectionPool pool = new JdbcConnectionPool();
       pool.initialize(globOne, queueProps);
-
-      JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, sf, "cleaner", null);
+      JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, sf, "dbupdate.OneToThree", null);
       pool.registerStorageProblemListener(manager);
       manager.setUp();
       return manager;
@@ -74,7 +64,7 @@ public class OneToThree {
             try {
                if (ent instanceof ReferenceEntry) {
                   ReferenceEntry refEntry = (ReferenceEntry) ent;
-                  String queueName = "history:/node/heron/client/joe/-2";
+                  String queueName = refEntry.getStorageId().getId(); // "callback:callback_nodeheronclientsubscriber71";
                   JdbcQueue jdbcQueue = getJdbcQueue(queueName);
                   jdbcQueue.put((I_QueueEntry) ent, true);
                } else {
@@ -82,6 +72,7 @@ public class OneToThree {
                }
                return null; // Filter away so getAll returns nothing
             } catch (Throwable e) {
+               e.printStackTrace();
                log.warning("Ignoring during callback queue processing exception: " + e.toString());
                return null; // Filter away so getAll returns nothing
             }
