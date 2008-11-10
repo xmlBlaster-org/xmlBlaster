@@ -613,6 +613,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
+   private final boolean testException = false;
+   private volatile short countTest = 0;
 
    /**
     *
@@ -666,6 +668,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          preStatement.setBinaryStream(BLOB, blob_stream, blob.length); //(int)sizeInBytes);
          // preStatement.setBytes(BLOB, blob);
          if (log.isLoggable(Level.FINE)) log.fine(preStatement.toString());
+         if (testException) {
+            countTest++;
+            if (countTest % 10 == 0)
+               throw new java.sql.SQLException("Connection reset by peer: socket write error");
+               //com.microsoft.sqlserver.jdbc.XmlBlasterSqlServerHelper.throwTestException();
+         }
          int num = preStatement.executeUpdate();
          if (log.isLoggable(Level.FINE)) log.fine("Added " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
@@ -734,7 +742,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       return ret;
    }
-
 
    /**
     * Adds a row to the specified queue table
