@@ -1,0 +1,33 @@
+Having a prefilled SQLServer 2005 with JDBC driver 1.2 in adaptive mode (770'000 xb_entries)
+
+
+I: Old xb_entries
+==================
+Server: Windows Vista 1GB-Lan, 3GB-RAM, 2.1GHz Dual Core
+Load avg. 
+  15% CPU java
+  15% CPU sqlserv
+  14MB/s HD -> 100% load!
+  70MBit/s LAN
+
+I.A) connectionPoolSize=5
+100MBit LAN
+1. 10 Subscribers on separate machine (Linux)
+2. Publisher 500 msgs with 300kB each (5% CPU)
+  Elapsed since starting to publish:  [ 5 min 29 sec 130 millis ] for 500 iterations -> 2 iterations/second
+=> 1.52 msg/sec (15 msg/sec update)
+
+I.B) connectionPoolSize=5
+1GBit LAN
+1. 10 Subscribers on separate machine (MAC OSX, 1GBLAN, 50% CPU)
+2. Publisher 500 msgs with 300kB each
+  Elapsed since starting to publish:  [ 5 min 29 sec 130 millis ] for 500 iterations -> 2 iterations/second
+=> 2.07 msg/sec (21 msg/sec update)
+=> 2.22 msg/sec (22 msg/sec update)
+
+I.C) connectionPoolSize=5
+1GBit LAN
+1. 10 Subscribers on separate machine (MAC OSX, 1GBLAN, 50% CPU)
+2. Publisher 500 msgs with 3Bytes each
+=> 14.7 msg/sec (147 msg/sec update)
+

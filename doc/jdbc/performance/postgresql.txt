@@ -1,0 +1,31 @@
+Having a prefilled PostgreSQL 8.3.4 (770'000 xb_entries)
+
+
+I: Old xb_entries
+==================
+Server: Windows Vista 1GB-Lan, 3GB-RAM, 2.1GHz Dual Core
+Load avg. 
+  5% CPU java
+  5% CPU postgres
+  14MB/s HD -> 100% load!
+  50MBit/s LAN
+
+I.A) RAM transient only
+1. 10 Subscribers on separate machine (Linux)
+2. Publisher 500 msgs with 300kB each (5% CPU)
+300kB  => 3.3 msg/sec, 4.31 msg/sec
+3Bytes => Pub: 1.7sec Up: 35sec => 14 msg/sec (>70% MAC-CPU)
+3Bytes => Pub: 3.9sec Up: 18sec => 28 msg/sec (Linux-CPU)
+3Bytes => Pub: 2.9sec Up: 13sec => 38 msg/sec (5*Linux-CPU 5*MAC)
+
+I.B) connectionPoolSize=5 1GB LAN
+1. 10 Subscribers on separate machine (Linux)
+2. Publisher 500 msgs with 300kB each (5% CPU)
+300kB  => 0.80 msg/sec
+300kB  =>
+
+I.C) connectionPoolSize=5 1GBit LAN
+1. 10 Subscribers on separate machine (MAC OSX, 1GBLAN, 50% CPU)
+2. Publisher 500 msgs with 3Bytes each
+3Bytes => Pub: 32sec  Up: 32sec => 15.6 msg/sec
+
