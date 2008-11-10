@@ -46,11 +46,18 @@ public class OneToThree {
 
    public JdbcManagerCommonTable createInstance() throws Exception {
       ServerEntryFactory sf = new ServerEntryFactory();
-      PluginInfo pluginInfoTmp = new PluginInfo(globOne, null, "JDBC", "1.0");
-      PluginInfo pluginInfo = new PluginInfo(globOne, "JDBC",
-            "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin", pluginInfoTmp.getParameters());
+      //PluginInfo pluginInfoTmp = new PluginInfo(globOne, null, "JDBC", "1.0");
+      //PluginInfo pluginInfo = new PluginInfo(globOne, "JDBC",
+      //      "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin", pluginInfoTmp.getParameters());
+      String queueCfg = globOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String)null);
+      // String storeCfg = globOne.getProperty().get("StoragePlugin[JDBC][1.0]", (String)null);
+      
+      Properties queueProps = parsePropertyValue(queueCfg);
+      // Properties storeProps = parsePropertyValue(storeCfg);
+      // modify accordingly queueProps and storeProps as you wish
+      
       JdbcConnectionPool pool = new JdbcConnectionPool();
-      pool.initialize(globOne, pluginInfo.getParameters());
+      pool.initialize(globOne, queueProps);
 
       JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, sf, "cleaner", null);
       pool.registerStorageProblemListener(manager);
