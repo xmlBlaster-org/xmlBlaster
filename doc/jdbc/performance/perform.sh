@@ -14,11 +14,11 @@ fi
 echo "Starting $COUNT subscribers ..."
 
 export PROG="java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe"
-export ARGS=" -oid Hello -session.name subscriber$i/1 -persistentSession true -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true"
+export ARGS=" -oid Hello -session.name subscriber/$i -persistentSession true -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true"
 #export SERV=" -dispatch/connection/plugin/socket/hostname localhost -dispatch/connection/plugin/socket/port 7607"
 
 for ((i=1;i<=$COUNT;i+=1)); do
-	echo "subscriber$i/1 ..."
+	echo "subscriber/$i ..."
 	xterm -geom 180x26 -e $PROG $ARGS $SERV -session.name subscriber$i/1 &
 #	xterm -geom 180x26 -e java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -oid Hello -session.name subscriber$i/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true
 	sleep 1
