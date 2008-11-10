@@ -32,13 +32,54 @@
 #endif
 
 static void *timeoutMainLoop(void *ptr);
-static int setTimeoutListener(Timeout *timeout, TimeoutCbFp timeoutCbFp, const long int delay,
+static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp, const long int delay,
       void * const userData, void * const userData2);
+
+/* Local helper function */
+static bool _isMyThread(Timeout *timeout) {
+	/** see  long get_pthread_id(pthread_t t) */
+#if defined(_WINDOWS)
+	if (timeout == 0 ||  timeout->threadId.p == 0)
+	   return false;
+	{
+   	pthread_t callingThreadId = pthread_self();
+      if (callingThreadId.p == timeout->threadId.p) {
+			return true;
+		}
+		return false;
+	}
+#else
+	if (timeout == 0 ||  timeout->threadId == 0)
+	   return false;
+	{
+   	pthread_t callingThreadId = pthread_self();
+      if (callingThreadId == timeout->threadId) {
+			return true;
+		}
+		return false;
+	}
+#endif
+}
+
+/* Local helper function */
+static bool _isNull(pthread_t *threadId) {
+	if (threadId == 0) {
+		return true;
+	}
+#if defined(_WINDOWS)
+   if (threadId->p == 0)
+		return true;
+#else
+   if (*threadId == 0)
+		return true;
+#endif
+	return false;
+}
 
 static void initTimeout(Timeout *timeout) {
    if (timeout == 0)
       return;
-   timeout->threadId = 0;
+   memset(&timeout->threadId, 0, sizeof(pthread_t));
    timeout->ready = false;
    timeout->running = true;
    timeout->selfCleanup = false;
@@ -60,11 +101,10 @@ Timeout *createTimeout(const char* const name) {
 }
 
 static void stopThread(Timeout *timeout) {
-   pthread_t threadId = 0;
-   pthread_t callingThreadId = pthread_self();
-   if (timeout == 0 || timeout->threadId == 0)
+   pthread_t threadId;
+   if (timeout == 0 || _isNull(&timeout->threadId))
       return;
-   if (callingThreadId == timeout->threadId) {
+   if (_isMyThread(timeout)) {
       /* to avoid memory leak on needs to call pthread_join() or pthread_detach() */
       pthread_detach(threadId);
       timeout->running = false;
@@ -75,7 +115,7 @@ static void stopThread(Timeout *timeout) {
    timeout->running = false;
    pthread_cond_broadcast(&timeout->condition_cond);
    pthread_mutex_unlock(&timeout->condition_mutex);
-   if (threadId != 0)
+   if (!_isNull(&threadId))
       pthread_join(threadId, NULL);
    if (timeout->verbose) printf("Timeout.c Joined threadId=%ld\n", get_pthread_id(threadId));
    initTimeout(timeout);
@@ -108,8 +148,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
 
    /* delay==0: cancel timer */
    if (delay < 1) {
-      pthread_t callingThreadId = pthread_self();
-      if (callingThreadId == timeout->threadId) {
+      if (_isMyThread(timeout)) {
          if (timeout->verbose)
             printf("Timeout.c Calling setTimeoutListener from timer thread callback\n");
          /*
@@ -122,13 +161,13 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
       else {
          /* Another thread called us, so clean up immediately */
          if (timeout->verbose)
-            printf("Timeout.c Stopping timer %s threadId=%ld, callingThreadId=%ld\n", timeout->name, get_pthread_id(timeout->threadId), get_pthread_id(callingThreadId));
+            printf("Timeout.c Stopping timer %s threadId=%ld, callingThreadId=%ld\n", timeout->name, get_pthread_id(timeout->threadId), get_pthread_id(pthread_self()));
          stopThread(timeout);
       }
       return 0;
    }
 
-   if (timeout->threadId != 0) {
+   if (!_isNull(&timeout->threadId)) {
       if (timeout->verbose)
          printf("Timeout.c Warning: Calling setTimeoutListener twice is not reinitializing immediately the timer timeout time\n");
       return -1;
