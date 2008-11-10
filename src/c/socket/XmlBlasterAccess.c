@@ -52,14 +52,14 @@ static void xmlBlasterRegisterConnectionListener(struct XmlBlasterAccess *xa, Co
 
 static bool _initialize(XmlBlasterAccess *xa, UpdateFp update, XmlBlasterException *exception);
 static ConnectReturnQos *xmlBlasterConnect(XmlBlasterAccess *xa, const ConnectQos * connectQos, UpdateFp update, XmlBlasterException *exception);
-static bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * disconnectQos, XmlBlasterException *exception);
+static bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * const disconnectQos, XmlBlasterException *exception);
 static PublishReturnQos *xmlBlasterPublish(XmlBlasterAccess *xa, MsgUnit *msgUnit, XmlBlasterException *exception);
 static PublishReturnQosArr *xmlBlasterPublishArr(XmlBlasterAccess *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 static void xmlBlasterPublishOneway(XmlBlasterAccess *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 static SubscribeReturnQos *xmlBlasterSubscribe(XmlBlasterAccess *xa, const SubscribeKey * subscribeKey, const SubscribeQos * subscribeQos, XmlBlasterException *exception);
 static UnSubscribeReturnQosArr *xmlBlasterUnSubscribe(XmlBlasterAccess *xa, const UnSubscribeKey * unSubscribeKey, const UnSubscribeQos * unSubscribeQos, XmlBlasterException *exception);
 static EraseReturnQosArr *xmlBlasterErase(XmlBlasterAccess *xa, const EraseKey * eraseKey, const EraseQos * eraseQos, XmlBlasterException *exception);
-static MsgUnitArr *xmlBlasterGet(XmlBlasterAccess *xa, const GetKey * getKey, const GetQos * getQos, XmlBlasterException *exception);
+static MsgUnitArr *xmlBlasterGet(XmlBlasterAccess *xa, const GetKey * const getKey, const GetQos * getQos, XmlBlasterException *exception);
 static PingReturnQos *xmlBlasterPing(XmlBlasterAccess *xa, const PingQos * pingQos, XmlBlasterException *exception);
 static bool isConnected(XmlBlasterAccess *xa);
 
@@ -270,7 +270,7 @@ Dll_Export ReturnQosArr *createXmlBlasterReturnQosArr(QosArr * qosArr) {
    ReturnQosArr *qos = (ReturnQosArr *)calloc(1, sizeof(ReturnQosArr));
    if (qos == 0) return qos;
    if (qosArr != 0) {
-      int i;
+      size_t i;
       qos->len = qosArr->len;
       qos->returnQosArr = (ReturnQos*)calloc(1, qos->len*sizeof(ReturnQos));
       for (i=0; i<qos->len; i++) {
@@ -318,7 +318,7 @@ static void freeXmlBlasterReturnQos_(ReturnQos * returnQos, bool freeContainerAs
 Dll_Export void freeXmlBlasterReturnQosArr(ReturnQosArr * returnQosArr) {
    if (returnQosArr == 0) return;
    if (returnQosArr->returnQosArr != 0) {
-      int i;
+      size_t i;
       for (i=0; i<returnQosArr->len; i++) {
          ReturnQos *returnQos = &returnQosArr->returnQosArr[i];
          freeXmlBlasterReturnQos_(returnQos, false);
