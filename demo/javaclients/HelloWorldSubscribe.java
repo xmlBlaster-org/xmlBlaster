@@ -81,6 +81,7 @@ public class HelloWorldSubscribe implements I_Callback
    private boolean connectPersistent;
    private boolean firstConnect=true;
    private boolean interactive;
+   private boolean autoSubscribe;
    private boolean interactiveUpdate;
    private long updateSleep;
    private String updateExceptionErrorCode;
@@ -121,6 +122,7 @@ public class HelloWorldSubscribe implements I_Callback
    private void readEnv() {
       this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
       this.interactive = glob.getProperty().get("interactive", true);
+      this.autoSubscribe = glob.getProperty().get("autoSubscribe", true);
       this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
       this.updateSleep = glob.getProperty().get("updateSleep", 0L);
       this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);
@@ -195,6 +197,7 @@ public class HelloWorldSubscribe implements I_Callback
             log.info("   -connect/qos/clientProperty[]   ");
          }
          log.info("   -interactive       " + interactive);
+         log.info("   -autoSubscribe     " + autoSubscribe);
          log.info("   -interactiveUpdate " + this.interactiveUpdate);
          log.info("   -updateSleep       " + this.updateSleep);
          log.info("   -updateException.errorCode " + this.updateExceptionErrorCode);
@@ -404,7 +407,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info("SubscribeKey=\n" + sk.toXml());
          log.info("SubscribeQos=\n" + sq.toXml());
 
-         if (firstConnect && interactive) {
+         if (firstConnect && (interactive && !autoSubscribe)) {
             Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
          }
          firstConnect = false;
