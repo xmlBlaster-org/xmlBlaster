@@ -15,12 +15,13 @@ echo "Starting $COUNT subscribers ..."
 
 export CP="$HOME/xmlBlaster/lib/xmlBlaster.jar"
 export PROG="java -Dcom.sun.management.jmxremote -cp $CP javaclients.HelloWorldSubscribe"
-export ARGS=" -oid Hello -session.name subscriber/$i -persistentSession true -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true"
+export ARGS=" -oid Hello -persistentSession true -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true"
 #export SERV=" -dispatch/connection/plugin/socket/hostname localhost -dispatch/connection/plugin/socket/port 7607"
 
 for ((i=1;i<=$COUNT;i+=1)); do
-	echo "subscriber/$i ..."
-	xterm -geom 180x26 -e $PROG $ARGS $SERV -session.name subscriber$i/1 &
+	export LOGIN=" -session.name subscriber/$i"
+	echo "$LOGIN ..."
+	xterm -geom 180x26 -e $PROG $ARGS $SERV $LOGIN &
 #	xterm -geom 180x26 -e java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -oid Hello -session.name subscriber$i/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true
 	sleep 1
 done
