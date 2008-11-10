@@ -2138,7 +2138,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return new ArrayList();
       }
 
-      String req = "SELECT * from " + this.entriesTableName + " where queueName like'" + queueNamePattern + "'";
+      String req = null;
+      if (queueNamePattern != null)
+         req = "SELECT * from " + this.entriesTableName + " where queueName like'" + queueNamePattern + "'";
+      else
+         req = "SELECT * from " + this.entriesTableName;
       if (flag != null) req += " and flag='" + flag + "'";
       req += " ORDER BY prio DESC, " + this.dataIdColName + " ASC";
       if (log.isLoggable(Level.FINE)) log.fine("Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
