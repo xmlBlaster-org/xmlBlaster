@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -13,6 +15,7 @@ import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
@@ -79,6 +82,30 @@ public class OneToThree {
       });
    }
 
+   /**
+    * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
+    */
+   private Properties parsePropertyValue(String rawString) throws XmlBlasterException {
+      Properties params = new Properties();
+      StringTokenizer st = new StringTokenizer(rawString, ",");
+      boolean first=true;
+      while(st.hasMoreTokens()) {
+         String tok = st.nextToken();
+         if (first) { // The first is always the class name
+            first = false;
+            continue;
+         }
+         int pos = tok.indexOf("=");
+         if (pos < 0) {
+            log.info("Accepting param '" + tok + "' without value (missing '=')");
+            params.put(tok, "");
+         }
+         else
+            params.put(tok.substring(0,pos), tok.substring(pos+1));
+      }
+      return params;
+   }   
+   
    public void createReportFile() throws Exception {
       String reportFileName = "OneToThree-report.xml";
       to_file = new File(reportFileName);
