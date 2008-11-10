@@ -17,7 +17,7 @@ Results:
 
 Size in bytes           3                    300000
 
-Old Queues:                             4.42-4.46 pub/sec 
-Queues2008:      13.15 pub/sec          7.93-8.26 pub/sec
+Old Queues:        9.94-35.71 pub/sec     4.42-4.46 pub/sec 
+Queues2008:       13.15-38.02 pub/sec     7.93-8.26 pub/sec
 
 
