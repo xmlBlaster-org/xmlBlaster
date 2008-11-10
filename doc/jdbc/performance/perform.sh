@@ -13,7 +13,8 @@ fi
 
 echo "Starting $COUNT subscribers ..."
 
-export PROG="java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe"
+export CP="$HOME/xmlBlaster/lib/xmlBlaster.jar"
+export PROG="java -Dcom.sun.management.jmxremote -cp $CP javaclients.HelloWorldSubscribe"
 export ARGS=" -oid Hello -session.name subscriber/$i -persistentSession true -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -autoSubscribe true"
 #export SERV=" -dispatch/connection/plugin/socket/hostname localhost -dispatch/connection/plugin/socket/port 7607"
 
