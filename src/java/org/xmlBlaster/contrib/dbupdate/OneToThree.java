@@ -13,28 +13,41 @@ import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 
 public class OneToThree {
    private static Logger log = Logger.getLogger(OneToThree.class.getName());
-   private ServerScope glob;
+   private ServerScope globOne;
    private File to_file;
    private FileOutputStream out_;
    private Map jdbcQueueMap = new TreeMap();
 
-   public OneToThree(ServerScope glob) {
-      this.glob = glob;
+   public OneToThree(ServerScope glob) throws XmlBlasterException {
+      this.globOne = glob;
+      /*
+       * String[] args = { "-QueuePlugin[JDBC][1.0]",
+       * "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin",
+       * "-StoragePlugin[JDBC][1.0]",
+       * "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin" };
+       * this.globOne.getProperty().addArgs2Props(args);
+       */
    }
    
    public void transform() throws XmlBlasterException {
       ServerEntryFactory sf = new ServerEntryFactory();
-      final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(glob, sf, null, null, null);
+      QueuePluginManager pluginManager = new QueuePluginManager(globOne);
+      PluginInfo pluginInfo = new PluginInfo(globOne, null, "JDBC", "1.0");
+      pluginInfo.getParameters().setProperty("QueuePlugin[JDBC][1.0]",
+            "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin");
+      final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(globOne, sf, null, null, null);
       String queueNamePattern = Constants.RELATING_CALLBACK + "%";
       String flag = "UPDATE_REF";
       manager.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
@@ -84,7 +97,7 @@ public class OneToThree {
       JdbcQueue jdbcQueue = (JdbcQueue) jdbcQueueMap.get(key);
       if (jdbcQueue == null) {
          jdbcQueue = new JdbcQueue();
-         StorageId uniqueQueueId = new StorageId(glob, oldQueueName);
+         StorageId uniqueQueueId = new StorageId(globOne, oldQueueName);
          jdbcQueue.initialize(uniqueQueueId, null);
          jdbcQueueMap.put(key, jdbcQueue);
       }
