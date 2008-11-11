@@ -1141,7 +1141,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
       return persistent;
    }
 
-   private final ArrayList processResultSet(ResultSet rs, StorageId storageId,
+   private final ArrayList processResultSet(ResultSet rs, StorageId storageIdDefault,
                              int numOfEntries, long numOfBytes, boolean onlyId,
                              I_EntryFilter entryFilter)
       throws SQLException, XmlBlasterException {
@@ -1170,8 +1170,8 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
             long sizeInBytes = rs.getLong(SIZE_IN_BYTES);
             InputStream is = rs.getBinaryStream(BLOB);
             // byte[] blob = rs.getBytes(7); // preStatement.setObject(5, blob);
-            if (storageId == null)
-               storageId = StorageId.valueOf(this.glob, queueName);
+            StorageId storageId = (storageIdDefault != null) ? storageIdDefault : StorageId.valueOf(this.glob,
+                  queueName);
             if (is == null) {
                String txt = "dataId='" + dataId + "' prio='" + prio + "' typeName='" + typeName + "' persistent='" + persistent + "' sizeInBytes='" + sizeInBytes + "'";
                log.warning("The stream for the blob of data: " + txt + " is null");

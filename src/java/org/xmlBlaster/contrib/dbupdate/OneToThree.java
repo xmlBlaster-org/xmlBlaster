@@ -71,7 +71,7 @@ public class OneToThree {
       String[] queueNamePatterns = { 
             Constants.RELATING_TOPICSTORE, Constants.RELATING_MSGUNITSTORE,
             Constants.RELATING_SESSION, Constants.RELATING_SUBSCRIBE, Constants.RELATING_CALLBACK,
-            Constants.RELATING_HISTORY };
+            Constants.RELATING_HISTORY, Constants.RELATING_SUBJECT };
       for (int i = 0; i < queueNamePatterns.length; i++) {
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
@@ -114,7 +114,7 @@ public class OneToThree {
 
    public void transformClientSide() throws Exception {
       initConnections();
-      String[] queueNamePatterns = { Constants.RELATING_CLIENT };
+      String[] queueNamePatterns = { Constants.RELATING_CLIENT, Constants.RELATING_CLIENT_UPDATE };
       for (int i = 0; i < queueNamePatterns.length; i++) {
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
