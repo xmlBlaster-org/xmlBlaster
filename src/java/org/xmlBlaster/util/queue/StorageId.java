@@ -29,12 +29,16 @@ public class StorageId implements java.io.Serializable
    // these are used for the 2008 queues (to build an XBStore object)
    private transient String xbNode;
    private transient String xbPostfix;
-   
+
    /**
     * Create a unique id, e.g. "history:/node/heron/client/joe/-2"
-    * @param glob TODO
-    * @param prefix e.g. "history"
-    * param postfix unique string e.g. "/node/heron/client/joe/-2"
+    * 
+    * @param glob
+    * @param prefix
+    *           e.g. "history" or Constants.RELATING_SUBJECT
+    * @param postfix
+    *           unique string e.g. "/node/heron/client/joe/-2" from
+    *           sessionName.getAbsoluteName()
     */
    public StorageId(Global glob, String prefix, String postfix) {
       this.glob = Global.instance();
