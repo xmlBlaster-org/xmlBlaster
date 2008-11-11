@@ -77,9 +77,15 @@ public class StorageId implements java.io.Serializable
    private final void splitPostfix(String post) {
       if (Constants.RELATING_CALLBACK.equals(this.prefix)) { // "callback"
          //callback_nodemarcelclientsubscriber1  | UPDATE_REF
-         SessionName sn = new SessionName(this.glob, post);
-         xbNode = sn.getNodeIdStr();
-         xbPostfix = sn.getRelativeNameWithoutSessionMarker();
+         xbNode = this.glob.getNodeId().getId();
+         String token = "callback_node" + xbNode;
+         if (post.startsWith(token)) {
+            xbPostfix = post.substring(token.length());
+         } else
+            xbPostfix = post;
+         // SessionName sn = new SessionName(this.glob, post);
+         // xbNode = sn.getNodeIdStr();
+         // xbPostfix = sn.getRelativeNameWithoutSessionMarker();
          return;
       }
       else if (Constants.RELATING_SUBJECT.equals(this.prefix)) { // "subject"
