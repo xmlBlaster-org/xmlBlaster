@@ -1183,8 +1183,10 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
                I_Entry entry = this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId);
                if (entryFilter != null)
                   entry = entryFilter.intercept(entry, this.storage);
-               entries.add(entry);
-               amount += sizeInBytes;
+               if (entry != null) {
+                  entries.add(entry);
+                  amount += sizeInBytes;
+               }
             }
          }
          count++;
