@@ -11,12 +11,12 @@ import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 
-public class JdbcManagerCommonTableDelegate extends JdbcManagerCommonTable {
-   private static Logger log = Logger.getLogger(JdbcManagerCommonTableDelegate.class.getName());
+public class CommonTableDatabaseAccessorDelegate extends CommonTableDatabaseAccessor {
+   private static Logger log = Logger.getLogger(CommonTableDatabaseAccessorDelegate.class.getName());
    private /*final*/ int MAX_RETRIES;
    private /*final*/ int RETRY_SLEEP_MILLIS;
 	
-   public JdbcManagerCommonTableDelegate(JdbcConnectionPool pool,
+   public CommonTableDatabaseAccessorDelegate(JdbcConnectionPool pool,
 			I_EntryFactory factory, String managerName, I_Storage storage)
 			throws XmlBlasterException {
       super(pool, factory, managerName, storage);

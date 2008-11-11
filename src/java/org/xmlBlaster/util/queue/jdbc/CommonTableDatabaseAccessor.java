@@ -57,11 +57,11 @@ import org.xmlBlaster.util.queue.StorageId;
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  *
  */
-public class JdbcManagerCommonTable implements I_StorageProblemListener, I_StorageProblemNotifier {
+public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_StorageProblemNotifier {
 
    private static final String ME = "JdbcManagerCommonTable";
    private final Global glob;
-   private static Logger log = Logger.getLogger(JdbcManagerCommonTable.class.getName());
+   private static Logger log = Logger.getLogger(CommonTableDatabaseAccessor.class.getName());
    private final JdbcConnectionPool pool;
    private final I_EntryFactory factory;
    private final WeakHashMap listener;
@@ -132,7 +132,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *        the database. IMPORTANT: The pool must have been previously
     *        initialized.
     */
-   public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory, String managerName, I_Storage storage)
+   public CommonTableDatabaseAccessor(JdbcConnectionPool pool, I_EntryFactory factory, String managerName, I_Storage storage)
       throws XmlBlasterException {
    //   this.managerName = managerName;
       this.pool = pool;
@@ -1118,7 +1118,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (log.isLoggable(Level.FINER)) log.finer("setUp");
       if (log.isLoggable(Level.FINE)) log.fine("Initializing the first time the pool");
       tablesCheckAndSetup(this.pool.isDbAdmin());
-      synchronized(JdbcManagerCommonTable.class) {
+      synchronized(CommonTableDatabaseAccessor.class) {
          // Should be only done on startup for each database instance
          // To have a real JVM singleton a static bool is not enough (ClassLoader)
          // so we use System.properties
@@ -2571,7 +2571,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param properties the properties to use to overwrite the default properties. If you pass null, no 
     *        properties will be overwritten, and the default will be used.
     */
-   public static JdbcManagerCommonTable createInstance(Global glob, I_EntryFactory factory, String confType, String confVersion, Properties properties) 
+   public static CommonTableDatabaseAccessor createInstance(Global glob, I_EntryFactory factory, String confType, String confVersion, Properties properties) 
       throws XmlBlasterException {
       if (confType == null) confType = "JDBC";
       if (confVersion == null) confVersion = "1.0";
@@ -2610,9 +2610,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          // then it is a JdbcManager
     	 // AWARE: Used in Main.java as well
     	 boolean useJdbcManagerDelegate = glob.get("xmlBlaster/useJdbcManagerDelegate", true, properties, pluginInfo); // pluginConfig
-         JdbcManagerCommonTable manager = (useJdbcManagerDelegate) ?
-        		 new JdbcManagerCommonTableDelegate(pool, factory, "cleaner", null) :
-        		 new JdbcManagerCommonTable(pool, factory, "cleaner", null);
+         CommonTableDatabaseAccessor manager = (useJdbcManagerDelegate) ?
+        		 new CommonTableDatabaseAccessorDelegate(pool, factory, "cleaner", null) :
+        		 new CommonTableDatabaseAccessor(pool, factory, "cleaner", null);
          pool.registerStorageProblemListener(manager);
          manager.setUp();
          return manager;
@@ -2636,7 +2636,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
       throws XmlBlasterException {
-      JdbcManagerCommonTable manager = createInstance(glob, glob.getEntryFactory(), confType, confVersion,
+      CommonTableDatabaseAccessor manager = createInstance(glob, glob.getEntryFactory(), confType, confVersion,
                                        properties); 
       manager.wipeOutDB(setupNewTables);
    }
@@ -2660,7 +2660,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       try {
-         JdbcManagerCommonTable.wipeOutDB(glob, type, version, null, false);
+         CommonTableDatabaseAccessor.wipeOutDB(glob, type, version, null, false);
       }
       catch (Exception ex) {
          System.err.println("Main" + ex.toString());

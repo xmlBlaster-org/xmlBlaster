@@ -4,7 +4,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
+import org.xmlBlaster.util.queue.jdbc.CommonTableDatabaseAccessor;
 import org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 
@@ -24,7 +24,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
    private String ME = "JdbcManagerCommonTableTest";
    protected Global glob;
    private static Logger log = Logger.getLogger(JdbcManagerCommonTableTest.class.getName());
-   private JdbcManagerCommonTable manager;
+   private CommonTableDatabaseAccessor manager;
    private boolean doExecute;
    
    public JdbcManagerCommonTableTest(Global glob, String name) {
@@ -59,7 +59,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          JdbcConnectionPool pool = new JdbcConnectionPool();
          pool.initialize(this.glob, prop);
 
-         this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), pluginInfo.getTypeVersion(), null);
+         this.manager = new CommonTableDatabaseAccessor(pool, this.glob.getEntryFactory(), pluginInfo.getTypeVersion(), null);
          this.manager.setUp();
          try {
             this.manager.wipeOutDB(false);

@@ -74,7 +74,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    private Global glob;
    private static Logger log = Logger.getLogger(JdbcQueue.class.getName());
    private QueuePropertyBase property;
-   private XBQueueFactory queueFactory = null;
+   private XBDatabaseAccessor queueFactory = null;
    private I_QueuePutListener putListener;
    // to set it to -999L makes it easier to identify than -1L
    private long numOfEntries = -999L;
@@ -162,28 +162,28 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     */
-   protected XBQueueFactory getFactory(PluginInfo  plugInfo) throws XmlBlasterException {
+   protected XBDatabaseAccessor getFactory(PluginInfo  plugInfo) throws XmlBlasterException {
       String location = ME + "/type '" + plugInfo.getType() + "' version '" + plugInfo.getVersion() + "'";
       String queueFactoryName = plugInfo.toString(); //  + "-" + pluginInfo.getTypeVersion();
       Object obj = glob.getObjectEntry(queueFactoryName);              
-      XBQueueFactory qFactory = null;
+      XBDatabaseAccessor qFactory = null;
       try {
          if (obj == null) {
-           synchronized (XBQueueFactory.class) {
+           synchronized (XBDatabaseAccessor.class) {
               obj = glob.getObjectEntry(queueFactoryName); // could have been initialized meanwhile              
               if ( obj == null) {
-                 qFactory = new XBQueueFactory();
+                 qFactory = new XBDatabaseAccessor();
                  if (log.isLoggable(Level.FINE)) 
                     log.fine("Created JdbcManagerCommonTable instance for storage plugin configuration '" + queueFactoryName + "'");
                  
                  glob.addObjectEntry(queueFactoryName, qFactory);
               }
               else
-                 qFactory = (XBQueueFactory)obj;
+                 qFactory = (XBDatabaseAccessor)obj;
            }
          }
          else 
-            qFactory = (XBQueueFactory)obj;
+            qFactory = (XBDatabaseAccessor)obj;
          qFactory.initFactory(glob, plugInfo);
       }
       catch (Throwable ex) {

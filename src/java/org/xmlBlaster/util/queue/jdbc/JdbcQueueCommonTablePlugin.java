@@ -76,7 +76,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private Global glob;
    private static Logger log = Logger.getLogger(JdbcQueueCommonTablePlugin.class.getName());
    private QueuePropertyBase property;
-   private JdbcManagerCommonTable manager = null;
+   private CommonTableDatabaseAccessor manager = null;
    private I_QueuePutListener putListener;
    // to set it to -999L makes it easier to identify than -1L
    private long numOfEntries = -999L;
@@ -177,33 +177,33 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     */
-   protected JdbcManagerCommonTable getJdbcQueueManagerCommonTable(PluginInfo pluginInfo)
+   protected CommonTableDatabaseAccessor getJdbcQueueManagerCommonTable(PluginInfo pluginInfo)
       throws XmlBlasterException {
       String location = ME + "/type '" + pluginInfo.getType() + "' version '" + pluginInfo.getVersion() + "'";
       String managerName = pluginInfo.toString(); //  + "-" + pluginInfo.getTypeVersion();
       Object obj = this.glob.getObjectEntry(managerName);              
-      JdbcManagerCommonTable manager = null;
+      CommonTableDatabaseAccessor manager = null;
       try {
          if (obj == null) {
-           synchronized (JdbcManagerCommonTable.class) {
+           synchronized (CommonTableDatabaseAccessor.class) {
               obj = this.glob.getObjectEntry(managerName); // could have been initialized meanwhile              
               if ( obj == null) {
                  JdbcConnectionPool pool = new JdbcConnectionPool();
                  pool.initialize(this.glob, pluginInfo.getParameters());
             	 boolean useJdbcManagerDelegate = glob.get("xmlBlaster/useJdbcManagerDelegate", true, null, pluginInfo);
                  manager = (useJdbcManagerDelegate) ?
-                     new JdbcManagerCommonTableDelegate(pool, this.glob.getEntryFactory(), managerName, this) :
-                     new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName, this);
+                     new CommonTableDatabaseAccessorDelegate(pool, this.glob.getEntryFactory(), managerName, this) :
+                     new CommonTableDatabaseAccessor(pool, this.glob.getEntryFactory(), managerName, this);
                  pool.registerStorageProblemListener(manager);
                  manager.setUp();
                  if (log.isLoggable(Level.FINE)) log.fine("Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
       
                  this.glob.addObjectEntry(managerName, manager);
               }
-              else manager = (JdbcManagerCommonTable)obj;
+              else manager = (CommonTableDatabaseAccessor)obj;
            }
          }
-         else manager = (JdbcManagerCommonTable)obj;
+         else manager = (CommonTableDatabaseAccessor)obj;
 
          if (!manager.getPool().isInitialized()) {
             manager.getPool().initialize(this.glob, pluginInfo.getParameters());
@@ -1121,7 +1121,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "update not implemented");
    }
 
-   public JdbcManagerCommonTable getManager() {
+   public CommonTableDatabaseAccessor getManager() {
       return this.manager;
    }
 

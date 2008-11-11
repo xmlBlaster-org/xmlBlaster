@@ -102,7 +102,7 @@ import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
+import org.xmlBlaster.util.queue.jdbc.CommonTableDatabaseAccessor;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
@@ -2609,7 +2609,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
 
          // Check no 1: find callback entries with negative session id and no logged in such session
-         final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(glob, glob.getEntryFactory(), null, null, null);
+         final CommonTableDatabaseAccessor manager = CommonTableDatabaseAccessor.createInstance(glob, glob.getEntryFactory(), null, null, null);
          final Set leakedEntries = new HashSet();
          if (manager != null) {
             try {
@@ -2891,7 +2891,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          final Map foundInCallbackQueue = new HashMap();
          final Map notFoundInCallbackQueue = new HashMap();
 
-         final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(glob, glob.getEntryFactory(), null, null, null);
+         final CommonTableDatabaseAccessor manager = CommonTableDatabaseAccessor.createInstance(glob, glob.getEntryFactory(), null, null, null);
 
          // Process each msgUnit of this topic
          final TopicHandler topicHandler = glob.getTopicAccessor().access(topicOid);

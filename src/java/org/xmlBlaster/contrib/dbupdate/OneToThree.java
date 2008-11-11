@@ -15,24 +15,35 @@ import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
+import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
+import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
+import org.xmlBlaster.util.queue.jdbc.CommonTableDatabaseAccessor;
 import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 
 public class OneToThree {
    private static Logger log = Logger.getLogger(OneToThree.class.getName());
    private ServerScope globOne;
+   private ServerScope globThree;
    private File to_file;
    private FileOutputStream out_;
    private Map jdbcQueueMap = new TreeMap();
 
-   public OneToThree(ServerScope glob) throws XmlBlasterException {
-      this.globOne = glob;
+   public OneToThree(ServerScope globOne, ServerScope globThree) throws XmlBlasterException {
+      this.globOne = globOne;
+      this.globThree = globThree;
       /*
        * String[] args = { "-QueuePlugin[JDBC][1.0]",
        * "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin",
@@ -42,21 +53,21 @@ public class OneToThree {
        */
    }
 
-   public JdbcManagerCommonTable createInstance() throws Exception {
+   public CommonTableDatabaseAccessor createInstance() throws Exception {
       ServerEntryFactory sf = new ServerEntryFactory();
       sf.initialize(globOne);
       String queueCfg = globOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String)null);
       Properties queueProps = parsePropertyValue(queueCfg);
       JdbcConnectionPool pool = new JdbcConnectionPool();
       pool.initialize(globOne, queueProps);
-      JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, sf, "dbupdate.OneToThree", null);
+      CommonTableDatabaseAccessor manager = new CommonTableDatabaseAccessor(pool, sf, "dbupdate.OneToThree", null);
       pool.registerStorageProblemListener(manager);
       manager.setUp();
       return manager;
    }
 
    public void transform() throws Exception {
-      final JdbcManagerCommonTable manager = createInstance();
+      final CommonTableDatabaseAccessor manager = createInstance();
       String queueNamePattern = Constants.RELATING_CALLBACK + "%";
       String flag = "UPDATE_REF";
       manager.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
@@ -132,7 +143,38 @@ public class OneToThree {
       if (jdbcQueue == null) {
          jdbcQueue = new JdbcQueue();
          StorageId uniqueQueueId = new StorageId(globOne, oldQueueName);
-         jdbcQueue.initialize(uniqueQueueId, null);
+         QueuePropertyBase queuePropertyBase = null;
+         if (oldQueueName.toLowerCase().startsWith("session"))
+            queuePropertyBase = new SessionStoreProperty(globThree, globThree.getNodeId().getId());
+         else if (oldQueueName.toLowerCase().startsWith("subscribe"))
+            queuePropertyBase = new SubscribeStoreProperty(globThree, globThree.getNodeId().getId());
+         else if (oldQueueName.toLowerCase().startsWith("topicstore"))
+            queuePropertyBase = new TopicStoreProperty(globThree, globThree.getNodeId().getId());
+         else if (oldQueueName.toLowerCase().startsWith("history"))
+            queuePropertyBase = new HistoryQueueProperty(globThree, globThree.getNodeId().getId());
+         else if (oldQueueName.toLowerCase().startsWith("msgunitstore"))
+            queuePropertyBase = new MsgUnitStoreProperty(globThree, globThree.getNodeId().getId());
+         else if (oldQueueName.toLowerCase().startsWith("callback"))
+            queuePropertyBase = new CbQueueProperty(globThree, null, globThree.getNodeId().getId());
+         else if (oldQueueName.toLowerCase().startsWith("connection"))
+            queuePropertyBase = new ClientQueueProperty(globThree, globThree.getNodeId().getId());
+         else
+            throw new IllegalArgumentException("Don't know how to handle queuename=" + oldQueueName);
+         
+         PluginInfo pluginInfo = null;
+         /*
+          * PluginInfo pluginInfo = new PluginInfo(globThree, pluginManager,
+          * "JDBC", "1.0"); java.util.Properties prop =
+          * (java.util.Properties)pluginInfo.getParameters();
+          * prop.put("tableNamePrefix", "TEST"); prop.put("entriesTableName",
+          * "_entries"); I_Queue tmpQueue = pluginManager.getPlugin(pluginInfo,
+          * queueId, cbProp);
+          * 
+          * String queueCfg =
+          * globOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String)null);
+          */
+         jdbcQueue.init(globThree, pluginInfo);
+         jdbcQueue.initialize(uniqueQueueId, queuePropertyBase);
          jdbcQueueMap.put(key, jdbcQueue);
       }
       return jdbcQueue;
@@ -142,7 +184,7 @@ public class OneToThree {
    public static void main(String[] args) {
       OneToThree ott = null;
       try {
-         ott = new OneToThree(new ServerScope(args));
+         ott = new OneToThree(new ServerScope(args), new ServerScope(args));
          ott.createReportFile();
          ott.transform();
       } catch (Exception e) {

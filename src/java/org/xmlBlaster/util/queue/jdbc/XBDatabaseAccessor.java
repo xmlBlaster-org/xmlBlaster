@@ -55,7 +55,7 @@ import org.xmlBlaster.util.queue.StorageId;
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  *
  */
-public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemListener, I_StorageProblemNotifier {
+public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProblemListener, I_StorageProblemNotifier {
 
    
    private class QueueGlobalInfo extends GlobalInfo {
@@ -142,7 +142,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
    
    private static final String ME = "XBQueueFactory";
    //private I_Info info;
-   private static Logger log = Logger.getLogger(XBQueueFactory.class.getName());
+   private static Logger log = Logger.getLogger(XBDatabaseAccessor.class.getName());
    private I_DbPool pool;
    private I_EntryFactory factory;
    private WeakHashMap listener;
@@ -189,7 +189,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     private int timeout;
     private boolean dbAdmin = true;
     
-    public XBQueueFactory() {
+    public XBDatabaseAccessor() {
        super();
     }
 
@@ -352,7 +352,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
          errCode = ErrorCode.RESOURCE_DB_UNKNOWN;
       if (msg == null)
          msg = origEx.getMessage();
-      throw new XmlBlasterException(glob, errCode, XBQueueFactory.class.getName(), msg, origEx);
+      throw new XmlBlasterException(glob, errCode, XBDatabaseAccessor.class.getName(), msg, origEx);
       
    }
    private final void releaseConnection(Connection conn, boolean success, String msg) throws XmlBlasterException {
@@ -1048,7 +1048,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
    public final void setUp(boolean deleteAllTransients) throws XmlBlasterException {
       if (log.isLoggable(Level.FINE)) 
          log.fine("Initializing the first time the pool");
-      synchronized(XBQueueFactory.class) {
+      synchronized(XBDatabaseAccessor.class) {
          // Should be only done on startup for each database instance
          // To have a real JVM singleton a static bool is not enough (ClassLoader)
          // so we use System.properties
@@ -1614,7 +1614,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     * @param properties the properties to use to overwrite the default properties. If you pass null, no 
     *        properties will be overwritten, and the default will be used.
     */
-   public static XBQueueFactory createInstance(Global glob, String confType, String confVersion, Properties properties) 
+   public static XBDatabaseAccessor createInstance(Global glob, String confType, String confVersion, Properties properties) 
       throws XmlBlasterException {
       if (confType == null) confType = "JDBC";
       if (confVersion == null) confVersion = "1.0";
@@ -1641,7 +1641,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
       }
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueue".equals(queueClassName)) {
          
-         XBQueueFactory queueFactory = new XBQueueFactory();
+         XBDatabaseAccessor queueFactory = new XBDatabaseAccessor();
          queueFactory.initFactory(glob, pluginInfo);
          final boolean deleteAllTransients = false; // TODO check if this is correct
          queueFactory.setUp(deleteAllTransients);
@@ -1666,7 +1666,7 @@ public class XBQueueFactory extends XBFactoryBase implements I_StorageProblemLis
     */
    public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
       throws XmlBlasterException {
-      XBQueueFactory factory = createInstance(glob, confType, confVersion, properties); 
+      XBDatabaseAccessor factory = createInstance(glob, confType, confVersion, properties); 
       factory.wipeOutDB(setupNewTables);
    }
 
