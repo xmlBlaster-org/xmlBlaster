@@ -9,11 +9,13 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.TopicAccessor;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -28,41 +30,52 @@ import org.xmlBlaster.util.queue.jdbc.XBStore;
 
 public class OneToThree {
    private static Logger log = Logger.getLogger(OneToThree.class.getName());
-   private ServerScope globOne;
-   private ServerScope globThree;
+   private ServerScope serverScopeOne;
+   private ServerScope serverScopeThree;
+   private Global globalOne;
+   private Global globalThree;
    private File to_file;
    private FileOutputStream out_;
    private Map xbStoreMap = new TreeMap();
    private int counter;
    private int total;
 
-   private CommonTableDatabaseAccessor managerOne;
-   private XBDatabaseAccessor managerThree;
+   private CommonTableDatabaseAccessor dbAccessorServerOne;
+   private XBDatabaseAccessor dbAccessorServerThree;
+   private CommonTableDatabaseAccessor dbAccessorClientOne;
+   private XBDatabaseAccessor dbAccessorClientThree;
 
-   public OneToThree(ServerScope globOne, ServerScope globThree) throws XmlBlasterException {
-      this.globOne = globOne;
-      this.globThree = globThree;
+   public OneToThree(ServerScope serverScopeOne, ServerScope serverScopeThree, Global globalOne, Global globalThree)
+         throws XmlBlasterException {
+      this.serverScopeOne = serverScopeOne;
+      this.serverScopeThree = serverScopeThree;
+      this.globalOne = globalOne;
+      this.globalThree = globalThree;
    }
    
    public void initConnections() throws Exception {
-      if (this.managerOne == null)
-         this.managerOne = createInstanceOne();
-      if (this.managerThree == null)
-         this.managerThree = createInstanceThree();
+      if (this.dbAccessorServerOne == null)
+         this.dbAccessorServerOne = createServerScopeAccessorOne();
+      if (this.dbAccessorServerThree == null)
+         this.dbAccessorServerThree = createServerScopeAccessorThree();
 
+      if (this.dbAccessorClientOne == null)
+         this.dbAccessorClientOne = createClientAccessorOne();
+      if (this.dbAccessorClientThree == null)
+         this.dbAccessorClientThree = createClientAccessorThree();
    }
 
-   public void transform() throws Exception {
+   public void transformServerScope() throws Exception {
       initConnections();
       String[] queueNamePatterns = { 
             Constants.RELATING_TOPICSTORE, Constants.RELATING_MSGUNITSTORE,
             Constants.RELATING_SESSION, Constants.RELATING_SUBSCRIBE, Constants.RELATING_CALLBACK,
-            Constants.RELATING_HISTORY, Constants.RELATING_CLIENT };
+            Constants.RELATING_HISTORY };
       for (int i = 0; i < queueNamePatterns.length; i++) {
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
          counter = 0;
-         managerOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
+         dbAccessorServerOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
             public I_Entry intercept(I_Entry ent, I_Storage storage) {
                try {
                   if (!ent.isPersistent()) {
@@ -75,13 +88,46 @@ public class OneToThree {
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
                      String queueName = refEntry.getStorageId().getId(); // "callback:callback_nodeheronclientsubscriber71";
                      XBStore xbStore = getXBStore(queueName);
-                     managerThree.addEntry(xbStore, refEntry);
+                     dbAccessorServerThree.addEntry(xbStore, refEntry);
                   } else {
                      I_MapEntry entry = (I_MapEntry) ent;
                      String queueName = entry.getStorageId().getId(); // msgUnitStore:msgUnitStore_heronHello
                      XBStore xbStore = getXBStore(queueName);
-                     managerThree.addEntry(xbStore, entry);
+                     dbAccessorServerThree.addEntry(xbStore, entry);
                   }
+                  counter++;
+                  total++;
+                  return null; // Filter away so getAll returns nothing
+               } catch (Throwable e) {
+                  e.printStackTrace();
+                  log.warning("Ignoring during callback queue processing exception: " + e.toString());
+                  logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring during processing exception: "
+                        + e.toString());
+                  return null; // Filter away so getAll returns nothing
+               }
+            }
+         });
+         logToFile(queueNamePattern + " [count=" + counter + "]: Done");
+      }
+   }
+
+   public void transformClientSide() throws Exception {
+      initConnections();
+      String[] queueNamePatterns = { Constants.RELATING_CLIENT };
+      for (int i = 0; i < queueNamePatterns.length; i++) {
+         final String queueNamePattern = queueNamePatterns[i] + "%";
+         String flag = null; // "UPDATE_REF" "MSG_XML" etc.
+         counter = 0;
+         dbAccessorClientOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
+            public I_Entry intercept(I_Entry ent, I_Storage storage) {
+               try {
+                  if (!ent.isPersistent()) {
+                     log.info("Ignoring transient entry " + ent.getLogId());
+                     logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring transient entry "
+                           + ent.getLogId());
+                     return null;
+                  }
+                  log.severe("TODO CLIENT SIDE");
                   counter++;
                   total++;
                   return null; // Filter away so getAll returns nothing
@@ -153,38 +199,62 @@ public class OneToThree {
       }
    }
 
-   public CommonTableDatabaseAccessor createInstanceOne() throws Exception {
-      this.globOne.setTopicAccessor(new TopicAccessor(this.globOne));
+   public CommonTableDatabaseAccessor createServerScopeAccessorOne() throws Exception {
+      this.serverScopeOne.setTopicAccessor(new TopicAccessor(this.serverScopeOne));
       ServerEntryFactory sf = new ServerEntryFactory();
-      sf.initialize(this.globOne);
-      String queueCfg = this.globOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String) null);
+      sf.initialize(this.serverScopeOne);
+      String queueCfg = this.serverScopeOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String) null);
       Properties queueProps = parsePropertyValue(queueCfg);
       JdbcConnectionPool pool = new JdbcConnectionPool();
-      pool.initialize(this.globOne, queueProps);
+      pool.initialize(this.serverScopeOne, queueProps);
       CommonTableDatabaseAccessor manager = new CommonTableDatabaseAccessor(pool, sf, "dbupdate.OneToThree", null);
       pool.registerStorageProblemListener(manager);
       manager.setUp();
       return manager;
    }
 
-   public XBDatabaseAccessor createInstanceThree() throws Exception {
+   public CommonTableDatabaseAccessor createClientAccessorOne() throws Exception {
+      ClientEntryFactory sf = new ClientEntryFactory();
+      sf.initialize(this.globalOne);
+      String queueCfg = this.globalOne.getProperty().get("QueuePlugin[JDBC][1.0]", (String) null);
+      Properties queueProps = parsePropertyValue(queueCfg);
+      JdbcConnectionPool pool = new JdbcConnectionPool();
+      pool.initialize(this.globalOne, queueProps);
+      CommonTableDatabaseAccessor manager = new CommonTableDatabaseAccessor(pool, sf, "dbupdate.ClientOneToThree", null);
+      pool.registerStorageProblemListener(manager);
+      manager.setUp();
+      return manager;
+   }
+
+   public XBDatabaseAccessor createServerScopeAccessorThree() throws Exception {
       String confType = "JDBC";
       String confVersion = "1.0";
-      String queueCfg = globThree.getProperty()
+      String queueCfg = serverScopeThree.getProperty()
             .get("QueuePlugin[" + confType + "][" + confVersion + "]", (String) null);
       Properties queueProps = parsePropertyValue(queueCfg);
       XBDatabaseAccessor accessorThree = XBDatabaseAccessor
-            .createInstance(globThree, confType, confVersion, queueProps);
+            .createInstance(serverScopeThree, confType, confVersion, queueProps);
+      return accessorThree;
+   }
+
+   public XBDatabaseAccessor createClientAccessorThree() throws Exception {
+      String confType = "JDBC";
+      String confVersion = "1.0";
+      String queueCfg = globalThree.getProperty().get("QueuePlugin[" + confType + "][" + confVersion + "]",
+            (String) null);
+      Properties queueProps = parsePropertyValue(queueCfg);
+      XBDatabaseAccessor accessorThree = XBDatabaseAccessor.createInstance(globalThree, confType, confVersion,
+            queueProps);
       return accessorThree;
    }
 
    public void wipeOutThree() throws Exception {
       String confType = "JDBC";
       String confVersion = "1.0";
-      String queueCfg = globThree.getProperty()
+      String queueCfg = serverScopeThree.getProperty()
             .get("QueuePlugin[" + confType + "][" + confVersion + "]", (String) null);
       Properties queueProps = parsePropertyValue(queueCfg);
-      XBDatabaseAccessor.wipeOutDB(globThree, confType, confVersion, queueProps, true);
+      XBDatabaseAccessor.wipeOutDB(serverScopeThree, confType, confVersion, queueProps, true);
    }
 
    /*
@@ -206,13 +276,13 @@ public class OneToThree {
          // postfix: callback_nodeheronclientsubscriber71
          // xbnode: heron
          // xbpostfix: client/callback_nodeheronclientsubscriber71
-         StorageId uniqueQueueId = new StorageId(globOne, oldQueueName);
+         StorageId uniqueQueueId = new StorageId(serverScopeOne, oldQueueName);
          // store = new XBStore();
          // store.setId(id);
          // store.setNode(node);
          // store.setType(storeType);
          // store.setPostfix(storePostfix);
-         store = managerThree.getXBStore(uniqueQueueId);
+         store = dbAccessorServerThree.getXBStore(uniqueQueueId);
          // jdbcQueue.init(globThree, pluginInfo);
          // jdbcQueue.initialize(uniqueQueueId, queuePropertyBase);
          xbStoreMap.put(key, store);
@@ -265,11 +335,11 @@ public class OneToThree {
    public static void main(String[] args) {
       OneToThree ott = null;
       try {
-         ott = new OneToThree(new ServerScope(args), new ServerScope(args));
+         ott = new OneToThree(new ServerScope(args), new ServerScope(args), new Global(args), new Global(args));
          ott.createReportFile();
          ott.wipeOutThree();
-        // ott.transformMsgStore();
-         ott.transform();
+         ott.transformServerScope();
+         ott.transformClientSide();
       } catch (Exception e) {
          e.printStackTrace();
          if (ott != null)
