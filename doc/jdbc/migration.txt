@@ -1,0 +1,45 @@
+              queuename               |    flag
+--------------------------------------+-------------
+ session_heronsubPersistence,1_0      | SESSION
+ subscribe_heronsubPersistence,1_0    | SUBSCRIBE
+ topicStore_heron                     | TOPIC_XML
+ history_heronHello                   | HISTORY_REF
+ msgUnitStore_heronHello              | MSG_XML
+ history_heronHello                   | HISTORY_REF
+ callback_nodeheronclientsubscriber71 | UPDATE_REF
+ msgUnitStore_heronHello              | MSG_XML
+ history_heronHello                   | HISTORY_REF
+ callback_nodeheronclientsubscriber71 | UPDATE_REF
+ msgUnitStore_heronHello              | MSG_XML
+ connection_clientpubisherToHeron2    | publish
+ (12)
+
+       xbnode         |    xbtype    |               xbpostfix                
+----------------------+--------------+----------------------------------------
+heron                 | subject      | __RequestBroker_internal_heron_        
+heron                 | callback     | client__RequestBroker_internal_heron_1 
+heron                 | topicStore   |                                        
+heron                 | session      | subPersistence,1_0                     
+heron                 | subscribe    | subPersistence,1_0                     
+heron                 | subject      | __sys__jdbc                            
+heron                 | callback     | client__sys__jdbc-1                    
+clientpubisherToHeron | connection   | 2                                      
+heron                 | subject      | pubisherToHeron                        
+heron                 | callback     | clientpubisherToHeron2                 
+clientsubscriber7     | connection   | 1                                      
+heron                 | subject      | subscriber7                            
+heron                 | callback     | clientsubscriber71                     
+heron                 | msgUnitStore | Hlol                                   
+heron                 | history      | Hlol                                   
+(15)
+
+xbmeat:
+ xbdatatype
+------------
+ SESSION
+ SUBSCRIBE
+ TOPIC_XML
+ MSG_XML
+ MSG_XML
+(5 rows)
+
