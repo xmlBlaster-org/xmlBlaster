@@ -20,6 +20,17 @@ Size in bytes           3                    300000
 Old Queues:        9.94-35.71 pub/sec     4.42-4.46 pub/sec 
 Queues2008:       13.15-38.02 pub/sec     7.93-8.26 pub/sec
 
+With performMulti.sh 1 (with 30 subscribers)
+============================================
+
+Size in bytes
+
+Old Queues:     13.51-14.04 pub/sec       2.47      pub/sec
+Queues 2008:    14.70-16.90 pub/sec       6.41-7.25 pub/sec
+
+
+
+
 
 III: New Tables empty (Marcel Setup):
 ================================
@@ -28,3 +39,8 @@ III.B) connectionPoolSize=15
 No CPU/RAM/HD saturation
 300kB => Pub: 224sec =>  2.2 msg/sec (Subscribers: 5*MAC OSX, 5*Linux)
 3Bytes=> Pub:  42sec => 11.9 msg/sec (Subscribers: 5*MAC OSX, 5*Linux)
+
+
+
+
+
