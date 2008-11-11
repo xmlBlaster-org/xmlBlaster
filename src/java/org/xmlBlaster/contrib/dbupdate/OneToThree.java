@@ -27,6 +27,7 @@ import org.xmlBlaster.util.queue.jdbc.CommonTableDatabaseAccessor;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.jdbc.XBDatabaseAccessor;
 import org.xmlBlaster.util.queue.jdbc.XBStore;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 public class OneToThree {
    private static Logger log = Logger.getLogger(OneToThree.class.getName());
@@ -127,7 +128,10 @@ public class OneToThree {
                            + ent.getLogId());
                      return null;
                   }
-                  log.severe("TODO CLIENT SIDE");
+                  MsgQueueEntry entry = (MsgQueueEntry) ent;
+                  String queueName = entry.getStorageId().getId(); // "connection:connection_clientpubisherToHeron2"
+                  XBStore xbStore = getXBStore(queueName);
+                  dbAccessorClientThree.addEntry(xbStore, entry);
                   counter++;
                   total++;
                   return null; // Filter away so getAll returns nothing
