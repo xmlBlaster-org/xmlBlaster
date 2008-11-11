@@ -17,7 +17,6 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 
-// http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/
 import edu.emory.mathcs.backport.java.util.concurrent.BlockingQueue;
 import edu.emory.mathcs.backport.java.util.concurrent.LinkedBlockingQueue;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
@@ -168,8 +167,7 @@ public final class TopicAccessor {
       synchronized (this.topicHandlerMap) {
          oldOne = this.topicHandlerMap.get(oid);
          if (oldOne == null) {
-            TopicHandler topicHandler = new TopicHandler(this.serverScope
-                  .getRequestBroker(), sessionInfo, oid);
+            TopicHandler topicHandler = new TopicHandler(this.serverScope, sessionInfo, oid);
             tc = new TopicContainer(topicHandler);
             this.topicHandlerMap.put(topicHandler.getUniqueKey(), tc);
          } else {

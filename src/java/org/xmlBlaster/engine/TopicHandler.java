@@ -5,72 +5,67 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import java.util.logging.Logger;
+import java.util.TreeMap;
 import java.util.logging.Level;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.checkpoint.I_Checkpoint;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
-import org.xmlBlaster.engine.queuemsg.TopicEntry;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.TopicProperty;
-import org.xmlBlaster.util.qos.HistoryQos;
-import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.engine.distributor.I_MsgDistributor;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.EraseQosServer;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
+import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.TopicEntry;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.SubjectInfo;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
-import org.xmlBlaster.engine.distributor.I_MsgDistributor;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.EraseQos;
-
-import org.xmlBlaster.client.qos.PublishReturnQos;
-
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.StatusQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 
 /**
@@ -192,8 +187,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @param publisherSessionInfo Is null if created by subscription
     * @param a MsgUnitWrapper containing the CORBA MsgUnit data container
     */
-   public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, String uniqueKey) throws XmlBlasterException {
-      this.serverScope = requestBroker.getServerScope();
+   public TopicHandler(ServerScope serverScope, SessionInfo publisherSessionInfo, String uniqueKey)
+         throws XmlBlasterException {
+      this.serverScope = serverScope;
       if (uniqueKey == null)
          throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
 
@@ -206,7 +202,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       String instanceName = this.serverScope.validateJmxValue(this.uniqueKey);
       this.contextNode = new ContextNode(ContextNode.TOPIC_MARKER_TAG, instanceName, this.serverScope.getContextNode());
 
-      this.requestBroker = requestBroker;
+      this.requestBroker = this.serverScope.getRequestBroker();
       this.destroyTimer = this.serverScope.getTopicTimer();
       // this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
 
