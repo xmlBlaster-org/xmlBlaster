@@ -85,7 +85,7 @@ public class StorageId implements java.io.Serializable
          if (post.startsWith(token)) {
             xbPostfix = post.substring(token.length());
          } else {
-            token = this.prefix + xbNode; // "history_heronHello"
+            token = this.prefix + "_" + xbNode; // "history_heronHello"
             if (post.startsWith(token)) {
                xbPostfix = post.substring(token.length());
             } else {
@@ -111,7 +111,24 @@ public class StorageId implements java.io.Serializable
          }
          return;
       }
+      else if (Constants.RELATING_CLIENT.equals(this.prefix)) { // "connection"
+         // connection_clientpubisherToHeron2 | "publish"
+         xbNode = this.glob.getNodeId().getId();
+         String token = this.prefix + "_node" + xbNode; // "connection_nodeheron"
+         if (post.startsWith(token)) {
+            xbPostfix = post.substring(token.length());
+         } else {
+            token = this.prefix + "_"; // "history_heronHello"
+            if (post.startsWith(token)) {
+               xbPostfix = post.substring(token.length());
+            } else {
+               xbPostfix = post;
+            }
+         }
+         return;
+      }
       else {
+         // 
          log.severe("Can't handle storageId '" + post + "'");
          // throw new IllegalArgumentException("Can't handle storageId '" + post
          // + "'");
