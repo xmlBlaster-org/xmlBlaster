@@ -72,7 +72,7 @@ public class OneToThree {
                      if (topicHandler != null)
                         globOne.getTopicAccessor().release(topicHandler);
                   }
-
+                  // return (MsgUnitWrapper)msgUnitCache.get(uniqueId);
                   MsgUnitWrapper msgUnit = refEntry.getMsgUnitWrapper();
                   if (msgUnit != null)
                      managerThree.addEntry(xbStore, msgUnit);
