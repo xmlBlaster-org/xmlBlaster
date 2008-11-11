@@ -20,4 +20,6 @@
   Check if ref lost meat ('F' is one to one)
   select * from xbref left outer join xbmeat on (xbref.xbmeatid=xbmeat.xbmeatid) where xbref.xbonetomany='F';
 
-- 
+-  We need a delegate to recover exceptions: XbDatabaseAccessorDelegat
+
+- Consistency check is only for old xb_entries: RequestBroker.checkCallbackEntriesConsistency()
