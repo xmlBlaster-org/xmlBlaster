@@ -34,16 +34,17 @@ public class SubscribeEntry implements I_MapEntry {
    private final long size;
    private transient boolean swapped = false;
    private transient Timestamp sortTimestamp;
+   private transient StorageId storageId;
 
    /**
     * this constructor should be used by factories
-    * 
     * @param qos
     * @param uniqueId
     * @param size
+    * @param storageId TODO
     */
    public SubscribeEntry(String key, String qos, String sessionName,
-         long uniqueId, long size) {
+         long uniqueId, long size, StorageId storageId) {
       if (size < 1L)
          this.size = qos.length() + key.length() + sessionName.length();
       else
@@ -56,6 +57,7 @@ public class SubscribeEntry implements I_MapEntry {
       else
          this.uniqueId = uniqueId;
       this.uniqueIdStr = "" + this.uniqueId;
+      this.storageId = storageId;
    }
 
    /**
@@ -230,5 +232,8 @@ public class SubscribeEntry implements I_MapEntry {
       ref.setPrio(getPriority());
       return ref;
    }
-
+   
+   public StorageId getStorageId() {
+      return storageId;
+   }
 }

@@ -5,8 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -20,6 +21,7 @@ import org.xmlBlaster.util.queue.jdbc.XBStore;
 public class StorageId implements java.io.Serializable
 {
    private static final long serialVersionUID = 485407826616456805L;
+   private static Logger log = Logger.getLogger(StorageId.class.getName());
    private Global glob;
    private transient final String prefix;
    private transient final String postfix;
@@ -75,25 +77,44 @@ public class StorageId implements java.io.Serializable
 
    
    private final void splitPostfix(String post) {
-      if (Constants.RELATING_CALLBACK.equals(this.prefix)) { // "callback"
+      if (Constants.RELATING_CALLBACK.equals(this.prefix) || Constants.RELATING_SUBJECT.equals(this.prefix)
+            || Constants.RELATING_HISTORY.equals(this.prefix)) { // "callback"
          //callback_nodemarcelclientsubscriber1  | UPDATE_REF
          xbNode = this.glob.getNodeId().getId();
-         String token = "callback_node" + xbNode;
+         String token = this.prefix + "_node" + xbNode; // "callback_nodeheron"
          if (post.startsWith(token)) {
             xbPostfix = post.substring(token.length());
-         } else
-            xbPostfix = post;
-         // SessionName sn = new SessionName(this.glob, post);
-         // xbNode = sn.getNodeIdStr();
-         // xbPostfix = sn.getRelativeNameWithoutSessionMarker();
+         } else {
+            token = this.prefix + xbNode; // "history_heronHello"
+            if (post.startsWith(token)) {
+               xbPostfix = post.substring(token.length());
+            } else {
+               xbPostfix = post;
+            }
+         }
          return;
       }
-      else if (Constants.RELATING_SUBJECT.equals(this.prefix)) { // "subject"
-         //subject_nodemarcelclientsomebody
-         SessionName sn = new SessionName(this.glob, post);
-         xbNode = sn.getNodeIdStr();
-         xbPostfix = sn.getLoginName();
+      else if (Constants.RELATING_MSGUNITSTORE.equals(this.prefix) || Constants.RELATING_SESSION.equals(this.prefix)
+            || Constants.RELATING_SUBSCRIBE.equals(this.prefix) || Constants.RELATING_TOPICSTORE.equals(this.prefix)) {
+         // msgUnitStore:msgUnitStore_heronHello | MSG_XML
+         // session_heronsubPersistence,1_0 | SESSION
+         // subscribe_heronsubPersistence,1_0 | SUBSCRIBE
+         // topicStore_heron | TOPIC_XML
+         xbNode = this.glob.getNodeId().getId();
+         String token = this.prefix + "_" + xbNode;
+         if (post.length() <= token.length()) {
+            xbPostfix = "";
+         } else if (post.startsWith(token)) {
+            xbPostfix = post.substring(token.length());
+         } else {
+            xbPostfix = post;
+         }
          return;
+      }
+      else {
+         log.severe("Can't handle storageId '" + post + "'");
+         // throw new IllegalArgumentException("Can't handle storageId '" + post
+         // + "'");
       }
       int pos = post.indexOf('/');
       if (pos < 0) {

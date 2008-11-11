@@ -9,19 +9,20 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * Holding all necessary infos to establish a remote
@@ -75,7 +76,8 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
          // if (MethodName.UPDATE == msgQueueEntry.getMethodName()) {
          // if ( MethodName.UPDATE.getMethodName().equalsIgnoreCase(msgQueueEntry.getEmbeddedType())) {
          // !!! HACK !!!
-         if ( "update_ref".equalsIgnoreCase(msgQueueEntry.getEmbeddedType())) {
+         // "update_ref"
+         if (ServerEntryFactory.ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(msgQueueEntry.getEmbeddedType())) {
             UpdateReturnQosServer ret = new UpdateReturnQosServer(glob, statRetQos);
             msgQueueEntry.setReturnObj(ret);
          }

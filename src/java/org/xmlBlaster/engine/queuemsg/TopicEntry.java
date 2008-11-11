@@ -8,19 +8,19 @@ package org.xmlBlaster.engine.queuemsg;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
 
 
 /**
@@ -58,29 +58,33 @@ public final class TopicEntry implements I_MapEntry
    private transient boolean stored = false;
    private transient boolean swapped = false;
    private transient Timestamp sortTimestamp;
+   private transient StorageId storageId;
 
    /**
     * Use this constructor if a new message object is fed by method publish(). 
     * <p />
     * @param msgUnit The raw data
+    * @param storageId TODO
     */
-   public TopicEntry(ServerScope glob, MsgUnit msgUnit) throws XmlBlasterException {
-      this(glob, msgUnit, (String)null, -1L);
+   public TopicEntry(ServerScope glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
+      this(glob, msgUnit, storageId, (String)null, -1L);
    }
 
    /**
     * Used when message comes from persistence, the owning I_Map is unknown
+    * @param storageId TODO
     * @param embeddedType Allows you to control how to make this object persistent:<br />
     *         ServerEntryFactory.ENTRY_TYPE_TOPIC_XML Dump strings as XML ASCII (which is smaller, faster, portable -> and therefor default)<br />
     *         ServerEntryFactory.ENTRY_TYPE_TOPIC_SERIAL Dump object with java.io.Serializable
     * @param sizeInByte The estimated size of the entry in RAM (can be totally different on HD). 
     *                   If -1L it is estimated for you
     */
-   public TopicEntry(ServerScope glob, MsgUnit msgUnit, String embeddedType, long sizeInBytes) throws XmlBlasterException {
+   public TopicEntry(ServerScope glob, MsgUnit msgUnit, StorageId storageId, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "TopicEntry", "Invalid constructor parameter msgUnit==null");
       }
       this.msgUnit = msgUnit;
+      this.storageId = storageId;
       this.embeddedType = (embeddedType == null) ? ServerEntryFactory.ENTRY_TYPE_TOPIC_XML : embeddedType;
       //this.uniqueId = getKeyOid()+getMsgQosData().getRcvTimestamp();
       if (getMsgQosData().getRcvTimestamp() == null) {
@@ -324,7 +328,7 @@ public final class TopicEntry implements I_MapEntry
          org.xmlBlaster.engine.qos.PublishQosServer publishQosServer = new org.xmlBlaster.engine.qos.PublishQosServer(glob, "<qos><persistent/></qos>");
          publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
          MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
-         TopicEntry msgUnitWrapper = new TopicEntry(glob, msgUnit);
+         TopicEntry msgUnitWrapper = new TopicEntry(glob, msgUnit, null);
          try {
             java.io.FileOutputStream f = new java.io.FileOutputStream(fileName);
             java.io.ObjectOutputStream objStream = new java.io.ObjectOutputStream(f);
@@ -375,5 +379,8 @@ public final class TopicEntry implements I_MapEntry
       return ref;
    }
 
+   public StorageId getStorageId() {
+      return storageId;
+   }
 }
 

@@ -5,8 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore;
 
-import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.StorageId;
 
 public interface I_MapEntry extends I_Entry, java.io.Serializable
 {
@@ -41,4 +42,11 @@ public interface I_MapEntry extends I_Entry, java.io.Serializable
     * Can be used by cache implementation to implement LRU
     */
    void setSortTimestamp(Timestamp timstamp);
+   
+   /**
+    * Must be filled if retrieved from database.
+    * 
+    * @return can be null
+    */
+   public StorageId getStorageId();
 }

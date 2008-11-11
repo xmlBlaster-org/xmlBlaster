@@ -60,6 +60,7 @@ import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -2614,7 +2615,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          if (manager != null) {
             try {
                String queueNamePattern = Constants.RELATING_CALLBACK + "%";
-               String flag = "UPDATE_REF";
+               String flag = ServerEntryFactory.ENTRY_TYPE_UPDATE_REF; // "UPDATE_REF";
                manager.getEntriesLike(queueNamePattern, flag, -1, -1,
                      new I_EntryFilter() {
                   public I_Entry intercept(I_Entry ent, I_Storage storage) {

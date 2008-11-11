@@ -224,7 +224,7 @@ public class ServerEntryFactory implements I_EntryFactory
             PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
-            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, type, sizeInBytes);
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, storageId, type, sizeInBytes);
             return topicEntry;
          }
          catch (Exception ex) {
@@ -241,7 +241,7 @@ public class ServerEntryFactory implements I_EntryFactory
             }
             MsgUnit msgUnit = (MsgUnit)obj[0];
             msgUnit.setGlobal(glob);
-            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, type, sizeInBytes);
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, storageId, type, sizeInBytes);
             return topicEntry;
          }
          catch (Exception ex) {
@@ -258,7 +258,7 @@ public class ServerEntryFactory implements I_EntryFactory
                          "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
             String xmlLiteral = (String)obj[0];
-            SessionEntry sessionEntry = new SessionEntry(xmlLiteral, timestamp, sizeInBytes);
+            SessionEntry sessionEntry = new SessionEntry(xmlLiteral, timestamp, sizeInBytes, storageId);
             return sessionEntry;
          }
          catch (Exception ex) {
@@ -276,7 +276,7 @@ public class ServerEntryFactory implements I_EntryFactory
             String keyLiteral = (String)obj[0];
             String qosLiteral = (String)obj[1];
             String sessionName = (String)obj[2];
-            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, sizeInBytes);
+            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, sizeInBytes, storageId);
             return subscribeEntry;
          }
          catch (Exception ex) {
@@ -495,7 +495,7 @@ public class ServerEntryFactory implements I_EntryFactory
             PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
-            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, type, meat.getByteSize());
+            TopicEntry topicEntry = new TopicEntry(glob, msgUnit, storageId, type, meat.getByteSize());
             return topicEntry;
          }
          catch (Exception ex) {
@@ -505,7 +505,7 @@ public class ServerEntryFactory implements I_EntryFactory
       else if (ENTRY_TYPE_SESSION.equalsIgnoreCase(type)) {  // still used
          try {
             String xmlLiteral = meat.getQos();
-            SessionEntry sessionEntry = new SessionEntry(xmlLiteral, timestamp, meat.getByteSize());
+            SessionEntry sessionEntry = new SessionEntry(xmlLiteral, timestamp, meat.getByteSize(), storageId);
             return sessionEntry;
          }
          catch (Exception ex) {
@@ -517,7 +517,7 @@ public class ServerEntryFactory implements I_EntryFactory
             String keyLiteral = meat.getKey();
             String qosLiteral = meat.getQos();
             String sessionName = (String) metaInfoMap.get(XBMeat.SESSION_NAME);
-            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, meat.getByteSize());
+            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, meat.getByteSize(), storageId);
             return subscribeEntry;
          }
          catch (Exception ex) {

@@ -5,27 +5,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 
 
 /**
@@ -83,7 +84,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    private boolean stored = false;
    private transient boolean swapped = false;
    private transient Timestamp sortTimestamp;
-
+   
+   private transient StorageId storageId;
 
    /**
     * Testsuite
@@ -122,6 +124,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "MsgUnitWrapper", "Invalid constructor parameter msgUnit==null");
       }
+      this.storageId = storageId;
       this.msgUnit = msgUnit;
       this.ownerCache = ownerCache;
       this.referenceCounter = referenceCounter;
@@ -760,5 +763,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       return null;
    }
 
+   public StorageId getStorageId() {
+      return this.storageId;
+   }
 }
 

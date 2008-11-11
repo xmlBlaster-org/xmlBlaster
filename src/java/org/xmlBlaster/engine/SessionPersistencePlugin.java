@@ -7,9 +7,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine;
 
 import java.util.HashMap;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
@@ -32,12 +32,12 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
+import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_Entry;
 
 /**
  * SessionPersistencePlugin provides the persistent storage for both sessions
@@ -340,9 +340,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       }
 
       // Persist it
+      StorageId storageId = null;
       if (sessionInfo.getPersistenceUniqueId() == 0) {
          long uniqueId = new Timestamp().getTimestamp(); // new session
-         SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size());
+         SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size(), storageId);
          if (log.isLoggable(Level.FINE)) log.fine("addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
          sessionInfo.setPersistenceUniqueId(uniqueId);
          this.sessionStore.put(entry);
@@ -353,7 +354,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.sessionStore.change(uniqueId, new I_ChangeCallback() {
             public I_MapEntry changeEntry(I_MapEntry mapEntry)
                   throws XmlBlasterException {
-               SessionEntry sessionEntry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size());
+               SessionEntry sessionEntry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size(),
+                     null);
                if (log.isLoggable(Level.FINE)) log.fine("changeSession (persistent) for uniqueId: '" + sessionEntry.getUniqueId() + "'");
                return sessionEntry;
             }
@@ -415,7 +417,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       long uniqueId = sessionInfo.getPersistenceUniqueId();
       if (log.isLoggable(Level.FINE)) log.fine("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "'");
       // String sessionId = getOriginalSessionId(connectQosData.getSessionQos().getSecretSessionId());
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L);
+      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L, null);
       int num = this.sessionStore.remove(entry);
       if (num != 1) {
          XmlBlasterException ex = sessionInfo.getTransportConnectFail();
@@ -463,7 +465,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
          // to be found when the client usubscribes after a server crash ...
          subscribeQosData.setSubscriptionId(subscriptionInfo.getSubscriptionId());
-         SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo.getConnectQos().getSessionName().getAbsoluteName(), uniqueId, 0L);
+         SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo
+               .getConnectQos().getSessionName().getAbsoluteName(), uniqueId, 0L, null);
          if (log.isLoggable(Level.FINE)) log.fine("subscriptionAdd: putting to persistence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.toXml() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
          this.subscribeStore.put(entry);

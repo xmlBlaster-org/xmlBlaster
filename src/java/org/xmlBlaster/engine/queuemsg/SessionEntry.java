@@ -6,8 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.engine.queuemsg;
 
-import java.util.Map;
-
+import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -28,6 +27,7 @@ public class SessionEntry implements I_MapEntry {
    private String uniqueIdStr;
    private long size; 
    private transient Timestamp sortTimestamp;
+   private transient StorageId storageId;
 
 
    /**
@@ -35,23 +35,16 @@ public class SessionEntry implements I_MapEntry {
     * @param qos
     * @param uniqueId
     * @param size
+    * @param storageId TODO
     */
-   public SessionEntry(String qos, long uniqueId, long size) {
+   public SessionEntry(String qos, long uniqueId, long size, StorageId storageId) {
       if (size < 1L) this.size = qos.length();
       else this.size = size;
       if (uniqueId < 1L) this.uniqueId = new Timestamp().getTimestamp();  
       this.qos = qos;
       this.uniqueId = uniqueId;
       this.uniqueIdStr = "" + this.uniqueId;
-   }
-
-   /**
-    * this constructor should be used by common users
-    * @param qos
-    * @param uniqueId
-    */
-   public SessionEntry(String qos, String sessionId) {
-      this(qos, -1L, 0L);
+      this.storageId = storageId;
    }
 
    /**
@@ -208,7 +201,7 @@ public class SessionEntry implements I_MapEntry {
       return ref;
    }
 
-
-
-
+   public StorageId getStorageId() {
+      return storageId;
+   }
 }

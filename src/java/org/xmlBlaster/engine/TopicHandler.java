@@ -426,7 +426,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             msgQosData.setPersistent(true);
             msgQosData.setSender(creatorSessionName);
             MsgUnit msgUnit = new MsgUnit(this.msgKeyData, null, msgQosData);
-            this.topicEntry = new TopicEntry(serverScope, msgUnit);
+            this.topicEntry = new TopicEntry(serverScope, msgUnit, null);
             isNew = true;
             if (log.isLoggable(Level.FINE)) log.fine(ME+": Created persistent topicEntry '" + this.topicEntry.getUniqueId() + "'"); //: " + this.topicEntry.toXml());
          }
