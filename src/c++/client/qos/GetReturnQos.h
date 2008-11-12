@@ -99,7 +99,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the message QoS as a XML ASCII std::string
     */
-   std::string toXml(const std::string& extraOffset="");
+   std::string toXml(const std::string& extraOffset="", bool clearText = false);
 
 
    /**

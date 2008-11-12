@@ -60,9 +60,9 @@ long GetReturnQos::getRemainingLifeStatic() const
    return data_.getRemainingLifeStatic();
 }
 
-string GetReturnQos::toXml(const string& extraOffset)
+string GetReturnQos::toXml(const string& extraOffset, bool clearText)
 {
-   return data_.toXml(extraOffset);
+   return data_.toXml(clearText, extraOffset);
 }
 
 string GetReturnQos::getState() const
