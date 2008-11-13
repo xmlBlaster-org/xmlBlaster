@@ -1148,9 +1148,30 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       return ret;
    }
    
-   public void deleteStore(long storeId) {
-      log.severe("TODO: deleteStore");
+   /**
+    * 
+    * Deletes the store.
+    */
+   public void deleteStore(long storeId) throws XmlBlasterException {
+      Connection conn = null;
+      long ret = 0L;
+      boolean success = false;
+      try {
+         conn = pool.reserve();
+         conn.setAutoCommit(true);
+         this.storeFactory.delete(storeId, 0, conn, timeout);
+         success = true;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(conn, getLogId("" + storeId, "deleteStore"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteStore", "", ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteStore", "", ex); 
+      }
+      finally {
+         releaseConnection(conn, success, null);
+      }
    }
+
    
    /**
     * Deletes the entries specified by the entries array. Since all entries
