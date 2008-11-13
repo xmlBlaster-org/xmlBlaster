@@ -1111,10 +1111,16 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       if (glob instanceof ServerScope) {
          ((ServerScope)glob).getStoragePluginManager().cleanup(this);
       }
-      
-      if (getNumOfEntries() == 0) {
-         queueFactory.deleteStore(xbStore.getId());
+      try {
+         if (getNumOfEntries() == 0) {
+            queueFactory.deleteStore(xbStore.getId());
+         }
       }
+      catch (XmlBlasterException ex) {
+         log.severe("An exception occured when trying to remove the storage " + xbStore.toString());
+         ex.printStackTrace();
+      }
+      
    }
 
    public boolean isShutdown() {
