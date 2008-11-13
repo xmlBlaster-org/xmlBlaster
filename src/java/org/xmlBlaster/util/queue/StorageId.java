@@ -64,7 +64,7 @@ public class StorageId implements java.io.Serializable
       // xbstore.postfix uses relative name
       String xbpost = "";
       if (sessionName != null) {
-         xbpost = Global.getStrippedString(sessionName.getRelativeName());
+         xbpost = sessionName.getRelativeName();
          this.postfix1 = sessionName.getLoginName();
          if (sessionName.getPublicSessionId() != 0)
             this.postfix2 = "" + sessionName.getPublicSessionId();
@@ -72,17 +72,19 @@ public class StorageId implements java.io.Serializable
       else if (xbPostfix != null) {
          xbPostfix = xbPostfix.trim();
          splitPostfixFurther(xbPostfix);
-         xbpost = Global.getStrippedString(xbPostfix);
+         // xbpost = Global.getStrippedString(xbPostfix); FOR OLD XB_ENTRIES IT
+         // MUST BE STRIPPED
+         xbpost = xbPostfix;
       }
-      String xbnod = (xbNode == null) ? "" : Global.getStrippedString(xbNode.trim());
+      String xbnod = (xbNode == null) ? "" : xbNode.trim();
       this.xbStore = new XBStore(xbnod, (xbType == null) ? "" : xbType.trim(),
             xbpost);
       
-      // Old queue:
+      // Old xb_entries:
       if (sessionName != null)
          this.postfix = sessionName.getAbsoluteName(); // Global.getStrippedString(sessionName.getAbsoluteName());
       else
-         this.postfix = this.xbStore.getNode() + xbPostfix; // xbpost;
+         this.postfix = Global.getStrippedString(this.xbStore.getNode()) + xbPostfix; // xbpost;
       this.id = this.xbStore.getType() + ":" + this.postfix;
       this.strippedId = Global.getStrippedString(this.id);
       // session_heronsubPersistence,1_0
