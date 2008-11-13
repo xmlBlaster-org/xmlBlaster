@@ -95,6 +95,8 @@ public class OneToThree {
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   }
                   counter++;
+                  if ((counter % 1000) == 0)
+                     logToFile(queueNamePattern + " [count=" + counter + "] processing ...");
                   total++;
                   return null; // Filter away so getAll returns nothing
                } catch (Throwable e) {
@@ -130,6 +132,8 @@ public class OneToThree {
                   XBStore xbStore = getXBStore(dbAccessorClientThree, globalThree, entry.getStorageId());
                   dbAccessorClientThree.addEntry(xbStore, entry);
                   counter++;
+                  if ((counter % 1000) == 0)
+                     logToFile(queueNamePattern + " [count=" + counter + "] processing ...");
                   total++;
                   return null; // Filter away so getAll returns nothing
                } catch (Throwable e) {
@@ -277,7 +281,8 @@ public class OneToThree {
       return store;
    }
 
-   // java org.xmlBlaster.contrib.dbupdate.OneToThree -cluster.node.id heron
+   // java java -Xms18M -Xmx1064M org.xmlBlaster.contrib.dbupdate.OneToThree
+   // -cluster.node.id heron
    public static void main(String[] args) {
       OneToThree ott = null;
       try {
