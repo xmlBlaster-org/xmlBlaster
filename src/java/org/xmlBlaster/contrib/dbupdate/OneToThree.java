@@ -171,7 +171,9 @@ public class OneToThree {
    
    public void logToFile(String text) {
       try {
-         out_.write((text + "\n").getBytes());
+         String str = new Timestamp().toString() + " " + text + "\n";
+         out_.write(str.getBytes("UTF-8"));
+         out_.flush();
       } catch (IOException e) {
          e.printStackTrace();
       }

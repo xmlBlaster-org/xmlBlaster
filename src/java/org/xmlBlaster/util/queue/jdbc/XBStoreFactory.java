@@ -152,18 +152,21 @@ public class XBStoreFactory extends XBFactory {
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(ID, xbStore.getId());
 
-         if (xbStore.hasNode())
-            preStatement.setString(NODE, xbStore.getNodeDb());
+         String node = xbStore.getNodeDb();
+         if (node != null)
+            preStatement.setString(NODE, node);
          else
             preStatement.setNull(NODE, Types.VARCHAR);
          
-         if (xbStore.hasType())
-            preStatement.setString(TYPE, xbStore.getTypeDb());
+         String type = xbStore.getTypeDb();
+         if (type != null)
+            preStatement.setString(TYPE, type);
          else
             preStatement.setNull(TYPE, Types.VARCHAR);
             
-         if (xbStore.hasPostfix())
-            preStatement.setString(POSTFIX, xbStore.getPostfixDb());
+         String postfix = xbStore.getPostfixDb();
+         if (postfix != null)
+            preStatement.setString(POSTFIX, postfix);
          else
             preStatement.setNull(POSTFIX, Types.VARCHAR);
             
