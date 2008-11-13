@@ -475,7 +475,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
     * may be empty and just contains db.* properties
     * @return
     */
-   private I_Info getInfo() {
+   public I_Info getInfo() {
       return this.info;
    }
    

@@ -22,6 +22,9 @@ public interface I_DbPool extends I_ContribPlugin {
     */
    void init(I_Info info);
    
+   I_Info getInfo();
+   
+   
    /**
    * Access a JDBC connection. 
    * @return The JDBC connection
