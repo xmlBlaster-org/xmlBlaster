@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -279,8 +278,7 @@ public class XBRefFactory extends XBFactory {
 
 
          if (xbRef.getMetaInfo() != null) {
-            InputStream qosStream = new ByteArrayInputStream(xbRef.getMetaInfo().getBytes("UTF-8"));
-            preStatement.setAsciiStream(META_INFO, qosStream, xbRef.getMetaInfo().length());
+            preStatement.setString(META_INFO, xbRef.getMetaInfo());
          }
          else
             preStatement.setNull(META_INFO, Types.CLOB);

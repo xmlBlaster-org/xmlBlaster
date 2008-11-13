@@ -26,6 +26,7 @@ public class XBStore {
    public final static int TYPE_MEAT = 1;
    public final static int TYPE_REF = 2;
    
+   public final static String EMPTY = " "; // Oracle handles "" as NULL
    private long id;
    private String node;
    private String type;
@@ -62,11 +63,24 @@ public class XBStore {
       this.id = id;
    }
 
+   public boolean hasNode() {
+      return this.node != null && this.node.length() > 0 && !this.node.equals(EMPTY);
+   }
+
    /**
+    * Returns " " for empty node, as Oracle handles empty string as NULL
+    * 
     * @return e.g. "heron", glob.getDatabaseNodeStr(), never null
     */
    public String getNode() {
       return (node == null) ? "" : node;
+   }
+
+   /**
+    * @return " " for empty node, as Oracle handles empty string as NULL
+    */
+   public String getNodeDb() {
+      return (node == null || node.length() == 0) ? EMPTY : node;
    }
 
    public void setNode(String node) {
@@ -81,15 +95,30 @@ public class XBStore {
       this.flag1 = flag1;
    }
 
+   public boolean hasType() {
+      return this.type != null && this.type.length() > 0 && !this.type.equals(EMPTY);
+   }
+
    /**
     * @return e.g. Constants.RELATING_HISTORY = "history", never null
     */
    public String getType() {
-      return (type == null) ? "" : type;
+      return (this.type == null) ? "" : this.type;
+   }
+
+   /**
+    * @return " " for empty node, as Oracle handles empty string as NULL
+    */
+   public String getTypeDb() {
+      return (this.type == null || this.type.length() == 0) ? EMPTY : this.type;
    }
 
    public void setType(String type) {
       this.type = type;
+   }
+   
+   public boolean hasPostfix() {
+      return this.postfix != null && this.postfix.length() > 0 && !this.postfix.equals(EMPTY);
    }
 
    /**
@@ -99,9 +128,14 @@ public class XBStore {
     *         pluginId="subPersistence,1_0"
     */
    public String getPostfix() {
-      if (postfix != null && postfix.length() > 0)
-         return postfix;
-      return "  ";
+      return (this.postfix == null) ? "" : this.postfix;
+   }
+
+   /**
+    * @return " " for empty node, as Oracle handles empty string as NULL
+    */
+   public String getPostfixDb() {
+      return (this.postfix == null || this.postfix.length() == 0) ? EMPTY : this.postfix;
    }
 
    public void setPostfix(String postfix) {

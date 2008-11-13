@@ -273,10 +273,7 @@ public class XBMeatFactory extends XBFactory {
          preStatement.setNull(DATA_TYPE, Types.VARCHAR);
 
       if (xbMeat.getMetaInfo() != null) {
-         InputStream meatInfoStream = new ByteArrayInputStream(xbMeat
-               .getMetaInfo().getBytes("UTF-8"));
-         preStatement.setAsciiStream(META_INFO, meatInfoStream, xbMeat
-               .getMetaInfo().length());
+         preStatement.setString(META_INFO, xbMeat.getMetaInfo());
       } else
          preStatement.setNull(META_INFO, Types.CLOB);
 
@@ -286,9 +283,7 @@ public class XBMeatFactory extends XBFactory {
          preStatement.setNull(FLAG1, Types.VARCHAR);
 
       if (xbMeat.getQos() != null) {
-         InputStream qosStream = new ByteArrayInputStream(xbMeat.getQos()
-               .getBytes("UTF-8"));
-         preStatement.setAsciiStream(QOS, qosStream, xbMeat.getQos().length());
+         preStatement.setString(QOS, xbMeat.getQos());
       } else
          preStatement.setNull(QOS, Types.CLOB);
 
@@ -304,9 +299,11 @@ public class XBMeatFactory extends XBFactory {
       }
 
       if (xbMeat.getKey() != null) {
-         InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey()
-               .getBytes("UTF-8"));
-         preStatement.setAsciiStream(KEY, keyStream, xbMeat.getKey().length());
+         // InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey()
+         // .getBytes("UTF-8"));
+         // preStatement.setAsciiStream(KEY, keyStream,
+         // xbMeat.getKey().length());
+         preStatement.setString(KEY, xbMeat.getKey());
       } else
          preStatement.setNull(KEY, Types.CLOB);
       preStatement.setLong(STORE_ID, xbMeat.getStoreId());

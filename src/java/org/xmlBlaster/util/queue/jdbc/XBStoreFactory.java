@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -21,7 +22,7 @@ import org.xmlBlaster.contrib.I_Info;
  */
 
 public class XBStoreFactory extends XBFactory {
-
+   private static Logger log = Logger.getLogger(XBStoreFactory.class.getName());
    private final static int ID = 1;
    private final static int NODE = 2;
    private final static int TYPE = 3;
@@ -150,21 +151,21 @@ public class XBStoreFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(ID, xbStore.getId());
-         
-         if (xbStore.getNode() != null)
-            preStatement.setString(NODE, xbStore.getNode());
+
+         if (xbStore.hasNode())
+            preStatement.setString(NODE, xbStore.getNodeDb());
          else
             preStatement.setNull(NODE, Types.VARCHAR);
          
-         if (xbStore.getType() != null)
-            preStatement.setString(TYPE, xbStore.getType());
+         if (xbStore.hasType())
+            preStatement.setString(TYPE, xbStore.getTypeDb());
          else
             preStatement.setNull(TYPE, Types.VARCHAR);
             
-         if (xbStore.getPostfix() == null || xbStore.getPostfix().length() < 1)
-            xbStore.setPostfix("  ");
-
-         preStatement.setString(POSTFIX, xbStore.getPostfix());
+         if (xbStore.hasPostfix())
+            preStatement.setString(POSTFIX, xbStore.getPostfixDb());
+         else
+            preStatement.setNull(POSTFIX, Types.VARCHAR);
             
          if (xbStore.getFlag1() != null)
             preStatement.setString(FLAG1, xbStore.getFlag1());

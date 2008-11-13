@@ -1754,7 +1754,8 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         XBStore newStore = storeFactory.getByName(store.getNode(), store.getType(), store.getPostfix(), conn, timeout);
+         XBStore newStore = storeFactory.getByName(store.getNodeDb(), store.getTypeDb(), store.getPostfixDb(), conn,
+               timeout);
          if (newStore == null) {
             store.setId(new Timestamp().getTimestamp());
             storeFactory.insert(store, conn, timeout);
@@ -1763,6 +1764,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          return newStore;
       }
       catch (Throwable ex) {
+         ex.printStackTrace();
          success = false;
         if (checkIfDBLoss(conn, getLogId(store.toString(), "getXBStore"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getXBStore", "", ex); 
