@@ -217,10 +217,10 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
        }
     }
     
-    protected synchronized void initFactory(Global global, PluginInfo plugInfo) throws XmlBlasterException {
+    protected synchronized boolean initFactory(Global global, PluginInfo plugInfo) throws XmlBlasterException {
        if (initCount > 0) {
           initCount++;
-          return;
+          return false;
        }
        this.factory  = global.getEntryFactory();
        this.listener = new WeakHashMap();
@@ -235,6 +235,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
           throw new XmlBlasterException(global, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
        }
        initCount++;
+       return true;
     }
  
     
@@ -752,7 +753,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * @throws SQLException if an error occured while adding the row
     * @throws XmlBlasterException if an error occured when trying to get a connection
     */
-   public final boolean addEntry(XBStore store, I_Entry entry) throws XmlBlasterException {
+   public boolean addEntry(XBStore store, I_Entry entry) throws XmlBlasterException {
       Connection conn = null;
       boolean success = true;
       try {
@@ -1644,8 +1645,11 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin is not supported anymore");
       }
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueue".equals(queueClassName)) {
-         
-         XBDatabaseAccessor queueFactory = new XBDatabaseAccessor();
+         boolean useXBDatabaseAccessorDelegate = glob.get("xmlBlaster/useXBDatabaseAccessorDelegate", true, null,
+               pluginInfo);
+
+         XBDatabaseAccessor queueFactory = (useXBDatabaseAccessorDelegate) ? new XBDatabaseAccessorDelegate()
+               : new XBDatabaseAccessor();
          queueFactory.initFactory(glob, pluginInfo);
          final boolean deleteAllTransients = false; // TODO check if this is correct
          queueFactory.setUp(deleteAllTransients);

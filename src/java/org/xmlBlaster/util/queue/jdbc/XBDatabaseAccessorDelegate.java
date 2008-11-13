@@ -3,6 +3,7 @@ package org.xmlBlaster.util.queue.jdbc;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -15,12 +16,16 @@ public class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
    private/* final */int MAX_RETRIES;
    private/* final */int RETRY_SLEEP_MILLIS;
 
-   public XBDatabaseAccessorDelegate(JdbcConnectionPool pool) throws XmlBlasterException {
+   public XBDatabaseAccessorDelegate() {
       super();
-      this.MAX_RETRIES = pool.getProp("maxExceptionRetries", 2);
+   }
+
+   protected void doInit(I_Info info) throws XmlBlasterException {
+      super.doInit(info);
+      this.MAX_RETRIES = info.getInt("maxExceptionRetries", 2);
       if (this.MAX_RETRIES < 1)
          this.MAX_RETRIES = 1;
-      this.RETRY_SLEEP_MILLIS = pool.getProp("retrySleepMillis", 0);
+      this.RETRY_SLEEP_MILLIS = info.getInt("retrySleepMillis", 0);
       if (this.RETRY_SLEEP_MILLIS < 0)
          this.RETRY_SLEEP_MILLIS = 0;
       log.info("Using deadlock handler with maxExceptionRetries=" + this.MAX_RETRIES + " retrySleepMillis="
@@ -87,6 +92,18 @@ public class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
       }
       throw new IllegalStateException("XBDatabaseAccessorDelegate.getEntries() MAX_RETRIES=" + MAX_RETRIES);
    }
+   
+   public boolean addEntry(XBStore store, I_Entry entry) throws XmlBlasterException {
+      for (int i = 0; i < MAX_RETRIES; i++) {
+         try {
+            return super.addEntry(store, entry);
+         } catch (XmlBlasterException e) {
+            handleException(i, e);
+         }
+      }
+      throw new IllegalStateException("XBDatabaseAccessorDelegate.addEntry() MAX_RETRIES=" + MAX_RETRIES);
+   }
+
 
    public int[] addEntries(XBStore store, I_Entry[] entries) throws XmlBlasterException {
       for (int i = 0; i < MAX_RETRIES; i++) {

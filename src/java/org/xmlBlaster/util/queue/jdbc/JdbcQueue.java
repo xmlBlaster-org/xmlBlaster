@@ -171,7 +171,11 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
            synchronized (XBDatabaseAccessor.class) {
               obj = glob.getObjectEntry(queueFactoryName); // could have been initialized meanwhile              
               if ( obj == null) {
-                 qFactory = new XBDatabaseAccessor();
+                 
+                 boolean useXBDatabaseAccessorDelegate = glob.get("xmlBlaster/useXBDatabaseAccessorDelegate", true,
+                        null, pluginInfo);
+                  qFactory = (useXBDatabaseAccessorDelegate) ? new XBDatabaseAccessorDelegate()
+                        : new XBDatabaseAccessor();
                  if (log.isLoggable(Level.FINE)) 
                     log.fine("Created JdbcManagerCommonTable instance for storage plugin configuration '" + queueFactoryName + "'");
                  
