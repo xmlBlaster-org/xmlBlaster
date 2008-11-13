@@ -34,7 +34,7 @@ public class EventHelper implements I_StorageSizeListener {
     * @param eventType
     *           "client/joe/session/1/queue/callback/event/threshold.90%"
     * @param type
-    *           callback
+    *           e.g. Constants.RELATING_CALLBACK
     * @param id1
     *           joe
     * @param id2

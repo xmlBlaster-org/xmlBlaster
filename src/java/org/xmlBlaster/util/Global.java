@@ -829,6 +829,14 @@ public class Global implements Cloneable
    public String getStrippedId() {
       return getStrippedString(getId());
    }
+   
+   /**
+    * @return for XBSTORE.XBNODE, typically the cluster.node.id
+    */
+   public String getDatabaseNodeStr() {
+      return getStrippedId();
+   }
+   
 
    /**
     * Utility method to strip any string, all characters which prevent

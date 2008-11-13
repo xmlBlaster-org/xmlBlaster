@@ -323,8 +323,12 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    /**
     * The cluster node id (name) to which we want to connect.
     * <p />
-    * Needed only for nicer logging when running in a cluster.<br />
+    * Needed for creating the unique queue / DB-store name. Is essential if same
+    * client loginName and session is used to connect to more the one server.
+    * <p />
+    * Needed additionally for nicer logging when running in a cluster.<br />
     * Is configurable with "-server.node.id golan"
+    * 
     * @return e.g. "golan", defaults to "xmlBlaster"
     */
    String getServerNodeId();

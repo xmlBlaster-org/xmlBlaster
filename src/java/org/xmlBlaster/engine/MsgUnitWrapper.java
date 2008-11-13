@@ -260,7 +260,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          }
          return;
       }
-      boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
+      boolean isHistoryReference = (storageId != null && storageId.getRelatingType().equals("history"));
       synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
          if (isHistoryReference) {
             this.historyReferenceCounter += count;
@@ -561,7 +561,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       }
       
       if (this.historyReferenceCounter > 0) {
-         StorageId st = new StorageId(glob, Constants.RELATING_HISTORY, "dummy");
+         StorageId st = new StorageId(glob, glob.getDatabaseNodeStr(), Constants.RELATING_HISTORY, "dummy");
          incrementReferenceCounter((-1)*this.historyReferenceCounter, st);
       }
    }

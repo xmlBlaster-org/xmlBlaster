@@ -87,13 +87,11 @@ public class OneToThree {
                   }
                   if (ent instanceof ReferenceEntry) {
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
-                     String queueName = refEntry.getStorageId().getId(); // "callback:callback_nodeheronclientsubscriber71";
-                     XBStore xbStore = getXBStore(queueName);
+                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, refEntry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, refEntry);
                   } else {
                      I_MapEntry entry = (I_MapEntry) ent;
-                     String queueName = entry.getStorageId().getId(); // msgUnitStore:msgUnitStore_heronHello
-                     XBStore xbStore = getXBStore(queueName);
+                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   }
                   counter++;
@@ -129,8 +127,7 @@ public class OneToThree {
                      return null;
                   }
                   MsgQueueEntry entry = (MsgQueueEntry) ent;
-                  String queueName = entry.getStorageId().getId(); // "connection:connection_clientpubisherToHeron2"
-                  XBStore xbStore = getXBStore(queueName);
+                  XBStore xbStore = getXBStore(dbAccessorClientThree, globalThree, entry.getStorageId());
                   dbAccessorClientThree.addEntry(xbStore, entry);
                   counter++;
                   total++;
@@ -261,79 +258,22 @@ public class OneToThree {
       XBDatabaseAccessor.wipeOutDB(serverScopeThree, confType, confVersion, queueProps, true);
    }
 
-   /*
-    * public XBDatabaseAccessor getXBDatabaseAccessor(String oldQueueName)
-    * throws XmlBlasterException { String key = oldQueueName; XBDatabaseAccessor
-    * accessor = (XBDatabaseAccessor) jdbcQueueMap.get(key); if (accessor ==
-    * null) { accessor = new XBDatabaseAccessor(); StorageId uniqueQueueId = new
-    * StorageId(globOne, oldQueueName); // jdbcQueue.init(globThree,
-    * pluginInfo); // jdbcQueue.initialize(uniqueQueueId, queuePropertyBase);
-    * jdbcQueueMap.put(key, accessor); } return accessor; }
-    */
-
-   public XBStore getXBStore(String oldQueueName) throws XmlBlasterException {
-      String key = oldQueueName;
+   public XBStore getXBStore(XBDatabaseAccessor accessor, Global glob, StorageId oldStorageId)
+         throws XmlBlasterException {
+      String key = oldStorageId.getId(); // "connection:connection_clientpubisherToHeron2"
       XBStore store = (XBStore) xbStoreMap.get(key);
       if (store == null) {
          // oldQueueuName = callback:callback_nodeheronclientsubscriber71
          // prefix: callback
          // postfix: callback_nodeheronclientsubscriber71
          // xbnode: heron
-         // xbpostfix: client/callback_nodeheronclientsubscriber71
-         StorageId uniqueQueueId = new StorageId(serverScopeOne, oldQueueName);
-         // store = new XBStore();
-         // store.setId(id);
-         // store.setNode(node);
-         // store.setType(storeType);
-         // store.setPostfix(storePostfix);
-         store = dbAccessorServerThree.getXBStore(uniqueQueueId);
-         // jdbcQueue.init(globThree, pluginInfo);
-         // jdbcQueue.initialize(uniqueQueueId, queuePropertyBase);
+         StorageId uniqueQueueId = new StorageId(glob, oldStorageId.getXBStore().getNode(), oldStorageId.getXBStore()
+               .getType(), oldStorageId.getXBStore().getPostfix());
+         store = accessor.getXBStore(uniqueQueueId);
          xbStoreMap.put(key, store);
       }
       return store;
    }
-
-   /*
-    * public JdbcQueue getJdbcQueue(String oldQueueName) throws
-    * XmlBlasterException { String key = oldQueueName; JdbcQueue jdbcQueue =
-    * (JdbcQueue) jdbcQueueMap.get(key); if (jdbcQueue == null) { jdbcQueue =
-    * new JdbcQueue(); StorageId uniqueQueueId = new StorageId(globOne,
-    * oldQueueName); QueuePropertyBase queuePropertyBase = null; if
-    * (oldQueueName.toLowerCase().startsWith("session")) queuePropertyBase = new
-    * SessionStoreProperty(globThree, globThree.getNodeId().getId()); else if
-    * (oldQueueName.toLowerCase().startsWith("subscribe")) queuePropertyBase =
-    * new SubscribeStoreProperty(globThree, globThree.getNodeId().getId()); else
-    * if (oldQueueName.toLowerCase().startsWith("topicstore")) queuePropertyBase
-    * = new TopicStoreProperty(globThree, globThree.getNodeId().getId()); else
-    * if (oldQueueName.toLowerCase().startsWith("history")) queuePropertyBase =
-    * new HistoryQueueProperty(globThree, globThree.getNodeId().getId()); else
-    * if (oldQueueName.toLowerCase().startsWith("msgunitstore"))
-    * queuePropertyBase = new MsgUnitStoreProperty(globThree,
-    * globThree.getNodeId().getId()); else if
-    * (oldQueueName.toLowerCase().startsWith("callback")) queuePropertyBase =
-    * new CbQueueProperty(globThree, null, globThree.getNodeId().getId()); else
-    * if (oldQueueName.toLowerCase().startsWith("connection")) queuePropertyBase
-    * = new ClientQueueProperty(globThree, globThree.getNodeId().getId()); else
-    * throw new IllegalArgumentException("Don't know how to handle queuename=" +
-    * oldQueueName);
-    * 
-    * PluginInfo pluginInfo = null;
-    * 
-    * PluginInfo pluginInfo = new PluginInfo(globThree, pluginManager, "JDBC",
-    * "1.0"); java.util.Properties prop =
-    * (java.util.Properties)pluginInfo.getParameters();
-    * prop.put("tableNamePrefix", "TEST"); prop.put("entriesTableName",
-    * "_entries"); I_Queue tmpQueue = pluginManager.getPlugin(pluginInfo,
-    * queueId, cbProp);
-    * 
-    * String queueCfg = globOne.getProperty().get("QueuePlugin[JDBC][1.0]",
-    * (String)null);
-    * 
-    * jdbcQueue.init(globThree, pluginInfo); jdbcQueue.initialize(uniqueQueueId,
-    * queuePropertyBase); jdbcQueueMap.put(key, jdbcQueue); } return jdbcQueue;
-    * }
-    */
 
    // java org.xmlBlaster.contrib.dbupdate.OneToThree -cluster.node.id heron
    public static void main(String[] args) {

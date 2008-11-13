@@ -53,6 +53,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
+import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -314,6 +315,37 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          registerConnectionListener(this.streamingCb);
       return connect(qos, this.streamingCb);
    }
+   
+   /**
+    * The storageId must remain the same after a client restart
+    * 
+    * @param relating
+    *           xbType like Constants.RELATING_CLIENT
+    * @return
+    */
+   public StorageId createStorageId(String relating) {
+      StorageId storageId = null;
+      if (getStorageIdStr() != null && getStorageIdStr().length() > 0) {
+         // client code forces a named client side storageId -
+         // dangerous if the name conflicts with server name in same DB
+         storageId = new StorageId(glob, serverNodeId, relating, getStorageIdStr());
+      } else {
+         if (getPublicSessionId() == 0) {
+            // having no public sessionId we need to generate a unique
+            // queue name
+            storageId = new StorageId(glob, serverNodeId, relating, getId() + System.currentTimeMillis()
+                  + Global.getCounter());
+         } else {
+            SessionName ses = getSessionName();
+            if (ses != null)
+               storageId = new StorageId(glob, serverNodeId, relating, ses);
+            else
+               storageId = new StorageId(glob, serverNodeId, relating, getId() + System.currentTimeMillis()
+                     + Global.getCounter());
+         }
+      }
+      return storageId;
+   }
 
    /**
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
@@ -380,20 +412,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
             try {
                ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
-               // The storageId must remain the same after a client restart
-               String storageIdStr = getId();
-               if (getPublicSessionId() == 0 ) {
-                  // having no public sessionId we need to generate a unique queue name
-                  storageIdStr += System.currentTimeMillis()+Global.getCounter();
-               }
-               else {
-                  if (getStorageIdStr() != null && getStorageIdStr().length() > 0) {
-                     // client code forces a named client side storageId - dangerous if the name conflicts with server name in same DB
-                     storageIdStr = getStorageIdStr();
-                  }
-               }
-               StorageId queueId = new StorageId(glob, Constants.RELATING_CLIENT, storageIdStr);
-               this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
+               StorageId storageId = createStorageId(Constants.RELATING_CLIENT);
+               this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), storageId,
                                                       this.connectQos.getClientQueueProperty());
                if (this.clientQueue == null) {
                   String text = "The client queue plugin is not found with this configuration, please check your connect QoS: " + prop.toXml();
@@ -816,7 +836,16 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (this.connectReturnQos != null)
          return this.connectReturnQos.getSessionName();
       if (this.connectQos != null) {
-         return this.connectQos.getSessionName();
+         SessionName sessionName = this.connectQos.getSessionName();
+         if (sessionName != null && sessionName.getNodeIdStr() == null && this.serverNodeId != null) {
+            // In cluster setup the remote cluster node id is forced
+            SessionName sn = new SessionName(glob, new NodeId(this.serverNodeId), sessionName.getLoginName(),
+                  sessionName.getPublicSessionId());
+            // log.info("Using sessionName=" + sn.getAbsoluteName());
+            this.connectQos.setSessionName(sn);
+            return sn;
+         }
+         return sessionName;
       }
       return null;
    }
@@ -852,8 +881,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    /**
     * The cluster node id (name) to which we want to connect.
     * <p />
-    * Needed only for nicer logging when running in a cluster.<br />
+    * Needed for client queue storage identifier. see: setStorageIdStr()
+    * <p />
+    * for nicer logging when running in a cluster.<br />
     * Is configurable with "-server.node.id golan" until a successful connect
+    * 
     * @return e.g. "/node/golan" or /xmlBlaster/node/heron"
     */
    public String getServerNodeId() {
@@ -918,8 +950,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       this.glob.getContextNode().setInstanceName(newServerNodeInstanceName);
       if (clusterContext == null) {
          clusterContext = this.glob.getContextNode();
-         if (getLoginName() != null && getLoginName().length() > 0) {
-            String instanceName = this.glob.validateJmxValue(getLoginName());
+         String ln = getLoginName();
+         if (ln != null && ln.length() > 0) {
+            String instanceName = this.glob.validateJmxValue(ln);
             ContextNode contextNodeSubject = new ContextNode(ContextNode.CONNECTION_MARKER_TAG, instanceName, clusterContext);
             this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId(), contextNodeSubject);
          }

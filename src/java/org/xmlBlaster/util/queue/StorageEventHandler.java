@@ -149,36 +149,17 @@ public abstract class StorageEventHandler {
     * @throws XmlBlasterException
     */
    public EventHelper generateEventHelper(StorageId storageId) throws XmlBlasterException {
-      String type = storageId.getPrefix();
-      String postfix = storageId.getPostfix();
-      if (Constants.RELATING_HISTORY.equals(type) || Constants.RELATING_SUBJECT.equals(type)
-            || Constants.RELATING_MSGUNITSTORE.equals(type) || Constants.RELATING_TOPICSTORE.equals(type)) {
-         int pos = postfix.lastIndexOf('/');
-         if (pos > -1) {
-            String id = postfix.substring(pos+1);
-            return new EventHelper(null, type, id, "", "0", eventDispatcher); // fake
-         }
-         else
-            return null;
+      String relating = storageId.getXBStore().getType();
+      if (Constants.RELATING_HISTORY.equals(relating) || Constants.RELATING_SUBJECT.equals(relating)
+            || Constants.RELATING_MSGUNITSTORE.equals(relating) || Constants.RELATING_TOPICSTORE.equals(relating)) {
+         if (storageId.getPostfix1().length() > 0)
+            return new EventHelper(null, relating, storageId.getPostfix1(), "", "0", eventDispatcher); // fake
       }
-      else if (Constants.RELATING_CALLBACK.equals(type) || Constants.RELATING_CLIENT.equals(type)) {
-         int pos = postfix.lastIndexOf('/');
-         if (pos > -1) {
-            String sessionId = postfix.substring(pos+1);
-            String tmp = postfix.substring(0, pos);
-            pos = tmp.lastIndexOf('/');
-            String subjectId = tmp.substring(pos+1);
-            if (pos > -1) {
-               return new EventHelper(null, type, subjectId, sessionId, "0", eventDispatcher); // fake
-            }
-            else
-               return null;
-         }
-         else
-            return null;
+      else if (Constants.RELATING_CALLBACK.equals(relating) || Constants.RELATING_CLIENT.equals(relating)) {
+         if (storageId.getPostfix2().length() > 0)
+            return new EventHelper(null, relating, storageId.getPostfix1(), storageId.getPostfix2(), "0", eventDispatcher); // fake
       }
-      else
-         return null;
+      return null;
    }
 
 }

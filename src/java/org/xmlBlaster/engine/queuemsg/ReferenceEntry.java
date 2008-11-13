@@ -192,7 +192,7 @@ public class ReferenceEntry extends MsgQueueEntry
             msgUnitWrapper.incrementReferenceCounter(incr, storageId);
          }
          else { // Log situation:
-            boolean isHistory = (storageId == null) ? false : Constants.RELATING_HISTORY.equals(storageId.getPrefix());
+            boolean isHistory = (storageId == null) ? false : Constants.RELATING_HISTORY.equals(storageId.getRelatingType());
             String id = (storageId == null) ? "" : storageId.getId();
             if (isForceDestroy()) {
                if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());

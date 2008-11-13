@@ -550,15 +550,9 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
          log.info("going to instance the queue");
          ConnectQos connectQos = connection.getConnectQos();
          ClientQueueProperty prop = connectQos.getClientQueueProperty();
-         // The storageId must remain the same after a client restart
-         String storageIdStr = connection.getId();
-         if (((XmlBlasterAccess)connection).getPublicSessionId() == 0 ) {
-            // having no public sessionId we need to generate a unique queue name
-            storageIdStr += System.currentTimeMillis()+Global.getCounter();
-         }
-         StorageId queueId = new StorageId(global, Constants.RELATING_CLIENT_UPDATE, storageIdStr);
+         StorageId storageId = ((XmlBlasterAccess) connection).createStorageId(Constants.RELATING_CLIENT_UPDATE);
          try {
-            this.queue = this.global.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
+            this.queue = this.global.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), storageId,
                   connectQos.getClientQueueProperty());
             if (((XmlBlasterAccess)connection).isCallbackDispatcherActive())
                sendInitialQueueEntries();

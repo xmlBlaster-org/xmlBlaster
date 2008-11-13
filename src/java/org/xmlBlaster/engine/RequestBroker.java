@@ -431,7 +431,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             String type = topicStoreProperty.getType();
             String version = topicStoreProperty.getVersion();
             // e.g. "topicStore:/node/heron" is the unique name of the data store:
-            StorageId topicStoreId = new StorageId(glob, "topicStore", glob.getStrippedId());
+            StorageId topicStoreId = new StorageId(glob, glob.getDatabaseNodeStr(), Constants.RELATING_TOPICSTORE, "");
+            // old xb_entries:
+            // StorageId topicStoreId = new StorageId(glob, "topicStore",
+            // glob.getStrippedId());
             this.topicStore = glob.getStoragePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
             log.info("Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
@@ -2830,7 +2833,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
 
-   public String checkConsistency(final I_Map map, boolean fixIt, String reportFileName) {
+   public String checkConsistencyOld_XB_ENTRIES(final I_Map map, boolean fixIt, String reportFileName) {
       FileOutputStream out = null;
       final StringBuffer sb = new StringBuffer(1024);
       try {
@@ -2842,15 +2845,15 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          // Find the corresponding topic
          // Syntax is "msgUnitStore:heron_hello" from TopicHandler.java:startupMsgstore
 
-         String relating = map.getStorageId().getPrefix(); // Constants.RELATING_MSGUNITSTORE="msgUnitStore"
+         String relating = map.getStorageId().getRelatingType(); // Constants.RELATING_MSGUNITSTORE="msgUnitStore"
          if (!Constants.RELATING_MSGUNITSTORE.equals(relating)) {
             sb.append("\nSorry, only maps of type " + Constants.RELATING_MSGUNITSTORE + ": can be checked");
             return sb.toString();
          }
-         String id = map.getStorageId().getPostfix(); // "/node/heron/topic/hello"
+         String id = map.getStorageId().getOldPostfix(); // "/node/heron/topic/hello"
 
          if (reportFileName == null || reportFileName.equalsIgnoreCase("String")) {
-            reportFileName = map.getStorageId().getStrippedId() + "_checkConsistency.xml";
+            reportFileName = map.getStorageId().getStrippedLogId() + "_checkConsistency.xml";
          }
          File to_file = new File(reportFileName);
          if (to_file.getParent() != null) {

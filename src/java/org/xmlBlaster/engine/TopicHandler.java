@@ -292,7 +292,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          // instead of "msgUnitStore:heron_hello"
          // This change would be nice but then existing entries on restart wouldn't be found
          // This syntax is also used in RequestBroker:checkConsistency to reverse lookup the TopicHandler by a given I_Map
-         StorageId msgUnitStoreId = new StorageId(serverScope, Constants.RELATING_MSGUNITSTORE, serverScope.getNodeId()+"/"+getUniqueKey());
+         StorageId msgUnitStoreId = new StorageId(serverScope, serverScope.getDatabaseNodeStr(),
+               Constants.RELATING_MSGUNITSTORE, getUniqueKey());
+         // old xb_entries
+         // StorageId msgUnitStoreId = new StorageId(serverScope,
+         // Constants.RELATING_MSGUNITSTORE,
+         // serverScope.getNodeId()+"/"+getUniqueKey());
          this.msgUnitCache = serverScope.getStoragePluginManager().getPlugin(type, version, msgUnitStoreId, msgUnitStoreProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
          if (this.msgUnitCache == null) {
             throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, ME, "Can't load msgUnitStore persistence plugin [" + type + "][" + version + "]");
@@ -331,7 +336,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (prop.getMaxEntries() > 0L) {
             String type = prop.getType();
             String version = prop.getVersion();
-            StorageId queueId = new StorageId(serverScope, queueName, serverScope.getNodeId()+"/"+getUniqueKey());
+            StorageId queueId = new StorageId(serverScope, serverScope.getDatabaseNodeStr(), queueName, getUniqueKey());
+            // StorageId queueId = new StorageId(serverScope, queueName,
+            // serverScope.getNodeId()+"/"+getUniqueKey());
             queue = serverScope.getQueuePluginManager().getPlugin(type, version, queueId, prop);
             queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
          }

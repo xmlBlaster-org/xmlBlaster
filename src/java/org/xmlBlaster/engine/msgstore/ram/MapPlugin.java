@@ -5,37 +5,37 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore.ram;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-// import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_StoragePlugin;
-import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.util.queue.I_StorageProblemListener;
-import org.xmlBlaster.util.Timestamp;
-
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map;
-import java.util.Iterator; 
-import java.util.Comparator;
-import java.util.ArrayList;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 
 /**
  * Mapping messages in RAM only. 
@@ -574,7 +574,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       try {
          Global glob = new Global(args);
          MapPlugin pl = new MapPlugin();
-         StorageId mapId = new StorageId(glob, "msgUnitStore", "/node/unknown");
+         StorageId mapId = new StorageId(glob, "/node/unknown", "msgUnitStore", "hello");
          pl.initialize(mapId, new org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty(glob, glob.getId()));
       }
       catch (XmlBlasterException e) {

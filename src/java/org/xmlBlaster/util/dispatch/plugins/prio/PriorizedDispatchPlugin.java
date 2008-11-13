@@ -5,29 +5,29 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
-import org.xmlBlaster.util.property.I_PropertyChangeListener;
-import org.xmlBlaster.util.property.PropertyChangeEvent;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
+import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.error.MsgErrorInfo;
+import org.xmlBlaster.util.property.I_PropertyChangeListener;
+import org.xmlBlaster.util.property.PropertyChangeEvent;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * This dispatcher plugin allows to control how messages are sent to the remote side. 
@@ -394,11 +394,13 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          synchronized (this) {
             if (queue == null) {
                // Create a queue for this plugin, inherit the settings from the original queue of DispatchManager
-               QueuePropertyBase queueProperties = (QueuePropertyBase)managerEntry.getDispatchManager().getQueue().getProperties();
+               I_Queue origQueue = managerEntry.getDispatchManager().getQueue();
+               QueuePropertyBase queueProperties = (QueuePropertyBase) origQueue.getProperties();
                String type = queueProperties.getType();
                String version = queueProperties.getVersion();
                String typeVersion = glob.getProperty().get("PriorizedDispatchPlugin.queue.plugin", type+","+version);
-               StorageId storageId = new StorageId(glob, "PriorizedDispatchPlugin", managerEntry.getDispatchManager().getQueue().getStorageId().getPostfix());
+               StorageId storageId = new StorageId(glob, origQueue.getStorageId().getXBStore().getNode(),
+                     "PriorizedDispatchPlugin", origQueue.getStorageId().getXBStore().getPostfix());
                queue = glob.getQueuePluginManager().getPlugin(typeVersion, storageId, queueProperties);
                queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting (otherwise we have memory leaks)
                managerEntry.setHoldbackQueue(queue);

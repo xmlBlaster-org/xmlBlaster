@@ -6,37 +6,36 @@ Comment:   Implementation for the I_EntryFactory
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.queuemsg;
 
-import java.util.logging.Logger;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_EntryFactory;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.jdbc.XBMeat;
-import org.xmlBlaster.util.queue.jdbc.XBRef;
-import org.xmlBlaster.util.queue.jdbc.XBStore;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.key.EraseKey;
-
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queue.jdbc.XBRef;
+import org.xmlBlaster.util.queue.jdbc.XBStore;
+import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 
 /**
@@ -200,7 +199,9 @@ public class ClientEntryFactory implements I_EntryFactory
    }
    
    private StorageId getStorageId(XBStore store) {
-      return new StorageId(glob, store.getType(), store.getType() + store.getPostfix());
+      return new StorageId(glob, store.getNode(), store.getType(), store.getPostfix());
+      // return new StorageId(glob, store.getType(), store.getType() +
+      // store.getPostfix());
    }
    
    

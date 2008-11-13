@@ -272,8 +272,12 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
       String type = prop.getType();
       String version = prop.getVersion();
-      I_Queue queue = glob.getQueuePluginManager().getPlugin(type, version,
-                           new StorageId(glob, Constants.RELATING_SUBJECT, this.subjectName.getAbsoluteName()), prop);
+      StorageId storageId = new StorageId(glob, this.glob.getDatabaseNodeStr(), Constants.RELATING_SUBJECT,
+            this.subjectName);
+      // old xb_entries:
+      // StorageId storageId = new StorageId(glob, Constants.RELATING_SUBJECT,
+      // this.subjectName.getAbsoluteName());
+      I_Queue queue = glob.getQueuePluginManager().getPlugin(type, version, storageId, prop);
       queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
       return queue;
    }

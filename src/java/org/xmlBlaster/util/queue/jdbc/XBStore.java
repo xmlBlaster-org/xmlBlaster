@@ -28,13 +28,30 @@ public class XBStore {
    
    private long id;
    private String node;
-   private String  type;
+   private String type;
    private String postfix;
    private transient int storeType;
    
    private String flag1;
    
    public XBStore() {
+   }
+
+   /**
+    * Create store from unique compound key.
+    * 
+    * @param node
+    *           "heron"
+    * @param type
+    *           Constants.RELATING_SESSION
+    * @param postfix
+    *           "subPersistence,1_0"
+    */
+   public XBStore(String node, String type, String postfix) {
+      super();
+      this.node = node;
+      this.type = type;
+      this.postfix = postfix;
    }
 
    public long getId() {
@@ -45,8 +62,11 @@ public class XBStore {
       this.id = id;
    }
 
+   /**
+    * @return e.g. "heron", glob.getDatabaseNodeStr(), never null
+    */
    public String getNode() {
-      return node;
+      return (node == null) ? "" : node;
    }
 
    public void setNode(String node) {
@@ -61,14 +81,23 @@ public class XBStore {
       this.flag1 = flag1;
    }
 
+   /**
+    * @return e.g. Constants.RELATING_HISTORY = "history", never null
+    */
    public String getType() {
-      return type;
+      return (type == null) ? "" : type;
    }
 
    public void setType(String type) {
       this.type = type;
    }
 
+   /**
+    * Unique identifier together with getNode() and getType().
+    * 
+    * @return e.g. strippedRelativeName="clientjoe1" or topicId="Hello" or
+    *         pluginId="subPersistence,1_0"
+    */
    public String getPostfix() {
       if (postfix != null && postfix.length() > 0)
          return postfix;
@@ -80,9 +109,12 @@ public class XBStore {
    }
 
    public String toString() {
-      return type + ":" + node + postfix;
+      return getType() + ":" + getNode() + getPostfix();
    }
    
+   /**
+    * @return e.g. XBStore.TYPE_MEAT
+    */
    public int getStoreType() {
       return this.storeType;
    }

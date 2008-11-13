@@ -122,7 +122,7 @@ public class HelloWorldSubscribe implements I_Callback
    private void readEnv() {
       this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
       this.interactive = glob.getProperty().get("interactive", true);
-      this.autoSubscribe = glob.getProperty().get("autoSubscribe", true);
+      this.autoSubscribe = glob.getProperty().get("autoSubscribe", false);
       this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
       this.updateSleep = glob.getProperty().get("updateSleep", 0L);
       this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);

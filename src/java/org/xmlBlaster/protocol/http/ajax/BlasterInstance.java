@@ -130,7 +130,7 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 	       log.warning("Ignoring problem during JMX session registration: " + e.toString());
 	    }
 		this.updateQueue = new RamQueuePlugin();
-		this.storageId = new StorageId(glob, RELATED_AJAX + ":" + this.sessionId);
+		this.storageId = new StorageId(glob, glob.getDatabaseNodeStr(), RELATED_AJAX, this.sessionId);
 		// glob.getNodeId().getId() is not yet available:
 		QueuePropertyBase queueProps = new CbQueueProperty(glob, RELATED_AJAX, "/node/dummy");
 		queueProps.setMaxEntries(100L);

@@ -5,40 +5,38 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore.cache;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.admin.I_AdminMap;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_Storage;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_StoragePlugin;
-import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.engine.msgstore.StoragePluginManager;
-import org.xmlBlaster.util.queue.I_StorageProblemListener;
-import org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.I_AdminMap;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 
 /**
  * Implements a random access message storage.
@@ -828,7 +826,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       // persistent change
       try {
          // Find out my topic name:
-         String tmp = this.storageId.getPostfix();
+         String tmp = this.storageId.getXBStore().getPostfix();
          ContextNode ctx = ContextNode.valueOf(tmp);
          String oid = ctx.getInstanceName(); 
          if (oid != null) {
@@ -1021,7 +1019,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    
    public String checkConsistency(String fixIt, String reportFileName) {
       boolean fix = Boolean.valueOf(fixIt).booleanValue();
-      return glob.getRequestBroker().checkConsistency(this, fix, reportFileName);
+      return glob.getRequestBroker().checkConsistencyOld_XB_ENTRIES(this, fix, reportFileName);
    }
 
    /**
@@ -1174,12 +1172,12 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       }
       FileOutputStream out = new FileOutputStream(to_file);
       out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes());
-      out.write(("\n<"+this.storageId.getPrefix()+" id='"+this.storageId.getStrippedId()+"'>").getBytes());
+      out.write(("\n<"+this.storageId.getRelatingType()+" id='"+this.storageId.getStrippedId()+"'>").getBytes());
       Properties props = new Properties();
       props.put(Constants.TOXML_FORCEREADABLE, ""+true);  // to be human readable (minimize base64)
       props.put(Constants.TOXML_ENCLOSINGTAG, "publish"); // to look similar to XmlScript
       long count = embeddedObjectsToXml(out, props);
-      out.write(("\n</"+this.storageId.getPrefix()+">").getBytes());
+      out.write(("\n</"+this.storageId.getRelatingType()+">").getBytes());
       out.close();
       return "Dumped " + count + " entries to '" + to_file.getAbsolutePath() + "'";
    }

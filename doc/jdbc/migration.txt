@@ -12,26 +12,32 @@
  callback_nodeheronclientsubscriber71 | UPDATE_REF
  msgUnitStore_heronHello              | MSG_XML
  connection_clientpubisherToHeron2    | publish
+ subject_nodeheronclientsubscriberDummy | UPDATE_REF
+ callback_nodeheronclientsubscriber71   | UPDATE_REF
+ msgUnitStore_heronHello                | MSG_XML
+ connection_clientsubscriber71          | subscribe
+ connection_clientpubisherToHeron2      | publish
+ connection_clientpubisherToHeron2      | publish
+
  (12)
 
-       xbnode         |    xbtype    |               xbpostfix                
-----------------------+--------------+----------------------------------------
-heron                 | subject      | __RequestBroker_internal_heron_        
-heron                 | callback     | client__RequestBroker_internal_heron_1 
-heron                 | topicStore   |                                        
-heron                 | session      | subPersistence,1_0                     
-heron                 | subscribe    | subPersistence,1_0                     
-heron                 | subject      | __sys__jdbc                            
-heron                 | callback     | client__sys__jdbc-1                    
-clientpubisherToHeron | connection   | 2                                      
-heron                 | subject      | pubisherToHeron                        
-heron                 | callback     | clientpubisherToHeron2                 
-clientsubscriber7     | connection   | 1                                      
-heron                 | subject      | subscriber7                            
-heron                 | callback     | clientsubscriber71                     
-heron                 | msgUnitStore | Hlol                                   
-heron                 | history      | Hlol                                   
-(15)
+      xbstoreid      | xbnode |    xbtype    |               xbpostfix                | xbflag1
+---------------------+--------+--------------+----------------------------------------+---------
+ 1226533056735000000 | heron  | topicStore   |                                        |
+ 1226533056791000000 | heron  | msgUnitStore | Hello                                  |
+ 1226533056936000000 | heron  | session      | subPersistence,1_0                     |
+ 1226533056965000000 | heron  | subscribe    | subPersistence,1_0                     |
+ 1226533057009000000 | heron  | callback     | clientsubscriber71                     |
+ 1226533057098000000 | heron  | history      | Hello                                  |
+ 1226533057148000000 | heron  | subject      | clientsubscriberDummy                  |
+ 1226533057180000000 |        | connection   | clientsubscriber71                     |
+ 1226533057195000000 |        | connection   | clientpubisherToHeron2                 |
+ 1226533061101000000 | heron  | subject      | client__RequestBroker_internal_heron_  |
+ 1226533061115000000 | heron  | callback     | client__RequestBroker_internal_heron_1 |
+ 1226533061379000000 | heron  | subject      | clientsubscriber7                      |
+ 1226533061510000000 | heron  | subject      | client__sys__jdbc                      |
+ 1226533061514000000 | heron  | callback     | client__sys__jdbc-2                    |
+(14 rows)
 
 xbmeat:
  xbdatatype

@@ -66,7 +66,7 @@ public class QueuePluginManager extends PluginManagerBase {
     */
    public I_Queue getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       return getPlugin(new PluginInfo(glob, this, typeVersion,
-              new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+              new ContextNode(this.pluginEnvClass, storageId.getRelatingType(), glob.getContextNode())),
               storageId, props);
    }
 
@@ -80,7 +80,7 @@ public class QueuePluginManager extends PluginManagerBase {
     */
    public I_Queue getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       return getPlugin(new PluginInfo(glob, this, type, version,
-              new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+              new ContextNode(this.pluginEnvClass, storageId.getRelatingType(), glob.getContextNode())),
               storageId, props);
    }
 

@@ -263,7 +263,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                cbAddress.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", true));
                tmpQos.addCallbackAddress(cbAddress);
                tmpQos.setPersistent(true);
-               log.info("Creating temporary session " + sessionName.getRelativeName() + " until real cluster node arrives");
+               glob.getXmlBlasterAccess().setServerNodeId(getId());
+               log.info("Creating temporary session " + sessionName.getRelativeName() + " until real cluster node "
+                     + glob.getXmlBlasterAccess().getServerNodeId() + " arrives");
                glob.getXmlBlasterAccess().connect(tmpQos, new I_Callback() {
                   public String update(String cbSessionId, UpdateKey updateKey,
                         byte[] content, UpdateQos updateQos)
@@ -340,6 +342,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
          this.xmlBlasterConnection.setUserObject(this);
+         // force client side queue unique name, instead of setStorageIdStr()
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.registerConnectionListener(this);
          final XmlBlasterAccess xbAccess = (XmlBlasterAccess)this.xmlBlasterConnection;
@@ -369,11 +372,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             }
          });
 
-         // fixed to be unique since 1.5.2
-         boolean oldQueueNameBehavior = this.remoteGlob.getProperty().get("xmlBlaster/cluster/useLegacyClientQueueName", false);
-         if (!oldQueueNameBehavior)
-            this.xmlBlasterConnection.setStorageIdStr(getId()+connectQosData.getSessionName().getRelativeName());
-
+         /*
+          * // fixed to be unique since 1.5.2 boolean oldQueueNameBehavior =
+          * this.remoteGlob.getProperty().get(
+          * "xmlBlaster/cluster/useLegacyClientQueueName", false); if
+          * (!oldQueueNameBehavior)
+          * this.xmlBlasterConnection.setStorageIdStr(getId
+          * ()+connectQosData.getSessionName().getRelativeName()); //now
+          * setServerNodeId since 1.6.2+
+          */
          try {
             Address addr = connectQosData.getAddress();
             log.info("Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());

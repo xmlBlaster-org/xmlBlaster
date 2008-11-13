@@ -1147,6 +1147,10 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       return ret;
    }
    
+   public void deleteStore(long storeId) {
+      log.severe("TODO: deleteStore");
+   }
+   
    /**
     * Deletes the entries specified by the entries array. Since all entries
     * are deleted at the same time, in case of an exception the result
