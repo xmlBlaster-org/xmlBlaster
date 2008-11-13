@@ -3,6 +3,19 @@
 -- Data types: http://msdn.microsoft.com/en-us/library/ms187752.aspx
 -- osql -E -d xmlblaster -i xmlBlaster\doc\jdbc\xmlBlaster-sqlserver.ddl
 
+-- Backup and restore example:
+-- osql /E
+-- USE xmlblaster
+-- go
+-- BACKUP DATABASE xmlblaster TO DISK = 'C:\Marcel\backups\xmlBlaster.bak' WITH FORMAT, NAME = 'Full Backup of xmlBlaster'              
+-- go
+-- use master
+-- go
+-- RESTORE DATABASE xmlblaster FROM DISK = 'C:\Marcel\backups\xmlBlaster.bak' WITH NORECOVERY
+-- go
+
+
+
 drop table xbref
 go
 drop table xbmeat
