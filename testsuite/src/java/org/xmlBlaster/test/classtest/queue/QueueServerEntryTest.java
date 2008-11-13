@@ -75,7 +75,7 @@ public class QueueServerEntryTest extends TestCase {
          this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
 
          QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-         StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "updateEntry");
+         StorageId queueId = new StorageId(glob, this.glob.getDatabaseNodeStr(), Constants.RELATING_CALLBACK, "updateEntry");
          this.queue = pluginManager.getPlugin(PLUGIN_TYPES[currImpl], "1.0", queueId, cbProp);
          this.queue.shutdown(); // to allow to initialize again
       }
@@ -132,7 +132,7 @@ public class QueueServerEntryTest extends TestCase {
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       log.info("************ Starting updateEntry Test");
 
-      StorageId queueId = new StorageId(glob, Constants.RELATING_CALLBACK, "updateEntry");
+      StorageId queueId = new StorageId(glob, glob.getDatabaseNodeStr(), Constants.RELATING_CALLBACK, "updateEntry");
       this.queue.initialize(queueId, prop);
       this.queue.clear();
 
@@ -262,7 +262,7 @@ public class QueueServerEntryTest extends TestCase {
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       log.info("********* Starting historyEntry Test");
-      StorageId queueId = new StorageId(glob, Constants.RELATING_HISTORY, "historyEntry");
+      StorageId queueId = new StorageId(glob, glob.getDatabaseNodeStr(), Constants.RELATING_HISTORY, "historyEntry");
       this.queue.initialize(queueId, prop);
       this.queue.clear();
 
