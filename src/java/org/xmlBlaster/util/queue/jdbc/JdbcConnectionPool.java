@@ -165,6 +165,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          conn = (Connection)this.connections.poll(delay); // Return and remove an item from channel only if one is available within msecs milliseconds.
          if (conn != null) { // assert code
             setInPool(conn, false);
+            /*
             try {
                if (!conn.getAutoCommit()) {
                   log.severe("Get error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
@@ -174,6 +175,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             catch (Throwable e) {
                log.severe("Get error, expected autoCommit=true but got exception: " + e.toString() + ThreadLister.getAllStackTraces());
             }
+            */
          }
       }
       catch (InterruptedException ex) {
@@ -208,6 +210,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, 
                "Put error, the returned connection is already in the pool");
       }
+      /*
       try {
          if (!conn.getAutoCommit()) { // assert
             log.severe("Put error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
@@ -219,7 +222,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, 
                "Put error, expected autoCommit=true but got exception", e);
       }
-      
+      */
       try {
          setInPool(conn, true);
          boolean tmp = this.connections.offer(conn, 5L);
