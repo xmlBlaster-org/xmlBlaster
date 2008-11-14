@@ -9,13 +9,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.qos.QosData;
-import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.qos.QosData;
 
 /**
  * Encapsulates the parsed xmlKey and QoS, and the raw content. 
@@ -112,14 +112,14 @@ public final class MsgUnit implements java.io.Serializable
     * @see #MsgUnit(Global, String, byte[], String, MethodName)
     */
    public MsgUnit(Global glob, String key, String contentAsString, String qos) throws XmlBlasterException {
-      this(glob, key, contentAsString.getBytes(), qos, MethodName.PUBLISH);
+      this(glob, key, (contentAsString == null) ? null : contentAsString.getBytes(), qos, MethodName.PUBLISH);
    }
 
    /**
     * This is a constructor suitable for clients. 
     */
    public MsgUnit(PublishKey key, String contentAsString, PublishQos qos) {
-      this(key, contentAsString.getBytes(), qos);
+      this(key, (contentAsString == null) ? null : contentAsString.getBytes(), qos);
    }
 
    /**
