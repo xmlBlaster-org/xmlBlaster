@@ -289,6 +289,14 @@ public class OneToThree {
    }
 
    public void wipeOutThree() throws Exception {
+      boolean interactive = globalOne.getProperty().get("interactive", true);
+      if (interactive) {
+         int ret = Global.waitOnKeyboardHit("Do you really want to destroy XBSTORE/XBREF/XBMEAT ? <y>");
+         if (ret != 'y') {
+            System.err.println("Aborted, no data transferred.");
+            System.exit(-1);
+         }
+      }
       String confType = "JDBC";
       String confVersion = "1.0";
       String queueCfg = serverScopeThree.getProperty().get("QueuePlugin[" + confType + "][" + confVersion + "]",
