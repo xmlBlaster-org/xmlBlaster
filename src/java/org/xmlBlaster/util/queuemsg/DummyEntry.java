@@ -3,10 +3,12 @@ package org.xmlBlaster.util.queuemsg;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.queue.StorageId;
 
 /**
  */
@@ -95,6 +97,10 @@ public class DummyEntry extends MsgQueueEntry {
 
    public final String getKeyOid() {
       return "theOid";
+   }
+   
+   public MsgUnit getMsgUnit() throws XmlBlasterException {
+      return new MsgUnit(glob, (String) null, (byte[]) null, "<qos/>");
    }
 
    public String getEmbeddedType() {

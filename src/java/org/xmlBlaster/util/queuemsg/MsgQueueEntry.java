@@ -5,18 +5,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queuemsg;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
-
-import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.XBMeat;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
 
@@ -463,9 +463,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * 
     * @return null (always)
     */
-   public MsgUnit getMsgUnit() throws XmlBlasterException {
-      return null;
-   }
+   abstract public MsgUnit getMsgUnit() throws XmlBlasterException;
    
    
    /**
