@@ -18,6 +18,11 @@
  connection_clientsubscriber71          | subscribe
  connection_clientpubisherToHeron2      | publish
  connection_clientpubisherToHeron2      | publish
+ msgUnitStore_heronEarthEuropeSwiss11?§X | MSG_XML
+
+
+
+ topicOid=Earth/Europe/Swiss11?§X --> queueName=msgUnitStore_heronEarthEuropeSwiss11?§X
 
  (12)
 
