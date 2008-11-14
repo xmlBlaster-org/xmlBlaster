@@ -188,25 +188,32 @@ public class OneToThree {
                   }
                   MsgQueueEntry entry = (MsgQueueEntry) ent;
 
+                  // "heron"
                   String nodeId = globalThree.getDatabaseNodeStr();
+                  // MethodName: "publish", "subscribe"
+                  String relatingType = entry.getEmbeddedType();
+                  // "connection_clientsubscriber1"
                   String queueName = entry.getStorageId().getOldPostfix();
-                  StorageId relating = StorageId.valueOf(globalOne, queueName);
+                  StorageId oldStorageId = StorageId.valueOf(globalOne, queueName);
+                  // "connection"
+                  String relating = oldStorageId.getXBStore().getType();
+                  // reset nodeId to ""
+                  nodeId = oldStorageId.getXBStore().getNode();
                   StorageId storageId = null;
-                  SessionName sn = entry.getSender();
-                  //SessionName sn = entry.getMsgUnit().getQosData().getSender();
+                  // sn is most time null
+                  SessionName sn = entry.getSender();// entry.getMsgUnit().getQosData().getSender();
                   if (sn != null) {
-                     storageId = new StorageId(globalThree, relating.getXBStore().getNode()/* nodeId */, relating
-                           .getXBStore().getType(), sn);
+                     storageId = new StorageId(globalThree, nodeId, relating, sn);
                   } else {
                      // xb_entries.queueName="connection_clientpublisherToHeron2"
                      // --->
                      // xbstore.xbpostfix="client/publisherToHeron/2"
                      sn = SessionName.guessSessionName(globalOne, nodeId, queueName,
                            limitPositivePubToOneDigit);
-                     storageId = new StorageId(globalThree, relating.getXBStore().getNode()/* nodeId */, relating
-                           .getXBStore().getType(), sn);
+                     storageId = new StorageId(globalThree, nodeId, relating, sn);
                   }
                   XBStore xbStore = getXBStore(dbAccessorClientThree, globalThree, storageId);
+                  entry.getStorageId().getXBStore().setPostfix(storageId.getXBStore().getPostfix());
                   dbAccessorClientThree.addEntry(xbStore, entry);
                   counter++;
                   if ((counter % 1000) == 0)
