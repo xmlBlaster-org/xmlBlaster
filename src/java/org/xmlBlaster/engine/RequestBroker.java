@@ -2613,6 +2613,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
 
          // Check no 1: find callback entries with negative session id and no logged in such session
+         String queueCfg = this.glob.getProperty().get("QueuePlugin[JDBC][1.0]", (String) null);
+         if (queueCfg != null && queueCfg.indexOf("org.xmlBlaster.util.queue.jdbc.JdbcQueue,") != -1)
+            return "checkCallbackEntriesConsistency not implemented for new JdbcQueue";
+
          final CommonTableDatabaseAccessor manager = CommonTableDatabaseAccessor.createInstance(glob, glob.getEntryFactory(), null, null, null);
          final Set leakedEntries = new HashSet();
          if (manager != null) {
