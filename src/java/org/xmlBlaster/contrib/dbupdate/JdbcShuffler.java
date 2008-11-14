@@ -12,13 +12,23 @@ import java.sql.SQLException;
 import java.util.Date;
 
 /**
- * Compile: javac JdbcShuffler.java
+ * Copy all xb_entries from one database to another.
  * 
- * Run: export
- * CLASSPATH=.:$XMLBLASTER_HOME/lib/sqljdbc.jar:$XMLBLASTER_HOME/lib/
- * postgresql.jar java JdbcShuffler <hostname> <from> <to> <from> and <to> is
- * one of: SQLServer | Postgres | Oracle java JdbcShuffler localhost SQLServer
- * Postgres
+ * <pre>
+ * Compile: javac JdbcShuffler.java
+ * </pre>
+ * 
+ * <pre>
+ * Run:
+ * export CLASSPATH=.:$XMLBLASTER_HOME/lib/sqljdbc.jar:$XMLBLASTER_HOME/lib/postgresql.jar
+ * 
+ * java org.xmlBlaster.contrib.dbupdate.JdbcShuffler &lt;hostname&gt; &lt;from&gt; &lt;to&gt;
+ * 
+ *    &lt;from&gt; and &lt;to&gt; is one of: SQLServer | Postgres | Oracle
+ * 
+ * Example:
+ * java org.xmlBlaster.contrib.dbupdate.JdbcShuffler localhost SQLServer Postgres
+ * </pre>
  * 
  * @author Marcel Ruff
  */
@@ -67,23 +77,18 @@ public class JdbcShuffler {
          this.from = args[1];
       if (args.length > 2)
          this.to = args[2];
-      System
-            .setProperty(
-                  "jdbc.drivers",
-                  "com.microsoft.sqlserver.jdbc.SQLServerDriver:org.postgresql.Driver:oracle.jdbc.driver.OracleDriver");
+      System.setProperty("jdbc.drivers",
+            "com.microsoft.sqlserver.jdbc.SQLServerDriver:org.postgresql.Driver:oracle.jdbc.driver.OracleDriver");
 
       String password = "CHANGEPASSWORDHERE!";
       this.sqlServer = new ConDetail("sa", password, "jdbc:sqlserver://" + hostname
             + ":1433;responseBuffering=adaptive;databaseName=xmlBlaster");
-      this.postgres = new ConDetail("postgres", password, "jdbc:postgresql://"
-            + hostname + ":5432/xmlblaster");
-      this.oracle = new ConDetail("system", password, "jdbc:oracle:thin:@"
-            + hostname + ":1521:xmlb");
+      this.postgres = new ConDetail("postgres", password, "jdbc:postgresql://" + hostname + ":5432/xmlblaster");
+      this.oracle = new ConDetail("system", password, "jdbc:oracle:thin:@" + hostname + ":1521:xmlb");
    }
 
    public void init() throws SQLException {
-      System.out
-            .println("java JdbcShuffler <hostname> <from> <to>\nInit connections ...");
+      System.out.println("java JdbcShuffler <hostname> <from> <to>\nInit connections ...");
 
       if (from.equalsIgnoreCase(SQLSERVER))
          conFrom = this.sqlServer.getConnection();
@@ -117,8 +122,8 @@ public class JdbcShuffler {
       int count = 0;
       int errors = 0;
       String tableName = "xb_entries";
-      System.out.println(getDate() + " Hit a key to shuffle " + tableName
-            + " from=" + this.from + " to=" + this.to + " ...");
+      System.out.println(getDate() + " Hit a key to shuffle " + tableName + " from=" + this.from + " to=" + this.to
+            + " ...");
       System.in.read();
       System.out.println(getDate() + " Shuffling now");
       try {
@@ -139,11 +144,9 @@ public class JdbcShuffler {
             InputStream is = rs.getBinaryStream(BLOB);
             if (is == null) {
                errors++;
-               String txt = "dataId='" + dataId + "' prio='" + prio
-                     + "' typeName='" + typeName + "' persistent='"
+               String txt = "dataId='" + dataId + "' prio='" + prio + "' typeName='" + typeName + "' persistent='"
                      + persistent + "' sizeInBytes='" + sizeInBytes + "'";
-               System.out.println("The stream for the blob of data: " + txt
-                     + " is null");
+               System.out.println("The stream for the blob of data: " + txt + " is null");
                continue;
             }
 
@@ -181,13 +184,11 @@ public class JdbcShuffler {
             count += num;
 
             if (count % 1000 == 0)
-               System.out.println(getDate() + " Shuffling #" + count
-                     + " errors=" + errors);
+               System.out.println(getDate() + " Shuffling #" + count + " errors=" + errors);
          }
-         System.out.println(getDate() + " Done shuffle " + tableName + " from="
-               + this.from + " to=" + this.to + " ...");
-         System.out.println(getDate() + " Done count=" + count + " errors="
-               + errors);
+         System.out
+               .println(getDate() + " Done shuffle " + tableName + " from=" + this.from + " to=" + this.to + " ...");
+         System.out.println(getDate() + " Done count=" + count + " errors=" + errors);
       } finally {
          if (stFrom != null)
             stFrom.close();
@@ -224,7 +225,7 @@ public class JdbcShuffler {
       }
 
       public String confName;
-      
+
       public String loginName;
 
       public String passwd;
@@ -232,12 +233,11 @@ public class JdbcShuffler {
       public String url;
 
       private Connection con;
-      
+
       public synchronized Connection getConnection() throws SQLException {
          if (this.con == null) {
             System.out.println("Get Connection: " + this.url);
-            this.con = DriverManager.getConnection(this.url,
-               this.loginName, this.passwd);
+            this.con = DriverManager.getConnection(this.url, this.loginName, this.passwd);
             System.out.println("Got Connection: " + this.url);
          }
          return this.con;
