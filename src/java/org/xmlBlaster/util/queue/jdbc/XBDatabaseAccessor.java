@@ -1586,20 +1586,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         if (store.getStoreType() == XBStore.TYPE_REF)
+         if (store.containsRefsForNumOfEntries())
             return refFactory.getNumOfAll(store, conn);
-         if (store.getStoreType() == XBStore.TYPE_MEAT)
-            return refFactory.getNumOfAll(store, conn);
-         EntryCount ret = refFactory.getNumOfAll(store, conn);
-         if (ret.numOfEntries == 0L) {
-            ret = meatFactory.getNumOfAll(store, conn);
-            if (ret.numOfEntries != 0L)
-               store.setStoreType(XBStore.TYPE_MEAT);
-         }
-         else {
-            store.setStoreType(XBStore.TYPE_REF);
-         }
-         return ret;
+         return meatFactory.getNumOfAll(store, conn);
       }
       catch (Throwable ex) {
          success = false;
