@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      XBQueueFactory.java
+Name:      XBDatabaseAccessor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       
    }
    
-   private static final String ME = "XBQueueFactory";
+   private static final String ME = "XBDatabaseAccessor";
    //private I_Info info;
    private static Logger log = Logger.getLogger(XBDatabaseAccessor.class.getName());
    private I_DbPool pool;
