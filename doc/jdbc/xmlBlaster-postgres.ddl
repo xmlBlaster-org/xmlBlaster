@@ -1,3 +1,8 @@
+-- Export / Import example:
+-- cd ~/xmlBlaster/doc/jdbc
+-- pg_dump xmlblaster > xmlBlaster-Postgres-2008-11-12-orig-xb_entries.dump
+-- dropdb xmlblaster; createdb xmlblaster; psql xmlblaster < xmlBlaster-Postgres-2008-11-12-orig-xb_entries.dump 
+
 psql -d xmlblaster
 
 drop index idxstorename;
