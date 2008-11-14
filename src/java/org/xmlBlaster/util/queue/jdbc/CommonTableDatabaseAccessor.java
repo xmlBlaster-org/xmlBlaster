@@ -2596,10 +2596,12 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
       }
       catch (ClassNotFoundException ex) {
          log.severe("wipOutDB class not found: " + ex.getMessage());
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB class not found", ex);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
+               "JdbcConnectionPool class not found", ex);
       }
       catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "JdbcConnectionPool SQL exception",
+               ex);
       }
    
       // determine which jdbc manager class to use
@@ -2620,7 +2622,8 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
          return manager;
       }
       else {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Plugin '" + queueClassName
+               + "' is not implemented");
       }
    }
 
