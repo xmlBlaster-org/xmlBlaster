@@ -17,6 +17,7 @@ import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -53,6 +54,8 @@ public class OneToThree {
    private CommonTableDatabaseAccessor dbAccessorClientOne;
    private XBDatabaseAccessor dbAccessorClientThree;
 
+   private StopWatch stopWatch;
+
    public OneToThree(ServerScope serverScopeOne, ServerScope serverScopeThree, Global globalOne, Global globalThree)
          throws XmlBlasterException {
       this.serverScopeOne = serverScopeOne;
@@ -71,6 +74,9 @@ public class OneToThree {
          this.dbAccessorClientOne = createClientAccessorOne();
       if (this.dbAccessorClientThree == null)
          this.dbAccessorClientThree = createClientAccessorThree();
+
+      if (this.stopWatch == null)
+         this.stopWatch = new StopWatch();
    }
 
    public void transformServerScope() throws Exception {
@@ -230,17 +236,27 @@ public class OneToThree {
       out_.write(("XmlBlaster " + new Timestamp().toString()).getBytes());
       out_.write(("\n" + XmlBlasterException.createVersionInfo() + "\n").getBytes());
 
-      log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
-      System.out.println("Reporting check to '" + to_file.getAbsolutePath() + "'");
+      log.info("Report file is '" + to_file.getAbsolutePath() + "'");
+      System.out.println("Report file is '" + to_file.getAbsolutePath() + "'");
    }
 
    public void closeReportFile() {
+      if (this.stopWatch == null)
+         this.stopWatch = new StopWatch();
+      this.stopWatch.stop();
+      int sec = (int) (stopWatch.elapsed() / 1000);
+      if (sec < 1)
+         sec = 1;
+      int avg = total / sec;
+      String str = "Total processed=" + total + " " + stopWatch.nice() + " average=" + avg + " messages/sec\n"
+            + "See reporting in '" + to_file.getAbsolutePath() + "'";
       try {
-         logToFile("Total processed=" + total);
+         logToFile(str);
          out_.close();
       } catch (IOException e) {
          e.printStackTrace();
       }
+      System.out.println(str);
    }
 
    public CommonTableDatabaseAccessor createServerScopeAccessorOne() throws Exception {
@@ -336,6 +352,7 @@ public class OneToThree {
          ott.wipeOutThree();
          ott.transformServerScope();
          ott.transformClientSide();
+         ott.closeReportFile();
       } catch (Exception e) {
          e.printStackTrace();
          if (ott != null)
