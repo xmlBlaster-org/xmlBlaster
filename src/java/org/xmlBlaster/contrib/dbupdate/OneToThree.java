@@ -83,6 +83,7 @@ public class OneToThree {
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
          counter = 0;
+         logToFile("Executing query on '" + queueNamePattern + "' ...");
          dbAccessorServerOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
             public I_Entry intercept(I_Entry ent, I_Storage storage) {
                try {
@@ -138,6 +139,7 @@ public class OneToThree {
       for (int i = 0; i < queueNamePatterns.length; i++) {
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
+         logToFile("Executing query on '" + queueNamePattern + "' ...");
          counter = 0;
          dbAccessorClientOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
             public I_Entry intercept(I_Entry ent, I_Storage storage) {
@@ -207,6 +209,7 @@ public class OneToThree {
    }
 
    public void logToFile(String text) {
+      log.info(text);
       try {
          String str = new Timestamp().toString() + " " + text + "\n";
          out_.write(str.getBytes("UTF-8"));
@@ -228,6 +231,7 @@ public class OneToThree {
       out_.write(("\n" + XmlBlasterException.createVersionInfo() + "\n").getBytes());
 
       log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
+      System.out.println("Reporting check to '" + to_file.getAbsolutePath() + "'");
    }
 
    public void closeReportFile() {
