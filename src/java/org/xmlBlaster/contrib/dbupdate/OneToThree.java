@@ -10,12 +10,15 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.TopicAccessor;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.Timestamp;
@@ -34,6 +37,8 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 /**
  * Important: subjectId ending with a number can't be converted from xb_entries
  * to xbstore.
+ * <p>
+ * You need to have a xmlBlaster.properties with JdbcQueue configured
  * 
  * @author Marcel
  */
@@ -48,6 +53,7 @@ public class OneToThree {
    private Map xbStoreMap = new TreeMap();
    private int counter;
    private int total;
+   private boolean limitPositivePubToOneDigit = true;
 
    private CommonTableDatabaseAccessor dbAccessorServerOne;
    private XBDatabaseAccessor dbAccessorServerThree;
@@ -105,19 +111,43 @@ public class OneToThree {
                      // New xbpostfix: "client/jack/session/1"
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
                      String nodeId = serverScopeThree.getDatabaseNodeStr();
-                     String queueName = refEntry.getStorageId().getOldPostfix();
-                     boolean limitPositivePubToOneDigit = true;
-                     SessionName sn = SessionName.guessSessionName(serverScopeOne, nodeId, queueName,
-                           limitPositivePubToOneDigit);
-                     StorageId storageId = new StorageId(serverScopeThree, nodeId, relating, sn);
+                     StorageId storageId = null;
+                     SessionName sessionName = null;
+                     if (relating.equals(Constants.RELATING_CALLBACK) || relating.equals(Constants.RELATING_SUBJECT)) {
+                        SessionName sn = refEntry.getReceiver();
+                        log.info(sn.getAbsoluteName() + " <-> " + refEntry.getStorageId().getXBStore().getPostfix());
+                        storageId = new StorageId(serverScopeThree, nodeId, relating, sn);
+                     } else {
+                        String queueName = refEntry.getStorageId().getOldPostfix();
+                        SessionName sn = SessionName.guessSessionName(serverScopeOne, nodeId, queueName,
+                              limitPositivePubToOneDigit);
+                        storageId = new StorageId(serverScopeThree, nodeId, relating, sn);
+                     }
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, storageId);
                      dbAccessorServerThree.addEntry(xbStore, refEntry);
+                  } else if (relating.equals(Constants.RELATING_HISTORY)) {
+                     MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry) ent;
+                     StorageId storageId = entry.getStorageId();
+                     storageId.getXBStore().setPostfix(entry.getKeyOid());
+                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, storageId);
+                     dbAccessorServerThree.addEntry(xbStore, entry);
                   } else if (ent instanceof ReferenceEntry) {
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, refEntry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, refEntry);
                   } else {
                      I_MapEntry entry = (I_MapEntry) ent;
+                     if (relating.equals(Constants.RELATING_MSGUNITSTORE)) {
+                        StorageId storageId = entry.getStorageId();
+                        MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper) entry;
+                        storageId.getXBStore().setPostfix(msgUnitWrapper.getKeyOid());
+                     } else if (relating.equals(Constants.RELATING_SESSION)
+                           || relating.equals(Constants.RELATING_SUBSCRIBE)) {
+                        // "subPersistence,1_0" to "subPersistence,1.0"
+                        StorageId storageId = entry.getStorageId();
+                        storageId.getXBStore().setPostfix(
+                              ReplaceVariable.replaceAll(storageId.getXBStore().getPostfix(), "1_0", "1.0"));
+                     }
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   }
@@ -158,18 +188,24 @@ public class OneToThree {
                   }
                   MsgQueueEntry entry = (MsgQueueEntry) ent;
 
-                  // xb_entries.queueName="connection_clientpublisherToHeron2"
-                  // --->
-                  // xbstore.xbpostfix="client/publisherToHeron/2"
                   String nodeId = globalThree.getDatabaseNodeStr();
                   String queueName = entry.getStorageId().getOldPostfix();
-                  boolean limitPositivePubToOneDigit = true;
-                  SessionName sn = SessionName.guessSessionName(globalOne, nodeId, queueName,
-                        limitPositivePubToOneDigit);
                   StorageId relating = StorageId.valueOf(globalOne, queueName);
-                  StorageId storageId = new StorageId(globalThree, relating.getXBStore().getNode()/* nodeId */,
-                        relating.getXBStore().getType(), sn);
-
+                  StorageId storageId = null;
+                  SessionName sn = entry.getSender();
+                  //SessionName sn = entry.getMsgUnit().getQosData().getSender();
+                  if (sn != null) {
+                     storageId = new StorageId(globalThree, relating.getXBStore().getNode()/* nodeId */, relating
+                           .getXBStore().getType(), sn);
+                  } else {
+                     // xb_entries.queueName="connection_clientpublisherToHeron2"
+                     // --->
+                     // xbstore.xbpostfix="client/publisherToHeron/2"
+                     sn = SessionName.guessSessionName(globalOne, nodeId, queueName,
+                           limitPositivePubToOneDigit);
+                     storageId = new StorageId(globalThree, relating.getXBStore().getNode()/* nodeId */, relating
+                           .getXBStore().getType(), sn);
+                  }
                   XBStore xbStore = getXBStore(dbAccessorClientThree, globalThree, storageId);
                   dbAccessorClientThree.addEntry(xbStore, entry);
                   counter++;
