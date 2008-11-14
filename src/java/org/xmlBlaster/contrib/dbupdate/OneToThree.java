@@ -323,7 +323,7 @@ public class OneToThree {
    }
 
    // java java -Xms18M -Xmx1064M org.xmlBlaster.contrib.dbupdate.OneToThree
-   // -cluster.node.id heron
+   // -cluster.node.id heron -interactive false
    public static void main(String[] args) {
       OneToThree ott = null;
       try {
