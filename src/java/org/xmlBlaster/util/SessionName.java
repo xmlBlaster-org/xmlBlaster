@@ -451,7 +451,7 @@ public final class SessionName implements java.io.Serializable {
       int pubSessionId = 0;
       if (i > 0 && i < (len - 1)) {
          try {
-            pubSessionId = Integer.valueOf(tail.substring(i + 1));
+            pubSessionId = Integer.parseInt(tail.substring(i + 1));
          } catch (NumberFormatException e) {
             e.printStackTrace();
          }
