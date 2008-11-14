@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import org.xmlBlaster.util.def.Constants;
+
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
@@ -31,7 +33,6 @@ public class XBStore {
    private String node;
    private String type;
    private String postfix;
-   private transient int storeType;
    
    private String flag1;
    
@@ -147,14 +148,35 @@ public class XBStore {
    }
    
    /**
-    * @return e.g. XBStore.TYPE_MEAT
-    */
-   public int getStoreType() {
-      return this.storeType;
+    * 
+    *  Is Similar to numOfEntriesInTheStore : if true use refs to count the entries in the store
+    **/
+   public boolean containsRefsForNumOfEntries() {
+      if (type == null)
+         throw new IllegalArgumentException("The XBStore " + id + " has no type defined: can not determine if it contains refs");
+      
+      if (type.equals(Constants.RELATING_MSGUNITSTORE))
+         return false;
+      
+      return true;
+      /*
+      if (type.equals(Constants.RELATING_CALLBACK))
+         return true;
+      if (type.equals(Constants.RELATING_HISTORY))
+         return true;
+      if (type.equals(Constants.RELATING_CLIENT))
+         return true;
+      if (type.equals(Constants.RELATING_SESSION))
+         return true;
+      if (type.equals(Constants.RELATING_SUBJECT))
+         return true;
+      if (type.equals(Constants.RELATING_SUBSCRIBE))
+         return true;
+      if (type.equals(Constants.RELATING_TOPICSTORE))
+         return true;
+       */
    }
    
-   public void setStoreType(int storeType) {
-      this.storeType = storeType;
-   }
+   
    
 }
