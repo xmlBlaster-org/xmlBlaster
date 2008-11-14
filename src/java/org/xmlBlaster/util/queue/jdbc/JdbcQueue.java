@@ -73,7 +73,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    private Global glob;
    private static Logger log = Logger.getLogger(JdbcQueue.class.getName());
    private QueuePropertyBase property;
-   private XBDatabaseAccessor queueFactory = null;
+   private XBDatabaseAccessor databaseAccessor = null;
    private I_QueuePutListener putListener;
    // to set it to -999L makes it easier to identify than -1L
    private long numOfEntries = -999L;
@@ -227,12 +227,12 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          }
          glob = property.getGlobal();
 
-         queueFactory = getFactory(pluginInfo);
-         xbStore = queueFactory.getXBStore(uniqueQueueId);
-         EntryCount entryCount = queueFactory.getNumOfAll(xbStore);
+         databaseAccessor = getFactory(pluginInfo);
+         xbStore = databaseAccessor.getXBStore(uniqueQueueId);
+         EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
          setEntryCount(entryCount);
          isDown = false;
-         queueFactory.registerQueue(this);
+         databaseAccessor.registerQueue(this);
          if (log.isLoggable(Level.FINE)) 
             log.fine("Successful initialized");
       }
@@ -311,7 +311,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     */
    public ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
       final boolean isRef = true;
-      return (ArrayList)queueFactory.getEntries(xbStore, -1, -1L, entryFilter, isRef, this);
+      return (ArrayList)databaseAccessor.getEntries(xbStore, -1, -1L, entryFilter, isRef, this);
    }
 
    /**
@@ -350,7 +350,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
                    " Number of bytes=" + numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + toXml(""));
          }
          try {
-            if (queueFactory.addEntry(xbStore, entry)) {
+            if (databaseAccessor.addEntry(xbStore, entry)) {
                numOfEntries++;
                numOfBytes += entry.getSizeInBytes();
                if (entry.isPersistent()) {
@@ -397,7 +397,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
 
          try {
 
-            int[] help = this.queueFactory.addEntries(xbStore, queueEntries);
+            int[] help = this.databaseAccessor.addEntries(xbStore, queueEntries);
             for (int i=0; i < queueEntries.length; i++) {
             // boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), queueEntries[i]);
                boolean isProcessed = help[i] > 0 || help[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
@@ -474,10 +474,10 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       synchronized(this.modificationMonitor) {
          try {
             final boolean isRef = true;
-            ret = (ArrayList)queueFactory.getEntries(xbStore, numEntries, numBytes, entryFilter, isRef, this);
+            ret = (ArrayList)databaseAccessor.getEntries(xbStore, numEntries, numBytes, entryFilter, isRef, this);
 
             XBRef[] entries =(XBRef[])ret.toArray(new XBRef[ret.size()]);
-            long deleted = queueFactory.deleteEntries(xbStore, entries, null);
+            long deleted = databaseAccessor.deleteEntries(xbStore, entries, null);
             this.numOfEntries -= deleted;
          }
          finally {
@@ -510,7 +510,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       ReturnDataHolder ret = null;
       synchronized(this.modificationMonitor) {
          try {
-            ret = queueFactory.getAndDeleteLowest(xbStore, numEntries, numBytes, maxPriority, minUniqueId, leaveOne, true, this);
+            ret = databaseAccessor.getAndDeleteLowest(xbStore, numEntries, numBytes, maxPriority, minUniqueId, leaveOne, true, this);
             numOfBytes -= ret.countBytes;
             numOfEntries -= ret.countEntries;
             numOfPersistentBytes -= ret.countPersistentBytes;
@@ -541,7 +541,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          maxPriority = limitEntry.getPriority();
       }
 
-      ReturnDataHolder ret = queueFactory.getAndDeleteLowest(xbStore, numEntries, numBytes, maxPriority, minUniqueId, leaveOne, false, this);
+      ReturnDataHolder ret = databaseAccessor.getAndDeleteLowest(xbStore, numEntries, numBytes, maxPriority, minUniqueId, leaveOne, false, this);
       return ret.list;
    }
 
@@ -553,7 +553,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    {
       I_EntryFilter entryFilter = null;
       final boolean isRef = true;
-      List/*<I_Entry>*/ ret = queueFactory.getEntries(xbStore, 1, -1L, entryFilter, isRef, this);
+      List/*<I_Entry>*/ ret = databaseAccessor.getEntries(xbStore, 1, -1L, entryFilter, isRef, this);
       if (ret.size() < 1) return null;
       return (I_QueueEntry)ret.get(0);
    }
@@ -566,7 +566,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       if (numEntries == 0) return new ArrayList();
       I_EntryFilter entryFilter = null;
       final boolean isRef = true;
-      ArrayList ret = (ArrayList)queueFactory.getEntries(xbStore, numEntries, numBytes, entryFilter, isRef, this);
+      ArrayList ret = (ArrayList)databaseAccessor.getEntries(xbStore, numEntries, numBytes, entryFilter, isRef, this);
       return ret;
    }
 
@@ -576,7 +576,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    public ArrayList peekSamePriority(int numEntries, long numBytes) throws XmlBlasterException {
       if (numEntries == 0) 
          return new ArrayList();
-      ArrayList ret = (ArrayList)queueFactory.getEntriesBySamePriority(xbStore, numEntries, numBytes);
+      ArrayList ret = (ArrayList)databaseAccessor.getEntriesBySamePriority(xbStore, numEntries, numBytes);
       return ret;
    }
 
@@ -586,7 +586,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    public ArrayList peekWithPriority(int numEntries, long numBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numEntries == 0) 
          return new ArrayList();
-      ArrayList ret = (ArrayList)queueFactory.getEntriesByPriority(xbStore, numEntries, numBytes, minPriority, maxPriority);
+      ArrayList ret = (ArrayList)databaseAccessor.getEntriesByPriority(xbStore, numEntries, numBytes, minPriority, maxPriority);
       return ret;
    }
 
@@ -599,7 +599,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       if (log.isLoggable(Level.FINER)) log.finer("peekWithLimitEntry called");
       if (limitEntry == null) 
          return new ArrayList();
-      return (ArrayList)queueFactory.getEntriesWithLimit(xbStore, limitEntry, this);
+      return (ArrayList)databaseAccessor.getEntriesWithLimit(xbStore, limitEntry, this);
    }
 
    /**
@@ -612,7 +612,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       synchronized(modificationMonitor) {
          try {
             XBRef xbRef = limitEntry.getRef(); 
-            ret = queueFactory.removeEntriesWithLimit(xbStore, xbRef, inclusive);
+            ret = databaseAccessor.removeEntriesWithLimit(xbStore, xbRef, inclusive);
             if (ret != 0) { // since we are not able to calculate the size in the cache we have to recalculate it
                resetCounters();
             }
@@ -651,8 +651,8 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       long ret = 0L;
       synchronized(this.modificationMonitor) {
          try {
-            ret = queueFactory.deleteFirstRefs(xbStore, numEntries, numBytes);
-            EntryCount entryCount = queueFactory.getNumOfAll(xbStore);
+            ret = databaseAccessor.deleteFirstRefs(xbStore, numEntries, numBytes);
+            EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
             setEntryCount(entryCount);
          }
          catch (XmlBlasterException ex) {
@@ -690,7 +690,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       XBMeat[] meats = new XBMeat[dataIdArray.length];
       for (int i=0; i < meats.length; i++)
          meats[i] = new XBMeat(dataIdArray[i]);
-      ArrayList list = (ArrayList)queueFactory.getEntries(xbStore, null, meats);
+      ArrayList list = (ArrayList)databaseAccessor.getEntries(xbStore, null, meats);
       return removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
    }
 
@@ -721,7 +721,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          }
          else if (entry.getMeat() != null)
             meatId = entry.getMeat().getId();
-         ret = queueFactory.deleteEntry(xbStore, refId, meatId);
+         ret = databaseAccessor.deleteEntry(xbStore, refId, meatId);
          if (ret > 0) { // then we need to retrieve the values
             numOfEntries--;
             numOfBytes -= currentAmount;
@@ -770,7 +770,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       synchronized(modificationMonitor) {
          ret = new boolean[queueEntries.length];
          try {
-            long sum = queueFactory.deleteEntries(xbStore, refs, meats);
+            long sum = databaseAccessor.deleteEntries(xbStore, refs, meats);
             if (log.isLoggable(Level.FINE)) 
                log.fine("randomRemove: the number of removed entries is '" + sum + "'");
             this.numOfEntries -= sum;
@@ -836,7 +836,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          return numOfEntries;
       synchronized (modificationMonitor) {
          long oldValue = numOfEntries;
-         EntryCount entryCount = queueFactory.getNumOfAll(xbStore);
+         EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
          setEntryCount(entryCount);
          //this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId());
          if (debug) {
@@ -887,7 +887,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       synchronized (modificationMonitor) {
          try {
             long oldValue = numOfPersistentEntries;
-            EntryCount entryCount = queueFactory.getNumOfAll(xbStore);
+            EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
             setEntryCount(entryCount);
             if (debug) {
                if (oldValue != numOfPersistentEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
@@ -950,7 +950,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          return numOfBytes;
       synchronized (modificationMonitor) {
          long oldValue = numOfBytes;
-         EntryCount entryCount = queueFactory.getNumOfAll(xbStore);
+         EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
          setEntryCount(entryCount);
          if (debug) {
             if (oldValue != numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
@@ -1000,7 +1000,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       synchronized (modificationMonitor) {
          try {
             long oldValue = numOfPersistentBytes;
-            EntryCount entryCount = queueFactory.getNumOfAll(xbStore);
+            EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
             setEntryCount(entryCount);
             if (debug) {
                if (oldValue != numOfPersistentBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
@@ -1066,7 +1066,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       try {
          final boolean delMeat = true;
          // long ret = queueFactory.deleteFirstEntries(xbStore, -1, -1L, delMeat);
-         long ret = queueFactory.clearQueue(xbStore);
+         long ret = databaseAccessor.clearQueue(xbStore);
          numOfEntries = 0L;
          numOfBytes = 0L;
          numOfPersistentEntries = 0L;
@@ -1102,25 +1102,25 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
       
-      synchronized (this) {
-         queueFactory.unregisterQueue(this);
-      }
-      
-      glob.getQueuePluginManager().cleanup(this);
-      
-      if (glob instanceof ServerScope) {
-         ((ServerScope)glob).getStoragePluginManager().cleanup(this);
-      }
       try {
          if (getNumOfEntries() == 0) {
-            queueFactory.deleteStore(xbStore.getId());
+            databaseAccessor.deleteStore(xbStore.getId());
          }
       }
       catch (XmlBlasterException ex) {
          log.severe("An exception occured when trying to remove the storage " + xbStore.toString());
          ex.printStackTrace();
       }
+
+      synchronized (this) {
+         databaseAccessor.unregisterQueue(this); // Closes JDBC connection
+      }
       
+      glob.getQueuePluginManager().cleanup(this);
+
+      if (glob instanceof ServerScope) {
+         ((ServerScope) glob).getStoragePluginManager().cleanup(this);
+      }
    }
 
    public boolean isShutdown() {
@@ -1219,7 +1219,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * database.
     */
    public void destroy() throws XmlBlasterException {
-      queueFactory.cleanUp(xbStore);
+      databaseAccessor.cleanUp(xbStore);
       this.clear();
       this.shutdown();
       property = null;
@@ -1229,7 +1229,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    /////////////////////////// I_Map implementation ///////////////////////
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       XBMeat[] meats = new XBMeat[] { new XBMeat(uniqueId) };
-      List list = (ArrayList)queueFactory.getEntries(xbStore, null, meats);
+      List list = (ArrayList)databaseAccessor.getEntries(xbStore, null, meats);
       if (list.size() < 1) {
          return null;
       }
@@ -1241,7 +1241,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     */
    public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
       final boolean isRef = false;
-      List list = queueFactory.getEntries(xbStore, -1, -1L, entryFilter, isRef, this);
+      List list = databaseAccessor.getEntries(xbStore, -1, -1L, entryFilter, isRef, this);
       return (I_MapEntry[])list.toArray(new I_MapEntry[list.size()]);
    }
 
@@ -1288,9 +1288,9 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)
     */
    public boolean registerStorageProblemListener(I_StorageProblemListener listener) {
-      if (queueFactory == null) 
+      if (databaseAccessor == null) 
          return false;
-      return queueFactory.registerStorageProblemListener(listener);
+      return databaseAccessor.registerStorageProblemListener(listener);
    }
 
 
@@ -1298,9 +1298,9 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#unRegisterStorageProblemListener(I_StorageProblemListener)
     */
    public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
-      if (queueFactory == null || listener == null) 
+      if (databaseAccessor == null || listener == null) 
          return false;
-      return queueFactory.unRegisterStorageProblemListener(listener);
+      return databaseAccessor.unRegisterStorageProblemListener(listener);
    }
 
 
@@ -1324,7 +1324,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          
          XBMeat newMeat = newEntry.getMeat();
          XBMeat oldMeat = entry.getMeat();
-         long diffSize = queueFactory.modifyEntry(xbStore, newMeat, oldMeat, onlyRefCounter);
+         long diffSize = databaseAccessor.modifyEntry(xbStore, newMeat, oldMeat, onlyRefCounter);
          this.numOfBytes += diffSize;
          if (entry.isPersistent())
             this.numOfPersistentBytes += diffSize;
@@ -1343,7 +1343,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
          final boolean onlyRefCounter = true;
          XBMeat newMeat = entry.getMeat();
-         long diffSize = queueFactory.modifyEntry(xbStore, newMeat, null, onlyRefCounter);
+         long diffSize = databaseAccessor.modifyEntry(xbStore, newMeat, null, onlyRefCounter);
          this.numOfBytes += diffSize;
          if (entry.isPersistent())
             this.numOfPersistentBytes += diffSize;
