@@ -451,9 +451,6 @@ public abstract class XBFactory extends XBFactoryBase {
    protected abstract long getByteSize(ResultSet rs, int offset) throws SQLException;
    
    /**
-    * Note that this method returns the list of deleted entries, but they are only filled with the id and
-    * the byteSize.
-    * 
     * @param store
     * @param conn
     * @param numOfEntries
