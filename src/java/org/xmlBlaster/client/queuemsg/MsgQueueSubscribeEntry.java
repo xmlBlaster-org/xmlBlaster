@@ -6,11 +6,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.queuemsg;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.queue.StorageId;
@@ -76,6 +77,10 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
 
    public QueryKeyData getSubscribeKeyData() {
       return this.subscribeKeyData;
+   }
+   
+   public MsgUnit getMsgUnit() {
+      return new MsgUnit(getSubscribeKeyData(), null, getSubscribeQosData());
    }
 
    /**

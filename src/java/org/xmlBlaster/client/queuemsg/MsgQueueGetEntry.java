@@ -5,14 +5,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.queuemsg;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
@@ -76,6 +77,10 @@ public final class MsgQueueGetEntry extends MsgQueueEntry
 
    public GetKey getGetKey() {
       return this.getKey;
+   }
+   
+   public MsgUnit getMsgUnit() {
+      return new MsgUnit(getGetKey().getData(), null, getGetQos().getData());
    }
 
    /**

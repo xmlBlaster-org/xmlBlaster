@@ -5,13 +5,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.queuemsg;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
@@ -68,6 +69,10 @@ public final class MsgQueueDisconnectEntry extends MsgQueueEntry
 
    public final DisconnectQos getDisconnectQos() {
       return this.disconnectQos;
+   }
+
+   public MsgUnit getMsgUnit() {
+      return new MsgUnit(null, null, getDisconnectQos().getData());
    }
 
    /**

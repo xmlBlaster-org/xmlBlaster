@@ -5,14 +5,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.queuemsg;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
@@ -81,6 +82,10 @@ public final class MsgQueueEraseEntry extends MsgQueueEntry
 
    public EraseKey getEraseKey() {
       return this.eraseKey;
+   }
+
+   public MsgUnit getMsgUnit() {
+      return new MsgUnit(getEraseKey().getData(), null, getEraseQos().getData());
    }
 
    /**
