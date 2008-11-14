@@ -302,6 +302,23 @@ JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueComm
                   colNamePrefix=XB_,\
                   dbAdmin=true
 
+# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar Version 1.2)
+# Using the new Database schema xbstore, xbref, xbmeat
+# see xmlBlaster/doc/jdbc/migration.txt and admin.txt
+#JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,\
+#                  url=jdbc:sqlserver://localhost:1433;responseBuffering=adaptive;databaseName=xmlBlaster,\
+#                  user=sa,\
+#                  password=xxx,\
+#                  configurationIdentifier=MicrosoftSQLServer2005,\
+#                  connectionPoolSize=5,\
+#                  connectionBusyTimeout=90000,\
+#                  maxWaitingThreads=300,\
+#                  maxExceptionRetries=6,\
+#                  retrySleepMillis=2,\
+#                  dbPool.class=org.xmlBlaster.contrib.db.DbWaitingPool,\
+#                  dbAdmin=true
+
+
 # http://jtds.sourceforge.net/faq.html#driverImplementation
 # Add jtds-1.2.2.jar to your CLASSPATH
 # net.sourceforge.jtds.jdbc.Driver
