@@ -53,21 +53,26 @@ public class FileDumper {
    }
 
    /**
-    * Dump dead message to hard disk. 
-    * The file name is the receive timestamp of the message, for example
+    * Dump dead message to hard disk. The file name is the receive timestamp of
+    * the message, for example
     * <tt>/home/xmlblast/tmp/2004-10-23_18_52_39_87.xml</tt>
+    * 
+    * @param qosData
+    *           may not be null
     * @return fileName
     */                     
    public String dumpMessage(KeyData keyData, byte[] content, QosData qosData, boolean verbose) {
       String fnStr = "";
       try {
-         String fn = qosData.getRcvTimestampNotNull().toString();
-         String key = keyData.toXml();
+         if (content == null)
+            content = new byte[0];
+         String fn = (qosData == null) ? new Timestamp().toString() : qosData.getRcvTimestampNotNull().toString();
+         String key = (keyData == null) ? "" : keyData.toXml();
          Properties props = new Properties();
          if (!forceBase64)
         	 props.put(Constants.TOXML_FORCEREADABLE, ""+true);
-         String qos = qosData.toXml("", props);
-         String oid = keyData.getOid();
+         String qos = (qosData == null) ? "" : qosData.toXml("", props);
+         String oid = (keyData == null) ? "" : keyData.getOid();
 
          fn = Global.getStrippedString(fn); // Strip chars like ":" so that fn is usable as a file name
          fn = fn + ".xml";
@@ -136,7 +141,8 @@ public class FileDumper {
          to.close();
       }
       catch (Throwable e) {
-         log.severe("Dumping of message failed: " + qosData.toXml() + keyData.toXml() + new String(content));
+         log.severe("Dumping of message failed: " + (qosData == null ? "" : qosData.toXml())
+               + (keyData == null ? "" : keyData.toXml()) + new String(content));
       }
       return fnStr;
    }
