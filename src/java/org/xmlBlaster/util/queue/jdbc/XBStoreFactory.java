@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
@@ -132,7 +131,7 @@ public class XBStoreFactory extends XBFactory {
    protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
       return null; // to make compiler happy
    }
-   
+
    /**
     * Inserts an entry in the database
     * @param table
@@ -143,7 +142,7 @@ public class XBStoreFactory extends XBFactory {
     * @throws SQLException If an exception occurs in the backend. For example if the entry already
     * exists in the database.
     */
-   public void insert(XBStore xbStore, Connection conn, int timeout) throws SQLException {
+   public void insert(XBStore xbStore, Connection conn, int timeout) throws SQLException, IOException {
       if (xbStore == null || conn == null)
          return;
       PreparedStatement preStatement = conn.prepareStatement(insertSt);
@@ -152,28 +151,10 @@ public class XBStoreFactory extends XBFactory {
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(ID, xbStore.getId());
 
-         String node = xbStore.getNodeDb();
-         if (node != null)
-            preStatement.setString(NODE, node);
-         else
-            preStatement.setNull(NODE, Types.VARCHAR);
-         
-         String type = xbStore.getTypeDb();
-         if (type != null)
-            preStatement.setString(TYPE, type);
-         else
-            preStatement.setNull(TYPE, Types.VARCHAR);
-            
-         String postfix = xbStore.getPostfixDb();
-         if (postfix != null)
-            preStatement.setString(POSTFIX, postfix);
-         else
-            preStatement.setNull(POSTFIX, Types.VARCHAR);
-            
-         if (xbStore.getFlag1() != null)
-            preStatement.setString(FLAG1, xbStore.getFlag1());
-         else
-            preStatement.setNull(FLAG1, Types.VARCHAR);
+         fillDbCol(preStatement, NODE, xbStore.getNode());
+         fillDbCol(preStatement, TYPE, xbStore.getType());
+         fillDbCol(preStatement, POSTFIX, xbStore.getPostfix());
+         fillDbCol(preStatement, FLAG1, xbStore.getFlag1());
          
          preStatement.execute();
       }
@@ -206,10 +187,10 @@ public class XBStoreFactory extends XBFactory {
             return null;
          
          xbStore.setId(rs.getLong(ID));
-         xbStore.setNode(rs.getString(NODE));
-         xbStore.setType(rs.getString(TYPE));
-         xbStore.setPostfix(rs.getString(POSTFIX));
-         xbStore.setFlag1(rs.getString(FLAG1));
+         xbStore.setNode(getDbCol(rs, NODE));
+         xbStore.setType(getDbCol(rs, TYPE));
+         xbStore.setPostfix(getDbCol(rs, POSTFIX));
+         xbStore.setFlag1(getDbCol(rs, FLAG1));
       }
       finally {
          if (preStatement != null)
@@ -243,10 +224,10 @@ public class XBStoreFactory extends XBFactory {
             return null;
          
          xbStore.setId(rs.getLong(ID));
-         xbStore.setNode(rs.getString(NODE));
-         xbStore.setType(rs.getString(TYPE));
-         xbStore.setPostfix(rs.getString(POSTFIX));
-         xbStore.setFlag1(rs.getString(FLAG1));
+         xbStore.setNode(getDbCol(rs, NODE));
+         xbStore.setType(getDbCol(rs, TYPE));
+         xbStore.setPostfix(getDbCol(rs, POSTFIX));
+         xbStore.setFlag1(getDbCol(rs, FLAG1));
       }
       finally {
          if (preStatement != null)

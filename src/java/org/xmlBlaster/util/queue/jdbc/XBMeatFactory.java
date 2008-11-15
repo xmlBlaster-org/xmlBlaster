@@ -29,7 +29,7 @@ import org.xmlBlaster.contrib.I_Info;
 
 public class XBMeatFactory extends XBFactory {
    private final static Logger log = Logger
-         .getLogger(XBFactory.class.getName());
+         .getLogger(XBMeatFactory.class.getName());
 
    private final static int ID = 1;
    private final static int DURABLE = 2;
@@ -267,25 +267,12 @@ public class XBMeatFactory extends XBFactory {
       preStatement.setLong(REF_COUNT2, xbMeat.getRefCount2());
       preStatement.setLong(BYTE_SIZE, xbMeat.getByteSize());
 
-      if (xbMeat.getDataType() != null)
-         preStatement.setString(DATA_TYPE, xbMeat.getDataType());
-      else
-         preStatement.setNull(DATA_TYPE, Types.VARCHAR);
+      fillDbCol(preStatement, DATA_TYPE, xbMeat.getDataType());
 
-      if (xbMeat.getMetaInfo() != null) {
-         preStatement.setString(META_INFO, xbMeat.getMetaInfo());
-      } else
-         preStatement.setNull(META_INFO, Types.CLOB);
+      fillDbCol(preStatement, META_INFO, xbMeat.getMetaInfo());
+      fillDbCol(preStatement, FLAG1, xbMeat.getFlag1());
 
-      if (xbMeat.getFlag1() != null)
-         preStatement.setString(FLAG1, xbMeat.getFlag1());
-      else
-         preStatement.setNull(FLAG1, Types.VARCHAR);
-
-      if (xbMeat.getQos() != null) {
-         preStatement.setString(QOS, xbMeat.getQos());
-      } else
-         preStatement.setNull(QOS, Types.CLOB);
+      fillDbCol(preStatement, QOS, xbMeat.getQos());
 
       if (xbMeat.getContent() != null) {
          InputStream contentStream = new ByteArrayInputStream(xbMeat
@@ -298,14 +285,7 @@ public class XBMeatFactory extends XBFactory {
          preStatement.setNull(CONTENT, Types.BINARY);
       }
 
-      if (xbMeat.getKey() != null) {
-         // InputStream keyStream = new ByteArrayInputStream(xbMeat.getKey()
-         // .getBytes("UTF-8"));
-         // preStatement.setAsciiStream(KEY, keyStream,
-         // xbMeat.getKey().length());
-         preStatement.setString(KEY, xbMeat.getKey());
-      } else
-         preStatement.setNull(KEY, Types.CLOB);
+      fillDbCol(preStatement, KEY, xbMeat.getKey());
       preStatement.setLong(STORE_ID, xbMeat.getStoreId());
    }
 
@@ -435,7 +415,6 @@ public class XBMeatFactory extends XBFactory {
       if (meatId == 0)
          return null; // then the meat is only in memory (for example for
       // swapped callback queues)
-      InputStream stream;
       XBMeat xbMeat = new XBMeat();
       xbMeat.setId(meatId);
       String tmp = rs.getString(DURABLE + offset);
@@ -443,30 +422,18 @@ public class XBMeatFactory extends XBFactory {
          xbMeat.setDurable(true);
       xbMeat.setRefCount(rs.getLong(REF_COUNT + offset));
       xbMeat.setByteSize(rs.getLong(BYTE_SIZE + offset));
-      xbMeat.setDataType(rs.getString(DATA_TYPE + offset));
-      stream = rs.getAsciiStream(META_INFO + offset);
-      if (stream != null)
-         xbMeat.setMetaInfo(new String(readStream(stream), "UTF-8"));
-      else
-         xbMeat.setMetaInfo(null);
-      xbMeat.setFlag1(rs.getString(FLAG1 + offset));
-      // xbMeat.setQos(rs.getString(QOS + offset));
-      stream = rs.getAsciiStream(QOS + offset);
-      if (stream != null)
-         xbMeat.setQos(new String(readStream(stream), "UTF-8"));
-      else
-         xbMeat.setQos(null);
-      stream = rs.getBinaryStream(CONTENT + offset);
+      xbMeat.setDataType(getDbCol(rs, DATA_TYPE + offset));
+      xbMeat.setMetaInfo(getDbCol(rs, META_INFO + offset));
+      xbMeat.setFlag1(getDbCol(rs, FLAG1 + offset));
+      xbMeat.setQos(getDbCol(rs, QOS + offset));
+
+      InputStream stream = rs.getBinaryStream(CONTENT + offset);
       if (stream != null)
          xbMeat.setContent(readStream(stream));
       else
          xbMeat.setContent(null);
-      // xbMeat.setKey(rs.getString(KEY + offset));
-      stream = rs.getAsciiStream(KEY + offset);
-      if (stream != null)
-         xbMeat.setKey(new String(readStream(stream), "UTF-8"));
-      else
-         xbMeat.setKey(null);
+      
+      xbMeat.setKey(getDbCol(rs, KEY + offset));
       xbMeat.setStoreId(xbMeat.getStoreId());
       return xbMeat;
    }

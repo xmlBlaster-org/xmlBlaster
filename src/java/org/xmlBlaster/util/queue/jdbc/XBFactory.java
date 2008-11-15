@@ -6,14 +6,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -230,11 +233,94 @@ public abstract class XBFactory extends XBFactoryBase {
       int nmax = 262144; // max 200 kb at a time
       int avail = 0;
       byte[] buf = new byte[nmax];
-      while ( (avail = inStream.read(buf, 0, nmax)) > -1) {
+      while ((avail = inStream.read(buf, 0, nmax)) > -1) {
          baos.write(buf, 0, avail);
       }
       return baos.toByteArray();
    }
+
+   private final static boolean useString = true;
+   private final static boolean useString2 = false;
+   private final static boolean useBinary = false;
+   private final static boolean useCharacter = false;
+
+   /**
+    * String/VARCHAR/CLOB helper to avoid NULL and to take care on Umlauts/UTF-8
+    * 
+    * @param preStatement
+    * @param index
+    * @param value
+    * @throws SQLException
+    */
+   public final static String getDbCol(ResultSet rs, int index) throws SQLException, IOException {
+      if (useString) {
+         return rs.getString(index);
+      } else if (useString2) {
+         byte[] bytes = rs.getBytes(index);
+         if (bytes != null) {
+            try {
+               return new String(rs.getBytes(index), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+               e.printStackTrace();
+               return rs.getString(index);
+            }
+         }
+         else
+            return "";
+      } else if (useBinary) {
+         InputStream stream = rs.getAsciiStream(index);
+         if (stream != null) {
+            try {
+               return new String(readStream(stream), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+               e.printStackTrace();
+               return new String(readStream(stream));
+            }
+         } else {
+            return "";
+         }
+      } else {
+         throw new IllegalArgumentException("NOT IMPLEMENTED");
+      }
+   }
+
+   /**
+    * String/VARCHAR/CLOB helper to avoid NULL and to take care on Umlauts/UTF-8
+    * 
+    * @param preStatement
+    * @param index
+    * @param value
+    * @throws SQLException
+    * @throws UnsupportedEncodingException
+    */
+   public final static void fillDbCol(PreparedStatement preStatement, int index, String value) throws SQLException,
+         UnsupportedEncodingException {
+      if (value == null) {
+         preStatement.setNull(index, Types.VARCHAR);
+         // preStatement.setNull(index QOS KEY, Types.CLOB);
+         return;
+      }
+
+      boolean isOracleNullFix = true;
+      if (isOracleNullFix) {
+         if (value == null || value.length() == 0)
+            value = " ";
+      }
+
+      if (useString) {
+         preStatement.setString(index, value);
+      } else if (useString2) {
+         byte[] bytes = value.getBytes("UTF-8");
+         preStatement.setBytes(index, bytes);
+      } else if (useBinary) {
+         byte[] bytes = value.getBytes("UTF-8");
+         InputStream stream = new ByteArrayInputStream(bytes);
+         preStatement.setAsciiStream(index, stream, bytes.length);
+      } else {
+         // preStatement.getCharacterStream(index, )
+      }
+   }
+
    
    /**
     * This method must be implemented in all underlying extentions to this class. It returns (for the different

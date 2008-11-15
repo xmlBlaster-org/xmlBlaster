@@ -7,7 +7,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queue.jdbc;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -276,23 +275,12 @@ public class XBRefFactory extends XBFactory {
 
          preStatement.setLong(BYTE_SIZE, xbRef.getByteSize());
 
-
-         if (xbRef.getMetaInfo() != null) {
-            preStatement.setString(META_INFO, xbRef.getMetaInfo());
-         }
-         else
-            preStatement.setNull(META_INFO, Types.CLOB);
-         
-         if (xbRef.getFlag1() != null)
-            preStatement.setString(FLAG1, xbRef.getFlag1());
-         else
-            preStatement.setNull(FLAG1, Types.VARCHAR);
+         fillDbCol(preStatement, META_INFO, xbRef.getMetaInfo());
+         fillDbCol(preStatement, FLAG1, xbRef.getFlag1());
 
          preStatement.setInt(PRIO, xbRef.getPrio());
-         if (xbRef.getMethodName() != null)
-            preStatement.setString(METHOD_NAME, xbRef.getMethodName());
-         else
-            preStatement.setNull(METHOD_NAME, Types.VARCHAR);
+
+         fillDbCol(preStatement, METHOD_NAME, xbRef.getMethodName());
 
          if (xbRef.isOneToMany())
             preStatement.setString(ONE_TO_MANY, "T");
@@ -317,15 +305,10 @@ public class XBRefFactory extends XBFactory {
       xbRef.setDurable(isTrue(tmp));
       xbRef.setByteSize(rs.getLong(BYTE_SIZE));
       
-      InputStream stream = rs.getAsciiStream(META_INFO);
-      if (stream != null)
-         xbRef.setMetaInfo(new String(readStream(stream), "UTF-8"));
-      else
-         xbRef.setMetaInfo(null);
-
-      xbRef.setFlag1(rs.getString(FLAG1));
+      xbRef.setMetaInfo(getDbCol(rs, META_INFO));
+      xbRef.setFlag1(getDbCol(rs, FLAG1));
       xbRef.setPrio(rs.getInt(PRIO));
-      xbRef.setMethodName(rs.getString(METHOD_NAME));
+      xbRef.setMethodName(getDbCol(rs, METHOD_NAME));
       tmp = rs.getString(ONE_TO_MANY);
       xbRef.setOneToMany(isTrue(tmp));
       boolean buildMeat = !xbRef.isOneToMany();
