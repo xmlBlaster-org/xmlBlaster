@@ -5,24 +5,24 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.jdbc.XBMeat;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.XBMeat;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
@@ -56,7 +56,7 @@ public class ReferenceEntry extends MsgQueueEntry
       Nice during transition to new behavior
    */
    public static final boolean STRICT_REFERENCE_COUNTING_COMPATIBLE = false;
-
+   
    /**
     * A new message object is fed by method update(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
@@ -162,8 +162,18 @@ public class ReferenceEntry extends MsgQueueEntry
    }
 
    /**
+    * Used during conversion from xb_entries to xbstore (OneToThree.java)
+    * 
+    * @param storageId
+    */
+   public void setStorageId(StorageId storageId) {
+      super.storageId = storageId;
+   }
+
+   /**
     * The caller needs to synchronize over msgCache
-    *  @return the MsgUnitWrapper or null if not found
+    * 
+    * @return the MsgUnitWrapper or null if not found
     */
    public MsgUnitWrapper getMsgUnitWrapper() {
       Object referent = null;
