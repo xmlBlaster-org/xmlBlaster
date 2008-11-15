@@ -41,7 +41,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    private String logId;
 
    /** The queue to which this entry belongs (set in the constructors) */
-   protected final StorageId storageId;
+   protected StorageId storageId;
 
    /** How often the entry was tried to send but failed */
    protected int redeliverCounter = 0;
