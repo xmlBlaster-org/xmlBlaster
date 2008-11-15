@@ -111,25 +111,48 @@ public class OneToThree {
                      // New xbpostfix: "client/jack/session/1"
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
                      String nodeId = serverScopeThree.getDatabaseNodeStr();
-                     StorageId storageId = null;
-                     SessionName sessionName = null;
                      if (relating.equals(Constants.RELATING_CALLBACK) || relating.equals(Constants.RELATING_SUBJECT)) {
+                        // Reconstruct sessionName
+                        // /node/heron/client/subscriberDummy <->
+                        // clientsubscriberDummy1
                         SessionName sn = refEntry.getReceiver();
+                        
+                        // Fix pubSessionId if it was a PtP to subject
+                        String queueName = refEntry.getStorageId().getOldPostfix();
+                        // queueName=callback_nodeheronclientsubscriberDummy1
+                        // subject_nodeheronclientsubscriberNotExist
+                        int pos = queueName.lastIndexOf(sn.getLoginName());
+                        if (pos != -1) {
+                           String pubStr = queueName.substring(pos + sn.getLoginName().length());
+                           if (pubStr.length() > 0) { // has pubSessionId
+                              try {
+                                 int pubSessionId = Integer.parseInt(pubStr);
+                                 sn = new SessionName(serverScopeThree, sn.getNodeId(), sn.getLoginName(), pubSessionId);
+                              } catch (NumberFormatException e) {
+                                 logToFile(queueNamePattern + "[counter=" + counter
+                                       + "]: SessionName problem queueName=" + queueName + ": " + e.toString());
+                                 e.printStackTrace();
+                              }
+                           }
+                        }
                         log.info(sn.getAbsoluteName() + " <-> " + refEntry.getStorageId().getXBStore().getPostfix());
-                        storageId = new StorageId(serverScopeThree, nodeId, relating, sn);
-                     } else {
+                        // refEntry.getStorageId().getXBStore().setNode(nodeId)
+                        // ;
+                        // refEntry.getStorageId().getXBStore().setType(relating);
+                        // refEntry.getStorageId().getXBStore().setPostfix(sn.getRelativeName());
+                        refEntry.setStorageId(new StorageId(serverScopeThree, nodeId, relating, sn));
+                     } else { // Dangerous guess:
                         String queueName = refEntry.getStorageId().getOldPostfix();
                         SessionName sn = SessionName.guessSessionName(serverScopeOne, nodeId, queueName,
                               limitPositivePubToOneDigit);
-                        storageId = new StorageId(serverScopeThree, nodeId, relating, sn);
+                        refEntry.setStorageId(new StorageId(serverScopeThree, nodeId, relating, sn));
                      }
-                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, storageId);
+                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, refEntry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, refEntry);
                   } else if (relating.equals(Constants.RELATING_HISTORY)) {
                      MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry) ent;
-                     StorageId storageId = entry.getStorageId();
-                     storageId.getXBStore().setPostfix(entry.getKeyOid());
-                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, storageId);
+                     entry.getStorageId().getXBStore().setPostfix(entry.getKeyOid());
+                     XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   } else if (ent instanceof ReferenceEntry) {
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
@@ -138,15 +161,13 @@ public class OneToThree {
                   } else {
                      I_MapEntry entry = (I_MapEntry) ent;
                      if (relating.equals(Constants.RELATING_MSGUNITSTORE)) {
-                        StorageId storageId = entry.getStorageId();
                         MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper) entry;
-                        storageId.getXBStore().setPostfix(msgUnitWrapper.getKeyOid());
+                        entry.getStorageId().getXBStore().setPostfix(msgUnitWrapper.getKeyOid());
                      } else if (relating.equals(Constants.RELATING_SESSION)
                            || relating.equals(Constants.RELATING_SUBSCRIBE)) {
                         // "subPersistence,1_0" to "subPersistence,1.0"
-                        StorageId storageId = entry.getStorageId();
-                        storageId.getXBStore().setPostfix(
-                              ReplaceVariable.replaceAll(storageId.getXBStore().getPostfix(), "1_0", "1.0"));
+                        entry.getStorageId().getXBStore().setPostfix(
+                              ReplaceVariable.replaceAll(entry.getStorageId().getXBStore().getPostfix(), "1_0", "1.0"));
                      }
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
