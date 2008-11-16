@@ -34,8 +34,6 @@
 	INSERT INTO uk_sequence_table (TABLE_NAME, COUNTER) VALUES ('<your tablename>', 0); 
 
 
-- Change xbbytesize to int8 so that sum(xbbytesize) won't fail
-
 - Force old pool: 
   dbPool.class=org.xmlBlaster.contrib.db.DbWaitingPool,\
 
