@@ -1,4 +1,4 @@
-- Check of CLOB are slow
+- Check if CLOB are slow
 
 - Add 'limit'
 
@@ -23,3 +23,15 @@
 -  We need a delegate to recover exceptions: XbDatabaseAccessorDelegat
 
 - Consistency check is only for old xb_entries: RequestBroker.checkCallbackEntriesConsistency()
+
+- Primary key generation
+	Having two or more JVM on same database (e.g. a server and many clients) to assure unique primary key:
+	create table XX (id bigint identity (1,1) primary key, info varchar(16) default '')
+	go
+	insert into XX (info) values ('hello')
+	select @@IDENTITY as 'Identity'
+	go
+	select * from XX
+	go
+
+
