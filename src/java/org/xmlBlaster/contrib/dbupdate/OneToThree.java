@@ -17,6 +17,7 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
+import org.xmlBlaster.engine.queuemsg.TopicEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
@@ -121,9 +122,10 @@ public class OneToThree {
                         String queueName = refEntry.getStorageId().getOldPostfix();
                         // queueName=callback_nodeheronclientsubscriberDummy1
                         // subject_nodeheronclientsubscriberNotExist
-                        int pos = queueName.lastIndexOf(sn.getLoginName());
+                        String strippedLoginName = Global.getStrippedString(sn.getLoginName());
+                        int pos = queueName.lastIndexOf(strippedLoginName);
                         if (pos != -1) {
-                           String pubStr = queueName.substring(pos + sn.getLoginName().length());
+                           String pubStr = queueName.substring(pos + strippedLoginName.length());
                            if (pubStr.length() > 0) { // has pubSessionId
                               try {
                                  int pubSessionId = Integer.parseInt(pubStr);
@@ -135,11 +137,8 @@ public class OneToThree {
                               }
                            }
                         }
-                        log.info(sn.getAbsoluteName() + " <-> " + refEntry.getStorageId().getXBStore().getPostfix());
-                        // refEntry.getStorageId().getXBStore().setNode(nodeId)
-                        // ;
-                        // refEntry.getStorageId().getXBStore().setType(relating);
-                        // refEntry.getStorageId().getXBStore().setPostfix(sn.getRelativeName());
+                        //logToFile(queueNamePattern + "[counter=" + counter
+                        //      + "]: queueName=" + queueName + " new=" + sn.getAbsoluteName() + " strippedLoginName=" + strippedLoginName + " oldPostfix=" + refEntry.getStorageId().getXBStore().getPostfix());
                         refEntry.setStorageId(new StorageId(serverScopeThree, nodeId, relating, sn));
                      } else { // Dangerous guess:
                         String queueName = refEntry.getStorageId().getOldPostfix();
@@ -169,6 +168,10 @@ public class OneToThree {
                         entry.getStorageId().getXBStore().setPostfix(
                               ReplaceVariable.replaceAll(entry.getStorageId().getXBStore().getPostfix(), "1_0", "1.0"));
                      }
+                     //else if (relating.equals(Constants.RELATING_TOPICSTORE)) {
+                     //   TopicEntry topicEntry = (TopicEntry)entry;
+                     //   logToFile(queueNamePattern + " [count=" + counter + "] processing topicStore " + entry.getLogId());
+                     //}
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   }
@@ -179,9 +182,9 @@ public class OneToThree {
                   return null; // Filter away so getAll returns nothing
                } catch (Throwable e) {
                   e.printStackTrace();
-                  log.warning("Ignoring during callback queue processing exception: " + e.toString());
+                  log.warning(ent.getLogId() + " Ignoring during callback queue processing exception: " + e.toString());
                   logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring during processing exception: "
-                        + e.toString());
+                        + e.toString() + " " + ent.getLogId());
                   return null; // Filter away so getAll returns nothing
                }
             }
@@ -243,9 +246,9 @@ public class OneToThree {
                   return null; // Filter away so getAll returns nothing
                } catch (Throwable e) {
                   e.printStackTrace();
-                  log.warning("Ignoring during callback queue processing exception: " + e.toString());
+                  log.warning(ent.getLogId() + " Ignoring during callback queue processing exception: " + e.toString());
                   logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring during processing exception: "
-                        + e.toString());
+                        + e.toString() + " " + ent.getLogId());
                   return null; // Filter away so getAll returns nothing
                }
             }
