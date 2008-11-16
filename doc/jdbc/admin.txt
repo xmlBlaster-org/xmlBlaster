@@ -1,3 +1,7 @@
+File:    xmlBlaster/doc/jdbc/admin.txt
+Comment: New Database schema for xmlBlaster http://www.xmlBlaster.org
+Date:    2008-11-16
+
 
 Note 1: durable='F' means 'F' == False: transient, swapped messages ('T' means True = persistent messages)
 
@@ -15,8 +19,8 @@ Note 5: Many cluster nodes may coexist in same database
 
 Rule 1: If xmlBlaster node is stopped: No transient swapped messages
         You should delete all xbref.xbdurable='F' or xbmeat.xbdurable='F' of this node
-		  delete from xbref where xbdurable='F';
-		  delete from xbmeat where xbdurable='F';
+                  delete from xbref where xbdurable='F';
+                  delete from xbmeat where xbdurable='F';
 
 Rule 2: xmlBlaster running or stopped:
         All xbmeat with xbmeat.xbdurable='T' which have NO xbref can be deleted (for this node)
@@ -37,7 +41,7 @@ Rule 6: If xmlBlaster node is stopped:
 
 
 Optional index you can add:
-		  ?? alter table xbref add constraint fkxbmeatref foreign key (xbmeatid, xbstoreid) references xbmeat;
+                  ?? alter table xbref add constraint fkxbmeatref foreign key (xbmeatid, xbstoreid) references xbmeat;
         create index IX_MEAT_DURABLE ON XBMEAT (xbdurable);
         create index IX_REF_DURABLE ON XBREF (xbdurable);
         create index IX_REF_PRIO ON XBREF (xbprio);
