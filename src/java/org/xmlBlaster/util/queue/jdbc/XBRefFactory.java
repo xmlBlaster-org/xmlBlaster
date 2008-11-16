@@ -146,7 +146,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbstoreid bigint not null,\n");
          buf.append("      xbmeatid bigint,\n");
          buf.append("      xbdurable char(1) not null default 'F',\n");
-         buf.append("      xbbytesize int,\n");
+         buf.append("      xbbytesize bigint,\n");
          buf.append("      xbmetainfo varchar(MAX) default '',\n");
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio int,\n");
@@ -158,6 +158,10 @@ public class XBRefFactory extends XBFactory {
          buf.append("      add constraint fkxbstoreref\n");
          buf.append("      foreign key (xbstoreid)\n");
          buf.append("      references xbstore on delete cascade;\n");
+         
+         buf.append(" create index IX_MEAT_DURABLE ON XBMEAT (xbdurable);\n");
+         buf.append(" create index IX_REF_DURABLE ON XBREF (xbdurable);\n");
+         buf.append(" create index IX_REF_PRIO ON XBREF (xbprio);\n");
       }
       /*
       else if (getDbVendor().equals(DB2)) {
