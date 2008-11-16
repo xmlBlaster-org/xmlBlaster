@@ -10,7 +10,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Storage;
 
-public class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
+public final class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
 
    private static Logger log = Logger.getLogger(XBDatabaseAccessorDelegate.class.getName());
    private/* final */int MAX_RETRIES;
@@ -105,7 +105,7 @@ public class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
    }
 
 
-   public int[] addEntries(XBStore store, I_Entry[] entries) throws XmlBlasterException {
+   public final int[] addEntries(XBStore store, I_Entry[] entries) throws XmlBlasterException {
       for (int i = 0; i < MAX_RETRIES; i++) {
          try {
             return super.addEntries(store, entries);
@@ -116,7 +116,7 @@ public class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
       throw new IllegalStateException("XBDatabaseAccessorDelegate.addEntries() MAX_RETRIES=" + MAX_RETRIES);
    }
 
-   public long modifyEntry(XBStore store, XBMeat entry, XBMeat oldEntry, boolean onlyRefCounters)
+   public final long modifyEntry(XBStore store, XBMeat entry, XBMeat oldEntry, boolean onlyRefCounters)
          throws XmlBlasterException {
       for (int i = 0; i < MAX_RETRIES; i++) {
          try {
@@ -128,4 +128,14 @@ public class XBDatabaseAccessorDelegate extends XBDatabaseAccessor {
       throw new IllegalStateException("XBDatabaseAccessorDelegate.deleteEntries() MAX_RETRIES=" + MAX_RETRIES);
    }
 
+   public final EntryCount getNumOfAll(XBStore store) throws XmlBlasterException {
+      for (int i = 0; i < MAX_RETRIES; i++) {
+         try {
+            return super.getNumOfAll(store);
+         } catch (XmlBlasterException e) {
+            handleException(i, e);
+         }
+      }
+      throw new IllegalStateException("XBDatabaseAccessorDelegate.getNumOfAll() MAX_RETRIES=" + MAX_RETRIES + " " + store.toString());
+   }
 }
