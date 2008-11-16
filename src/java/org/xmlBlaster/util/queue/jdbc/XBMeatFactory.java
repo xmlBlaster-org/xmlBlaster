@@ -159,7 +159,7 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbdurable char not null default 'F',\n");
          buf.append("      xbrefcount int,\n");
          buf.append("      xbrefcount2 int,\n");
-         buf.append("      xbbytesize int,\n");
+         buf.append("      xbbytesize bigint,\n");
          buf.append("      xbdatatype varchar(32) not null default '',\n");
          buf.append("      xbmetainfo varchar(MAX) default '',\n");
          buf.append("      xbflag1 varchar(32) default '',\n");
