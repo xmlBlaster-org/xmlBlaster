@@ -1576,7 +1576,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * how big the size is.
     * @return never null
     */
-   public final EntryCount getNumOfAll(XBStore store) throws XmlBlasterException {
+   public EntryCount getNumOfAll(XBStore store) throws XmlBlasterException {
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
          return null;
@@ -1591,7 +1591,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          return meatFactory.getNumOfAll(store, conn);
       }
       catch (Throwable ex) {
-         success = false;
+        ex.printStackTrace();
+        log.severe("getNumOfAll failed " + store.toString() + " " + ex.toString());
+        success = false;
         if (checkIfDBLoss(conn, getLogId(store.toString(), "getNumOfAll"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfAll", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfAll", "", ex); 
@@ -1817,9 +1819,10 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          return countMeats;
       }
       catch (Throwable ex) {
+         ex.printStackTrace();
          success = false;
          rollback(conn);
-        if (checkIfDBLoss(conn, getLogId(store.toString(), "getNumOfAll"), ex))
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "clearQueue"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfAll", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfAll", "", ex); 
       }
