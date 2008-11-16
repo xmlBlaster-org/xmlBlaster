@@ -88,7 +88,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("-- creationts timestamp not null default current_timestamp,\n");
          buf.append("-- modifiedts timestamp not null default current_timestamp,\n");
          buf.append("xbdurable char(1) not null default 'F',\n");
-         buf.append("xbbytesize int4,\n");
+         buf.append("xbbytesize int8,\n");
          buf.append("xbmetainfo text default '',\n");
          buf.append("xbflag1 varchar(32) default '',\n");
          buf.append("xbprio int4,\n");
@@ -117,7 +117,7 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbstoreid NUMBER(20) not null,\n");
          buf.append("      xbmeatid NUMBER(20) ,\n");
          buf.append("      xbdurable char(1) default 'F' not null ,\n");
-         buf.append("      xbbytesize NUMBER(10) ,\n");
+         buf.append("      xbbytesize NUMBER(20) ,\n");
          buf.append("      xbmetainfo clob default '',\n");
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  NUMBER(10),\n");
