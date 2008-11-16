@@ -3,7 +3,7 @@ Note 1: durable='F' means 'F' == False: transient, swapped messages ('T' means T
 
 Note 2: All I_MAP entries (xbtype='topicStore', 'session', 'subscribe') have a one-to-one relation for xbref/xbmeat
         except the 'msgUnitStore'.
-        The reference counter queue like 'history' 'subject' 'callback' have a many-to-one relation to 'msgUnitStore'.
+        The reference counter queue like 'history' 'subject' 'callback' have a 'xbref' many-to-one relation to 'msgUnitStore'.
 
 Note 3: The rules apply if xbstore/xbref/xbmeat are running in same database
         This covers also if QueuePlugin and StoragePlugin are one RAM and the other JDBC
@@ -15,6 +15,8 @@ Note 5: Many cluster nodes may coexist in same database
 
 Rule 1: If xmlBlaster node is stopped:
         You should delete all xbref.xbdurable='F' or xbmeat.xbdurable='F' of this node
+		  delete from xbref where xbdurable='F';
+		  delete from xbmeat where xbdurable='F';
 
 Rule 2: xmlBlaster running or stopped:
         All xbmeat with xbmeat.xbdurable='T' which have NO xbref can be deleted (for this node)
@@ -35,14 +37,10 @@ Rule 6: If xmlBlaster node is stopped:
 
 
 Optional index you can add:
-        ADD xbref.xbmeatid foreign key!
+		  alter table xbref add constraint fkxbmeatref foreign key (xbmeatid, xbstoreid) references xbmeat;
         create index IX_MEAT_DURABLE ON XBMEAT (xbdurable);
         create index IX_REF_DURABLE ON XBREF (xbdurable);
         create index IX_REF_PRIO ON XBREF (xbprio);
-alter table xbref
-            add constraint fkxbmeatref
-            foreign key (xbmeatid)
-            references xbmeat;
 
 -- Transient swapped messages
 
@@ -76,9 +74,14 @@ select s.xbstoreid, s.xbtype, m.xbmeatid, m.xbmsgqos from xbstore s left outer j
 -- Show connection queue entries of user publisher/1
 select s.xbstoreid, s.xbtype, m.xbmeatid, m.xbdatatype from xbstore s left outer join xbmeat m on s.xbstoreid=m.xbstoreid where s.xbtype='connection' and s.xbpostfix='client/publisher/1';   
 
+-- Show callback queue entries of user publisher/1
+select s.xbstoreid, s.xbtype, r.xbmeatid, r.xbmethodname from xbstore s left outer join xbref r on s.xbstoreid=r.xbstoreid where s.xbtype='callback' and s.xbpostfix='client/joe/1';
+select s.xbstoreid, s.xbtype, m.xbmeatid, m.xbdatatype from xbstore s left outer join xbmeat m on s.xbstoreid=m.xbstoreid where s.xbtype='callback' and s.xbpostfix='client/publisher/1';
+
+-- Find meat which contains a topicId
+select xbstoreid, xbmeatid, xbmsgkey from xbmeat where xbmsgkey like '%Hello%'
+
 -- Consistency check number of: All must result 0 or max 1
 select count(*) from xbstore where xbtype='session';
 select count(*) from xbstore where xbtype='subscribe';
 select count(*) from xbstore where xbtype='topicStore';
-
-
