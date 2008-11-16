@@ -61,7 +61,8 @@ create table xbmeat (
       xbdurable char not null default 'F',
       xbrefcount int,
       xbrefcount2 int,
-      xbbytesize int,
+-- int=4bytes=2GB, but must be bigint as sum(xbbytesize) fails: Arithmetic overflow SQLServerException
+      xbbytesize bigint,
       xbdatatype varchar(32) not null default '',
 --Only subscribe remembers sessionName      
 --    xbmetainfo varchar(156) default '',
@@ -89,7 +90,7 @@ create table xbref (
 	xbstoreid bigint not null,
 	xbmeatid bigint,
 	xbdurable char(1) not null default 'F',
-	xbbytesize int,
+	xbbytesize bigint,
 --ServerEntryFactory UPDATE remembers sessionName, oid, subscribeId and short fields      
 --  xbmetainfo varchar(600) default '',
 	xbmetainfo varchar(MAX) default '',
