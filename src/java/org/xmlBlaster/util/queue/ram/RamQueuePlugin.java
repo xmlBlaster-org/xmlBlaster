@@ -393,6 +393,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       return genericPeek(numOfEntries, numOfBytes, 0, MAX_PRIO).list;
    }
 
+   public ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+      throw new IllegalAccessError("RamQueuePlugin has peekStartAt not implemented");
+   }
 
    /**
     * @see I_Queue#peekSamePriority(int, long)

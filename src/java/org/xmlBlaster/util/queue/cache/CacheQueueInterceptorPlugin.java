@@ -760,6 +760,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
    }
 
+   public ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+      throw new IllegalAccessError("CacheQueueInterceptorPlugin has peekStartAt not implemented");
+   }
+
    /**
     * @see I_Queue#peekSamePriority(int, long)
     */
@@ -1049,7 +1053,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          // 1. Look into persistent store ...
          ArrayList list = null;
          try {
-            list = this.persistentQueue.peek((int)freeEntries, freeBytes);
+            ArrayList listLowest = this.transientQueue.peekLowest(1, -1, null, false);
+            I_QueueEntry firstEntry = null;
+            if (listLowest.size() == 1) {
+               firstEntry = (I_QueueEntry)listLowest.get(0); 
+            }
+            list = this.persistentQueue.peekStartAt((int)freeEntries, freeBytes, firstEntry);
          }
          catch (XmlBlasterException ex) {
             log.severe(ME+"Could not read back data from persistence: " + ex.getMessage());

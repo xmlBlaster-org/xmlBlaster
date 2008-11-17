@@ -240,6 +240,17 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
    ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException;
 
    /**
+    * Returns maximum the first num element in the queue
+    * but does not remove it from that queue (leaves it untouched).
+    * This method does not block.
+    * @param numOfEntries Access num entries, if -1 access all entries currently found
+    * @param numOfBytes is the maximum size in bytes of the array to return, -1 is unlimited .
+    * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
+    * @throws XmlBlasterException if the underlying implementation gets an exception.
+    */
+   ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException;
+
+   /**
     * Returns maximum the first num element in the queue of highest priority
     * but does not remove it from that queue (leaves it untouched).
     * This method does not block.
