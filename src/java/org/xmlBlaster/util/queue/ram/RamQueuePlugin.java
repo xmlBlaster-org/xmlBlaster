@@ -251,13 +251,13 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#remove()
     */
    public int remove() throws XmlBlasterException {
-      return (int)remove(1, -1L);
+      return (int)removeNum(1);
    }
 
    /**
     * @see I_Queue#remove(long, long)
     */
-   public long remove(long numOfEntries, long numOfBytes)
+   public long removeNum(long numOfEntries)
       throws XmlBlasterException
    {
       if (numOfEntries > Integer.MAX_VALUE)
@@ -266,7 +266,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       ArrayList elementsToDelete = null;
       try {
          synchronized(this) {
-            ReturnDataHolder ret = this.genericPeek((int)numOfEntries, numOfBytes, 0, 9);
+            ReturnDataHolder ret = this.genericPeek((int)numOfEntries, -1L, 0, 9);
             elementsToDelete = ret.list;
 
             // count the persistent entries (and the persistent sizes)

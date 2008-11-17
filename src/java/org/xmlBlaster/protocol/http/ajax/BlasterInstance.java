@@ -212,7 +212,7 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 	public void put(MsgUnit msgUnit) throws XmlBlasterException {
 		MsgQueuePublishEntry queueEntry = new MsgQueuePublishEntry(glob, msgUnit, this.storageId);
 		if (this.updateQueue.getNumOfEntries() >= this.updateQueue.getMaxNumOfEntries())
-			this.updateQueue.remove(1, -1);
+			this.updateQueue.removeNum(1);
 		this.updateQueue.put(queueEntry, I_Queue.IGNORE_PUT_INTERCEPTOR);
 	}
 

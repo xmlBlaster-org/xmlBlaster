@@ -634,7 +634,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
    public int remove() throws XmlBlasterException {
-      return (int)remove(1L, -1L);
+      return (int)removeNum(1L);
    }
 
 
@@ -645,13 +645,13 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   public long remove(long numEntries, long numBytes) throws XmlBlasterException {
+   public long removeNum(long numEntries) throws XmlBlasterException {
       if (numEntries == 0) 
          return 0L;
       long ret = 0L;
       synchronized(this.modificationMonitor) {
          try {
-            ret = databaseAccessor.deleteFirstRefs(xbStore, numEntries, numBytes);
+            ret = databaseAccessor.deleteFirstRefs(xbStore, numEntries, -1L);
             EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
             setEntryCount(entryCount);
          }

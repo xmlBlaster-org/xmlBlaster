@@ -703,7 +703,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   public long remove(long numOfEntries, long numOfBytes) throws XmlBlasterException {
+   public long removeNum(long numOfEntries) throws XmlBlasterException {
       if (numOfEntries == 0) return 0L;
       ReturnDataHolder ret = null;
       synchronized(this.modificationMonitor) {

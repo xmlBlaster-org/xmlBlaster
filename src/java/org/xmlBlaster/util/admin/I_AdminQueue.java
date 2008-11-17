@@ -96,7 +96,7 @@ public interface I_AdminQueue extends I_AdminPlugin {
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   public long remove(long numOfEntries, long numOfBytes) throws org.xmlBlaster.util.XmlBlasterException;
+   public long removeNum(long numOfEntries) throws org.xmlBlaster.util.XmlBlasterException;
 
    /**
     * Removes max numOfEntries messages (or less depending on the numOfBytes).

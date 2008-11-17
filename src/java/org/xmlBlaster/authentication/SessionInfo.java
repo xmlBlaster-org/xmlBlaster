@@ -1094,7 +1094,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    public long removeFromCallbackQueue(long numOfEntries) throws XmlBlasterException {
       I_Queue sessionQueue = this.sessionQueue;
-      return (sessionQueue==null) ? 0L : sessionQueue.remove(numOfEntries, -1);
+      return (sessionQueue==null) ? 0L : sessionQueue.removeNum(numOfEntries);
    }
 
    public MsgUnit[] getCallbackQueueEntries(String query) throws XmlBlasterException {

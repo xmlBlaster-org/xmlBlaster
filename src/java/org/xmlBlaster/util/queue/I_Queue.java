@@ -303,7 +303,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   long remove(long numOfEntries, long numOfBytes) throws XmlBlasterException;
+   long removeNum(long numOfEntries) throws XmlBlasterException;
 
    /**
     * Removes max numOfEntries messages (or less depending on the numOfBytes).

@@ -819,7 +819,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
    public int remove() throws XmlBlasterException {
-      return (int)remove(1, -1L);
+      return (int)removeNum(1);
    }
 
 
@@ -830,8 +830,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   public long remove(long numOfEntries, long numOfBytes) throws XmlBlasterException {
-
+   public long removeNum(long numOfEntries) throws XmlBlasterException {
+      
       long ret = 0L;
       int removedEntries = 0;
       if (numOfEntries > Integer.MAX_VALUE)
@@ -839,26 +839,22 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       int nmax = (int)numOfEntries;
 
       if (nmax < 0) nmax = Integer.MAX_VALUE;
-      if (numOfBytes < 0L) numOfBytes = Long.MAX_VALUE;
 
       I_Entry[] entries = null;
       ArrayList  list = null;
       boolean[] tmp = null;
       try {
          synchronized(this) {
-            while ((nmax > 0) && (numOfBytes > 0L)) {
-               list = peek(nmax, numOfBytes);
+            while ((nmax > 0)) {
+               list = peek(nmax, -1L);
                if ((list == null) || (list.size() < 1)) break;
-               long delta = this.transientQueue.getNumOfBytes();
                removedEntries = 0;
                entries = (I_Entry[])list.toArray(new I_Entry[list.size()]);
                tmp = removeRandomNoNotify(entries);
-               for (int i=0; i < tmp.length; i++) if (tmp[i]) removedEntries++;
-           
-               delta -= this.transientQueue.getNumOfBytes();
+               for (int i=0; i < tmp.length; i++) 
+                  if (tmp[i]) removedEntries++;
                nmax -= removedEntries;
                ret += removedEntries;
-               numOfBytes -= delta;
             }
          }
       }
@@ -1248,7 +1244,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if (curr <= 0) break;
             //if (curr > 10000) curr = 10000; is protected by maxEntriesCached
             try {
-               long count = remove(curr, -1); // with callback to Entry for reference counting
+               long count = removeNum(curr); // with callback to Entry for reference counting
                if (count == 0) break;
             }
             catch (Throwable e) {

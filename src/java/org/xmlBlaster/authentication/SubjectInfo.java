@@ -530,7 +530,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                   }
 
                   try {
-                     long num = this.subjectQueue.remove(list.size(), -1);
+                     long num = this.subjectQueue.removeNum(list.size());
                      if (num != list.size()) {
                         log.severe(ME+": PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
                      }

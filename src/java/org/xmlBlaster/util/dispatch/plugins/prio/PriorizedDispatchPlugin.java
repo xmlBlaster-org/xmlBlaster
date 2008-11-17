@@ -453,7 +453,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                }
 
                try {
-                  long num = holdbackQueue.remove(list.size(), -1);
+                  long num = holdbackQueue.removeNum(list.size());
                   if (num != list.size()) {
                      log.severe("PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
                   }
