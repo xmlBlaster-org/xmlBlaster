@@ -1272,7 +1272,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * @param amount the maximum amount of bytes to remove. Note that if no entries
     *        fit into this size, the first entry is taken anyway (to avoid deadlocks)
     */
-   public long deleteFirstRefs(XBStore store, long numOfEntries, long numOfBytes) throws XmlBlasterException {
+   public long deleteFirstRefs(XBStore store, long numOfEntries) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
       if (!this.isConnected) {
@@ -1291,7 +1291,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(false);
-         List/*<XBRef>*/ tmp = refFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
+         List/*<XBRef>*/ tmp = refFactory.getFirstEntries(store, conn, numOfEntries, -1L, timeout);
          XBRef[] refs = (XBRef[])tmp.toArray(new XBRef[tmp.size()]);
          XBMeat[] meats = null;
          for (int i=0; i < refs.length; i++) {

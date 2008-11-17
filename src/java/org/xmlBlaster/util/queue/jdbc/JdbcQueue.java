@@ -651,7 +651,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       long ret = 0L;
       synchronized(this.modificationMonitor) {
          try {
-            ret = databaseAccessor.deleteFirstRefs(xbStore, numEntries, -1L);
+            ret = databaseAccessor.deleteFirstRefs(xbStore, numEntries);
             EntryCount entryCount = databaseAccessor.getNumOfAll(xbStore);
             setEntryCount(entryCount);
          }
