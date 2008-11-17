@@ -341,9 +341,11 @@ public abstract class XBFactory extends XBFactoryBase {
       else if (getDbVendor().equals(FIREBIRD)) {
          limitAtEnd = false;
       }
+      */
       else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
          limitAtEnd = false;
       }
+      /*
       else if (getDbVendor().equals(MYSQL)) {
          limitAtEnd = true;
       }
