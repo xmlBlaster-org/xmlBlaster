@@ -564,6 +564,8 @@ public abstract class XBFactory extends XBFactoryBase {
          ps.setLong(limit, numOfEntries);
          ps.setLong(qId, store.getId());
          */
+         if (numOfEntries != -1)
+            ps.setMaxRows((int)numOfEntries);
          boolean storeMustBeSet = getFirstEntriesSt.indexOf('?') > -1;
          if (storeMustBeSet)
             ps.setLong(1, store.getId());
