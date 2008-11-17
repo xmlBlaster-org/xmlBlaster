@@ -551,7 +551,7 @@ public class I_QueueTest extends TestCase {
          int numOfEntries = 2;
          ArrayList ret = wrapper.blockingPeek(numOfEntries, 1000L);
          assertEquals("Wrong number of entries found", 2, ret.size());
-         queue.remove(2, -1L);
+         queue.removeNum(2);
          numOfEntries = 2;
          ret = wrapper.blockingPeek(numOfEntries, 1000L);
          assertEquals("Wrong number of entries found", 1, ret.size());
