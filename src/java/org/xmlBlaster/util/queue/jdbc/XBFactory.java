@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.I_QueueEntry;
 
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
@@ -50,7 +51,6 @@ public abstract class XBFactory extends XBFactoryBase {
    protected String table;
    private String tableNameDefault;
    protected String inList;
-   protected boolean limitAtEnd;
    protected String base;
    
    /**
@@ -328,36 +328,8 @@ public abstract class XBFactory extends XBFactoryBase {
     * @return
     */
    protected void prepareDefaultStatements() {
-      if (getDbVendor().equals(POSTGRES)) {
-         limitAtEnd = true;
-      }
-      else if (getDbVendor().equals(ORACLE)) {
-         limitAtEnd = true;
-      }
-      /*
-      else if (getDbVendor().equals(DB2)) {
-         
-      }
-      else if (getDbVendor().equals(FIREBIRD)) {
-         limitAtEnd = false;
-      }
-      */
-      else if (getDbVendor().equals(SQLSERVER_2000) || getDbVendor().equals(SQLSERVER_2005)) {
-         limitAtEnd = false;
-      }
-      /*
-      else if (getDbVendor().equals(MYSQL)) {
-         limitAtEnd = true;
-      }
-      else if (getDbVendor().equals(SQLITE)) {
-         limitAtEnd = true;
-      }
-      */
-      else { // if (getDbVendor().equals(HSQLDB))
-         limitAtEnd = false;
-      }
+      //if (getDbVendor().equals(POSTGRES)) {
    }
-   
    
    
    /**
@@ -552,18 +524,6 @@ public abstract class XBFactory extends XBFactoryBase {
       PreparedStatement ps = null;
       try {
          ps = conn.prepareStatement(getFirstEntriesSt);
-         // to make sure the question marks are filled in the correct order since this depends on the vendor
-         /*
-         int limit = 1;
-         int qId = 1;
-         if (limitAtEnd)
-            limit = 2;
-         else
-            qId = 2;
-         
-         ps.setLong(limit, numOfEntries);
-         ps.setLong(qId, store.getId());
-         */
          if (numOfEntries != -1)
             ps.setMaxRows((int)numOfEntries);
          boolean storeMustBeSet = getFirstEntriesSt.indexOf('?') > -1;

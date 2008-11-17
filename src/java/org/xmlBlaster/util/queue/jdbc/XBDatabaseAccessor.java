@@ -29,6 +29,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
@@ -1403,6 +1404,34 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          releaseConnection(conn, success, null);
       }
    }
+   
+   public List/*<I_Entry>*/ getRefEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter, I_Storage storage, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+      if (!this.isConnected) {
+         if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
+         return null;
+      }
+   
+      Connection conn = null;
+      boolean success = true;
+      try {
+         conn = pool.reserve();
+         conn.setAutoCommit(true);
+         List /*<XBEntry>*/ ret = null;
+         ret = refFactory.getFirstRefEntriesStartAt(store, conn, numOfEntries, numOfBytes, timeout, firstEntryExlusive);
+         ret = createEntries(store, null, ret, entryFilter, storage);
+         return ret;
+      }
+      catch (Throwable ex) {
+         success = false;
+        if (checkIfDBLoss(conn, getLogId(store.toString(), "getEntries"), ex))
+           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 
+        else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntries", "", ex); 
+      }
+      finally {
+         releaseConnection(conn, success, null);
+      }
+   }
+
 
    /**
     * gets the first numOfEntries of the queue.

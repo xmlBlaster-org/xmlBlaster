@@ -611,6 +611,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       ArrayList ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes, entryFilter);
       return ret;
    }
+   
+   public ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+      // TODO
+      return peek(numOfEntries, numOfBytes);
+   }
 
    /**
     * @see I_Queue#peekSamePriority(int, long)

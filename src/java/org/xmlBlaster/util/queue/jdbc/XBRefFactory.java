@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 
 /**
@@ -49,6 +50,7 @@ public class XBRefFactory extends XBFactory {
    private String deleteWithLimitInclSt;
    private String deleteWithLimitExclSt;
    private String getWithLimitSt;
+   private String getFirstRefEntriesStartAtSt;
    
    private XBMeatFactory meatFactory;
    
@@ -225,6 +227,7 @@ public class XBRefFactory extends XBFactory {
       getAndDeleteSt = getAllSt + " order by xbprio asc, ${table}.xbrefid desc";
       // these all can be optimized when numEntries is not -1 (see limit alternatives below)
       getFirstEntriesSt = getAllSt + " order by xbprio desc, xbrefid asc";
+      getFirstRefEntriesStartAtSt = "select * from ${table} where ${table}.xbstoreid=? and xbprio<=? and xbrefid>? order by xbprio desc, xbrefid asc";
       getByPrioSt = getAllSt + " and xbprio >= ? and xbprio <= ? order by xbprio desc, xbrefid asc";
       getBySamePrioSt = getAllSt + " and xbprio=(select max(xbprio) from ${table} where xbstoreid=?) order by xbrefid asc";
 
@@ -232,10 +235,12 @@ public class XBRefFactory extends XBFactory {
    }
    
    protected void doInit(I_Info info) throws XmlBlasterException {
+      // Replaces ${table} to xbref:
       getCompleteSt =  info.get(prefix + ".getCompleteStatement", getCompleteSt);
       deleteCompleteSt =  info.get(prefix + ".deleteCompleteStatement", deleteCompleteSt);
       getAndDeleteSt = info.get(prefix + ".getAndDeleteStatement", getAndDeleteSt);
       getFirstEntriesSt = info.get(prefix + ".getFirstEntriesStatement", getFirstEntriesSt);
+      getFirstRefEntriesStartAtSt = info.get(prefix + ".getFirstRefEntriesStartAtStatement", getFirstRefEntriesStartAtSt);
       getByPrioSt = info.get(prefix + ".getByPrioStatement", getByPrioSt);
       getBySamePrioSt = info.get(prefix + ".getBySamePrioStatement", getBySamePrioSt);
       deleteWithLimitInclSt = info.get(prefix + ".deleteWithLimitInclStatement", deleteWithLimitInclSt);
@@ -324,6 +329,42 @@ public class XBRefFactory extends XBFactory {
       return xbRef;
    }
    
+   public List/*<XBEntry>*/ getFirstRefEntriesStartAt(XBStore store, Connection conn, long numOfEntries, long numOfBytes, int timeout, I_QueueEntry firstEntryExlusive)
+   throws SQLException, IOException {
+      if (firstEntryExlusive == null)
+         return getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
+      
+      PreparedStatement ps = null;
+      try {
+         ps = conn.prepareStatement(getFirstRefEntriesStartAtSt);
+         if (numOfEntries != -1)
+            ps.setMaxRows((int)numOfEntries);
+         ps.setLong(1, store.getId());
+         ps.setLong(2, firstEntryExlusive.getRef().getPrio());
+         ps.setLong(3, firstEntryExlusive.getRef().getId());
+         // select xbrefid from xbref where xbref.xbstoreid=1226799982562000000 and xbprio<=5 and xbrefid>1205160650462000000 order by xbprio desc, xbrefid asc
+         ResultSet rs = ps.executeQuery();
+         long countEntries = 0L;
+         long countBytes = 0L;
+         List list = new ArrayList();
+         while ( (rs.next()) && ((countEntries < numOfEntries) || (numOfEntries < 0)) &&
+               ((countBytes < numOfBytes) || (numOfBytes < 0))) {
+            long byteSize = getByteSize(rs, 0);
+            if ( (numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
+               XBEntry entry = rsToEntry(rs);
+               list.add(entry);
+               countBytes += byteSize;
+               countEntries++;
+            }
+         }
+         return list;
+      }
+      finally {
+         if (ps != null)
+            ps.close();
+      }
+   }
+
    /**
     * 
     * @param sql The select statement to use to fill the objects.

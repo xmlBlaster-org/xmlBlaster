@@ -569,6 +569,18 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       ArrayList ret = (ArrayList)databaseAccessor.getEntries(xbStore, numEntries, numBytes, entryFilter, isRef, this);
       return ret;
    }
+   
+   /**
+    * @see I_Queue#peekStartAt(int,long,I_QueueEntry)
+    */
+   public ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+      if (firstEntryExlusive == null)
+         return peek(numOfEntries, numOfBytes);
+      if (numOfEntries == 0) return new ArrayList();
+      I_EntryFilter entryFilter = null;
+      ArrayList ret = (ArrayList)databaseAccessor.getRefEntries(xbStore, numOfEntries, numOfBytes, entryFilter, this, firstEntryExlusive);
+      return ret;
+   }
 
    /**
     * @see I_Queue#peekSamePriority(int, long)
