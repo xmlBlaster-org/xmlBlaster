@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import org.xmlBlaster.util.XmlBuffer;
+
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
@@ -84,13 +86,13 @@ public abstract class XBEntry {
    }
 
    
-   protected void toXml(String offset, StringBuffer buf) {
+   protected void toXml(String offset, XmlBuffer buf) {
       buf.append(offset).append("<id>").append(id).append("</id>\n");
       buf.append(offset).append("<storeId>").append(storeId).append("</storeId>\n");
       buf.append(offset).append("<durable>").append(durable).append("</durable>\n");
       buf.append(offset).append("<byteSize>").append(byteSize).append("</byteSize>\n");
       if (flag1 != null)
-         buf.append(offset).append("<flag1>").append(flag1).append("</flag1>\n");
+         buf.append(offset).append("<flag1>").appendEscaped(flag1).append("</flag1>\n");
    }
    
    public abstract String toXml(String offset);

@@ -438,7 +438,7 @@ public class XBMeatFactory extends XBFactory {
       return xbMeat;
    }
 
-   protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
+   protected XBEntry rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
       return buildFromRs(rs, 0);
    }
 
@@ -466,7 +466,7 @@ public class XBMeatFactory extends XBFactory {
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
-         xbMeat = (XBMeat) rsToEntry(rs);
+         xbMeat = (XBMeat) rsToEntry(store, rs);
       } finally {
          if (preStatement != null)
             preStatement.close();

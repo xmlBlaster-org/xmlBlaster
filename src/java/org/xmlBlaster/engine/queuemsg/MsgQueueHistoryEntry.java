@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.util.StringPairTokenizer;
-import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.XBRef;
@@ -113,7 +113,6 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
       map.put(XBRef.KEY_OID, keyOid);
       map.put(XBRef.MSG_WRAPPER_ID, "" + msgUnitWrapperUniqueId);
       ref.setMetaInfo(StringPairTokenizer.mapToCSV(map));
-      ref.setOneToMany(true); // since one meat can be referenced by many ref
       ref.setMeatId(msgUnitWrapperUniqueId);
       return ref;
    }

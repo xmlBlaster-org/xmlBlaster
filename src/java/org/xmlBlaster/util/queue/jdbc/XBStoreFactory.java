@@ -26,7 +26,8 @@ public class XBStoreFactory extends XBFactory {
    private final static int NODE = 2;
    private final static int TYPE = 3;
    private final static int POSTFIX = 4;
-   private final static int FLAG1 = 5;
+   private final static int REF_COUNTED = 5;
+   private final static int FLAG1 = 6;
    private String getByNameSt;
    protected String pingSt = "select 1";
    
@@ -36,7 +37,7 @@ public class XBStoreFactory extends XBFactory {
    
    public XBStoreFactory(String prefix) {
       super(prefix, getName());
-      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?)";
+      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?, ?)";
       deleteSt = "delete from ${table} where xbstoreid=?";
       getSt = "select * from ${table} where xbstoreid=?";
       getByNameSt = "select * from ${table} where xbnode=? and xbtype=? and xbpostfix=?";
@@ -75,6 +76,7 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbnode varchar(256) not null,\n");
          buf.append("      xbtype varchar(32) not null,\n");
          buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbrefcounted char(1) not null default 'F',\n");
          buf.append("      xbflag1 varchar(32) default '');\n");
          buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
@@ -85,6 +87,7 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbnode varchar(256) not null,\n");
          buf.append("      xbtype varchar(32) not null,\n");
          buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbrefcounted char(1) default 'F' not null,\n");
          buf.append("      xbflag1 varchar(32) default '');\n");
          buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
@@ -94,6 +97,7 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbnode varchar(256) not null,\n");
          buf.append("      xbtype varchar(32) not null,\n");
          buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbrefcounted char(1) not null default 'F',\n");
          buf.append("      xbflag1 varchar(32) default '');\n");
          buf.append("create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);\n");
       }
@@ -117,6 +121,7 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbnode varchar(256) not null,\n");
          buf.append("      xbtype varchar(32) not null,\n");
          buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbrefcounted char(1) default 'F' not null,\n");
          buf.append("      xbflag1 varchar(32) default '');\n");
          buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
@@ -128,7 +133,7 @@ public class XBStoreFactory extends XBFactory {
       pingSt = info.get(prefix + ".pingStatement", pingSt);
    }
    
-   protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
+   protected XBEntry rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
       return null; // to make compiler happy
    }
 
@@ -154,6 +159,10 @@ public class XBStoreFactory extends XBFactory {
          fillDbCol(preStatement, NODE, xbStore.getNode());
          fillDbCol(preStatement, TYPE, xbStore.getType());
          fillDbCol(preStatement, POSTFIX, xbStore.getPostfix());
+         if (xbStore.isRefCounted())
+            preStatement.setString(REF_COUNTED, "T");
+         else
+            preStatement.setString(REF_COUNTED, "F");
          fillDbCol(preStatement, FLAG1, xbStore.getFlag1());
          
          preStatement.execute();
@@ -190,7 +199,10 @@ public class XBStoreFactory extends XBFactory {
          xbStore.setNode(getDbCol(rs, NODE));
          xbStore.setType(getDbCol(rs, TYPE));
          xbStore.setPostfix(getDbCol(rs, POSTFIX));
+         String tmp = rs.getString(REF_COUNTED);
+         xbStore.setRefCounted(isTrue(tmp));
          xbStore.setFlag1(getDbCol(rs, FLAG1));
+
       }
       finally {
          if (preStatement != null)
@@ -227,6 +239,8 @@ public class XBStoreFactory extends XBFactory {
          xbStore.setNode(getDbCol(rs, NODE));
          xbStore.setType(getDbCol(rs, TYPE));
          xbStore.setPostfix(getDbCol(rs, POSTFIX));
+         String tmp = rs.getString(REF_COUNTED);
+         xbStore.setRefCounted(isTrue(tmp));
          xbStore.setFlag1(getDbCol(rs, FLAG1));
       }
       finally {

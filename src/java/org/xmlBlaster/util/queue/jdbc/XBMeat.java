@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import org.xmlBlaster.util.XmlBuffer;
+
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
@@ -106,19 +108,19 @@ public class XBMeat extends XBEntry {
    }
 
    public String toXml(String offset) {
-      StringBuffer buf = new StringBuffer(512);
+      XmlBuffer buf = new XmlBuffer(512);
       buf.append(offset).append("<xbmeat>\n");
       super.toXml(offset + "  ", buf);
       buf.append(offset).append("  <refCount>").append(refCount).append(
             "</refCount>\n");
       if (dataType != null)
-         buf.append(offset).append("  <dataType>").append(dataType).append(
+         buf.append(offset).append("  <dataType>").appendEscaped(dataType).append(
                "</dataType>\n");
       if (qos != null)
-         buf.append(offset).append("  <qos>").append(qos).append("</qos>\n");
+         buf.append(offset).append("  <qos>").appendEscaped(qos).append("</qos>\n");
       // buf.append(offset).append("  <content>").append(content).append("</content>\n");
       if (key != null)
-         buf.append(offset).append("  <key>").append(key).append("</key>\n");
+         buf.append(offset).append("  <key>").appendEscaped(key).append("</key>\n");
       buf.append(offset).append("</xbmeat>\n");
       return buf.toString();
    }

@@ -142,7 +142,7 @@ public abstract class XBFactory extends XBFactoryBase {
       }
    }
 
-   protected abstract XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException;
+   protected abstract XBEntry rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException;
 
    /**
     * Checks if the table already exists, the check is done against
@@ -493,7 +493,7 @@ public abstract class XBFactory extends XBFactoryBase {
                st.setQueryTimeout(timeout);
                ResultSet rs = st.executeQuery(req);
                while (rs.next()) {
-                  XBEntry entry = rsToEntry(rs);
+                  XBEntry entry = rsToEntry(store, rs);
                   ret.add(entry);
                }
             }
@@ -538,7 +538,7 @@ public abstract class XBFactory extends XBFactoryBase {
                ((countBytes < numOfBytes) || (numOfBytes < 0))) {
             long byteSize = getByteSize(rs, 0);
             if ( (numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
-               XBEntry entry = rsToEntry(rs);
+               XBEntry entry = rsToEntry(store, rs);
                list.add(entry);
                countBytes += byteSize;
                countEntries++;

@@ -41,8 +41,7 @@ public class XBRefFactory extends XBFactory {
    private final static int FLAG1 = 7;
    private final static int PRIO = 8;
    private final static int METHOD_NAME = 9;
-   private final static int ONE_TO_MANY = 10;
-   private final static int LAST_ROW = ONE_TO_MANY;
+   private final static int LAST_ROW = METHOD_NAME;
    
    private String getAndDeleteSt;
    private String getBySamePrioSt;
@@ -51,6 +50,7 @@ public class XBRefFactory extends XBFactory {
    private String deleteWithLimitExclSt;
    private String getWithLimitSt;
    private String getFirstRefEntriesStartAtSt;
+   private String getFirstRefAndMeatEntriesStartAtSt;
    
    private XBMeatFactory meatFactory;
    
@@ -95,7 +95,6 @@ public class XBRefFactory extends XBFactory {
          buf.append("xbflag1 varchar(32) default '',\n");
          buf.append("xbprio int4,\n");
          buf.append("xbmethodname varchar(32) default '',\n");
-         buf.append("xbonetomany char(1) not null default 'F',\n");
          buf.append("constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
          
          buf.append("    alter table ${table} \n");
@@ -124,7 +123,6 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  NUMBER(10),\n");
          buf.append("      xbmethodname varchar(32) default '',\n");
-         buf.append("      xbonetomany char(1) default 'F' not null,\n");
          buf.append("      constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
         
          buf.append("    alter table ${table} \n");
@@ -153,7 +151,6 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio int,\n");
          buf.append("      xbmethodname varchar(32) default '',\n");
-         buf.append("      xbonetomany char(1) not null default 'F',\n");
          buf.append("constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
 
          buf.append(" alter table ${table} \n");
@@ -193,7 +190,6 @@ public class XBRefFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '',\n");
          buf.append("      xbprio  integer,\n");
          buf.append("      xbmethodname varchar(32) default '',\n");
-         buf.append("      xbonetomany char(1) default 'F' not null,\n");
          buf.append("      constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
 
          buf.append("    alter table ${table} \n");
@@ -210,7 +206,7 @@ public class XBRefFactory extends XBFactory {
       }
       createSt =  buf.toString();
 
-      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      insertSt = "insert into ${table} values ( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       deleteCompleteSt = "delete from ${table}";
       deleteAllSt = deleteCompleteSt + " where xbstoreid=?";
       deleteSt = deleteAllSt + " and xbrefid=?";
@@ -227,6 +223,7 @@ public class XBRefFactory extends XBFactory {
       getAndDeleteSt = getAllSt + " order by xbprio asc, ${table}.xbrefid desc";
       // these all can be optimized when numEntries is not -1 (see limit alternatives below)
       getFirstEntriesSt = getAllSt + " order by xbprio desc, xbrefid asc";
+      getFirstRefAndMeatEntriesStartAtSt = getAllSt + " and xbprio<=? and xbrefid>? order by xbprio desc, xbrefid asc";
       getFirstRefEntriesStartAtSt = "select * from ${table} where ${table}.xbstoreid=? and xbprio<=? and xbrefid>? order by xbprio desc, xbrefid asc";
       getByPrioSt = getAllSt + " and xbprio >= ? and xbprio <= ? order by xbprio desc, xbrefid asc";
       getBySamePrioSt = getAllSt + " and xbprio=(select max(xbprio) from ${table} where xbstoreid=?) order by xbrefid asc";
@@ -241,6 +238,8 @@ public class XBRefFactory extends XBFactory {
       getAndDeleteSt = info.get(prefix + ".getAndDeleteStatement", getAndDeleteSt);
       getFirstEntriesSt = info.get(prefix + ".getFirstEntriesStatement", getFirstEntriesSt);
       getFirstRefEntriesStartAtSt = info.get(prefix + ".getFirstRefEntriesStartAtStatement", getFirstRefEntriesStartAtSt);
+      getFirstRefAndMeatEntriesStartAtSt = info.get(prefix + ".getFirstRefAndMeatEntriesStartAtSt",
+            getFirstRefAndMeatEntriesStartAtSt);
       getByPrioSt = info.get(prefix + ".getByPrioStatement", getByPrioSt);
       getBySamePrioSt = info.get(prefix + ".getBySamePrioStatement", getBySamePrioSt);
       deleteWithLimitInclSt = info.get(prefix + ".deleteWithLimitInclStatement", deleteWithLimitInclSt);
@@ -291,11 +290,6 @@ public class XBRefFactory extends XBFactory {
 
          fillDbCol(preStatement, METHOD_NAME, xbRef.getMethodName());
 
-         if (xbRef.isOneToMany())
-            preStatement.setString(ONE_TO_MANY, "T");
-         else 
-            preStatement.setString(ONE_TO_MANY, "F");
-
          preStatement.execute();
       }
       finally {
@@ -304,7 +298,7 @@ public class XBRefFactory extends XBFactory {
       }
    }
 
-   protected XBEntry rsToEntry(ResultSet rs) throws SQLException, IOException {
+   protected XBEntry rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
       XBRef xbRef = new XBRef();
       xbRef.setId(rs.getLong(REF_ID));
       xbRef.setStoreId(rs.getLong(STORE_ID));
@@ -318,17 +312,15 @@ public class XBRefFactory extends XBFactory {
       xbRef.setFlag1(getDbCol(rs, FLAG1));
       xbRef.setPrio(rs.getInt(PRIO));
       xbRef.setMethodName(getDbCol(rs, METHOD_NAME));
-      tmp = rs.getString(ONE_TO_MANY);
-      xbRef.setOneToMany(isTrue(tmp));
-      boolean buildMeat = !xbRef.isOneToMany();
-      if (buildMeat && xbRef.getMeatId() != 0) {
+      
+      if (!store.isRefCounted()) {
          XBMeat meat = XBMeatFactory.buildFromRs(rs, LAST_ROW);
          if (meat != null)
             xbRef.setMeat(meat);
       }
       return xbRef;
    }
-   
+
    public List/*<XBEntry>*/ getFirstRefEntriesStartAt(XBStore store, Connection conn, long numOfEntries, long numOfBytes, int timeout, I_QueueEntry firstEntryExlusive)
    throws SQLException, IOException {
       if (firstEntryExlusive == null)
@@ -336,7 +328,8 @@ public class XBRefFactory extends XBFactory {
       
       PreparedStatement ps = null;
       try {
-         ps = conn.prepareStatement(getFirstRefEntriesStartAtSt);
+         String stmt = (store.isRefCounted()) ? getFirstRefEntriesStartAtSt : getFirstRefAndMeatEntriesStartAtSt;
+         ps = conn.prepareStatement(stmt);
          if (numOfEntries != -1)
             ps.setMaxRows((int)numOfEntries);
          ps.setLong(1, store.getId());
@@ -351,7 +344,7 @@ public class XBRefFactory extends XBFactory {
                ((countBytes < numOfBytes) || (numOfBytes < 0))) {
             long byteSize = getByteSize(rs, 0);
             if ( (numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
-               XBEntry entry = rsToEntry(rs);
+               XBEntry entry = rsToEntry(store, rs);
                list.add(entry);
                countBytes += byteSize;
                countEntries++;
@@ -385,7 +378,7 @@ public class XBRefFactory extends XBFactory {
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
-         return (XBRef)rsToEntry(rs);
+         return (XBRef)rsToEntry(store, rs);
       }
       finally {
          if (preStatement != null)
@@ -429,7 +422,7 @@ public class XBRefFactory extends XBFactory {
          boolean stillEntriesInQueue = false;
 
          while ( (stillEntriesInQueue=rs.next()) && doContinue) {
-            XBRef ref = (XBRef)rsToEntry(rs);
+            XBRef ref = (XBRef)rsToEntry(store, rs);
             if (!isInsideRange((int)ret.countEntries, numOfEntries, ret.countBytes, numOfBytes)) 
                break;
             // check if allowed or already outside the range ...
@@ -482,7 +475,7 @@ public class XBRefFactory extends XBFactory {
    }
 
 
-   private List/*<XBRef>*/ rs2List(ResultSet rs, long numOfEntries, long numOfBytes, boolean onlyId) throws SQLException, IOException {
+   private List/*<XBRef>*/ rs2List(XBStore store, ResultSet rs, long numOfEntries, long numOfBytes, boolean onlyId) throws SQLException, IOException {
       List entries = new ArrayList();
       int count = 0;
       long amount = 0L;
@@ -495,7 +488,7 @@ public class XBRefFactory extends XBFactory {
             ref.setId(rs.getLong(1));
          }
          else {
-            ref = (XBRef)rsToEntry(rs);
+            ref = (XBRef)rsToEntry(store, rs);
             if ( (numOfBytes < 0) || (ref.getByteSize() + amount < numOfBytes) || (count == 0)) {
                amount += ref.getByteSize();
             }
@@ -536,7 +529,7 @@ public class XBRefFactory extends XBFactory {
          pos++;
          ResultSet rs = st.executeQuery();
 
-         return rs2List(rs, numOfEntries, numOfBytes, onlyId);
+         return rs2List(store, rs, numOfEntries, numOfBytes, onlyId);
       }
       finally {
          if (st != null)
@@ -558,7 +551,7 @@ public class XBRefFactory extends XBFactory {
          final long numEntries = -1L;
          final long numBytes = -1L;
          final boolean onlyId = false;
-         return rs2List(rs, numEntries, numBytes, onlyId);
+         return rs2List(store, rs, numEntries, numBytes, onlyId);
       }
       finally {
          if (st != null)
@@ -587,7 +580,7 @@ public class XBRefFactory extends XBFactory {
 
          ResultSet rs = st.executeQuery();
          final boolean onlyId = false;
-         return rs2List(rs, numOfEntries, numOfBytes, onlyId);
+         return rs2List(store, rs, numOfEntries, numOfBytes, onlyId);
       }
       finally {
          if (st != null)
@@ -665,7 +658,7 @@ public class XBRefFactory extends XBFactory {
       List/*<XBMeat>*/ meatList = new ArrayList/*<XBMeat>*/();
       for (int i=0; i < entries.length; i++) {
          XBRef ref = (XBRef)entries[i];
-         if (!ref.isOneToMany()) {
+         if (!store.isRefCounted()) {
             XBMeat meat = ref.getMeat();
             if (meat == null) {
                if (ref.getMeatId() == 0)

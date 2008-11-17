@@ -35,6 +35,14 @@ public class XBStore {
    private String postfix;
    
    private String flag1;
+   /**
+    * The oneToMany flag is true if the entry is following a relationship one to
+    * many, i.e. each meat is referenced by zero or more references. If set to
+    * false, then the relationship is one to one, i.e. every meat is referenced
+    * by one single reference. one to one reference normally occurs in
+    * connection queues.
+    */
+   private boolean refCounted;
    
    public XBStore() {
    }
@@ -54,6 +62,9 @@ public class XBStore {
       this.node = node;
       this.type = type;
       this.postfix = postfix;
+      if (Constants.RELATING_CALLBACK.equals(this.type) || Constants.RELATING_HISTORY.equals(this.type)
+            || Constants.RELATING_SUBJECT.equals(this.type))
+         this.refCounted = true;
    }
 
    public long getId() {
@@ -146,10 +157,11 @@ public class XBStore {
    public String toString() {
       return getType() + ":" + getNode() + getPostfix();
    }
-   
+
    /**
     * 
-    *  Is Similar to numOfEntriesInTheStore : if true use refs to count the entries in the store
+    * Is Similar to numOfEntriesInTheStore : if true use refs to count the
+    * entries in the store
     **/
    public boolean containsRefsForNumOfEntries() {
       if (type == null)
@@ -175,6 +187,14 @@ public class XBStore {
       if (type.equals(Constants.RELATING_TOPICSTORE))
          return true;
        */
+   }
+
+   public boolean isRefCounted() {
+      return refCounted;
+   }
+
+   public void setRefCounted(boolean refCounted) {
+      this.refCounted = refCounted;
    }
    
    

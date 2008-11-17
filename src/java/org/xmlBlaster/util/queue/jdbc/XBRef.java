@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import org.xmlBlaster.util.XmlBuffer;
+
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
  * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
@@ -40,12 +42,6 @@ public class XBRef extends XBEntry {
    private int prio;
    private String methodName;
    private XBMeat meat;
-   /**
-    * The oneToMany flag is true if the entry is following a relationship one to many, i.e. each meat is referenced by zero or
-    * more references. If set to false, then the relationship is one to one, i.e. every meat is referenced by one single reference.
-    * one to one reference normally occurs in connection queues.
-    */
-   private boolean oneToMany;
    
    public XBRef() {
       super();
@@ -102,23 +98,14 @@ public class XBRef extends XBEntry {
       this.meat = meat;
    }
 
-   public void setOneToMany(boolean oneToMany) {
-      this.oneToMany = oneToMany;
-   }
-
-   public boolean isOneToMany() {
-      return oneToMany;
-   }
-
-   
    public String toXml(String offset) {
-      StringBuffer buf = new StringBuffer(512);
-      buf.append(offset).append("<xbref oneToMany='").append(oneToMany).append("'>\n");
+      XmlBuffer buf = new XmlBuffer(512);
+      buf.append(offset).append("<xbref>\n");
       super.toXml(offset + "  ", buf);
       if (meatId != 0)
          buf.append(offset).append("  <meatId>").append(meatId).append("</meatId>\n");
       if (metaInfo != null)
-         buf.append(offset).append("  <metaInfo>").append(metaInfo).append("</metaInfo>\n");
+         buf.append(offset).append("  <metaInfo>").appendEscaped(metaInfo).append("</metaInfo>\n");
       buf.append(offset).append("  <prio>").append(prio).append("</prio>\n");
       if (methodName != null)
          buf.append(offset).append("  <methodName>").append(methodName).append("</methodName>\n");
