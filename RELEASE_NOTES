@@ -1,20 +1,20 @@
-This is xmlBlaster version 1.6.2 2007-12-03 'Openroads'
+This is xmlBlaster version 1.6.4 2008-11-18 'JDK14-GoodBye'
 
 
 XmlBlaster  is  under development or productive in a huge range
 of  industries  like  satellite  control,  air  traffic control
 telecommunication,  radar,  car  industry,  process monitoring,
 live tracking, mobile phone integration (J2ME), PDA integration
-(C#) and more.
+(C#), iPhone integration (Objective C) and more.
 
 This  release  is backward compatible to the previous, it is a
 bug fix maintenance release. See CHANGES for more details.
 
-It is tested under Linux/Solaris/Windows/WINCE with JDK 1.4-1.6
-and  g++  2.9x/3.x/4.x,  icc  8.x and 9.x and 10.x, MSVisualC++
-2005  and  2008,  SunCC  compilers  (32bit/64bit).  There is no
-reason  why other platforms/compilers should not work, just try
-it.
+It  is  tested  under Linux/Solaris/Windows/WINCE/MacOSX/iPhone
+with  JDK  1.4-1.6  and  g++  2.9x/3.x/4.x, icc 8.x and 9.x and
+10.x, MSVisualC++ 2005 and 2008, SunCC compilers (32bit/64bit).
+There  is  no  reason  why other platforms/compilers should not
+work, just try it.
 
 Persistence is checked against Oracle 9i, 10g and 11, different
 Postgres  versions,  MS-SQLServer 2000, 2005 and 2008, Firebird
@@ -24,13 +24,17 @@ Real-time  database  replication  is  tested  between different
 Oracle versions and between Oracle and DB2 (as a sink).
 
 New features include
-o A scheduler plugin
-o Streaming mode for java publishers (send message chunks)
-o Large file replication in streaming mode (inludes C++ sinks)
-o Checkpoint plugin to trace message flows
-o Extended notification possibilites for async send messages
-o Unified logging with ISO 8601 date/time for Java/C++
-o JMX control extensions
+o Mature and powerful database replication
+o Extended cluster operation like SSL reverse tunneling
+o New xmlBlaster persistence layer (JdbcQueue, experimental)
+o C client library extensions and port to MacOSX and iPhone
+o Extended amdin-control over JMX (jconsole)
+o Extended Checkpoint plugin for legal recording of message flow
+o PHP 5 support
+o AjaxServlet extensions
+o Extended Security plugin API for powerful AAA plugins
+o Automatic database dead lock revocery
+o and many many more extensions and bug fixes
 
 It  is  leak  checked  in  RAM  and  on  persistence  store for
 Java,C,C++.
@@ -46,6 +50,12 @@ See:
 ----
 http://www.xmlblaster.org/xmlBlaster/CHANGES
 
+
+Notes for V1.6.4:
+-----------------
+
+The security plugin interface has changed slightly, the compiler
+will tell you the place. See CHANGES r16744
 
 
 Notes for V1.3:

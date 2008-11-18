@@ -55,7 +55,7 @@ Dll_Export const char *getXmlBlasterVersion(void)
    if (strstr(p1, "@") == 0) { /* Verify that version replacement worked fine */
        return p1;
    }
-   return "1.6.2";
+   return "1.6.4";
 }
 
 /**
@@ -82,11 +82,11 @@ Dll_Export void xmlBlasterFree(char *p/*const char *p*/)
  */
 Dll_Export void xmlBlasterFree0(char **p/*const char **p*/)
 {
-	/*
-	char *x = "J";
-	const char *y = "J";
-	const char * const z = "J";
-	*/
+        /*
+        char *x = "J";
+        const char *y = "J";
+        const char * const z = "J";
+        */
    if (p != (char **)0) {
       free(*p);
       *p = 0;
@@ -94,75 +94,75 @@ Dll_Export void xmlBlasterFree0(char **p/*const char **p*/)
 }
 
 Dll_Export SessionName *createSessionName(const char* const name) {
-	SessionName * sessionName = 0;
-	if (name == 0)
-		return 0;
-	sessionName = (SessionName *)calloc(1, sizeof(SessionName));
-	if (sessionName != 0)
-	{
-		char *absoluteName = 0;
-		sessionName->nodeId = 0;
-		sessionName->subjectId = 0;
-		sessionName->sessionId = 0;
-		absoluteName = strcpyAlloc(name);
-		trim(absoluteName);
-		{
-			char *p = strstr(absoluteName, "/");
-			int len = strlen(absoluteName);
-			if (p == 0 || len == 0) {
-				sessionName->subjectId = absoluteName;
-				return sessionName;
-			}
-			if (*absoluteName == '/') {
-				char *str1, *token;
-				char *saveptr1;
-				const char *sep = "/";
-				int j = 0;
-				for (str1 = absoluteName;; str1 = NULL) {
-					token = strtok_r(str1, sep, &saveptr1);
-					if (token == NULL)
-						break;
-					if (!strcmp(token,"node") || !strcmp(token,"client") || !strcmp(token,"session"))
-						continue;
-					if (j == 0)
-						sessionName->nodeId = strcpyAlloc(token);
-					else if (j == 1)
-						sessionName->subjectId = strcpyAlloc(token);
-					else if (j == 2)
-						sscanf(token, "%d", &sessionName->sessionId);
-					j++;
-				}
-			}
-			else {
-				char *str1, *token;
-				char *saveptr1;
-				const char *sep = "/";
-				int j = 0;
-				for (str1 = absoluteName;; str1 = NULL) {
-					token = strtok_r(str1, sep, &saveptr1);
-					if (token == NULL)
-						break;
-					if (!strcmp(token,"node") || !strcmp(token,"client") || !strcmp(token,"session"))
-						continue;
-					if (j == 0)
-						sessionName->subjectId = strcpyAlloc(token);
-					else if (j == 1)
-						sscanf(token, "%d", &sessionName->sessionId);
-					j++;
-				}
-			}
-		}
-		xmlBlasterFree(absoluteName);
-	}
-	return sessionName;
+        SessionName * sessionName = 0;
+        if (name == 0)
+                return 0;
+        sessionName = (SessionName *)calloc(1, sizeof(SessionName));
+        if (sessionName != 0)
+        {
+                char *absoluteName = 0;
+                sessionName->nodeId = 0;
+                sessionName->subjectId = 0;
+                sessionName->sessionId = 0;
+                absoluteName = strcpyAlloc(name);
+                trim(absoluteName);
+                {
+                        char *p = strstr(absoluteName, "/");
+                        int len = strlen(absoluteName);
+                        if (p == 0 || len == 0) {
+                                sessionName->subjectId = absoluteName;
+                                return sessionName;
+                        }
+                        if (*absoluteName == '/') {
+                                char *str1, *token;
+                                char *saveptr1;
+                                const char *sep = "/";
+                                int j = 0;
+                                for (str1 = absoluteName;; str1 = NULL) {
+                                        token = strtok_r(str1, sep, &saveptr1);
+                                        if (token == NULL)
+                                                break;
+                                        if (!strcmp(token,"node") || !strcmp(token,"client") || !strcmp(token,"session"))
+                                                continue;
+                                        if (j == 0)
+                                                sessionName->nodeId = strcpyAlloc(token);
+                                        else if (j == 1)
+                                                sessionName->subjectId = strcpyAlloc(token);
+                                        else if (j == 2)
+                                                sscanf(token, "%d", &sessionName->sessionId);
+                                        j++;
+                                }
+                        }
+                        else {
+                                char *str1, *token;
+                                char *saveptr1;
+                                const char *sep = "/";
+                                int j = 0;
+                                for (str1 = absoluteName;; str1 = NULL) {
+                                        token = strtok_r(str1, sep, &saveptr1);
+                                        if (token == NULL)
+                                                break;
+                                        if (!strcmp(token,"node") || !strcmp(token,"client") || !strcmp(token,"session"))
+                                                continue;
+                                        if (j == 0)
+                                                sessionName->subjectId = strcpyAlloc(token);
+                                        else if (j == 1)
+                                                sscanf(token, "%d", &sessionName->sessionId);
+                                        j++;
+                                }
+                        }
+                }
+                xmlBlasterFree(absoluteName);
+        }
+        return sessionName;
 }
 
 Dll_Export void freeSessionName(SessionName *sessionName)
 {
-	if (sessionName == 0) return;
-	xmlBlasterFree0((char **)&sessionName->nodeId);
-	xmlBlasterFree0((char **)&sessionName->subjectId);
-	free(sessionName);
+        if (sessionName == 0) return;
+        xmlBlasterFree0((char **)&sessionName->nodeId);
+        xmlBlasterFree0((char **)&sessionName->subjectId);
+        free(sessionName);
 }
 
 /**

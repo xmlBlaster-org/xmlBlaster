@@ -1,10 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "r99999" numbers are Subversion revision numbers.
 
-Changes for current svn
-=======================
+Changes for 1.6.4 [2008-11-18] r17524 'JDK14-GoodBye'
+=====================================================
 
- o r17427 JDBC Database layer: Ported StorageId to new XBSTORE table, dangerous change for xb_entries (revert to r17426 on problems)
+ o r17427 JDBC Database layer: Ported StorageId to new XBSTORE table, change for xb_entries (revert to r17426 on problems)
 
  o r17377 Sending cluster connection info with heartbeat XML mail
           <connection clusterId='avalon' id='heron'><session id='1'><state>POLLING</state><queue relating='connection' numOfEntries='24' maxNumOfEntries='10000000' numOfBytes='57600' maxNumOfBytes='2147483647'/>...
