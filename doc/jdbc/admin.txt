@@ -24,7 +24,7 @@ Rule 1: If xmlBlaster node is stopped: No transient swapped messages
 
 Rule 2: xmlBlaster running or stopped:
         All xbmeat with xbmeat.xbdurable='T' which have NO xbref can be deleted (for this node)
-        delete from xbmeat where xbmeatid in (select xbmeat.xbmeatid from xbref right outer join xbmeat on (xbmeat.xbmeatid=xbref.xbmeatid) where xbrefid is null AND xbref.xbdurable='T');
+        delete from xbmeat where xbmeatid in (select xbmeat.xbmeatid from xbref right outer join xbmeat on (xbmeat.xbmeatid=xbref.xbmeatid) where xbrefid is null AND xbmeat.xbdurable='T');
 
 Rule 3: xmlBlaster running or stopped:
         All xbref with xbref.xbdurable='T' which have NO xbmeat can be deleted (for this node)
