@@ -156,10 +156,10 @@ Dll_Export const char *connectionStateToStr(XBCONSTATE state) {
    return "UNDEF";
 }
 
-static int changeConnectionStateTo(XmlBlasterAccess *xa, int newState, XmlBlasterException *exception) {
+static int changeConnectionStateTo(XmlBlasterAccess *xa, XBCONSTATE newState, XmlBlasterException *exception) {
 	ConnectionListenerCbFp cb = xa->connectionListenerCbFp;
 	int oldState = xa->connnectionState;
-	xa->connnectionState = (XBCONSTATE_ENUM)newState;
+	xa->connnectionState = newState;
 
 	/* Ignore same states */
    if (oldState == newState)
@@ -183,7 +183,7 @@ static int changeConnectionStateTo(XmlBlasterAccess *xa, int newState, XmlBlaste
 
 	/* Notify user */
    if (cb != 0) {
-    	cb(xa, (XBCONSTATE_ENUM)oldState, (XBCONSTATE_ENUM)newState, exception, xa->connectionListenerUserData);
+    	cb(xa, oldState, newState, exception, xa->connectionListenerUserData);
 	}
 
    return newState;
