@@ -56,22 +56,19 @@ go
 --select len(xbchar) from xbtest
 --go
 
--- How to COLLATE UTF-8
+-- int=4bytes=2GB, but must be bigint as sum(xbbytesize) fails: Arithmetic overflow SQLServerException
+-- xbmeatainfo: Only subscribe remembers sessionName      
 create table xbmeat (
       xbmeatid bigint not null,
       xbdurable char not null default 'F',
       xbrefcount int,
       xbrefcount2 int,
--- int=4bytes=2GB, but must be bigint as sum(xbbytesize) fails: Arithmetic overflow SQLServerException
       xbbytesize bigint,
       xbdatatype varchar(32) not null default '',
---Only subscribe remembers sessionName      
---    xbmetainfo varchar(156) default '',
       xbmetainfo varchar(MAX) default '',
       xbflag1 varchar(32) default '',
       xbmsgqos varchar(MAX) default '',
       xbmsgcont varbinary(MAX),
---    xbmsgkey varchar(200) default '',
       xbmsgkey varchar(MAX) default '',
       xbstoreid bigint not null,
       constraint xbmeatpk primary key(xbmeatid, xbstoreid))
@@ -86,18 +83,17 @@ go
 create index xbmeatstix on xbmeat(xbmeatid,xbstoreid);
 -- insert into xbmeat (xbmeatid,xbdurable,xbbytesize,xbdatatype,xbmetainfo,xbflag1,xbmsgqos,xbmsgcont,xbmsgkey,xbstoreid) values (1,'T',344,'TOPIC_XML','key1=value1','NO FLAG','<qos/>',cast('myBlob'as varbinary(MAX)),'<key oid="34"/>',1)
 
+--xbmetainfo: ServerEntryFactory UPDATE remembers sessionName, oid, subscribeId and short fields      
 create table xbref (
-	xbrefid bigint not null,
-	xbstoreid bigint not null,
-	xbmeatid bigint,
-	xbdurable char(1) not null default 'F',
-	xbbytesize bigint,
---ServerEntryFactory UPDATE remembers sessionName, oid, subscribeId and short fields      
---  xbmetainfo varchar(600) default '',
-	xbmetainfo varchar(MAX) default '',
-	xbflag1 varchar(32) default '',
-	xbprio int,
-	xbmethodname varchar(32) default '',
+      xbrefid bigint not null,
+      xbstoreid bigint not null,
+      xbmeatid bigint,
+      xbdurable char(1) not null default 'F',
+      xbbytesize bigint,
+      xbmetainfo varchar(MAX) default '',
+      xbflag1 varchar(32) default '',
+      xbprio int,
+      xbmethodname varchar(32) default '',
 constraint xbrefpk primary key(xbrefid, xbstoreid))
 go
 
