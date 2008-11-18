@@ -28,6 +28,7 @@ create table xbstore (
       xbnode varchar(256) not null,
       xbtype varchar(32) not null,
       xbpostfix varchar(256) not null,
+      xbrefcounted char(1) not null default 'F',
       xbflag1 varchar(32) default '')
 go
 
@@ -97,7 +98,6 @@ create table xbref (
 	xbflag1 varchar(32) default '',
 	xbprio int,
 	xbmethodname varchar(32) default '',
-	xbonetomany char(1) not null default 'F',
 constraint xbrefpk primary key(xbrefid, xbstoreid))
 go
 
@@ -107,7 +107,7 @@ alter table xbref
             references xbstore on delete cascade
 go
 
--- insert into xbref (xbrefid,xbstoreid,xbmeatid,xbdurable,xbbytesize,xbmetainfo,xbflag1,xbprio,xbmethodname,xbonetomany) values (1,1,1,'T',200,'subscriptionId=blÄOÜßa,oid=mytopic','',5,'publish','F')
+-- insert into xbref (xbrefid,xbstoreid,xbmeatid,xbdurable,xbbytesize,xbmetainfo,xbflag1,xbprio,xbmethodname) values (1,1,1,'T',200,'subscriptionId=blÄOÜßa,oid=mytopic','',5,'publish')
 
 
 -- select * from xbref;

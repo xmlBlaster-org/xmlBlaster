@@ -11,6 +11,7 @@ create table xbstore (
       xbnode varchar(256) not null,
       xbtype varchar(32) not null,
       xbpostfix varchar(256) not null,
+      xbrefcounted char(1) not null default 'F',
       xbflag1 varchar(32) default '');
 
 create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);
@@ -44,7 +45,6 @@ create table xbref (
 	xbflag1 varchar(32) default '',
 	xbprio int4,
 	xbmethodname varchar(32) default '',
-	xbonetomany char(1) not null default 'F',
 	constraint xbrefpk primary key(xbrefid, xbstoreid),
 	constraint fkxbstoreref foreign key (xbstoreid) references xbstore on delete cascade
 );

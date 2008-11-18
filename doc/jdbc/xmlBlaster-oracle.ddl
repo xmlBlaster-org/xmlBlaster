@@ -14,6 +14,7 @@ create table xbstore (
       xbnode varchar(256) not null,
       xbtype varchar(32) not null,
       xbpostfix varchar(256) not null,
+      xbrefcounted char(1) default 'F' not null,
       xbflag1 varchar(32) default '');
 
 create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);
@@ -53,8 +54,7 @@ create table xbref (
       xbmetainfo clob default '',
       xbflag1 varchar(32) default '',
       xbprio  NUMBER(10),
-      xbmethodname varchar(32) default '',
-      xbonetomany char(1) default 'F' not null
+      xbmethodname varchar(32) default ''
     );
 
 alter table xbref 
