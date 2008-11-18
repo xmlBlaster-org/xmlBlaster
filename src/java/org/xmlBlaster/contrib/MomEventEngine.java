@@ -184,9 +184,10 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+      String timestamp = null;
       try {
          InputStream is = decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
-         String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
+         timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
          updateQos.getData().addClientProperty(ContribConstants.TIMESTAMP_ATTR, timestamp);
          
          if (this.eventHandler != null)
@@ -196,6 +197,22 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          return Constants.RET_OK;
       }
       catch (Exception ex) {
+         if (ex instanceof XmlBlasterException) {
+            String msg = ex.getMessage();
+            if (msg.indexOf("SAXParseException") > -1) {
+               // then try it again without uncompressing
+               InputStream is = new ByteArrayInputStream(content);
+               try {
+                  if (eventHandler != null) {
+                     eventHandler.update(updateKey.getOid(), is, updateQos.getClientProperties());
+                     return Constants.RET_OK;
+                  }
+               }
+               catch (Exception e) {
+                  log.warning("Exception occured also when running uncompressed");
+               }
+            }
+         }
          ex.printStackTrace();
          throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_HOLDBACK, "MomEventEngine.update", "user exception", ex);
       }
