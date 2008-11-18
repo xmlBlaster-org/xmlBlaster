@@ -449,7 +449,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 <xsd:complexType name="ConnectType">
    <xsd:all>
-      <xsd:element name="qos" type="QueryQosType" minOccurs="0"/>
+      <xsd:element name="qos" type="ConnectQosType" minOccurs="0"/>
    </xsd:all>
 </xsd:complexType>
 
