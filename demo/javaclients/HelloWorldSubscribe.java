@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.property.Args;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -71,8 +72,23 @@ import java.util.Date;
  */
 public class HelloWorldSubscribe implements I_Callback
 {
+   
+   public class HelloThread extends Thread {
+      
+      private Global global;
+      
+      HelloThread(Global global) {
+         super();
+         this.global = global;
+      }
+      
+      public void run() {
+         process(this.global);
+      }
+   }
+   
    private final String ME = "HelloWorldSubscribe";
-   private final Global glob;
+   private Global glob;
    private static Logger log = Logger.getLogger(HelloWorldSubscribe.class.getName());
    private I_XmlBlasterAccess con;
    private SubscribeReturnQos srq;
@@ -119,6 +135,14 @@ public class HelloWorldSubscribe implements I_Callback
    private Map clientPropertyMap;
    private Map connectQosClientPropertyMap;
 
+   public HelloWorldSubscribe() {
+      
+   }
+
+   public HelloWorldSubscribe(Global global_) {
+      process(global_);
+   }
+   
    private void readEnv() {
       this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
       this.interactive = glob.getProperty().get("interactive", true);
@@ -158,9 +182,16 @@ public class HelloWorldSubscribe implements I_Callback
       this.dumpToConsole = glob.getProperty().get("dumpToConsole", true);
       this.clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
       this.connectQosClientPropertyMap = glob.getProperty().get("connect/qos/clientProperty", (Map)null);
+      int numClients = glob.getProperty().get("numClients", 1);
    }
-
-   public HelloWorldSubscribe(Global glob_) {
+   
+   public void processAsync(Global glob_) {
+      log.info("Starting one thread");
+      HelloThread th = new HelloThread(glob_);
+      th.start();
+   }
+   
+   public void process(Global glob_) {
       this.glob = glob_;
 
       boolean disconnect = glob.getProperty().get("disconnect", true);
@@ -589,7 +620,26 @@ public class HelloWorldSubscribe implements I_Callback
          System.err.println("  java javaclients.HelloWorldSubscribe -oid Hello -initialUpdate true\n");
          System.exit(1);
       }
-
-      new HelloWorldSubscribe(glob);
+      try {
+         // check if the numClients parameter is set:
+         
+         int numClients = Args.getArg(args, "-numClients", 1);
+         log.info("Number of clients to instantiate " + numClients);
+         if (numClients > 1) {
+            for (int i=0; i < numClients; i++) {
+               glob = new Global();
+               glob.init(args);
+               HelloWorldSubscribe demo = new HelloWorldSubscribe();
+               demo.processAsync(glob);
+            }
+         }
+         else {
+            HelloWorldSubscribe demo = new HelloWorldSubscribe();
+            demo.process(glob);
+         }
+      }
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+      }
    }
 }
