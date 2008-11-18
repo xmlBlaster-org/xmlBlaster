@@ -189,7 +189,7 @@ static const char * test_xmlEscape() {
 	{
 		char *xml;
 		int len = 5, newLen;
-		char *bytes = malloc(len*sizeof(char));
+		char *bytes = (char *)malloc(len*sizeof(char));
 		bytes[0] = '<';
 		bytes[1] = '<';
 		bytes[2] = '\0';
