@@ -158,7 +158,6 @@ public class XBRefFactory extends XBFactory {
          buf.append("      foreign key (xbstoreid)\n");
          buf.append("      references xbstore on delete cascade;\n");
          
-         buf.append(" create index IX_MEAT_DURABLE ON XBMEAT (xbdurable);\n");
          buf.append(" create index IX_REF_DURABLE ON XBREF (xbdurable);\n");
          buf.append(" create index IX_REF_PRIO ON XBREF (xbprio);\n");
       }

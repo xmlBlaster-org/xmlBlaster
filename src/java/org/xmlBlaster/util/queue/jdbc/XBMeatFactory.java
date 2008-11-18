@@ -173,6 +173,8 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      add constraint fkxbstoremeat \n");
          buf.append("      foreign key (xbstoreid) \n");
          buf.append("      references xbstore on delete cascade;\n");
+         
+         buf.append(" create index IX_MEAT_DURABLE ON XBMEAT (xbdurable);\n");
       }
       /*
        * else if (getDbVendor().equals(DB2)) {
