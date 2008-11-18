@@ -136,7 +136,7 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
          return this.updateRecord;
       }
       catch (XmlBlasterException ex) {
-         log.severe("SqlInfoParser.readObject: could not parse input stream");
+         log.fine("SqlInfoParser.readObject: could not parse input stream");
          throw ex;
       }
    }
