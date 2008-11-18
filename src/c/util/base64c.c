@@ -58,7 +58,7 @@ Dll_Export char *Base64EncodeLen(int inLen, const char *inBytes, int lineSize) {
     /*inLen == 0 will produce an empty return string */
     if (inBytes == 0)
         return 0;
-    outStr = calloc(3*inLen+2, sizeof(char));
+    outStr = (char*)calloc(3*inLen+2, sizeof(char));
     for (inPos=0, outPos=0; inPos<inLen;) {
         len = 0;
         for( i = 0; i < 3; i++ ) {
@@ -115,7 +115,7 @@ Dll_Export extern char *Base64Decode(const char *inStr, int *outLen) {
     if (inStr == 0) return 0;
 
     inLen = strlen(inStr);
-    outBytes = calloc(inLen+1, sizeof(char));
+    outBytes = (char *)calloc(inLen+1, sizeof(char));
 
     for (inPos=0, outPos=0; inPos<inLen;) {
         for( len = 0, i = 0; i < 4 && inPos<inLen; i++ ) {

@@ -134,7 +134,7 @@ Dll_Export char *xmlBlasterExtractTagValueWithAttribute(const char * const xml,
 					if (i == len - 1)
 						return strcpyAlloc("");
 					{
-						char *p = strstr(xml + i, "<");
+						const char *p = strstr(xml + i, "<");
 						int startVal = i + 1;
 						int endTag = (p == 0) ? len : len - strlen(p);
 						int count = endTag - startVal;
@@ -158,7 +158,7 @@ Dll_Export char *xmlBlasterExtractTagValue(const char * const xml,
 	if (xml == 0 || tag == 0)
 		return 0;
 	{
-		char *startP = 0;
+		const char *startP = 0;
 		char *tagP = strcpyAlloc("<");
 		strcatAlloc(&tagP, tag);
 		startP = strstr(xml, tagP);
@@ -211,7 +211,7 @@ Dll_Export char* xmlBlasterEscapeXmlBytes(int len, const char *bytes) {
 		/* Guarantee more space of at least strlen(&comma;) */
 		if (pos >= (newLen-10)) {
 			newLen += (len < 1000) ? 100 : len/10;
-			res = realloc(res, newLen * sizeof(char));
+			res = (char *)realloc(res, newLen * sizeof(char));
 			memset(res+pos, '\0', newLen-pos);
 		}
 		if (bytes[i] == '&') {

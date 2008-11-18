@@ -142,7 +142,7 @@ typedef void (* XmlBlasterAccessRegisterConnectionListener)(struct XmlBlasterAcc
  * @param state XBCONSTATE_ALIVE etc
  * @return "ALIVE" etc
  */
-Dll_Export extern const char *connectionStateToStr(int state);
+Dll_Export extern const char *connectionStateToStr(XBCONSTATE state);
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers.
