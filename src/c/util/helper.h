@@ -181,7 +181,7 @@ Dll_Export extern BlobHolder *freeBlobHolderContent(BlobHolder *blob);
 Dll_Export extern char *blobDump(BlobHolder *blob);
 Dll_Export extern void freeBlobDump(char *blobDump); /* deprecated: use xmlBlasterFree() */
 #if defined(XB_USE_PTHREADS)
-Dll_Export extern long get_pthread_id(pthread_t t);
+Dll_Export extern unsigned long get_pthread_id(pthread_t t);
 #endif
 
 #ifdef __cplusplus

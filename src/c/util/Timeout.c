@@ -37,43 +37,43 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp, 
 
 /* Local helper function */
 static bool _isMyThread(Timeout *timeout) {
-	/** see  long get_pthread_id(pthread_t t) */
+        /** see  long get_pthread_id(pthread_t t) */
 #if defined(_WINDOWS)
-	if (timeout == 0 ||  timeout->threadId.p == 0)
-	   return false;
-	{
-   	pthread_t callingThreadId = pthread_self();
+        if (timeout == 0 ||  timeout->threadId.p == 0)
+           return false;
+        {
+        pthread_t callingThreadId = pthread_self();
       if (callingThreadId.p == timeout->threadId.p) {
-			return true;
-		}
-		return false;
-	}
+                        return true;
+                }
+                return false;
+        }
 #else
-	if (timeout == 0 ||  timeout->threadId == 0)
-	   return false;
-	{
-   	pthread_t callingThreadId = pthread_self();
+        if (timeout == 0 ||  timeout->threadId == 0)
+           return false;
+        {
+        pthread_t callingThreadId = pthread_self();
       if (callingThreadId == timeout->threadId) {
-			return true;
-		}
-		return false;
-	}
+                        return true;
+                }
+                return false;
+        }
 #endif
 }
 
 /* Local helper function */
 static bool _isNull(pthread_t *threadId) {
-	if (threadId == 0) {
-		return true;
-	}
+        if (threadId == 0) {
+                return true;
+        }
 #if defined(_WINDOWS)
    if (threadId->p == 0)
-		return true;
+                return true;
 #else
    if (*threadId == 0)
-		return true;
+                return true;
 #endif
-	return false;
+        return false;
 }
 
 static void initTimeout(Timeout *timeout) {
@@ -102,7 +102,10 @@ Timeout *createTimeout(const char* const name) {
 
 static void stopThread(Timeout *timeout) {
    pthread_t threadId;
-   if (timeout == 0 || _isNull(&timeout->threadId))
+   if (timeout == 0)
+      return;
+   threadId = timeout->threadId;
+   if (timeout == 0 || _isNull(&threadId))
       return;
    if (_isMyThread(timeout)) {
       /* to avoid memory leak on needs to call pthread_join() or pthread_detach() */
@@ -110,14 +113,13 @@ static void stopThread(Timeout *timeout) {
       timeout->running = false;
       return;
    }
-   threadId = timeout->threadId;
    pthread_mutex_lock(&timeout->condition_mutex);
    timeout->running = false;
    pthread_cond_broadcast(&timeout->condition_cond);
    pthread_mutex_unlock(&timeout->condition_mutex);
    if (!_isNull(&threadId))
       pthread_join(threadId, NULL);
-   if (timeout->verbose) printf("Timeout.c Joined threadId=%ld\n", get_pthread_id(threadId));
+   if (timeout->verbose) printf("Timeout.c Joined threadId=%lud\n", get_pthread_id(threadId));
    initTimeout(timeout);
 }
 
@@ -161,7 +163,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp,
       else {
          /* Another thread called us, so clean up immediately */
          if (timeout->verbose)
-            printf("Timeout.c Stopping timer %s threadId=%ld, callingThreadId=%ld\n", timeout->name, get_pthread_id(timeout->threadId), get_pthread_id(pthread_self()));
+            printf("Timeout.c Stopping timer %s threadId=%lud, callingThreadId=%lud\n", timeout->name, get_pthread_id(timeout->threadId), get_pthread_id(pthread_self()));
          stopThread(timeout);
       }
       return 0;
@@ -202,7 +204,6 @@ static void *timeoutMainLoop(void *ptr) {
    Timeout *timeout = (Timeout *) ptr;
    while (timeout->running) {
       int64_t startNanos = getTimestamp();
-      int ret = 0;
       struct timespec abstime;
 
       pthread_mutex_lock(&timeout->condition_mutex);
@@ -215,8 +216,8 @@ static void *timeoutMainLoop(void *ptr) {
       /* protect against spurious wake ups */
       while (timeout->running) {
          bool timeElapsed = false;
-         ret
-               = pthread_cond_timedwait(&timeout->condition_cond, &timeout->condition_mutex,
+         /*int ret
+               = */pthread_cond_timedwait(&timeout->condition_cond, &timeout->condition_mutex,
                      &abstime);
          /* check if delay reached */
          timeElapsed = (getTimestamp() - startNanos) >= timeout->timeoutContainer.delay * 1000000L;

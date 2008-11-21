@@ -314,6 +314,7 @@ Dll_Export extern void freeXmlBlasterAccess(XmlBlasterAccess *xmlBlasterAccess);
 Dll_Export extern Key *createXmlBlasterKey(const char * keyXml);
 Dll_Export extern Qos *createXmlBlasterQos(const char * qosXml);
 Dll_Export extern ReturnQos *createXmlBlasterReturnQos(const char * qosXml);
+Dll_Export extern ReturnQosArr *createXmlBlasterReturnQosArr(QosArr * qosArr);
 /*Dll_Export extern QosArr *createXmlBlasterQosArr(const char * qosArr);*/
 Dll_Export extern void freeXmlBlasterKey(Key * key);
 Dll_Export extern void freeXmlBlasterQos(Qos * qos);

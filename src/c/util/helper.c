@@ -132,7 +132,7 @@ Dll_Export char *getStackTrace(int maxNumOfLines)
    }
 #else
    if (maxNumOfLines > 0)      /* to make the compiler happy */
-	   return strcpyAlloc("");
+           return strcpyAlloc("");
    return strcpyAlloc(""); /* No stack trace provided in this system */
 #endif
 }
@@ -238,7 +238,7 @@ Dll_Export char **convertWcsArgv(wchar_t **argv_wcs, int argc) {
 #     else
          wcstombs(argv[i], argv_wcs[i], sizeInBytes);
 #     endif
-	  /*printf("%s ", argv[i]);*/
+          /*printf("%s ", argv[i]);*/
    }
    return argv;
 }
@@ -304,10 +304,10 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 # elif defined(_WINDOWS)
    struct _timeb tm;
 #  if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
-   	errno_t err = _ftime_s(&tm);
+        errno_t err = _ftime_s(&tm);
       if (err) return false;
 #  else
-   	(void) _ftime(&tm);
+        (void) _ftime(&tm);
 #  endif
 
    abstime->tv_sec = (long)tm.time;
@@ -328,9 +328,9 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
    memset(abstime, 0, sizeof(struct timespec));
 
    /* Better?
-	if (clock_gettime(CLOCK_REALTIME, &abstime) == -1) {
-		printf("Timeout.c clock_gettime failed%d\n", errno);
-	}
+        if (clock_gettime(CLOCK_REALTIME, &abstime) == -1) {
+                printf("Timeout.c clock_gettime failed%d\n", errno);
+        }
    */
 
    gettimeofday(&tv, 0);
@@ -410,26 +410,26 @@ Dll_Export char *strtok_r2(char *src, const char *delim, char **saveptr, const c
     bool inQuotes = false;
     int ii, len;
     char *ptr;
-	if (src != 0)
-		*saveptr = src;
-	ptr = *saveptr;
-	if (ptr == 0)
-		return 0;
-	len = strlen(ptr);
+        if (src != 0)
+                *saveptr = src;
+        ptr = *saveptr;
+        if (ptr == 0)
+                return 0;
+        len = strlen(ptr);
    for (ii = 0; ii < len; ii++) {
-	  char c = ptr[ii];
-	  if (quotechar != 0 && c == quotechar) {
-		 inQuotes = !inQuotes;
-		 if (inQuotes)
-			 ptr++; /* strip leading quotechar */
-		 else
-			 ptr[ii] = 0; /* Remove trailing quotechar */
-	  }
-	  else if (strchr(delim, c) != 0 && !inQuotes) {
-		  ptr[ii] = 0;
-		  (*saveptr) = ptr+ii+1;
-		  return ptr;
-	  }
+          char c = ptr[ii];
+          if (quotechar != 0 && c == quotechar) {
+                 inQuotes = !inQuotes;
+                 if (inQuotes)
+                         ptr++; /* strip leading quotechar */
+                 else
+                         ptr[ii] = 0; /* Remove trailing quotechar */
+          }
+          else if (strchr(delim, c) != 0 && !inQuotes) {
+                  ptr[ii] = 0;
+                  (*saveptr) = ptr+ii+1;
+                  return ptr;
+          }
    }
    (*saveptr) = 0;
    return ptr;
@@ -501,7 +501,7 @@ Dll_Export char *strcatAlloc0(char **dest, const char *src, const size_t maxLen)
    if ((*dest) == 0) return 0;
    strncat((*dest), src, lenSrc);
    if (len > maxLen) {
-	   len = maxLen; /* TODO: proper handling: not allocate too much */
+           len = maxLen; /* TODO: proper handling: not allocate too much */
    }
    *((*dest)+len-1) = '\0';
    return (*dest);
@@ -584,7 +584,7 @@ Dll_Export char *strncpy0(char * const to, const char * const from, const size_t
       *(to+maxLen-1) = '\0';
       return ret;
 #  elif _MSC_VER >= 1400
-/*	errno_t strncpy_s(
+/*      errno_t strncpy_s(
    char *strDest,
    size_t sizeInBytes,
    const char *strSource,
@@ -733,32 +733,31 @@ Dll_Export void trimEnd(char *s)
 
 Dll_Export
 bool startsWith(const char * const str, const char * const token) {
-	int i;
-	if (str == 0 || token == 0)
-		return false;
-	for (i = 0; ; i++) {
-		if (token[i] == 0)
-			return true;
-		if (str[i] != token[i])
-			return false;
-	}
-	return true;
+        int i;
+        if (str == 0 || token == 0)
+                return false;
+        for (i = 0; ; i++) {
+                if (token[i] == 0)
+                        return true;
+                if (str[i] != token[i])
+                        return false;
+        }
 }
 
 Dll_Export
 bool endsWith(const char * const str, const char * const token) {
-	int i, count=0, lenStr, len;
-	if (str == 0 || token == 0)
-		return false;
-	lenStr = strlen(str);
-	len = strlen(token);
-	if (lenStr < len)
-		return false;
-	for (i = lenStr - len; i < lenStr; i++, count++) {
-		if (str[i] != token[count])
-			return false;
-	}
-	return true;
+        int i, count=0, lenStr, len;
+        if (str == 0 || token == 0)
+                return false;
+        lenStr = strlen(str);
+        len = strlen(token);
+        if (lenStr < len)
+                return false;
+        for (i = lenStr - len; i < lenStr; i++, count++) {
+                if (str[i] != token[count])
+                        return false;
+        }
+        return true;
 }
 
 /**
@@ -794,12 +793,35 @@ Dll_Export char *toReadableDump(char *data, size_t len)
  * @param t The pthread_t type
  * @return A uniquue long, usually the pointer address
  */
-long get_pthread_id(pthread_t t)
+unsigned long get_pthread_id(pthread_t t)
 {
 #  ifdef _WINDOWS
-   return (long)t.p; /* typedef ptw32_handle_t pthread_t; with struct {void*p; unsigned int x;} */
+   return (unsigned long)t.p; /* typedef ptw32_handle_t pthread_t; with struct {void*p; unsigned int x;} */
 #  else
-   return (long)t;
+   int64_t val64 = 0;
+   /*printf("xmlBlaster helper.c pthread_t size=%ud\n", sizeof(pthread_t));*/
+   {
+      val64 = (int64_t)t; /* INT_LEAST64_MAX=9223372036854775807 */
+      if (val64 <= UINT32_MAX) { /* 4294967295U */
+         /*printf("xmlBlaster helper.c OK\n");*/
+         return (unsigned long)t;
+      }
+   }
+   {  /* Intels icc 10.x had problems which i couldn't resolve (2008/11 marcel) */
+      char *p;
+      char buf[56];
+      long val32;
+      /* 2147483647 */
+      /* 3081234112 */
+      printf("xmlBlaster helper.c Warning: stripping pthread_id %lld\n", val64);
+      SNPRINTF(buf, 55, "%lld", val64);
+      /*printf("xmlBlaster helper.c Warning: stripping pthread_id string %s\n", buf);*/
+      p = buf + strlen(buf) - 9;
+      sscanf(p, "%ld", &val32);
+      printf("xmlBlaster helper.c Warning: stripping pthread_id from %lld to %ld\n", val64, val32);
+      return val32;
+      /*return (long)(val64/(1+int64_t(val64 / INT_LEAST32_MAX)));*/
+   }
 #  endif
 }
 #endif
@@ -811,13 +833,13 @@ long get_pthread_id(pthread_t t)
  * @return the key hit
  */
 Dll_Export char getInputKey(const char *str) {
-	char c = 0;
-	printf("%s >\n", str);
-	do {
-		c = getchar();
-	}
-	while (c == '\n'); /* Ignore enter hits */
-	return c;
+        char c = 0;
+        printf("%s >\n", str);
+        do {
+                c = getchar();
+        }
+        while (c == '\n'); /* Ignore enter hits */
+        return c;
 }
 
 /**
@@ -851,6 +873,7 @@ Dll_Export const char *getCurrentTimeStr(char *timeStr, int bufSize) {
       time_t t1; /* unsigned long */
       (void) time(&t1);
       ctime_r(&t1, (char *)timeStr);
+      bufSize = 0; /* to avoid compiler warning */
 #  endif
    *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
    return timeStr;
@@ -907,7 +930,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
-		 enum { SIZE=128 };
+                 enum { SIZE=128 };
          char timeStr[SIZE];
          getCurrentTimeStr(timeStr, SIZE);
 #        if XB_USE_PTHREADS
