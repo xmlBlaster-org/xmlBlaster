@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -189,10 +190,30 @@ public class ReferenceEntry extends MsgQueueEntry
       MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)referent;
       if (msgUnitWrapper == null) { 
          if (!isForceDestroy()) {
-            log.severe("No meat found but forceDestroy=false");
+            log.severe(getInfoWithoutMeat()+" No meat found but forceDestroy=false " + Global.getStackTraceAsString(null));
          }
       }
       return msgUnitWrapper;
+   }
+
+   /**
+    * For logging, don't access meat to avoid recursion.  
+    * @return
+    */
+   public String getInfoWithoutMeat() {
+      StringBuffer buf = new StringBuffer(1024);
+      buf.append("topicId=").append(keyOid);
+      SessionName sn = receiver;
+      if (sn != null)
+         buf.append(" receiver=").append(sn.getAbsoluteName());
+      if (msgUnitWrapperUniqueId > 0)
+         buf.append(" msgUnitWrapperUniqueId=").append(msgUnitWrapperUniqueId);
+      StorageId si = super.storageId;
+      if (si != null)
+         buf.append(" storageId=").append(si.getId());
+      buf.append(" entryType=").append(super.entryType);
+      buf.append(" persistent=").append(super.persistent);
+      return buf.toString();
    }
 
    private void incrementReferenceCounter(int incr, StorageId storageId) {
@@ -205,22 +226,23 @@ public class ReferenceEntry extends MsgQueueEntry
             boolean isHistory = (storageId == null) ? false : Constants.RELATING_HISTORY.equals(storageId.getRelatingType());
             String id = (storageId == null) ? "" : storageId.getId();
             if (isForceDestroy()) {
-               if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+               if (log.isLoggable(Level.FINE)) log.fine(getInfoWithoutMeat()+" No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
             }
             else if (isHistory) { // Is OK when expired history entries are cleared!
-               if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+               if (log.isLoggable(Level.FINE)) log.fine(getInfoWithoutMeat()+" No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
             }
             else if (isExpired()) {
-               if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+               if (log.isLoggable(Level.FINE)) log.fine(getInfoWithoutMeat()+" No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
             }
             else { // Analyse it
-               log.severe("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
-               Thread.dumpStack();
+               log.severe(getInfoWithoutMeat()+" No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired() + "\n"
+                     + Global.getStackTraceAsString(new Exception()));
+               //Thread.dumpStack();
             }
          }
       }
       catch (Throwable ex) {
-         log.severe("incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
+         log.severe(getInfoWithoutMeat()+" incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
       }
    }
 
