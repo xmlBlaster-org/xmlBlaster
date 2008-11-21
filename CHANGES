@@ -1,8 +1,11 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "r99999" numbers are Subversion revision numbers.
 
-Changes for current svn
+Changes for current svn (JDK >= 1.5 only)
 =======================
+
+ o r17532 C-client library: Fixed pthread_t initialization in Timeout.c (used by new HelloWorld4.c only)
+          Fixed compiler warnings for intel icc
 
 
 Changes for 1.6.4 [2008-11-18] r17524 'JDK14-GoodBye'
