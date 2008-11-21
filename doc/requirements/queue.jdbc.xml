@@ -120,7 +120,7 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
           <td>the name postfix for the table containing the entries.</td>
         </tr>
         <tr>
-          <td>tableNamePrefix</td>
+          <td>tableNamePrefix<br />DEPRECATED</td>
           <td>XB</td>
           <td>the name prefix for the table containing the entries. Note that the complete names for the 
               tables are created by adding the tableNamePrefix to the names. So if you specify 
@@ -162,7 +162,7 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
             <td>The maximum number of threads waiting for a connection to the DB.</td>
          </tr>
          <tr>
-            <td>tableNamePrefix</td>
+            <td>tableNamePrefix<br />DEPRECATED</td>
             <td>xmlBlaster</td>
             <td>The prefix to use in the tablenames. All tables used will start with the uppercase of the text specified here. Do not choose 
             names which are too long since many DB have a limited tablename length.</td>
