@@ -34,11 +34,12 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException
    if (xmlBlasterException != 0) ;  /* Supress compiler warning */
    updateUserData = xa;
    for (i=0; i<msgUnitArr->len; i++) {
+      MsgUnit *msg = 0;
       if (updateContent != 0) {
          xmlBlasterFree(updateContent);
          updateContent = 0;
       }
-      MsgUnit *msg = &msgUnitArr->msgUnitArr[i];
+      msg = &msgUnitArr->msgUnitArr[i];
       printf("[client] CALLBACK update(): Asynchronous message update arrived\n");
       updateContent = strFromBlobAlloc(msg->content, msg->contentLen);
       msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
