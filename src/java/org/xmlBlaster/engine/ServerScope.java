@@ -833,7 +833,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
          MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
          tmpList.add("<MsgUnit index='"+i+"'>");
          if (wrapper == null) {
-            tmpList.add("  NOT REFERENCED");
+            tmpList.add("  NOT REFERENCED " + entry.getInfoWithoutMeat());
          }
          else {
             tmpList.add("  "+wrapper.getMsgKeyData().toXml());
@@ -881,7 +881,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
          ReferenceEntry entry = (ReferenceEntry)list.get(i);
          MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
          if (wrapper == null) {
-            tmpList.add("NOT REFERENCED #" + i);
+            tmpList.add("NOT REFERENCED #" + i + " " + entry.getInfoWithoutMeat());
          }
          else {
             String fileName = dumper.store(wrapper);
