@@ -293,7 +293,7 @@ public class OneToThree {
    }
 
    public void createReportFile() throws Exception {
-      String reportFileName = "OneToThree-report.xml";
+      String reportFileName = "OneToThree-report.log";
       to_file = new File(reportFileName);
       if (to_file.getParent() != null) {
          to_file.getParentFile().mkdirs();
