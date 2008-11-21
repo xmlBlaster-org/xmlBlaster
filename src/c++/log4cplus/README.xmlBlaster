@@ -1,3 +1,11 @@
+New TODO 2008-11.22
+Vaclav wrote:
+  "I have implemented optional environment shadowing and recursive variable
+   expansion and committed it as revision 605 on PRODUCTION_1_0_x branch.
+   If you are still interested in it, please test it."
+
+
+
 log4cplus Version 1.0.2  2004-02-11 (Apache Software License version 1.1)
 http://log4cplus.sourceforge.net/projstatus.html
 Original Author:  Tad E. Smith
