@@ -250,14 +250,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     */
    public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
       if (isSwapped()) {
-         if (count > 0) {
-            log.severe("incrementReferenceCounter: unexpected swapped message when incrementing the counter");
-            Global.getStackTraceAsString(null);
-         }
-         else {
-            if (log.isLoggable(Level.FINE)) 
-               log.fine("incrementReferenceCounter: unexpected swapped message");
-         }
+         //if (count > 0) {
+            log.severe("incrementReferenceCounter: unexpected swapped message when incrementing the counter: " + toXml()
+                  + Global.getStackTraceAsString(null));
+         //}
+         //else {
+         //   if (log.isLoggable(Level.FINE)) 
+         //      log.fine("incrementReferenceCounter: unexpected swapped message");
+         //}
          return;
       }
       boolean isHistoryReference = (storageId != null && storageId.getRelatingType().equals("history"));
