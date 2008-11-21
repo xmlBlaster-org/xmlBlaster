@@ -1,0 +1,300 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='queue.jdbc' type='NEW' prio='HIGH' status='INWORK'>
+   <topic>
+     Describes xmlBlaster persistence layer since v2.0 (2008-11-20).
+   </topic>
+
+   <description>
+     <p>
+     The new xmlBlaster store replaces the old queue.jdbc.commontable.
+     </p>
+     <p>
+     It is acivated in xmlBlaster.properties by using the JdbcQueue plugin
+     <code>org.xmlBlaster.util.queue.jdbc.JdbcQueue</code> instead of the
+     old <code>org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</code>.
+     This example shows the Postgres setup:
+     </p>
+     <pre>
+JdbcStorage[postgres]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,\
+            url=jdbc:postgresql://localhost:5432/xmlblaster,\
+            user=xmlblast,\
+            password=,\
+            connectionPoolSize=5,\
+            connectionBusyTimeout=90000,\
+            maxWaitingThreads=300,\
+            queue.persistent.queryTimeout=0,\
+            tableNamePrefix=XB_,entriesTableName=ENTRIES,\
+            dbAdmin=true
+     </pre>
+     <p>
+     The entry
+<code>tableNamePrefix=XB_,entriesTableName=ENTRIES,\</code>
+     or (for SQLServer)
+<code>tableNamePrefix=XB_,entriesTableName=ENTRIES,colNamePrefix=XB_,\</code>
+     is needed only during database migration from old to new with
+<code>java -Xms18M -Xmx1064M org.xmlBlaster.contrib.dbupdate.OneToThree</code>
+     and can be removed thereafter.
+     </p>
+
+
+     <p>
+     The new database schema consist of three database tables, namely
+     <code>xbstore</code>, <code>xbref</code> and <code>xbmeat</code>.
+     The DDL is located in directory xmlBlaster/doc/jdbc, here is an
+     excerpt for Postgres:
+     </p>
+
+<pre>
+create table xbstore (
+      xbstoreid int8 primary key unique not null,
+      xbnode varchar(256) not null,
+      xbtype varchar(32) not null,
+      xbpostfix varchar(256) not null,
+      xbrefcounted char(1) not null default 'F',
+      xbflag1 varchar(32) default '');
+
+create table xbmeat (
+      xbmeatid int8 not null,
+      xbdurable char not null default 'F',
+      xbrefcount int4,
+      xbrefcount2 int4,
+      xbbytesize int8,
+      xbdatatype varchar(32) not null default '',
+      xbmetainfo text default '',
+      xbflag1 varchar(32) default '',
+      xbmsgqos text default '',
+      xbmsgcont bytea default '',
+      xbmsgkey text default '',
+      xbstoreid int8 not null,
+      constraint xbmeatpk primary key(xbmeatid, xbstoreid));
+
+create table xbref (
+   xbrefid int8 not null,
+   xbstoreid int8 not null,
+   xbmeatid int8,
+   xbdurable char(1) not null default 'F',
+   xbbytesize int8,
+   xbmetainfo text default '',
+   xbflag1 varchar(32) default '',
+   xbprio int4,
+   xbmethodname varchar(32) default '',
+constraint xbrefpk primary key(xbrefid, xbstoreid));
+</pre>
+
+     <p>Discussion</p>
+     <p>
+     The xbstore.xbisrefcounted only is used for xbstore describing
+     xbref, it is of no useful interest with xbmeat
+     </p>
+    </description>
+
+
+   <configuration where="server">
+
+     To activate persistence please add the following to your properties file:
+     <pre>
+persistence/defaultPlugin=CACHE,1.0
+queue/defaultPlugin=CACHE,1.0
+useTopicStore=true
+     </pre>
+
+     <pre>
+StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                         entriesTableName=ENTRIES,\
+                         tableNamePrefix=XB,\
+                         dbAdmin=true,\
+                         configurationIdentifier=mySpecialDB
+     </pre>
+     <table border="1">
+        <tr>
+          <td><b>Property</b></td>
+          <td><b>default</b></td>
+          <td><b>comment</b></td>
+        </tr>
+        <tr>
+          <td>entriesTableName</td>
+          <td>ENTRIES</td>
+          <td>the name postfix for the table containing the entries.</td>
+        </tr>
+        <tr>
+          <td>tableNamePrefix</td>
+          <td>XB</td>
+          <td>the name prefix for the table containing the entries. Note that the complete names for the 
+              tables are created by adding the tableNamePrefix to the names. So if you specify 
+              <i>entriesTableName=ENTRIES</i> and <i>tableNamePrefix=XB_</i> you will get the name of the table 
+              to be <i>XB_ENTRIES</i>.
+          </td>
+        </tr>
+        <tr>
+          <td>dbAdmin</td>
+          <td>true</td>
+          <td>if set to true xmlBlaster will try to create tables if needed.</td>
+        </tr>
+        <tr>
+          <td>configurationIdentifier</td>
+          <td>$DatabaseMetaData.getDatabaseProductName()$</td>
+          <td>The ID to assign to this configuration. Its only purpose is to find the correct Mapping
+              declaration for this database configuration. This name must match the name inside the
+              square brackets. If you define configurationIdentifier=myStrangeDB here, then you will
+              need to define the associated mapping: 
+              JdbcDriver.mapping[myStrangeDB]=longint=numeric (19),boolean=char(1),blob=image. If
+              you don't define anything here, then the database product name is taken (which you get
+              with DatabaseMetaData.getDatabaseProductName()).
+          </td>
+        </tr>
+
+         <tr>
+            <td>connectionPoolSize</td>
+            <td>1</td>
+            <td>the number of connections to the DB (tests showed that a low number gives the best performance).</td>
+         </tr>
+         <tr>
+            <td>connectionBusyTimeout</td>
+            <td>90000</td>
+            <td>The time to wait in milliseconds until to timeout when waiting for a connection to the DB.</td>
+         </tr>
+         <tr>
+            <td>maxWaitingThreads</td>
+            <td>300</td>
+            <td>The maximum number of threads waiting for a connection to the DB.</td>
+         </tr>
+         <tr>
+            <td>tableNamePrefix</td>
+            <td>xmlBlaster</td>
+            <td>The prefix to use in the tablenames. All tables used will start with the uppercase of the text specified here. Do not choose 
+            names which are too long since many DB have a limited tablename length.</td>
+         </tr>
+         <tr>
+            <td>maxStatementLength</td>
+            <td>2048</td>
+            <td>The maximum SQL statement length supported by this JDBC driver.
+            If the JDBC meta data delivers this information this property is ignored.</td>
+         </tr>
+         <tr>
+            <td>enableBatchMode</td>
+            <td>true</td>
+            <td>Tells the driver to make the addition of entries in batch mode, i.e. several entries are
+                added in the same sweep. This can improve performance on some DB's significantly. The 
+                drawback is that it could loose performance and create noisy logs in the case you insert
+                several entries and one of them is already in the DB. Then everything would be rolled back
+                and repeated in single mode (we can not save the current state since PostGres implicitly
+                aborts transactions in case of an SQLException is thrown). If the DB used does not support
+                batch mode, then this option is ignored.
+            </td>
+         </tr>
+         <tr>
+            <td>cascadeDeleteSupported</td>
+            <td>true</td>
+            <td>Tells the driver that cascade delete is supported. When this is set (default), deleting a
+                queue will delete all entries within the same SQL statement.
+            </td>
+         </tr>
+         <tr>
+            <td>nestedBracketsSupported</td>
+            <td>true</td>
+            <td>Tells the driver wether nested brackets are supported or not. It normally is supported.
+            </td>
+         </tr>
+     </table>
+
+There is also the need to specify which mapping to use for the conversion from java types to the
+types used for a particular database. This is done with the <b>JdbcDriver.mapping[xxx]</b> property. The
+value specified here as <i>xxx</i> is the plugin property <b>configurationIdentifier</b>
+     <pre>
+JdbcDriver.mapping[myStrangeDB]=string=text,\
+                                longint=bigint,\
+                                int=integer,\
+                                boolean=char(1),\
+                                blob=bytea,\
+                                pingStatement=SHOW ALL,\
+                                blobVarName=blob,\
+                                keyAttr=
+     </pre>
+
+     <table border="1">
+        <tr>
+          <td><b>Subproperty</b></td>
+          <td><b>default</b></td>
+          <td><b>comment</b></td>
+        </tr>
+        <tr>
+          <td>string</td>
+          <td>text</td>
+          <td>The name be used for the java.String type</td>
+        </tr>
+        <tr>
+          <td>longint</td>
+          <td>bigint</td>
+          <td>The name be used for the java.Long type (or long)</td>
+        </tr>
+        <tr>
+          <td>int</td>
+          <td>integer</td>
+          <td>The name be used for the java.Integer (or int) type</td>
+        </tr>
+        <tr>
+          <td>boolean</td>
+          <td>char(1)</td>
+          <td>The name be used for the java.Boolean (or boolean) type (a char is used since oracle does not support boolean)</td>
+        </tr>
+        <tr>
+          <td>blob</td>
+          <td>bytea</td>
+          <td>The name be used for the blobs (mapped to byte[])</td>
+        </tr>
+        <tr>
+          <td>pingStatement</td>
+          <td>SHOW ALL</td>
+          <td>The SQL stement to use to simulate a ping to the DB</td>
+        </tr>
+        <tr>
+          <td>blobVarName</td>
+          <td>blob</td>
+          <td>The name to assign to the table column for the blob. This has been added since the name <i>blob</i>
+              is invalid because it is an internal keyword.
+          </td>
+        </tr>
+        <tr>
+          <td>keyAttr</td>
+          <td>(empty string)</td>
+          <td>Additional attributes to the PRIMARY KEY to describe the primary key. Some DB need <i>not null</i> being added here</td>
+        </tr>
+     </table>
+ Note that the separator for the subproperties is a comma (,). If for some reasons you need to use a 
+ comma inside the subproperty (for example if you want to define  <i>...,longint=decimal(19,0),...</i>, then 
+ you can surround <b>the whole subproperty</b> (important) by a double quote (") as 
+ <i>...,"longint=decimal(19,0)",...</i>
+
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+   <see type="REQ">queue.jdbc.postgres</see>
+   <see type="REQ">queue.jdbc.oracle</see>
+   <see type="REQ">queue.jdbc.firebird</see>
+   <see type="REQ">queue.jdbc.sqlserver</see>
+   <see type="REQ">queue.jdbc.hsqldb</see>
+   <see type="REQ">queue.jdbc.mysql</see>
+   <see type="REQ">queue.jdbc.ldbc</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>michele@laghi.eu</author>
+   <date>2003 01 28</date>
+   <revision>$Revision: 1.12 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+   </testcase>
+</requirement>
+
