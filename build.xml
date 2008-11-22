@@ -435,6 +435,7 @@ TODO
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
       <echo message=""/>
+      <echo message=" C++: Use '-DCPP_LINK=static' to create static libs, default are shared libraries .so,.dll,.sl,.dylib"/>
       <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
       <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
       <echo message="   cpp-test    --> generates C++ test clients"/>
@@ -443,6 +444,7 @@ TODO
       <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
       <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message=""/>
+      <echo message=" C:   Use '-DC_LINK=static' to create static libs, default are shared libraries .so,.dll,.sl,.dylib"/>
       <echo message="   c-lib       --> generates the C client library libxmlBlasterClientC.sl (shared library .so .sl .dll)"/>
       <echo message="                   which uses the SOCKET protocol"/>
       <echo message="   c-test      --> generates C test clients"/>
