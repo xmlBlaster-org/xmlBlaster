@@ -2642,6 +2642,16 @@ TODO
            <define name="BOOST" value="1" if="BOOST" /> <!-- ThreadImpl.cpp looks for BOOST -->
          </defineset>
 
+         <!-- Mac OSX TODO: if on command line 'gcc' is used linking fails -->
+         <!-- Workaround: 'ln -s /usr/bin/g++ gcc' at beginning of path -->
+         <linker name="g++"  if="OSX">
+            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
+            <libset dir="${lib.dir}" libs="${c.lib.name}" />
+            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
+         </linker>
+
          <linker name="gcc"  if="use-gcc">
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
          </linker>
