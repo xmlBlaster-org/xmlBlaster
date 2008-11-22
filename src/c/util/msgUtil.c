@@ -331,7 +331,7 @@ int gethostbyname_r (const char *name,
   } else {
     char **p, **q;
     char *pbuf;
-    int nbytes=0;
+    size_t nbytes=0;
     int naddr=0, naliases=0;
     /* determine if we have enough space in buf */
 

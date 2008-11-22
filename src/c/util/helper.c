@@ -802,7 +802,7 @@ unsigned long get_pthread_id(pthread_t t)
    /*printf("xmlBlaster helper.c pthread_t size=%ud\n", sizeof(pthread_t));*/
    {
       val64 = (int64_t)t; /* INT_LEAST64_MAX=9223372036854775807 */
-      if (val64 <= UINT32_MAX) { /* 4294967295U */
+      if (val64 <= 4294967295U) {
          /*printf("xmlBlaster helper.c OK\n");*/
          return (unsigned long)t;
       }
