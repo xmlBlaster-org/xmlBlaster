@@ -2851,14 +2851,20 @@ TODO
 
          <linker name="gcc"  if="use-gcc">
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
-            <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" />
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
-            <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
-            <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" unless="OSX"/>
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" unless="OSX" />
+
+	    <!-- Mac OSX: No rpath support Some other Unix systems have an rpath concept where a final linked image can contain a list of additional directories to use when searching for required libraries. Since Mac OS X uses full paths for libraries instead of searching, rpath is less interesting.  -->
+	    <!-- Since XCode 3.0 -rpath is supported with /usr/bin/ld, but gcc 4.0 or 4.2 does not seem to use this ld-->
+	    <!-- So you need to set:  -->
+	    <!-- export DYLD_LIBRARY_PATH=/Users/marcel/xerces-c_2_8_0-x86-macosx-gcc_4_0/lib:/Users/marcel/xmlBlaster/lib -->
+
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
@@ -2896,11 +2902,11 @@ TODO
             <!-- libz.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
 
-            <syslibset dir="/lib" libs="dl" if="unix"/>
+            <syslibset dir="/lib" libs="dl" if="unix" unless="OSX"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
             <!-- syslibset dir="/usr/lib" libs="socket" if="unix"/  NOT FOR G++ 3.3 and Linux 2.4.x, 2.6.x -->
-            <syslibset dir="/usr/local/lib" libs="stdc++" if="unix"/>
-            <syslibset dir="/usr/lib" libs="rt" if="unix"/>
+            <syslibset dir="/usr/local/lib" libs="stdc++" if="unix" unless="OSX"/>
+            <syslibset dir="/usr/lib" libs="rt" if="unix" unless="OSX"/>
 
          </linker>
 
