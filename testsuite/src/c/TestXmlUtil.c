@@ -240,7 +240,7 @@ static const char * test_xmlUnEscape() {
                 xmlBlasterUnEscapeXml(xml, &newLen);
                 printf("%s\n", xml);
                 mu_assert("xmlEscape", !strcmp(xml, "<X/>"));
-                mu_assert("xmlEscape", newLen == strlen("<X/>"));
+                mu_assert("xmlEscape", (size_t)newLen == strlen("<X/>"));
                 xmlBlasterFree(xml);
         }
         {
@@ -260,7 +260,7 @@ static const char * test_xmlUnEscape() {
                 xmlBlasterUnEscapeXml(xml, &newLen);
                 printf("%s\n", xml);
                 mu_assert("xmlEscape", !strcmp(xml, expected));
-                mu_assert("xmlEscape", newLen == strlen(expected));
+                mu_assert("xmlEscape", (size_t)newLen == strlen(expected));
                 xmlBlasterFree(xml);
         }
         return 0;

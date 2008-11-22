@@ -160,7 +160,7 @@ static const char * test_stress()
    mu_assert("No update arrived", *updateContent != '\0');
    if ((int)updateCounter < numPublish) {
       freeXmlBlasterAccessUnparsed(xa);
-      mu_assert("Missing updates", updateCounter == numPublish);
+      mu_assert("Missing updates", (int)updateCounter == numPublish);
    }
    else if ((int)updateCounter > numPublish) {
       printf("[client] WARN: Publish of %d messages but received %d updates\n", numPublish, (int32_t)updateCounter);

@@ -37,7 +37,7 @@ static const char * test_timeout() {
         printf("millisec=%ld\n", millisecs);
         {
                 Timeout *timeout = createTimeout("TestTimer");
-                timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData", 0);
+                timeout->setTimeoutListener(timeout, onTimeout, millisecs, (void*)"dummyData", 0);
                 sleepMillis(5000);
                 mu_assert("test_timeout()", 2==countTimeouts);
                 freeTimeout(timeout);
@@ -52,7 +52,7 @@ static const char * test_timeoutNoCb() {
         printf("millisec=%ld\n", millisecs);
         {
                 Timeout *timeout = createTimeout("TestTimerNoCb");
-                timeout->setTimeoutListener(timeout, 0, millisecs, "dummyData", 0);
+                timeout->setTimeoutListener(timeout, 0, millisecs, (void*)"dummyData", 0);
                 sleepMillis(3000);
                 mu_assert("test_timeout()", 0==countTimeouts);
                 freeTimeout(timeout);
@@ -71,7 +71,7 @@ static const char * test_timeoutErr() {
                 sleepMillis(1000);
                 timeout->setTimeoutListener(timeout, onTimeout, 200, 0, 0);
                 sleepMillis(1000);
-                timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData", 0);
+                timeout->setTimeoutListener(timeout, onTimeout, millisecs, (void*)"dummyData", 0);
                 countTimeouts = 0;
                 sleepMillis(5000);
                 mu_assert("test_timeout()", 2==countTimeouts);
@@ -87,9 +87,9 @@ static const char * test_timeoutReset() {
         printf("selfThreadId=%lud millisec=%ld\n", get_pthread_id(pthread_self()), millisecs);
         {
                 Timeout *timeout = createTimeout("TestTimerReset");
-                timeout->setTimeoutListener(timeout, onTimeout, millisecs, "dummyData", 0);
+                timeout->setTimeoutListener(timeout, onTimeout, millisecs, (void*)"dummyData", 0);
                 sleepMillis(1000);
-                timeout->setTimeoutListener(timeout, onTimeout, 0, "dummyData", 0);
+                timeout->setTimeoutListener(timeout, onTimeout, 0, (void*)"dummyData", 0);
                 sleepMillis(1500);
                 mu_assert("test_timeoutReset()", 0==countTimeouts);
                 freeTimeout(timeout);
@@ -110,7 +110,7 @@ static void onTimeoutResetCall(Timeout *timeout, void *userData, void *userData2
                         timeout->timeoutContainer.delay, countTimeouts);
         /* Reset timer */
         if (countTimeouts == 1)
-                timeout->setTimeoutListener(timeout, onTimeout, 0, "onTimeoutResetCall", 0);
+                timeout->setTimeoutListener(timeout, onTimeout, 0, (void*)"onTimeoutResetCall", 0);
         if (userData || userData2) userData = userData2 = 0; /* use variable to avoid compiler warning */
 }
 static const char * test_timeoutResetFromCallback() {
@@ -120,11 +120,11 @@ static const char * test_timeoutResetFromCallback() {
         for (i=0; i<1; i++) {
                 Timeout *timeout = createTimeout("TestTimerResetFromCallback");
                 countTimeouts = 0;
-                timeout->setTimeoutListener(timeout, onTimeoutResetCall, millisecs, "test_timeoutResetFromCallback", 0);
+                timeout->setTimeoutListener(timeout, onTimeoutResetCall, millisecs, (void*)"test_timeoutResetFromCallback", 0);
                 /* resets timer */
                 sleepMillis(2500);
                 mu_assert("test_timeoutReset()", 1==countTimeouts);
-                timeout->setTimeoutListener(timeout, onTimeoutResetCall, millisecs, "test_timeoutResetFromCallback", 0);
+                timeout->setTimeoutListener(timeout, onTimeoutResetCall, millisecs, (void*)"test_timeoutResetFromCallback", 0);
                 /* keeps timer */
                 sleepMillis(2500);
                 mu_assert("test_timeoutReset()", 3==countTimeouts);
