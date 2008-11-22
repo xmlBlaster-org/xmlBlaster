@@ -96,6 +96,7 @@ and some test clients in
      On Solaris and Linux the shared library path is burned into the executable
      so you need to set LD_LIBRARY_PATH only when you move libraries to
      other locations (try <i>ldd TestGet</i>).
+     On Mac OS-X use DYLD_LIBRARY_PATH and <i>otool -L TestGet</i>.
      </p>
       <table border="1">
          <tr>

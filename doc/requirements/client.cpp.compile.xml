@@ -208,6 +208,7 @@ Supported tasks are
 <pre>
   tasklist /M        (Windows DOS box)
   ldd PublishDemo    (Linux, Solaris)
+  otool -L TestMethods (Mac OSX)
 </pre>
    </description>
 
