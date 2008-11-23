@@ -793,13 +793,14 @@ Dll_Export char *toReadableDump(char *data, size_t len)
 /**
  * Cast the thread identifier to an long value.
  * @param t The pthread_t type
- * @return A uniquue long, usually the pointer address
+ * @return A unique long, usually the pointer address
  */
 unsigned long get_pthread_id(pthread_t t)
 {
 #  ifdef _WINDOWS
    return (unsigned long)t.p; /* typedef ptw32_handle_t pthread_t; with struct {void*p; unsigned int x;} */
 #  else
+   /* TODO: Mac OS X: in sys/_types.h: struct _opaque_pthread_t { long __sig; struct __darwin_pthread_handler_rec  *__cleanup_stack; char __opaque[__PTHREAD_SIZE__]; }; */
    int64_t val64 = 0;
    /*printf("xmlBlaster helper.c pthread_t size=%ud\n", sizeof(pthread_t));*/
    {
