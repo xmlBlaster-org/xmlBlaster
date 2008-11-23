@@ -383,12 +383,12 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
       /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
 #ifdef __IPhoneOS__
-	    globalIPhoneXb = xb;
-
-		CFStringRef hostnameRef =CFStringCreateWithCString (kCFAllocatorDefault, serverHostName, kCFStringEncodingUTF8);
-		CFHostRef hostRef = CFHostCreateWithName (kCFAllocatorDefault, hostnameRef);
-		CFStreamCreatePairWithSocketToCFHost (kCFAllocatorDefault,hostRef, atoi(servTcpPort), &xb->readStream, &xb->writeStream);
-
+      globalIPhoneXb = xb;
+	   {
+		   CFStringRef hostnameRef =CFStringCreateWithCString (kCFAllocatorDefault, serverHostName, kCFStringEncodingUTF8);
+		   CFHostRef hostRef = CFHostCreateWithName (kCFAllocatorDefault, hostnameRef);
+		   CFStreamCreatePairWithSocketToCFHost (kCFAllocatorDefault,hostRef, atoi(servTcpPort), &xb->readStream, &xb->writeStream);
+		}
 		if(xb->readStream != nil && xb->writeStream != nil)
 		{
 			ret = 0;
@@ -606,22 +606,28 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
    if (xb != 0 && xb->isConnected(xb)) {
 #     if defined(_WINDOWS)
       int how = SD_BOTH;   /* SD_BOTH requires Winsock2.h */
+#     elif __IPhoneOS__
 #     else
       int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
 #     endif
+
 #ifdef __IPhoneOS__
+      {
 	   CFReadStreamRef readStream = xb->readStream;
 	   if (readStream != nil) {
               xb->readStream = nil;
               CFReadStreamClose(readStream);
               CFRelease(readStream);
 	   }
+      }
+      {
 	   CFWriteStreamRef writeStream = xb->writeStream;
 	   if (writeStream != nil) {
 	      xb->writeStream = nil;
 	      CFWriteStreamClose(writeStream);
 	      CFRelease(writeStream);
 	      printf("CFStreams were cosed\n");
+	   }
        }
 #else
       if (xb->socketToXmlBlaster != -1 && xb->socketToXmlBlaster != 0) { 

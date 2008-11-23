@@ -37,84 +37,84 @@ void closeSocket(int fd) {
 ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 {
 #ifdef __IPhoneOS__
-	/*	CFTimeInterval timeOut = -1;
-	 CFSocketRef socketRef = globalIPhoneXb->cfSocketRef;
-	 CFDataRef dataRef = CFDataCreate(kCFAllocatorDefault, (void*) ptr, nbytes);
-	 CFSocketError cfSocketError = CFSocketSendData(socketRef, globalIPhoneXb->socketAddr, dataRef, timeOut);
-	 if(cfSocketError == kCFSocketError) return -1;
-	 */
-	ssize_t nleft, nwritten;
-	while(!CFWriteStreamCanAcceptBytes(globalIPhoneXb->writeStream))
-	{
-		CFErrorRef errorRef = CFWriteStreamCopyError (globalIPhoneXb->writeStream);
-		if(errorRef != 0)
-		{
-			CFStringRef stringRef = CFErrorCopyDescription(errorRef);
-			char buff[1000];
-			CFStringGetCString (
-								stringRef,
-								buff,
-								1000,
-								kCFStringEncodingUTF8
-								);
-		    printf("\n**************   Warning write to Network is not possible, reason is  %s\n", buff);
-			CFRelease(errorRef);
-			return -1;
-		}
-		sleepMillis(100);
+        /*      CFTimeInterval timeOut = -1;
+         CFSocketRef socketRef = globalIPhoneXb->cfSocketRef;
+         CFDataRef dataRef = CFDataCreate(kCFAllocatorDefault, (void*) ptr, nbytes);
+         CFSocketError cfSocketError = CFSocketSendData(socketRef, globalIPhoneXb->socketAddr, dataRef, timeOut);
+         if(cfSocketError == kCFSocketError) return -1;
+         */
+        ssize_t nleft, nwritten;
+        while(!CFWriteStreamCanAcceptBytes(globalIPhoneXb->writeStream))
+        {
+                CFErrorRef errorRef = CFWriteStreamCopyError (globalIPhoneXb->writeStream);
+                if(errorRef != 0)
+                {
+                        CFStringRef stringRef = CFErrorCopyDescription(errorRef);
+                        char buff[1000];
+                        CFStringGetCString (
+                                                                stringRef,
+                                                                buff,
+                                                                1000,
+                                                                kCFStringEncodingUTF8
+                                                                );
+                    printf("\n**************   Warning write to Network is not possible, reason is  %s\n", buff);
+                        CFRelease(errorRef);
+                        return -1;
+                }
+                sleepMillis(100);
     }
-	
-	
-	nleft = (ssize_t)nbytes;
-	while(nleft > 0) {
-		nwritten =  CFWriteStreamWrite (
-										globalIPhoneXb->writeStream,
-										(UInt8*) ptr,
-										(CFIndex) nbytes);
-		if(nwritten < 0)
-		{
-			CFErrorRef errorRef = CFWriteStreamCopyError (globalIPhoneXb->writeStream);
-			
-			if(errorRef != 0)
-			{
-				CFStringRef stringRef = CFErrorCopyDescription(errorRef);
-				char buff[1000];
-				CFStringGetCString (
-									stringRef,
-									buff,
-									1000,
-									kCFStringEncodingUTF8
-									);
-				printf("\n**************** Warning send failed, reason is  %s\n", buff);
-				CFRelease(errorRef);
-			}
-			return -1;
-		}	
-		else if (nwritten == 0) {
-	        if(CFWriteStreamGetStatus(globalIPhoneXb->writeStream) == kCFStreamStatusAtEnd)
-			    break; 
-			else
-				continue;
-		}	
-		nleft -= nwritten;
-		ptr += nwritten;
-	}
-	/*printf("Write %d bytes to XmlBlaster\n", nbytes);*/
-	return (ssize_t)nbytes - nleft;
+        
+        
+        nleft = (ssize_t)nbytes;
+        while(nleft > 0) {
+                nwritten =  CFWriteStreamWrite (
+                                                                                globalIPhoneXb->writeStream,
+                                                                                (UInt8*) ptr,
+                                                                                (CFIndex) nbytes);
+                if(nwritten < 0)
+                {
+                        CFErrorRef errorRef = CFWriteStreamCopyError (globalIPhoneXb->writeStream);
+                        
+                        if(errorRef != 0)
+                        {
+                                CFStringRef stringRef = CFErrorCopyDescription(errorRef);
+                                char buff[1000];
+                                CFStringGetCString (
+                                                                        stringRef,
+                                                                        buff,
+                                                                        1000,
+                                                                        kCFStringEncodingUTF8
+                                                                        );
+                                printf("\n**************** Warning send failed, reason is  %s\n", buff);
+                                CFRelease(errorRef);
+                        }
+                        return -1;
+                }       
+                else if (nwritten == 0) {
+                if(CFWriteStreamGetStatus(globalIPhoneXb->writeStream) == kCFStreamStatusAtEnd)
+                            break; 
+                        else
+                                continue;
+                }       
+                nleft -= nwritten;
+                ptr += nwritten;
+        }
+        /*printf("Write %d bytes to XmlBlaster\n", nbytes);*/
+        return (ssize_t)nbytes - nleft;
 #else
-	ssize_t nleft, nwritten;
-	int flag = 0; /* MSG_WAITALL; */
+        ssize_t nleft, nwritten;
+        int flag = 0; /* MSG_WAITALL; */
 
-	nleft = (ssize_t)nbytes;
-	while(nleft > 0) {
-		nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
-		if (nwritten <= 0) {
-			return nwritten; /* error */
-		}
-		nleft -= nwritten;
-		ptr += nwritten;
-	}
-	return (ssize_t)nbytes - nleft;
+        nleft = (ssize_t)nbytes;
+        while(nleft > 0) {
+                nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
+                if (nwritten <= 0) {
+                        return nwritten; /* error */
+                }
+                nleft -= nwritten;
+                ptr += nwritten;
+        }
+        return (ssize_t)nbytes - nleft;
 #endif
 }
 
@@ -139,71 +139,72 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP)
 {
 #ifdef __IPhoneOS__
-	ssize_t nread;
-	ssize_t nleft;
-	nleft = (ssize_t)nbytes;
-	
-	/*
-	 while(!CFReadStreamHasBytesAvailable(globalIPhoneXb->readStream)) 
-	 {
-	 usleep(100);
-	 }
-	 */
-	while(nleft > 0) {
-		if (globalIPhoneXb->readStream == nil)
-			return -1;
-		
-		nread =  CFReadStreamRead (
-								   globalIPhoneXb->readStream,
-								   (UInt8*) ptr,
-								   (CFIndex) nleft
-								   );
-		if(nread < 0)
-		{
-			CFErrorRef errorRef = CFReadStreamCopyError (globalIPhoneXb->readStream);
-			if(errorRef != 0)
-			{
-				CFStringRef stringRef = CFErrorCopyDescription(errorRef);
-				char buff[1000];
-				CFStringGetCString (
-									stringRef,
-									buff,
-									1000,
-									kCFStringEncodingUTF8
-									);
-				printf("\n===================> Warning recv failed, nread is %d, description is '%s'\n", nread, buff);
-				
-				CFStringRef reasonRef = CFErrorCopyFailureReason (
-																  errorRef
-																  );
-				CFStringGetCString (
-									reasonRef,
-									buff,
-									1000,
-									kCFStringEncodingUTF8
-									);
-				printf("===================> Warning recv failed, reason is  %s\n", buff);
-				
-				CFRelease(errorRef);
-			}
-			return -1;
-		}
-		else if(nread == 0)
-		{
+        ssize_t nread;
+        ssize_t nleft;
+        nleft = (ssize_t)nbytes;
+        
+        /*
+         while(!CFReadStreamHasBytesAvailable(globalIPhoneXb->readStream)) 
+         {
+         usleep(100);
+         }
+         */
+        while(nleft > 0) {
+                if (globalIPhoneXb->readStream == nil)
+                        return -1;
+                
+                nread =  CFReadStreamRead (
+                                                                   globalIPhoneXb->readStream,
+                                                                   (UInt8*) ptr,
+                                                                   (CFIndex) nleft
+                                                                   );
+                if(nread < 0)
+                {
+                        CFErrorRef errorRef = CFReadStreamCopyError (globalIPhoneXb->readStream);
+                        if(errorRef != 0)
+                        {
+                                CFStringRef stringRef = CFErrorCopyDescription(errorRef);
+										  CFStringRef reasonRef = 0;
+                                char buff[1000];
+                                CFStringGetCString (
+                                                                        stringRef,
+                                                                        buff,
+                                                                        1000,
+                                                                        kCFStringEncodingUTF8
+                                                                        );
+                                printf("\n===================> Warning recv failed, nread is %u, description is '%s'\n", (unsigned int)nread, buff);
+                                
+                                reasonRef = CFErrorCopyFailureReason (
+                                                                                                                                  errorRef
+                                                                                                                                  );
+                                CFStringGetCString (
+                                                                        reasonRef,
+                                                                        buff,
+                                                                        1000,
+                                                                        kCFStringEncodingUTF8
+                                                                        );
+                                printf("===================> Warning recv failed, reason is  %s\n", buff);
+                                
+                                CFRelease(errorRef);
+                        }
+                        return -1;
+                }
+                else if(nread == 0)
+                {
              if(CFReadStreamGetStatus(globalIPhoneXb->readStream) == kCFStreamStatusAtEnd)
-				 break;
-			  else
-				 continue;
-				 
-		}
-		nleft -= nread;
-		
-		ptr += nread;
-	}
-	return (ssize_t)nbytes-nleft;
-	
+                                 break;
+                          else
+                                 continue;
+                                 
+                }
+                nleft -= nread;
+                
+                ptr += nread;
+        }
+        return (ssize_t)nbytes-nleft;
+        
 #else
-	ssize_t nread;
+        ssize_t nread;
    ssize_t nleft;
    int flag = 0; /* MSG_WAITALL; */
    nleft = (ssize_t)nbytes;

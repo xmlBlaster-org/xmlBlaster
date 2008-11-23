@@ -121,7 +121,7 @@ Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec
 Dll_Export extern const char *getCurrentTimeStr(char *timeStr, int bufSize);
 Dll_Export extern const char *getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize);
 
-#if defined(__FreeBSD__) || defined(__MacOSX__) || defined(__hpux__) || defined(__linux__)
+#if defined(__FreeBSD__) || defined(__MacOSX__) || defined(__IPhoneOS__) || defined(__hpux__) || defined(__linux__)
 #include <wchar.h>
 #endif
 Dll_Export extern char **convertWcsArgv(wchar_t **argv_wcs, int argc);

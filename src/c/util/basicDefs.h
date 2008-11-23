@@ -112,6 +112,9 @@ Note:      cl.exe (Windows) always defines _WIN32
 #   include <stdint.h>  /*-> C99:  uint64_t etc. */
 # endif
 
+  /* TODO: Change to inttypes.h: PRId64 (ld or lld) instead of PRINTF_PREFIX_INT64_T */
+  /* PRId64 as 32bit system need "%lld" and 64 bit systems need "%ld" */
+
   /* __unix __WIN64 __WIN32 */
 # if __LP64__
    /* For example a Xeon processor with UNIX */

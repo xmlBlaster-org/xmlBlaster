@@ -305,7 +305,7 @@ Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *
    this is copied from http://www.cygwin.com/ml/cygwin/2004-04/msg00532.html
    thanks to Enzo Michelangeli for this
 */
-#if defined(__FreeBSD__) || defined(__MacOSX__)
+#if defined(__FreeBSD__) || defined(__MacOSX__) || defined(__IPhoneOS__)
    /* this should actually work for other platforms... so long as they support pthreads */
 /* since this is a 6 arg format... just define that here */
 #define HAVE_FUNC_GETHOSTBYNAME_R_6
