@@ -2851,7 +2851,7 @@ TODO
            <define name="BOOST_ASSERT_CONFIG" value="1" if="BOOST" /> <!-- To get error if compiler etc is not supported -->
          </defineset>
 
-         <linker name="gcc"  if="use-gcc">
+         <linker name="g++"  if="use-gcc">
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" unless="OSX" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" unless="OSX" />
@@ -2862,10 +2862,10 @@ TODO
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" unless="OSX" />
             <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" unless="OSX" />
 
-	    <!-- Mac OSX: No rpath support Some other Unix systems have an rpath concept where a final linked image can contain a list of additional directories to use when searching for required libraries. Since Mac OS X uses full paths for libraries instead of searching, rpath is less interesting.  -->
-	    <!-- Since XCode 3.0 -rpath is supported with /usr/bin/ld, but gcc 4.0 or 4.2 does not seem to use this ld-->
-	    <!-- So you need to set:  -->
-	    <!-- export DYLD_LIBRARY_PATH=/Users/marcel/xerces-c_2_8_0-x86-macosx-gcc_4_0/lib:/Users/marcel/xmlBlaster/lib -->
+            <!-- Mac OSX: No rpath support Some other Unix systems have an rpath concept where a final linked image can contain a list of additional directories to use when searching for required libraries. Since Mac OS X uses full paths for libraries instead of searching, rpath is less interesting.  -->
+            <!-- Since XCode 3.0 -rpath is supported with /usr/bin/ld, but gcc 4.0 or 4.2 does not seem to use this ld-->
+            <!-- So you need to set:  -->
+            <!-- export DYLD_LIBRARY_PATH=/Users/marcel/xerces-c_2_8_0-x86-macosx-gcc_4_0/lib:/Users/marcel/xmlBlaster/lib -->
 
 
             <!-- TAO -->
