@@ -45,10 +45,8 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  if XB_USE_PTHREADS
 #    include <pthread.h>      /* The original pthreads.h from the OS */
 #  endif
+#  include <inttypes.h>       /* PRId64 %lld format specifier */
 #endif
-
-#include <inttypes.h> /* PRId64 %lld format specifier */
-
 
 #define  MICRO_SECS_PER_SECOND 1000000
 #define  NANO_SECS_PER_SECOND MICRO_SECS_PER_SECOND * 1000
