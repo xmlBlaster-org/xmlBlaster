@@ -408,6 +408,7 @@ static bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp clientUpd
 /** Called internally only */
 static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
+   UpdateFp myUpdate = 0;
    char *response = 0;
    if (_initialize(xa, clientUpdateFp, exception) == false) {
       return 0;
@@ -415,7 +416,11 @@ static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, XmlBlasterAc
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Invoking connect()");
 
-   response = xa->connectionP->connect(xa->connectionP, (xa->connectQos==0)?0:xa->connectQos->qos, clientUpdateFp, exception);
+   xa->clientsUpdateFp = clientUpdateFp;
+   if (xa->clientsUpdateFp != 0)
+      myUpdate = _myUpdate;
+
+   response = xa->connectionP->connect(xa->connectionP, (xa->connectQos==0)?0:xa->connectQos->qos, myUpdate, exception);
 
    if (checkPost(xa, "connect", response, exception) == false ) return 0;
 
