@@ -412,14 +412,14 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 // If recoverable we queue a msgUnit, else we throw an exception
 bool ConnectionsHandler::isRecoverable(const org::xmlBlaster::util::XmlBlasterException* reason)
 {
-	// TODO: Authorization could also be recoverable (by a server admin)
-	//       Such decision must be left to the user (we need a callback to the user here)
-	// As a default all communication problems are assumed to be recoverable
-	if (reason == 0)
-		return true;
-	bool ret = reason->isCommunication();
+        // TODO: Authorization could also be recoverable (by a server admin)
+        //       Such decision must be left to the user (we need a callback to the user here)
+        // As a default all communication problems are assumed to be recoverable
+        if (reason == 0)
+                return true;
+        bool ret = reason->isCommunication();
     if (log_.call()) log_.call(ME, "isRecoverable " + lexical_cast<string>(ret));
-	return ret;
+        return ret;
 }
 
 void ConnectionsHandler::toDead(const org::xmlBlaster::util::XmlBlasterException* reason)
@@ -747,7 +747,7 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
          catch (...) {
             XmlBlasterException ex = XmlBlasterException(INTERNAL_UNKNOWN, ME, "flushQueueUnlocked(async sending mode): can't send queued message, reason is unknown");
             log_.warn(ME, "flushQueueUnlocked(async sending mode): can't send queued message " + entry->toXml() + " to server because of unknown exception");
-            bool isHandled = sendingFailedNotification(entries, ex); // Notify client code 
+            isHandled = sendingFailedNotification(entries, ex); // Notify client code 
             if (isHandled) {
                if (log_.trace()) log_.trace(ME, "message is handled by user code, we remove it now from queue: " + entry->toXml());
             }
@@ -763,10 +763,10 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
           ret += queueToFlush->randomRemove(entries.begin(), entries.end());
       }
       if (!isHandled) {
-	      I_PostSendListener *p = postSendListener_;
-	      if (p) {
-	          p->postSend(entries);
-	      }
+              I_PostSendListener *p = postSendListener_;
+              if (p) {
+                  p->postSend(entries);
+              }
       }
    }
    return ret;
