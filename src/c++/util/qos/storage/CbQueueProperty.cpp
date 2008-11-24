@@ -74,7 +74,7 @@ using namespace org::xmlBlaster::util::qos::address;
    {
       string::iterator iter = ref.begin();
       while (iter != ref.end()) {
-         *iter = tolower(*iter);
+         *iter = (char)::tolower(*iter);
          iter++;
       }
       return ref;

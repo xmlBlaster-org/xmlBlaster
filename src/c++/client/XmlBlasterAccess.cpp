@@ -521,7 +521,6 @@ vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout
    long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
    string tempTopicOid = createTemporaryTopic(destroyDelay, maxEntries);
 
-   vector<MessageUnit> msgs;
    try {
       // Send the request ...
       // "__jms:JMSReplyTo"

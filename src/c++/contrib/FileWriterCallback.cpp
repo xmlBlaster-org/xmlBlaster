@@ -237,10 +237,9 @@ void FileWriterCallback::getChunkFilenames(std::string &fileName, std::string &s
 void FileWriterCallback::putAllChunksTogether(std::string &fileName, std::string &subDir, long expectedChunks, const char *buf, long bufSize, bool isCompleteMsg) 
 {
         log_.info(ME + "::putAllChunksTogether", "file='" + fileName + "' expectedChunks='" + lexical_cast<std::string>(expectedChunks) + "'");
-        std::string completeFileName;(directory_);
+        std::string completeFileName(directory_);
 
         if (subDir != "") {
-                completeFileName = directory_;
                 add_fn_part(completeFileName, subDir.c_str());
                 add_fn_part(completeFileName, fileName.c_str());
 #               ifdef _WIN32
@@ -252,7 +251,6 @@ void FileWriterCallback::putAllChunksTogether(std::string &fileName, std::string
                 create_directorys(completeFileName);
         }
         else {
-                completeFileName = directory_;
                 completeFileName.append(FILE_SEP).append(fileName);
         }
         
@@ -290,8 +288,8 @@ void FileWriterCallback::putAllChunksTogether(std::string &fileName, std::string
                                 log_.warn(ME, "Too many chunks belonging to '" + fileName + "' are found. They are '" + lexical_cast<std::string>(filenames.size()) + "' but should be '" + lexical_cast<std::string>(expectedChunks) + "'");
                         else if (length < expectedChunks) {
                                 std::string tmp;
-                                fstream file(completeFileName.c_str());
-                                if (file.is_open()) {
+                                fstream fileTmp(completeFileName.c_str());
+                                if (fileTmp.is_open()) {  // check if file exists
                                         log_.warn(ME, "The number of chunks is '" + lexical_cast<std::string>(filenames.size()) + "' which is less than the expected '" + lexical_cast<std::string>(expectedChunks) + "' but the file '" + completeFileName + "' exists. So we will use the exisiting file (the chunks where probably already deleted)");
                                         ::remove(lockName.c_str());
                                         return;

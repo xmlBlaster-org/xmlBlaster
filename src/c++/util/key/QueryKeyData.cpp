@@ -56,7 +56,7 @@ string QueryKeyData::checkQueryType(const string& queryType)
    // transform (tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
    string::iterator iter = tmp.begin();
    while (iter != tmp.end()) {
-      *iter = ::toupper(*iter);
+      *iter = (char)::toupper(*iter);
       iter++;
    }
 
