@@ -101,9 +101,10 @@ typedef struct QosStruct EraseQos;
 typedef struct QosStruct PingQos;
 
 
+typedef bool (*XmlBlasterAccessUpdateFp)(struct XmlBlasterAccess* xb, MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
 /* Design decision: The qos and key remain char* and not ConnectQosStruct* to simplify usage */
 /* Declare function pointers to use in struct to simulate object oriented access */
-typedef ConnectReturnQos *( * XmlBlasterAccessConnect)(struct XmlBlasterAccess *xb, const ConnectQos * connectQos, UpdateFp update, XmlBlasterException *exception);
+typedef ConnectReturnQos *( * XmlBlasterAccessConnect)(struct XmlBlasterAccess *xb, const ConnectQos * connectQos, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessDisconnect)(struct XmlBlasterAccess *xb, const DisconnectQos * disconnectQos, XmlBlasterException *exception);
 typedef PublishReturnQos *( * XmlBlasterAccessPublish)(struct XmlBlasterAccess *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
 typedef PublishReturnQosArr *( * XmlBlasterAccessPublishArr)(struct XmlBlasterAccess *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
@@ -280,7 +281,7 @@ typedef struct Dll_Export XmlBlasterAccess {
    ConnectionListenerCbFp connectionListenerCbFp;
    void *connectionListenerUserData;
 
-   UpdateFp clientsUpdateFp; /**< Remember clients callback function during polling */
+   XmlBlasterAccessUpdateFp clientsUpdateFp; /**< Remember clients callback function during polling */
 
    long pingInterval;
    long retries;

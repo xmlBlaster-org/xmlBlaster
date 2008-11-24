@@ -50,8 +50,8 @@ static bool xmlBlasterIsStateOk(ReturnQos *returnQos);
 
 static void xmlBlasterRegisterConnectionListener(struct XmlBlasterAccess *xa, ConnectionListenerCbFp cbFp, void *userData);
 
-static bool _initialize(XmlBlasterAccess *xa, UpdateFp update, XmlBlasterException *exception);
-static ConnectReturnQos *xmlBlasterConnect(XmlBlasterAccess *xa, const ConnectQos * connectQos, UpdateFp update, XmlBlasterException *exception);
+static bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
+static ConnectReturnQos *xmlBlasterConnect(XmlBlasterAccess *xa, const ConnectQos * connectQos, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * const disconnectQos, XmlBlasterException *exception);
 static PublishReturnQos *xmlBlasterPublish(XmlBlasterAccess *xa, MsgUnit *msgUnit, XmlBlasterException *exception);
 static PublishReturnQosArr *xmlBlasterPublishArr(XmlBlasterAccess *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
@@ -334,8 +334,22 @@ Dll_Export extern void freeXmlBlasterReturnQos(ReturnQos * returnQos) {
    freeXmlBlasterReturnQos_(returnQos, true);
 }
 
-static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlasterException *exception)
+/**
+ * Delegates callback to client
+ */
+static bool _myUpdate(MsgUnitArr *msgUnitArr, void *userData,
+                     XmlBlasterException *exception)
 {
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
+   XmlBlasterAccess *xb = (XmlBlasterAccess *)xa->userObject;
+   if (xb->clientsUpdateFp != 0)
+      return xb->clientsUpdateFp(xb, msgUnitArr, exception);
+   return true;
+}
+
+static bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp clientUpdateFp, XmlBlasterException *exception)
+{
+   UpdateFp myUpdate = 0;
    if (checkArgs(xa, "initialize", false, exception) == false) return false;
 
    if (xa->connectionP) {
@@ -343,6 +357,8 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
    }
 
    xa->clientsUpdateFp = clientUpdateFp;
+   if (xa->clientsUpdateFp != 0)
+      myUpdate = _myUpdate;
 
    _freeConnectionP(xa);
    xa->connectionP = getXmlBlasterAccessUnparsed(xa->argc, xa->argv);
@@ -378,7 +394,7 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
          xa->connectionP->props->getLong(xa->connectionP->props, "dispatch/connection/delay", 5000));
 
    /* Establish low level IP connection */
-   if (xa->connectionP->initialize(xa->connectionP, clientUpdateFp, exception) == false) {
+   if (xa->connectionP->initialize(xa->connectionP, myUpdate, exception) == false) {
       checkPost(xa, "initialize", 0, exception);
       return false;
    }
@@ -390,10 +406,9 @@ static bool _initialize(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlaste
 }
 
 /** Called internally only */
-static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, UpdateFp clientUpdateFp, XmlBlasterException *exception)
+static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
    char *response = 0;
-
    if (_initialize(xa, clientUpdateFp, exception) == false) {
       return 0;
    }
@@ -456,7 +471,7 @@ static void onPingPollTimeout(Timeout *timeout, void *userData, void *userData2)
 
 /** Called by user code */
 static ConnectReturnQos *xmlBlasterConnect(XmlBlasterAccess *xa, const ConnectQos * connectQos,
-                               UpdateFp clientUpdateFp, XmlBlasterException *exception)
+      XmlBlasterAccessUpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
    ConnectReturnQos *ret = 0;
    if (checkArgs(xa, "connect", false, exception) == false) return 0;
