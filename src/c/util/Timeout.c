@@ -37,28 +37,9 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp, 
 
 /* Local helper function */
 static bool _isMyThread(Timeout *timeout) {
-        /** see  long get_pthread_id(pthread_t t) */
-#if defined(_WINDOWS)
-        if (timeout == 0 ||  timeout->threadId.p == 0)
-           return false;
-        {
-        pthread_t callingThreadId = pthread_self();
-      if (callingThreadId.p == timeout->threadId.p) {
-                        return true;
-                }
-                return false;
-        }
-#else
-        if (timeout == 0 ||  timeout->threadId == 0)
-           return false;
-        {
-        pthread_t callingThreadId = pthread_self();
-      if (callingThreadId == timeout->threadId) {
-                        return true;
-                }
-                return false;
-        }
-#endif
+    if (timeout == 0 ||  timeout->threadId == 0)
+       return false;
+	return pthread_equal(pthread_self(), timeout->threadId) != 0;
 }
 
 /* Local helper function */
