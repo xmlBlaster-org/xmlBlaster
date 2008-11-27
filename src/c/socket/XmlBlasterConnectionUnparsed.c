@@ -613,24 +613,25 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 
 #ifdef __IPhoneOS__
       {
-	   CFReadStreamRef readStream = xb->readStream;
-	   if (readStream != nil) {
-              xb->readStream = nil;
-              CFReadStreamClose(readStream);
-              CFRelease(readStream);
-	   }
+         CFReadStreamRef readStream = xb->readStream;
+         if (readStream != nil) {
+                 xb->readStream = nil;
+                 CFReadStreamClose(readStream);
+                 CFRelease(readStream);
+         }
       }
       {
-	   CFWriteStreamRef writeStream = xb->writeStream;
-	   if (writeStream != nil) {
-	      xb->writeStream = nil;
-	      CFWriteStreamClose(writeStream);
-	      CFRelease(writeStream);
-	      printf("CFStreams were cosed\n");
-	   }
-       }
+         CFWriteStreamRef writeStream = xb->writeStream;
+         if (writeStream != nil) {
+            xb->writeStream = nil;
+            CFWriteStreamClose(writeStream);
+            CFRelease(writeStream);
+            xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
+                            "shutdown() CFStreams were cosed=%d", writeStream);
+         }
+      }
 #else
-      if (xb->socketToXmlBlaster != -1 && xb->socketToXmlBlaster != 0) { 
+      if (xb->socketToXmlBlaster != -1 && xb->socketToXmlBlaster != 0) {
          if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
          shutdown(xb->socketToXmlBlaster, how);
@@ -679,6 +680,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    MsgRequestInfo *requestInfoP;
    MsgRequestInfo requestInfo;
    memset(&requestInfo, 0, sizeof(MsgRequestInfo));
+   requestInfo.responseMutexIsValid = false; /* Remember when the client thread has created the mutex */
    if (data_ == 0) {
       data_ = "";
       dataLen_ = 0;

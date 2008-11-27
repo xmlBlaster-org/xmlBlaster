@@ -289,7 +289,7 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
             continue;
          }
 #ifdef __IPhoneOS__
-         if (false) { /* BADACCESS when accessing mutex later on */
+         if (true) { /* false? BADACCESS when accessing mutex later on */
 #else
          if (true) {
 #endif

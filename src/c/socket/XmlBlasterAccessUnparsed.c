@@ -387,7 +387,7 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
       return msgRequestInfoP;
 
    /* ======== Initialize threading ====== */
-   msgRequestInfoP->responseMutexIsLocked = false; /* Only to remember if the client thread holds the lock */
+   msgRequestInfoP->responseMutexIsValid = false; /* Only to remember if the client thread holds the lock */
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "preSendEvent(%s) occurred", msgRequestInfoP->methodName);
@@ -411,7 +411,7 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
-   msgRequestInfoP->responseMutexIsLocked = true; /* Only if the client thread holds the lock */
+   msgRequestInfoP->responseMutexIsValid = true; /* Only if the client thread holds the lock */
 
    return msgRequestInfoP;
 }
@@ -432,9 +432,13 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
    if (msgRequestInfoP == 0)
       return;
 
+   if (msgRequestInfoP->responseMutexIsValid == false)
+      return;
+
    if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to lock responseMutex in responseEvent() failed %d", retVal);
-      /* return; */
+      if (msgRequestInfoP->responseMutexIsValid == false)
+         return;
    }
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "responseEvent() responseMutex is LOCKED");
 
@@ -442,8 +446,13 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
    msgRequestInfoP->responseType = s->type;
 
    if ((retVal = pthread_cond_signal(&msgRequestInfoP->responseCond)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d", retVal);
-      /* return; */
+      if (retVal == EINVAL)
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d EINVAL: responseCond is not valid", retVal);
+      else if (retVal == EFAULT)
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d EFAULT: responseCond points to illegal address", retVal);
+     else
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d", retVal);
+     /*return; we need to unlock the mutex */
    }
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
@@ -469,7 +478,7 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
    struct timespec abstime;
    bool useTimeout = false;
-   int retVal;
+   int retVal, i;
 
    if (msgRequestInfoP->rollback) {
       mutexUnlock(msgRequestInfoP, exception);
@@ -511,9 +520,20 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
       }
    }
 
-   if ((retVal = pthread_cond_destroy(&msgRequestInfoP->responseCond)) != 0) {
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cond_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+   for (i=0; i<10; i++) { /* Error recovery loop */
+      if ((retVal = pthread_cond_destroy(&msgRequestInfoP->responseCond)) != 0) {
+         if (retVal == EBUSY) { /* Is in use by another thread */
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cond_destroy() for '%s()' with requestId=%s returned EBUSY=%d, we try again #%d/10",
+                msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal, i);
+            sleepMillis(10);
+            continue;
+         }
+         else {
+             xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cond_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
                  msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
+         }
+      }
+      break;
    }
 
    msgRequestInfoP->blob.dataLen = msgRequestInfoP->responseBlob.dataLen;
@@ -552,9 +572,9 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
 static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception) {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
    int retVal;
-   if (msgRequestInfoP->responseMutexIsLocked == false)
+   if (msgRequestInfoP->responseMutexIsValid == false)
       return true;
-   msgRequestInfoP->responseMutexIsLocked = false;
+   msgRequestInfoP->responseMutexIsValid = false;
    if ((retVal = pthread_mutex_unlock(&msgRequestInfoP->responseMutex)) != 0) {
       char embeddedText[XMLBLASTEREXCEPTION_MESSAGE_LEN];
       if (exception == 0) {

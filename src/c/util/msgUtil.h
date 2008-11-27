@@ -86,7 +86,7 @@ typedef struct MsgRequestInfoStruct {
    XmlBlasterBlob responseBlob;
 #ifdef XB_USE_PTHREADS
    pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
-   bool responseMutexIsLocked;
+   bool responseMutexIsValid;
    pthread_cond_t responseCond;
 #endif
    bool rollback;
