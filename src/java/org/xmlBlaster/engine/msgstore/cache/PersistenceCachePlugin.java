@@ -242,7 +242,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   try {
                      entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek((int)maxEntries, maxBytes);
                      int n = entries.size();
-                     log.info("Prefilling cache with " + n + " entries");
+                     log.info(this.storageId.getId() + " Prefilling cache with " + n + " entries");
                      synchronized(this) {
                         for(int i=0; i<n; i++) {
                            I_MapEntry cleanEntry = (I_MapEntry)entries.get(i);
