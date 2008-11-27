@@ -5,21 +5,22 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.queuemsg;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
@@ -162,7 +163,8 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
       if (this.receiver == null) {
          ArrayList list = this.msgQosData.getDestinations();
          if (list != null && list.size() >0) {
-            this.receiver = (SessionName)list.get(0);
+            Destination d = (Destination) list.get(0);
+            this.receiver = d.getDestination();
             if (list.size() > 1)
                log.warning("Ignoring other receivers with getReceiver()");
          }
