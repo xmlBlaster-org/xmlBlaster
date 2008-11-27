@@ -435,6 +435,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             // old xb_entries:
             // StorageId topicStoreId = new StorageId(glob, "topicStore",
             // glob.getStrippedId());
+            // Todo: This loads 2 entries into the cache which should be avoided
+            // as some line below getAll() gets all of them!
             this.topicStore = glob.getStoragePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
             log.info("Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
