@@ -37,7 +37,7 @@ typedef struct CallbackServerUnparsedStruct CallbackServerUnparsed;
 
 /**
  * Use this function directly after creation of the callback server
- * if you want to force to reuse the given socket for callbacks. 
+ * if you want to force to reuse the given socket for callbacks.
  *
  * @param socketToUse Usually pass -1 so that we establish a callback server, else
  *               pass an opened socket (e.g. from XmlBlasterConnectionUnparsed->socketToXmlBlaster)
@@ -55,7 +55,13 @@ typedef int (* InitCallbackServer)(CallbackServerUnparsed *cb);
 typedef bool (* IsListening)(CallbackServerUnparsed *cb);
 
 /**
- * Here we asynchronously receive the callback from xmlBlaster. 
+ * Only in pthread_detach() mode
+ */
+typedef bool (* WaitOnCallbackThreadTermination)(CallbackServerUnparsed *cb, long millis);
+typedef bool (* WaitOnCallbackThreadAlive)(CallbackServerUnparsed *cb, long millis);
+
+/**
+ * Here we asynchronously receive the callback from xmlBlaster.
  *
  * NOTE: After this call the memory of #MsgUnitArr is freed immediately by #CallbackServerUnparsed
  *       So you need to take a copy of all message members if needed out of the scope of this function.
@@ -95,7 +101,7 @@ typedef ResponseListener * ( * RemoveResponseListener)(CallbackServerUnparsed *c
 typedef void  ( * CallbackServerUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 
 /**
- * This structure holds a complete callback server instance. 
+ * This structure holds a complete callback server instance.
  *
  * The function pointers like #isListening() allow you to
  * invoke methods on this structure.
@@ -116,8 +122,10 @@ struct CallbackServerUnparsedStruct {
    XMLBLASTER_LOG_LEVEL logLevel;
    CallbackServerUnparsedLogging log;
    void *logUserP;               /**< For outside users to pass a user object back to their logging implementation */
+   WaitOnCallbackThreadAlive waitOnCallbackThreadAlive;
+   WaitOnCallbackThreadTermination waitOnCallbackThreadTermination;
    /*
-    * Is created by the client and used to validate callback messages in update. 
+    * Is created by the client and used to validate callback messages in update.
     * This is sent on connect in ConnectQos.
     * (Is different from the xmlBlaster secret session ID)
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
@@ -131,7 +139,8 @@ struct CallbackServerUnparsedStruct {
    ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
    AddResponseListener addResponseListener;
    RemoveResponseListener removeResponseListener;
-   bool isShutdown;
+   bool _threadIsAliveOnce; /**< Mark if thread is running (is never reset if once on true!) */
+   bool threadIsAlive; /**< Lifecycle of thread */
    CallbackServerUnparsedSendResponse sendResponse;
    CallbackServerUnparsedSendXmlBlasterException sendXmlBlasterException;
    CallbackServerUnparsedDoRespond sendResponseOrException;
@@ -154,7 +163,7 @@ typedef struct ListenLoopArgsStruct {
 } ListenLoopArgs;
 
 /**
- * Get a new instance of a callback server struct. 
+ * Get a new instance of a callback server struct.
  * This is usually the first call of a client, you need to call #runCallbackServer()
  * on the returned pointer to establish a listener.
  * @param argc Number of command line arguments
@@ -182,7 +191,7 @@ extern const char *callbackServerRawUsage();
 
 /**
  * Function pointer for pthread,
- * the method to invoke on thread creation. 
+ * the method to invoke on thread creation.
  */
 typedef void * (*cbFp)(void *);
 

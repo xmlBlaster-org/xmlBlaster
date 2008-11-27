@@ -159,38 +159,21 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       /* Detach or join? On Linux both work fine. On Windows it blocks sometimes forever during join */
       const bool USE_DETACH_MODE = xa->props->getBool(xa->props, "plugin/socket/detachCbThread", true);
       int retVal;
-      if (!xa->callbackP->isShutdown) {
-
-         {  /* Wait for any pending update() dispatcher threads to die */
-            int i;
-            int num = 200;
-            int interval = 10;
-            for (i=0; i<num; i++) {
-               if (xa->callbackP->isShutdown)
-                  break;
-               /*pthread_yield(0);*/
-               sleepMillis(interval);
-               if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
-                   "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for callback thread to join. %d/%d", interval, i, num);
-            }
-            if (i == num) {
-               xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Proper shutdown of callback thread failed, it seems to block on the socket");
-            }
+      if (xa->callbackP->threadIsAlive && !USE_DETACH_MODE) {
+         /* pthread_cancel() does not block. Who cleans up open resources? TODO: pthread_cleanup_push() */
+         /* On Linux all works fine without pthread_cancel() but on Windows the later pthread_join() sometimes hangs without a pthread_cancel() */
+         /*
+         retVal = pthread_cancel(xa->callbackThreadId);
+         if (retVal != 0) {
+            xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
          }
-
-         if (!USE_DETACH_MODE) {
-            /* pthread_cancel() does not block. Who cleans up open resources? TODO: pthread_cleanup_push() */
-            /* On Linux all works fine without pthread_cancel() but on Windows the later pthread_join() sometimes hangs without a pthread_cancel() */
-            /*
-            retVal = pthread_cancel(xa->callbackThreadId);
-            if (retVal != 0) {
-               xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
-            }
-            */
-         }
+         */
       }
 
       if (USE_DETACH_MODE) {
+         /* Check if above xa->callbackP->shutdown(xa->callbackP) thread has finished: */
+         /*bool hasTerminated = */xa->callbackP->waitOnCallbackThreadTermination(xa->callbackP, 2000);
+
          retVal = pthread_detach(xa->callbackThreadId); /* Frees resources (even if thread has died already), don't call multiple times on same thread! */
          if (retVal != 0) {
             xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "[%d] Detaching callback thread 0x%x failed with error number %d", __LINE__, get_pthread_id(xa->callbackThreadId), retVal);
@@ -356,7 +339,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    xa->connectionP->postSendEvent = postSendEvent;
    xa->connectionP->postSendEvent_userP = xa;
 
-   /* thread blocks on socket listener */
+   /* thread blocks on socket listener or on socket read (if useThisSocket) */
    threadRet = pthread_create(&xa->callbackThreadId, (const pthread_attr_t *)0, (void * (*)(void *))xa->callbackP->runCallbackServer, (void *)xa->callbackP);
    if (threadRet != 0) {
       strncpy0(exception->errorCode, "resource.tooManyThreads", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -368,6 +351,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       freeXmlBlasterConnectionUnparsed(&xa->connectionP);
       return false;
    }
+   /* bool hasStarted = */xa->callbackP->waitOnCallbackThreadAlive(xa->callbackP, 5000);
 
    xa->isInitialized = true;
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,

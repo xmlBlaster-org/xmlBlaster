@@ -27,6 +27,8 @@ Compile:
 #include <CoreFoundation/CFSocket.h>
 #include <XmlBlasterConnectionUnparsed.h>
 #endif
+static bool waitOnCallbackThreadAlive(CallbackServerUnparsed *cb, long millis);
+static bool waitOnCallbackThreadTermination(CallbackServerUnparsed *cb, long millis);
 static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseUdp);
 static int runCallbackServer(CallbackServerUnparsed *cb);
 static bool createCallbackServer(CallbackServerUnparsed *cb);
@@ -78,6 +80,8 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    cb->logLevel = parseLogLevel(cb->props->getString(cb->props, "logLevel", "WARN"));
    cb->log = xmlBlasterDefaultLogging;
    cb->logUserP = 0;
+   cb->waitOnCallbackThreadAlive = waitOnCallbackThreadAlive;
+   cb->waitOnCallbackThreadTermination = waitOnCallbackThreadTermination;
    cb->hostCB = strcpyAlloc(cb->props->getString(cb->props, "dispatch/callback/plugin/socket/hostname", 0));
    cb->portCB = cb->props->getInt(cb->props, "dispatch/callback/plugin/socket/port", DEFAULT_CALLBACK_SERVER_PORT);
    cb->updateCb = updateCb;
@@ -85,7 +89,8 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(ResponseListener));
    cb->addResponseListener = addResponseListener;
    cb->removeResponseListener = removeResponseListener;
-   cb->isShutdown = false;
+   cb->_threadIsAliveOnce = true;
+   cb->threadIsAlive = false;
    cb->sendResponse = voidSendResponse;
    cb->sendXmlBlasterException = voidSendXmlBlasterException;
    cb->sendResponseOrException = voidSendResponseOrException;
@@ -143,13 +148,58 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseU
    return true;
 }
 
+/**
+ * Wait after pthread_create() until thread is running.
+ * @return false if not alive after given millis
+ */
+static bool waitOnCallbackThreadAlive(CallbackServerUnparsed *cb, long millis) {
+   int i;
+   const int count = 100;
+   const int milliStep = (millis < count) ? 1 : (int)(millis / count);
+   for(i=0; i<count; i++) {
+      if (cb->_threadIsAliveOnce) {
+        return true;
+      }
+      if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+          "waitOnCallbackThreadAlive(i=%d/%d) waiting %d millis ...", i, count, milliStep);
+      sleepMillis(milliStep);
+   }
+   cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
+         "waitOnCallbackThreadAlive() failed after %d milliseconds, thread has never reached alive", millis);
+   return false;
+}
+
+/**
+ * For pthread_detached operation only (does not make sense in pthread_join() mode).
+ * @return false if not terminated after given millis
+ */
+static bool waitOnCallbackThreadTermination(CallbackServerUnparsed *cb, long millis) {
+	int i;
+	const int count = 100;
+	const int milliStep = (millis < count) ? 1 : (int)(millis / count);
+	for(i=0; i<count; i++) {
+	   if (!cb->threadIsAlive) {
+		  return true;
+	   }
+      if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+          "waitOnCallbackThreadTermination(i=%d/%d) waiting %d millis ...", i, count, milliStep);
+	   sleepMillis(milliStep);
+	}
+	cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
+	      "waitOnCallbackThreadTermination() failed after %d milliseconds, thread has not terminated, it seems to block on the socket", millis);
+	return false;
+}
+
 void freeCallbackServerUnparsed(CallbackServerUnparsed **cb_)
 {
    CallbackServerUnparsed *cb = *cb_;
    if (cb != 0) {
+      bool hasTerminated;
       shutdownCallbackServer(cb);
+      hasTerminated = cb->waitOnCallbackThreadTermination(cb, 5000);
       freeProperties(cb->props);
-      free(cb);
+      if (hasTerminated)
+    	  free(cb); /* Prefer to have a leak instead of a crash */
       *cb_ = 0;
    }
 }
@@ -221,6 +271,9 @@ static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, cons
    return (ResponseListener *)0;
 }
 
+/**
+ * Called by listenLoop when a new message has arrived.
+ */
 static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDataHolder, XmlBlasterException* xmlBlasterException, bool success) {
 
    MsgUnitArr *msgUnitArrP;
@@ -346,7 +399,14 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
 
 
 /**
- * The run method of the two threads
+ * The run method of the two threads (TCP or UDP).
+ * <p />
+ * The caller must do a pthread_join or pthread_detach to avoid leaking,
+ * <br />
+ * see freeXmlBlasterAccessUnparsed() for TCP
+ * or runCallbackServer() for UDP
+ * <p />
+ * Set cb->stopListenLoop to false to end the thread
  */
 static int listenLoop(ListenLoopArgs* ls)
 {
@@ -363,8 +423,12 @@ static int listenLoop(ListenLoopArgs* ls)
       if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
          "Going to block on socket read until a new message arrives ...");
       if (cb->stopListenLoop) break;
+      memset(&socketDataHolder, 0, sizeof(SocketDataHolder));
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException, udp);
-      if (cb->stopListenLoop) break;
+      if (cb->stopListenLoop) {
+    	  freeBlobHolderContent(&socketDataHolder.blob);
+    	  break;
+      }
       cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "%s arrived, success=%s", udp ? "UDP" : "TCP", success ? "true" : "false -> EOF");
 
       if (useUdpForOneway) {
@@ -390,10 +454,11 @@ static int listenLoop(ListenLoopArgs* ls)
 
 
 /**
- * Open a socket, this method is usually called from the new thread (see pthread_create())
- * and only leaves when the connection is lost (on EOF),
+ * Started by pthread_create(runCallbackServer).
+ * <p />
+ * Open a socket and only leaves when the connection is lost (on EOF),
  * in this case implicit pthread_exit() is called.
- *
+ * <p />
  * xmlBlaster will connect and receive callback messages.
  * @return 0 on success, 1 on error. The return value is the exit value returned by pthread_join()
  */
@@ -406,11 +471,14 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 
    bool useUdpForOneway = cb->socketUdp != -1;
 
-   cb->isShutdown = false;
+   cb->threadIsAlive = true;
+   cb->_threadIsAliveOnce = true;
 
    if (cb->listenSocket == -1) {
-      if (createCallbackServer(cb) == false)
+      if (createCallbackServer(cb) == false) {
+         cb->threadIsAlive = false;
          return 1;
+      }
    }
    else {
       if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
@@ -446,19 +514,22 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
    }
    else {
-      /* TCP only: no separate thread is needed */
-      tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
+      /* TCP only: no separate thread is needed (is called from XmlBlasterAccessUnparsed:pthread_create) */
+      tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs));
+      tcpLoop->cb = cb;
+      tcpLoop->udp = false;
       retVal = listenLoop(tcpLoop);
       free(tcpLoop);
    }
 
-   cb->isShutdown = true;
    if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
          "Callbackserver thread is dying now ...");
+   cb->threadIsAlive = false; /* cb can be freed now */
    return retVal;
 }
 
 /**
+ * Called from separate thread.
  * Is only called if we start a dedicated callback server (not tunneling
  * through the connection socket).
  * @return true The callback server is started, false on error
@@ -489,7 +560,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       if (cb->logLevel>=XMLBLASTER_LOG_WARN) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
          "Failed creating socket for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d",
             cb->hostCB, cb->portCB);
-         cb->isShutdown = true;
+         cb->threadIsAlive = false;
          return false;
    }
 
@@ -521,7 +592,6 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       if (cb->logLevel>=XMLBLASTER_LOG_WARN) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
          "Failed binding port for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d",
             cb->hostCB, cb->portCB);
-      cb->isShutdown = true;
       return false;
    }
 
@@ -532,7 +602,6 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       if (cb->logLevel>=XMLBLASTER_LOG_WARN) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
          "Failed creating listener for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d",
             cb->hostCB, cb->portCB);
-      cb->isShutdown = true;
       return false;
    }
 
@@ -548,7 +617,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
    if ((cb->acceptSocket = (int)accept(cb->listenSocket, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
       if (cb->logLevel>=XMLBLASTER_LOG_ERROR) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
          "[CallbackServerUnparsed] accept failed");
-         cb->isShutdown = true;
+         cb->threadIsAlive = false;
          return false;
    }
    if (cb->logLevel>=XMLBLASTER_LOG_INFO) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
@@ -735,7 +804,12 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
 }
 
 /**
- * Used internally only to close the socket, calling multiple times makes no harm
+ * Used internally only to close the socket, calling multiple times makes no harm.
+ * <p />
+ * Closes socket, tells listenLoop to terminate but does not wait on thread termination
+ * and does not destroy cb.
+ * <p />
+ *
  */
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
@@ -766,16 +840,6 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
    }
 
    cb->readFromSocket.numReadFuncP = 0;
-   /*
-   for(i=0; i<10; i++) {
-      if (cb->isShutdown) {
-         return;
-      }
-      if (cb->debug) printf("[CallbackServerUnparsed] Waiting for thread to die ...");
-      sleepMillis(1000);
-   }
-   printf("[CallbackServerUnparsed] WARNING: Thread has not died after 10 sec");
-   */
 }
 
 const char *callbackServerRawUsage()
