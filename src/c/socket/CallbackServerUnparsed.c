@@ -42,8 +42,8 @@ static void voidSendResponse(CallbackServerUnparsed *cb, void *socketDataHolder,
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr);
 static void voidSendXmlBlasterException(CallbackServerUnparsed *cb, void *socketDataHolder, XmlBlasterException *exception);
 static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
-static void voidSendResponseOrException(bool success, CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
-static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
+static void voidSendResponseOrException(XMLBLASTER_C_bool success, CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
+static void sendResponseOrException(XMLBLASTER_C_bool success, CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
 static void shutdownCallbackServer(CallbackServerUnparsed *cb);
 static void closeAcceptSocket(CallbackServerUnparsed *cb);
 
@@ -752,7 +752,7 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
  * A helper to cast to SocketDataHolder
  * Frees msgUnitArrP
  */
-static void voidSendResponseOrException(bool success, CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception)
+static void voidSendResponseOrException(XMLBLASTER_C_bool success, CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception)
 {
    sendResponseOrException(success, cb, (SocketDataHolder *)socketDataHolder, msgUnitArrP, exception);
 }
@@ -761,7 +761,7 @@ static void voidSendResponseOrException(bool success, CallbackServerUnparsed *cb
  * Takes care of both successful responses as well as exceptions
  * Frees msgUnitArrP
  */
-static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception)
+static void sendResponseOrException(XMLBLASTER_C_bool success, CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception)
 {
    if (! (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0)) {
       if (success == true) {

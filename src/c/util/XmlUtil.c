@@ -40,7 +40,7 @@ static void xmlBlasterExtractAttributePos(const char * const xml,
 	{
 		bool insideTag = false;
 		int i;
-		int len = strlen(xml);
+		int len = (int)strlen(xml);
 		char *startTag = strcpyAlloc("<");
 		char *attrToken = strcpyAlloc(attributeName);
 		startTag = strcatAlloc(&startTag, tag);
@@ -52,7 +52,7 @@ static void xmlBlasterExtractAttributePos(const char * const xml,
 			}
 			if (insideTag) {
 				if (startsWith(xml + i, attrToken)) {
-					int pos = i + strlen(attrToken);
+					int pos = i + (int)strlen(attrToken);
 					char apos = xml[pos];
 					int curr = 0;
 					*start = pos + 1;
@@ -128,7 +128,7 @@ Dll_Export char *xmlBlasterExtractTagValueWithAttribute(const char * const xml,
 				&startAttr, &endAttr);
 		if (startAttr >= 0) {
 			int i;
-			int len = strlen(xml);
+			int len = (int)strlen(xml);
 			for (i = endAttr; i < len; i++) {
 				if (xml[i] == '>') {
 					if (i == len - 1)
@@ -136,7 +136,7 @@ Dll_Export char *xmlBlasterExtractTagValueWithAttribute(const char * const xml,
 					{
 						const char *p = strstr(xml + i, "<");
 						int startVal = i + 1;
-						int endTag = (p == 0) ? len : len - strlen(p);
+						int endTag = (p == 0) ? len : len - (int)strlen(p);
 						int count = endTag - startVal;
 						char *ret = (char *) malloc((count + 1) * sizeof(char));
 						int j;
@@ -165,7 +165,7 @@ Dll_Export char *xmlBlasterExtractTagValue(const char * const xml,
 		if (startP != 0) {
 			int i;
 			int start = -1, end = -1;
-			int len = strlen(startP);
+			int len = (int)strlen(startP);
 			for (i = 1; i < len; i++) {
 				if (startP[i] == '>') {
 					start = i+1;
@@ -195,7 +195,7 @@ Dll_Export char *xmlBlasterExtractTagValue(const char * const xml,
 Dll_Export char* xmlBlasterEscapeXml(const char *xml) {
 	if (xml == 0)
 		return strcpyAlloc("");
-	return xmlBlasterEscapeXmlBytes(strlen(xml), xml);
+	return xmlBlasterEscapeXmlBytes((int)strlen(xml), xml);
 }
 
 Dll_Export char* xmlBlasterEscapeXmlBytes(int len, const char *bytes) {
@@ -216,25 +216,25 @@ Dll_Export char* xmlBlasterEscapeXmlBytes(int len, const char *bytes) {
 		}
 		if (bytes[i] == '&') {
 			strcat(res + pos, AMP);
-			pos += strlen(AMP)-1;
+			pos += (int)strlen(AMP)-1;
 		} else if (bytes[i] == '<') {
 			strcat(res + pos, LT);
-			pos += strlen(LT)-1;
+			pos += (int)strlen(LT)-1;
 		} else if (bytes[i] == '>') {
 			strcat(res + pos, GT);
-			pos += strlen(GT)-1;
+			pos += (int)strlen(GT)-1;
 		} else if (bytes[i] == '"') {
 			strcat(res + pos, QUOT);
-			pos += strlen(QUOT)-1;
+			pos += (int)strlen(QUOT)-1;
 		} else if (bytes[i] == '\'') {
 			strcat(res + pos, APOS);
-			pos += strlen(APOS)-1;
+			pos += (int)strlen(APOS)-1;
 		} else if (bytes[i] == '\r') {
 			strcat(res + pos, SLASH_R);
-			pos += strlen(SLASH_R)-1;
+			pos += (int)strlen(SLASH_R)-1;
 		} else if (bytes[i] == '\0') {
 			strcat(res + pos, NULL_);
-			pos += strlen(NULL_)-1;
+			pos += (int)strlen(NULL_)-1;
 		} else {
 			res[pos] = bytes[i];
 		}
@@ -248,7 +248,7 @@ Dll_Export char *xmlBlasterUnEscapeXml(char * const xml, int *newLen) {
 	*newLen = 0;
 	if (xml == 0)
 		return xml;
-	len = strlen(xml);
+	len = (int)strlen(xml);
 	pos = 0; /* new index */
 	for (i = 0; i < len; i++, pos++) {
 		if (xml[i] != '&') {
@@ -257,25 +257,25 @@ Dll_Export char *xmlBlasterUnEscapeXml(char * const xml, int *newLen) {
 		}
 		if (startsWith(xml + i, AMP)) {
 			xml[pos] = '&';
-			i += strlen(AMP) - 1;
+			i += (int)strlen(AMP) - 1;
 		} else if (startsWith(xml + i, LT)) {
 			xml[pos] = '<';
-			i += strlen(LT) - 1;
+			i += (int)strlen(LT) - 1;
 		} else if (startsWith(xml + i, GT)) {
 			xml[pos] = '>';
-			i += strlen(GT) - 1;
+			i += (int)strlen(GT) - 1;
 		} else if (startsWith(xml + i, QUOT)) {
 			xml[pos] = '"';
-			i += strlen(QUOT) - 1;
+			i += (int)strlen(QUOT) - 1;
 		} else if (startsWith(xml + i, APOS)) {
 			xml[pos] = '\'';
-			i += strlen(APOS) - 1;
+			i += (int)strlen(APOS) - 1;
 		} else if (startsWith(xml + i, SLASH_R)) {
 			xml[pos] = '\r';
-			i += strlen(SLASH_R) - 1;
+			i += (int)strlen(SLASH_R) - 1;
 		} else if (startsWith(xml + i, NULL_)) {
 			xml[pos] = '\0';
-			i += strlen(NULL_) - 1;
+			i += (int)strlen(NULL_) - 1;
 		}
 	}
 	*(xml + pos) = 0;
@@ -288,14 +288,14 @@ Dll_Export char* xmlBlasterEscapeCSV(const char *csv) {
 	char *res;
 	if (csv == 0 || *csv == 0)
 		return strcpyAlloc("");
-	len = strlen(csv);
+	len = (int)strlen(csv);
 	res = (char *) malloc(5 * len * sizeof(char));
 	memset(res, 0, 5 * len * sizeof(char));
 	pos = 0; /* new index */
 	for (i = 0; i < len; i++, pos++) {
 		if (csv[i] == ',') {
 			strcat(res + pos, COMMA);
-			pos += strlen(COMMA)-1;
+			pos += (int)strlen(COMMA)-1;
 		} else {
 			res[pos] = csv[i];
 		}
@@ -309,7 +309,7 @@ Dll_Export char *xmlBlasterUnEscapeCSV(char * const csv, int *newLen) {
 	*newLen = 0;
 	if (csv == 0)
 		return csv;
-	len = strlen(csv);
+	len = (int)strlen(csv);
 	pos = 0; /* new index */
 	for (i = 0; i < len; i++, pos++) {
 		if (csv[i] != '&') {
@@ -318,7 +318,7 @@ Dll_Export char *xmlBlasterUnEscapeCSV(char * const csv, int *newLen) {
 		}
 		if (startsWith(csv + i, COMMA)) {
 			csv[pos] = ',';
-			i += strlen(COMMA) - 1;
+			i += (int)strlen(COMMA) - 1;
 		}
 	}
 	*(csv + pos) = 0;
@@ -354,7 +354,7 @@ Dll_Export char *xmlBlasterReadBinaryFile(const char *name, int *len)
 		return 0;
 	}
 
-	*len = fread(buffer, 1, fileLen, file);
+	*len = (int)fread(buffer, 1, fileLen, file);
 	fclose(file);
 
 	return buffer;

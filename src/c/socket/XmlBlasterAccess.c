@@ -41,18 +41,18 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 static const int XBTYPE_PING=0;
 static const int XBTYPE_POLL=1;
 
-static bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
+static XMLBLASTER_C_bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
             bool checkIsConnected, XmlBlasterException *exception);
-static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
+static XMLBLASTER_C_bool checkPost(XmlBlasterAccess *xa, const char *methodName,
       void *returnObj, XmlBlasterException *exception);
 
-static bool xmlBlasterIsStateOk(ReturnQos *returnQos);
+static XMLBLASTER_C_bool xmlBlasterIsStateOk(ReturnQos *returnQos);
 
 static void xmlBlasterRegisterConnectionListener(struct XmlBlasterAccess *xa, ConnectionListenerCbFp cbFp, void *userData);
 
-static bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
+static XMLBLASTER_C_bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
 static ConnectReturnQos *xmlBlasterConnect(XmlBlasterAccess *xa, const ConnectQos * connectQos, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
-static bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * const disconnectQos, XmlBlasterException *exception);
+static XMLBLASTER_C_bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * const disconnectQos, XmlBlasterException *exception);
 static PublishReturnQos *xmlBlasterPublish(XmlBlasterAccess *xa, MsgUnit *msgUnit, XmlBlasterException *exception);
 static PublishReturnQosArr *xmlBlasterPublishArr(XmlBlasterAccess *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 static void xmlBlasterPublishOneway(XmlBlasterAccess *xa, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
@@ -61,7 +61,7 @@ static UnSubscribeReturnQosArr *xmlBlasterUnSubscribe(XmlBlasterAccess *xa, cons
 static EraseReturnQosArr *xmlBlasterErase(XmlBlasterAccess *xa, const EraseKey * eraseKey, const EraseQos * eraseQos, XmlBlasterException *exception);
 static MsgUnitArr *xmlBlasterGet(XmlBlasterAccess *xa, const GetKey * const getKey, const GetQos * getQos, XmlBlasterException *exception);
 static PingReturnQos *xmlBlasterPing(XmlBlasterAccess *xa, const PingQos * pingQos, XmlBlasterException *exception);
-static bool isConnected(XmlBlasterAccess *xa);
+static XMLBLASTER_C_bool isConnected(XmlBlasterAccess *xa);
 
 Dll_Export XmlBlasterAccess *getXmlBlasterAccess(int argc, const char* const* argv) {
    XmlBlasterAccess * const xa = (XmlBlasterAccess *)calloc(1, sizeof(XmlBlasterAccess));
@@ -197,7 +197,7 @@ static int changeConnectionStateTo(XmlBlasterAccess *xa, XBCONSTATE newState, Xm
  * </p>
  * @return true If the connection() method was invoked without exception
  */
-static bool isConnected(XmlBlasterAccess *xa)
+static XMLBLASTER_C_bool isConnected(XmlBlasterAccess *xa)
 {
    if (xa == 0 || xa->isShutdown/* || xa->connectionP == 0*/) {
       return false;
@@ -283,7 +283,7 @@ Dll_Export ReturnQosArr *createXmlBlasterReturnQosArr(QosArr * qosArr) {
    return qos;
 }
 
-static bool xmlBlasterIsStateOk(ReturnQos *returnQos) {
+static XMLBLASTER_C_bool xmlBlasterIsStateOk(ReturnQos *returnQos) {
    if (returnQos == 0) return false;
    return true; /* todo: parse qos xml markup */
 }
@@ -337,7 +337,7 @@ Dll_Export extern void freeXmlBlasterReturnQos(ReturnQos * returnQos) {
 /**
  * Delegates callback to client
  */
-static bool _myUpdate(MsgUnitArr *msgUnitArr, void *userData,
+static XMLBLASTER_C_bool _myUpdate(MsgUnitArr *msgUnitArr, void *userData,
                      XmlBlasterException *exception)
 {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
@@ -347,7 +347,7 @@ static bool _myUpdate(MsgUnitArr *msgUnitArr, void *userData,
    return true;
 }
 
-static bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp clientUpdateFp, XmlBlasterException *exception)
+static XMLBLASTER_C_bool _initialize(XmlBlasterAccess *xa, XmlBlasterAccessUpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
    UpdateFp myUpdate = 0;
    if (checkArgs(xa, "initialize", false, exception) == false) return false;
@@ -497,9 +497,9 @@ static ConnectReturnQos *xmlBlasterConnect(XmlBlasterAccess *xa, const ConnectQo
    return (ret==0) ? 0 : createXmlBlasterReturnQos(strcpyAlloc(ret->returnQos));
 }
 
-static bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * const disconnectQos, XmlBlasterException *exception)
+static XMLBLASTER_C_bool xmlBlasterDisconnect(XmlBlasterAccess *xa, const DisconnectQos * const disconnectQos, XmlBlasterException *exception)
 {
-   bool p;
+   XMLBLASTER_C_bool p;
    if (checkArgs(xa, "disconnect", true, exception) == false ) return 0;
    p = xa->connectionP->disconnect(xa->connectionP, (disconnectQos==0)?0:disconnectQos->qos, exception);
    if (checkPost(xa, "disconnect", 0, exception) == false ) return 0;
@@ -632,7 +632,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccess *xa, const GetKey * const getK
 /**
  * Post processing of remote calls: check connection status and lauch ping or poll thread.
  */
-static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
+static XMLBLASTER_C_bool checkPost(XmlBlasterAccess *xa, const char *methodName,
             void *returnObj, XmlBlasterException *exception)
 {
    /* Success: No exception */
@@ -685,7 +685,7 @@ static bool checkPost(XmlBlasterAccess *xa, const char *methodName,
    return false;
 }
 
-static bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
+static XMLBLASTER_C_bool checkArgs(XmlBlasterAccess *xa, const char *methodName,
             bool checkIsConnected, XmlBlasterException *exception)
 {
    if (xa == 0) {

@@ -379,7 +379,8 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
  */
 static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception)
 {
-   bool retVal;
+   bool retBool;
+   int retInt;
    XmlBlasterAccessUnparsed * const xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
    /* if (!strcmp(XMLBLASTER_PUBLISH_ONEWAY, msgRequestInfoP->methodName)) */
@@ -391,8 +392,8 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
                                 "preSendEvent(%s) occurred", msgRequestInfoP->methodName);
-   retVal = xa->callbackP->addResponseListener(xa->callbackP, msgRequestInfoP, responseEvent);
-   if (retVal == false) {
+   retBool = xa->callbackP->addResponseListener(xa->callbackP, msgRequestInfoP, responseEvent);
+   if (retBool == false) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Couldn't register as response listener", __FILE__, __LINE__);
@@ -404,10 +405,10 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
                   "preSendEvent(requestId=%s, msgRequestInfoP->responseBlob.dataLen=%d), entering lock",
                   msgRequestInfoP->requestIdStr, msgRequestInfoP->responseBlob.dataLen);
    pthread_mutex_init(&msgRequestInfoP->responseMutex, NULL); /* returns always 0 */
-   if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
+   if ((retInt = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] Error trying to lock responseMutex %d", __FILE__, __LINE__, retVal);
+               "[%.100s:%d] Error trying to lock responseMutex %d", __FILE__, __LINE__, retInt);
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
@@ -874,7 +875,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
  * @param container Holding all necessary informations, we free it when we are done
  * @return 0 on success, 1 on error. The return value is the exit value returned by pthread_join()
  */
-static bool runUpdate(UpdateContainer *container)
+static int runUpdate(UpdateContainer *container)
 {
    XmlBlasterAccessUnparsed *xa = container->xa;
    MsgUnitArr *msgUnitArrP = container->msgUnitArrP;
@@ -882,7 +883,7 @@ static bool runUpdate(UpdateContainer *container)
    CallbackServerUnparsed *cb = (CallbackServerUnparsed*)userData;
    XmlBlasterException *exception = &container->exception;
    SocketDataHolder *socketDataHolder = &container->socketDataHolder;
-   bool retVal;
+   XMLBLASTER_C_bool retVal;
 
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Entering runUpdate()");
 
@@ -940,7 +941,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "interceptUpdate(): Received message");
 
    if (xa->callbackMultiThreaded == false) {
-      bool ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
+      XMLBLASTER_C_bool ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
       cb->sendResponseOrException(ret, cb, socketDataHolder, msgUnitArrP, exception);
       return;
    }
@@ -981,7 +982,7 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       threadRet = pthread_create(&tid, &attr,
                         (void * (*)(void *))runUpdate, (void *)container);
       if (threadRet != 0) {
-         bool ret = false;
+         XMLBLASTER_C_bool ret = false;
          free(container);
          strncpy0(exception->errorCode, "resource.tooManyThreads", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,

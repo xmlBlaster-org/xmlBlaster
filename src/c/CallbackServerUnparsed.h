@@ -82,7 +82,7 @@ typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
 
 typedef void ( * CallbackServerUnparsedSendResponse)(CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, MsgUnitArr *msgUnitArr);
 typedef void ( * CallbackServerUnparsedSendXmlBlasterException)(CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, XmlBlasterException *exception);
-typedef void ( * CallbackServerUnparsedDoRespond)(bool success, CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
+typedef void ( * CallbackServerUnparsedDoRespond)(XMLBLASTER_C_bool success, CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
 
 #define MAX_RESPONSE_LISTENER_SIZE 100
 

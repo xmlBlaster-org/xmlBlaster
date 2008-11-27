@@ -35,7 +35,7 @@ static void myLogger(XmlBlasterLogging logUserP,
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
-
+ 
 static void myLogger(XmlBlasterLogging logUserP,
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
@@ -95,7 +95,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBl
    /*printf("dll: Register logger\n");*/
    if (logger != 0) {
       /* Register our own logging function */
-      xa->log = myLogger;
+      xa->log = (XmlBlasterLogging)myLogger;
       /* Pass a pointer which we can use in myLogger() again */
       xa->logUserP = (void*)logger;
    }
@@ -118,9 +118,9 @@ static void callbackProgressListener(void *userP, const size_t currBytesRead, co
    if (fp != 0) {
       int32_t curr = (int32_t)currBytesRead;
       int32_t n = (int32_t)nbytes;
-      printf("C-DLL: entering callbackProgressListener(fp=%ld) %d/%d\n", (long)fp, curr, n);
+      printf("C-DLL: entering callbackProgressListener(fp=%p) %d/%d\n", fp, curr, n);
       (*fp)(curr, n);
-      printf("C-DLL: done callbackProgressListener(fp=%ld) %d/%d\n", (long)fp, curr, n);
+      printf("C-DLL: done callbackProgressListener(fp=%p) %d/%d\n", fp, curr, n);
    }
 }
 /**
@@ -133,7 +133,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterProgressListener(
    if (xa && xa->callbackP != 0) {
       xa->callbackP->readFromSocket.numReadUserP = (void*)csharpProgressListenerFp;
       if (callbackProgressListener != 0) {
-         printf("C-DLL: doing xmlBlasterUnmanagedCERegisterProgressListener(csharpProgressListenerFp=%ld)\n", (long)csharpProgressListenerFp);
+         printf("C-DLL: doing xmlBlasterUnmanagedCERegisterProgressListener(csharpProgressListenerFp=%p)\n", csharpProgressListenerFp);
          xa->callbackP->readFromSocket.numReadFuncP = callbackProgressListener;
       }
       else {

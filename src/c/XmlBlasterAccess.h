@@ -47,7 +47,7 @@ extern "C" {
 struct XmlBlasterAccess;
 struct ReturnQosStruct;
 
-typedef bool ( * XmlBlasterIsStateOk)(struct ReturnQosStruct *returnQos);
+typedef XMLBLASTER_C_bool ( * XmlBlasterIsStateOk)(struct ReturnQosStruct *returnQos);
 typedef struct ReturnQosStruct {
    XmlBlasterIsStateOk isOk; /* State Info */
    char *returnQos;
@@ -101,11 +101,11 @@ typedef struct QosStruct EraseQos;
 typedef struct QosStruct PingQos;
 
 
-typedef bool (*XmlBlasterAccessUpdateFp)(struct XmlBlasterAccess* xb, MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
+typedef XMLBLASTER_C_bool (*XmlBlasterAccessUpdateFp)(struct XmlBlasterAccess* xb, MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
 /* Design decision: The qos and key remain char* and not ConnectQosStruct* to simplify usage */
 /* Declare function pointers to use in struct to simulate object oriented access */
 typedef ConnectReturnQos *( * XmlBlasterAccessConnect)(struct XmlBlasterAccess *xb, const ConnectQos * connectQos, XmlBlasterAccessUpdateFp update, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterAccessDisconnect)(struct XmlBlasterAccess *xb, const DisconnectQos * disconnectQos, XmlBlasterException *exception);
+typedef XMLBLASTER_C_bool  ( * XmlBlasterAccessDisconnect)(struct XmlBlasterAccess *xb, const DisconnectQos * disconnectQos, XmlBlasterException *exception);
 typedef PublishReturnQos *( * XmlBlasterAccessPublish)(struct XmlBlasterAccess *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
 typedef PublishReturnQosArr *( * XmlBlasterAccessPublishArr)(struct XmlBlasterAccess *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
 typedef void  ( * XmlBlasterAccessPublishOneway)(struct XmlBlasterAccess *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception);
@@ -114,7 +114,7 @@ typedef UnSubscribeReturnQosArr *( * XmlBlasterAccessUnSubscribe)(struct XmlBlas
 typedef UnSubscribeReturnQosArr *( * XmlBlasterAccessErase)(struct XmlBlasterAccess *xb, const EraseKey * eraseKey, const EraseQos * eraseQos, XmlBlasterException *exception);
 typedef MsgUnitArr *( * XmlBlasterAccessGet)(struct XmlBlasterAccess *xb, const GetKey * getKey, const GetQos * getQos, XmlBlasterException *exception);
 typedef PingReturnQos *( * XmlBlasterAccessPing)(struct XmlBlasterAccess *xb, const PingQos * pingQos, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterAccessIsConnected)(struct XmlBlasterAccess *xb);
+typedef XMLBLASTER_C_bool  ( * XmlBlasterAccessIsConnected)(struct XmlBlasterAccess *xb);
 
 typedef enum XBCONSTATE_ENUM {
    XBCONSTATE_UNDEF = -1,
