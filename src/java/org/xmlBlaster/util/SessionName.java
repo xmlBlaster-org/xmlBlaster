@@ -417,11 +417,31 @@ public final class SessionName implements java.io.Serializable {
       return guessSessionName(glob, nodeId, queueName, false);
    }
 
+   /**
+    * Not reliable.
+    * 
+    * @param glob
+    * @param nodeId
+    *           If null is extracted from queueName
+    * @param queueName
+    *           e.g. "connection_nodefrodoclientjack1" or
+    *           "connection_clientjack1"
+    * @param limitPositivePubToOneDigit
+    * @return null if no useful arguments
+    */
    public static SessionName guessSessionName(Global glob, String nodeId, String queueName,
          boolean limitPositivePubToOneDigit) {
+      if (queueName == null)
+         return null;
+      int nodePos = queueName.indexOf("_node"); // connection_nodeheronclientjack1
       int pos = queueName.indexOf("client");
       if (pos == -1)
          return null;
+      if (nodeId == null && nodePos != -1 && pos > nodePos) {
+         nodeId = queueName.substring(nodePos + "_node".length());
+         int posClient = nodeId.indexOf("client");
+         nodeId = nodeId.substring(0, posClient);
+      }
       String tail = queueName.substring(pos + "client".length());
       int len = tail.length();
       int i;
