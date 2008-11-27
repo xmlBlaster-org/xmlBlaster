@@ -284,7 +284,7 @@ public class OneToThree {
                   // nodeId = oldStorageId.getXBStore().getNode();
                   StorageId storageId = null;
                   // sn is most time null
-                  SessionName sn = entry.getSender();// entry.getMsgUnit().getQosData().getSender();
+                  SessionName sender = entry.getSender();// entry.getMsgUnit().getQosData().getSender();
                   SessionName receiver = entry.getReceiver();
                   SessionName guessed = SessionName.guessSessionName(globalOne, null, queueName,
                         limitPositivePubToOneDigit);
@@ -294,17 +294,19 @@ public class OneToThree {
                      nodeId = guessed.getNodeIdStr();
                   // else if (sn != null)
                   // nodeId = sn.getNodeIdStr();
-                  if (sn != null) {
-                     storageId = new StorageId(globalThree, nodeId, relating, sn);
-                  } else {
+                  // if (sn != null) {
+                  // storageId = new StorageId(globalThree, nodeId, relating,
+                  // sn);
+                  // } else {
                      // xb_entries.queueName="connection_clientpublisherToHeron2"
                      // --->
                      // xbstore.xbpostfix="client/publisherToHeron/2"
-                     sn = SessionName.guessSessionName(globalOne, nodeId, queueName, limitPositivePubToOneDigit);
+                  SessionName sn = SessionName.guessSessionName(globalOne, nodeId, queueName,
+                        limitPositivePubToOneDigit);
                      storageId = new StorageId(globalThree, nodeId, relating, sn);
-                  }
-                  logToFile("storageId=" + storageId.getXBStore().toString() + " from: nodeId=" + nodeId + "sn="
-                        + (sn == null ? null : sn.getAbsoluteName()) + " receiver="
+                  // }
+                  logToFile("storageId=" + storageId.getXBStore().toString() + " from: nodeId=" + nodeId + "sender="
+                        + (sender == null ? null : sender.getAbsoluteName()) + " receiver="
                         + (receiver == null ? null : receiver.getAbsoluteName()) + " guessed="
                         + (guessed == null ? null : guessed.getAbsoluteName()));
                   XBStore xbStore = getXBStore(dbAccessorClientThree, globalThree, storageId);
