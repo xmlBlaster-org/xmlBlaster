@@ -17,7 +17,6 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.engine.queuemsg.TopicEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
@@ -52,9 +51,11 @@ public class OneToThree {
    private File to_file;
    private FileOutputStream out_;
    private Map xbStoreMap = new TreeMap();
-   private int counter;
-   private int total;
+   private int processed;
+   private int totalProcessed;
+   private int numAnalysed;
    private boolean limitPositivePubToOneDigit = true;
+   private String clusterNodeToIgnore = "";
 
    private CommonTableDatabaseAccessor dbAccessorServerOne;
    private XBDatabaseAccessor dbAccessorServerThree;
@@ -69,6 +70,7 @@ public class OneToThree {
       this.serverScopeThree = serverScopeThree;
       this.globalOne = globalOne;
       this.globalThree = globalThree;
+      this.clusterNodeToIgnore = this.serverScopeOne.getProperty().get("clusterNodeToIgnore", (String) "forstw");
    }
 
    public void initConnections() throws Exception {
@@ -85,9 +87,29 @@ public class OneToThree {
       if (this.stopWatch == null)
          this.stopWatch = new StopWatch();
    }
+   
+   private boolean transferClusterNode(String nodeToTransfer) {
+      /*
+       * Inclusion filter: Does no work if having foreign cluster node clients
+       * final String clusterNodeIdToTransfer =
+       * serverScopeThree.getDatabaseNodeStr(); // "heron" if
+       * (clusterNodeIdToTransfer.equals(nodeToTransfer)) { return true; } else
+       * { return false; }
+       */
+      if (this.clusterNodeToIgnore == null || this.clusterNodeToIgnore.length() < 1)
+         return true;
+      // Exclusion filter
+      if (this.clusterNodeToIgnore.equals(nodeToTransfer)) {
+         return false;
+      }
+      else {
+         return true;
+      }
+   }
 
    public void transformServerScope() throws Exception {
       initConnections();
+      final String clusterNodeIdToTransfer = serverScopeThree.getDatabaseNodeStr();
       final String[] queueNamePatterns = { Constants.RELATING_TOPICSTORE, Constants.RELATING_MSGUNITSTORE,
             Constants.RELATING_SESSION, Constants.RELATING_SUBSCRIBE, Constants.RELATING_CALLBACK,
             Constants.RELATING_HISTORY, Constants.RELATING_SUBJECT };
@@ -95,14 +117,15 @@ public class OneToThree {
          final String relating = queueNamePatterns[i];
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
-         counter = 0;
+         processed = 0;
          logToFile("Executing query on '" + queueNamePattern + "' ...");
          dbAccessorServerOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
             public I_Entry intercept(I_Entry ent, I_Storage storage) {
+               numAnalysed++;
                try {
                   if (!ent.isPersistent()) {
                      log.info("Ignoring transient entry " + ent.getLogId());
-                     logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring transient entry "
+                     logToFile(queueNamePattern + "[counter=" + processed + "]: Ignoring transient entry "
                            + ent.getLogId());
                      return null;
                   }
@@ -111,46 +134,63 @@ public class OneToThree {
                      // clientsubscriber71
                      // New xbpostfix: "client/jack/session/1"
                      ReferenceEntry refEntry = (ReferenceEntry) ent;
-                     String nodeId = serverScopeThree.getDatabaseNodeStr();
-                     if (relating.equals(Constants.RELATING_CALLBACK) || relating.equals(Constants.RELATING_SUBJECT)) {
-                        // Reconstruct sessionName
-                        // /node/heron/client/subscriberDummy <->
-                        // clientsubscriberDummy1
-                        SessionName sn = refEntry.getReceiver();
-                        
-                        // Fix pubSessionId if it was a PtP to subject
-                        String queueName = refEntry.getStorageId().getOldPostfix();
-                        // queueName=callback_nodeheronclientsubscriberDummy1
-                        // subject_nodeheronclientsubscriberNotExist
-                        String strippedLoginName = Global.getStrippedString(sn.getLoginName());
-                        int pos = queueName.lastIndexOf(strippedLoginName);
-                        if (pos != -1) {
-                           String pubStr = queueName.substring(pos + strippedLoginName.length());
-                           if (pubStr.length() > 0) { // has pubSessionId
-                              try {
-                                 int pubSessionId = Integer.parseInt(pubStr);
-                                 sn = new SessionName(serverScopeThree, sn.getNodeId(), sn.getLoginName(), pubSessionId);
-                              } catch (NumberFormatException e) {
-                                 logToFile(queueNamePattern + "[counter=" + counter
-                                       + "]: SessionName problem queueName=" + queueName + ": " + e.toString());
-                                 e.printStackTrace();
-                              }
+                     // Reconstruct sessionName
+                     // /node/heron/client/subscriberDummy <->
+                     // clientsubscriberDummy1
+                     SessionName sn = refEntry.getReceiver();
+                     if (!transferClusterNode(sn.getNodeIdStr())) {
+                        logToFile(relating + ": Ignoring wrong cluster node '"
+                              + sn.getNodeIdStr() + "': "
+                              + sn.getAbsoluteName());
+                        return null;
+                     }
+                     // Fix pubSessionId if it was a PtP to subject
+                     String queueName = refEntry.getStorageId().getOldPostfix();
+                     // queueName=callback_nodeheronclientsubscriberDummy1
+                     // subject_nodeheronclientsubscriberNotExist
+                     String strippedLoginName = Global.getStrippedString(sn.getLoginName());
+                     int pos = queueName.lastIndexOf(strippedLoginName);
+                     if (pos != -1) {
+                        String pubStr = queueName.substring(pos + strippedLoginName.length());
+                        if (pubStr.length() > 0) { // has pubSessionId
+                           try {
+                              int pubSessionId = Integer.parseInt(pubStr);
+                              sn = new SessionName(serverScopeThree, sn.getNodeId(), sn.getLoginName(), pubSessionId);
+                           } catch (NumberFormatException e) {
+                              logToFile(queueNamePattern + "[counter=" + processed + "]: SessionName problem queueName="
+                                    + queueName + ": " + e.toString());
+                              e.printStackTrace();
                            }
                         }
-                        //logToFile(queueNamePattern + "[counter=" + counter
-                        //      + "]: queueName=" + queueName + " new=" + sn.getAbsoluteName() + " strippedLoginName=" + strippedLoginName + " oldPostfix=" + refEntry.getStorageId().getXBStore().getPostfix());
-                        refEntry.setStorageId(new StorageId(serverScopeThree, nodeId, relating, sn));
-                     } else { // Dangerous guess:
-                        String queueName = refEntry.getStorageId().getOldPostfix();
-                        SessionName sn = SessionName.guessSessionName(serverScopeOne, nodeId, queueName,
-                              limitPositivePubToOneDigit);
-                        refEntry.setStorageId(new StorageId(serverScopeThree, nodeId, relating, sn));
                      }
+                     // logToFile(queueNamePattern + "[counter=" + counter
+                     // + "]: queueName=" + queueName + " new=" +
+                     // sn.getAbsoluteName() + " strippedLoginName=" +
+                     // strippedLoginName + " oldPostfix=" +
+                     // refEntry.getStorageId().getXBStore().getPostfix());
+                     refEntry.setStorageId(new StorageId(serverScopeThree,
+                           sn.getNodeId().getId()/* clusterNodeIdToTransfer */,
+                           relating, sn));
+                     /*
+                      * } else { // Dangerous guess: String queueName =
+                      * refEntry.getStorageId().getOldPostfix(); SessionName sn
+                      * = SessionName.guessSessionName(serverScopeOne,
+                      * clusterNodeIdToTransfer, queueName,
+                      * limitPositivePubToOneDigit); refEntry.setStorageId(new
+                      * StorageId(serverScopeThree, clusterNodeIdToTransfer,
+                      * relating, sn)); }
+                      */
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, refEntry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, refEntry);
                   } else if (relating.equals(Constants.RELATING_HISTORY)) {
                      MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry) ent;
                      entry.getStorageId().getXBStore().setPostfix(entry.getKeyOid());
+                     if (!entry.getStorageId().getPostfix1().startsWith(relating + "_" + clusterNodeIdToTransfer)) {
+                        logToFile(relating + ": Ignoring wrong cluster node "
+                              + entry.getStorageId().getPostfix1()
+                              + ": " + entry.getStorageId().getId());
+                        return null;
+                     }
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   } else if (ent instanceof ReferenceEntry) {
@@ -160,53 +200,72 @@ public class OneToThree {
                   } else {
                      I_MapEntry entry = (I_MapEntry) ent;
                      if (relating.equals(Constants.RELATING_MSGUNITSTORE)) {
+                        if (!entry.getStorageId().getPostfix1().startsWith(
+                              relating + "_" + clusterNodeIdToTransfer)) {
+                           logToFile(relating + ": Ignoring wrong cluster node "
+                                 + entry.getStorageId().getPostfix1()
+                                 + ": " + entry.getStorageId().getId());
+                           return null;
+                        }
                         MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper) entry;
                         entry.getStorageId().getXBStore().setPostfix(msgUnitWrapper.getKeyOid());
                      } else if (relating.equals(Constants.RELATING_SESSION)
                            || relating.equals(Constants.RELATING_SUBSCRIBE)) {
                         // "subPersistence,1_0" to "subPersistence,1.0"
+                        // "topicStore_heron"
+                        if (!entry.getStorageId().getPostfix1().startsWith(
+                              relating + "_" + clusterNodeIdToTransfer)) {
+                           logToFile(relating + ": Ignoring wrong cluster node "
+                                 + entry.getStorageId().getPostfix1()
+                                 + ": " + entry.getStorageId().getId());
+                           return null;
+                        }
                         entry.getStorageId().getXBStore().setPostfix(
                               ReplaceVariable.replaceAll(entry.getStorageId().getXBStore().getPostfix(), "1_0", "1.0"));
                      }
                      //else if (relating.equals(Constants.RELATING_TOPICSTORE)) {
                      //   TopicEntry topicEntry = (TopicEntry)entry;
-                     //   logToFile(queueNamePattern + " [count=" + counter + "] processing topicStore " + entry.getLogId());
+                     // logToFile(queueNamePattern + " [processed=" + counter +
+                     // "] processing topicStore " + entry.getLogId());
                      //}
                      XBStore xbStore = getXBStore(dbAccessorServerThree, serverScopeThree, entry.getStorageId());
                      dbAccessorServerThree.addEntry(xbStore, entry);
                   }
-                  counter++;
-                  if ((counter % 1000) == 0)
-                     logToFile(queueNamePattern + " [count=" + counter + "] processing ...");
-                  total++;
+                  processed++;
+                  if ((processed % 1000) == 0)
+                     logToFile(queueNamePattern + " [processed=" + processed + "] processing ...");
+                  totalProcessed++;
                   return null; // Filter away so getAll returns nothing
                } catch (Throwable e) {
                   e.printStackTrace();
                   log.warning(ent.getLogId() + " Ignoring during callback queue processing exception: " + e.toString());
-                  logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring during processing exception: "
+                  logToFile(queueNamePattern + "[counter=" + processed + "]: Ignoring during processing exception: "
                         + e.toString() + " " + ent.getLogId());
                   return null; // Filter away so getAll returns nothing
                }
             }
          });
-         logToFile(queueNamePattern + " [count=" + counter + "]: Done");
+         logToFile(queueNamePattern + " [processed=" + processed + "]: Done");
       }
    }
 
    public void transformClientSide() throws Exception {
       initConnections();
+      // final String clusterNodeIdToTransfer =
+      // globalThree.getDatabaseNodeStr(); // "heron"
       String[] queueNamePatterns = { Constants.RELATING_CLIENT, Constants.RELATING_CLIENT_UPDATE };
       for (int i = 0; i < queueNamePatterns.length; i++) {
          final String queueNamePattern = queueNamePatterns[i] + "%";
          String flag = null; // "UPDATE_REF" "MSG_XML" etc.
          logToFile("Executing query on '" + queueNamePattern + "' ...");
-         counter = 0;
+         processed = 0;
          dbAccessorClientOne.getEntriesLike(queueNamePattern, flag, -1, -1, new I_EntryFilter() {
             public I_Entry intercept(I_Entry ent, I_Storage storage) {
+               numAnalysed++;
                try {
                   if (!ent.isPersistent()) {
                      log.info("Ignoring transient entry " + ent.getLogId());
-                     logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring transient entry "
+                     logToFile(queueNamePattern + "[counter=" + processed + "]: Ignoring transient entry "
                            + ent.getLogId());
                      return null;
                   }
@@ -222,38 +281,50 @@ public class OneToThree {
                   // "connection"
                   String relating = oldStorageId.getXBStore().getType();
                   // reset nodeId to ""
-                  nodeId = oldStorageId.getXBStore().getNode();
+                  // nodeId = oldStorageId.getXBStore().getNode();
                   StorageId storageId = null;
                   // sn is most time null
                   SessionName sn = entry.getSender();// entry.getMsgUnit().getQosData().getSender();
+                  SessionName receiver = entry.getReceiver();
+                  SessionName guessed = SessionName.guessSessionName(globalOne, null, queueName,
+                        limitPositivePubToOneDigit);
+                  if (receiver != null && receiver.isNodeIdExplicitlyGiven())
+                     nodeId = receiver.getNodeIdStr();
+                  else if (guessed != null && guessed.isNodeIdExplicitlyGiven())
+                     nodeId = guessed.getNodeIdStr();
+                  // else if (sn != null)
+                  // nodeId = sn.getNodeIdStr();
                   if (sn != null) {
                      storageId = new StorageId(globalThree, nodeId, relating, sn);
                   } else {
                      // xb_entries.queueName="connection_clientpublisherToHeron2"
                      // --->
                      // xbstore.xbpostfix="client/publisherToHeron/2"
-                     sn = SessionName.guessSessionName(globalOne, nodeId, queueName,
-                           limitPositivePubToOneDigit);
+                     sn = SessionName.guessSessionName(globalOne, nodeId, queueName, limitPositivePubToOneDigit);
                      storageId = new StorageId(globalThree, nodeId, relating, sn);
                   }
+                  logToFile("storageId=" + storageId.getXBStore().toString() + " from: nodeId=" + nodeId + "sn="
+                        + (sn == null ? null : sn.getAbsoluteName()) + " receiver="
+                        + (receiver == null ? null : receiver.getAbsoluteName()) + " guessed="
+                        + (guessed == null ? null : guessed.getAbsoluteName()));
                   XBStore xbStore = getXBStore(dbAccessorClientThree, globalThree, storageId);
                   entry.getStorageId().getXBStore().setPostfix(storageId.getXBStore().getPostfix());
                   dbAccessorClientThree.addEntry(xbStore, entry);
-                  counter++;
-                  if ((counter % 1000) == 0)
-                     logToFile(queueNamePattern + " [count=" + counter + "] processing ...");
-                  total++;
+                  processed++;
+                  if ((processed % 1000) == 0)
+                     logToFile(queueNamePattern + " [processed=" + processed + "] processing ...");
+                  totalProcessed++;
                   return null; // Filter away so getAll returns nothing
                } catch (Throwable e) {
                   e.printStackTrace();
                   log.warning(ent.getLogId() + " Ignoring during callback queue processing exception: " + e.toString());
-                  logToFile(queueNamePattern + "[counter=" + counter + "]: Ignoring during processing exception: "
+                  logToFile(queueNamePattern + "[counter=" + processed + "]: Ignoring during processing exception: "
                         + e.toString() + " " + ent.getLogId());
                   return null; // Filter away so getAll returns nothing
                }
             }
          });
-         logToFile(queueNamePattern + " [count=" + counter + "]: Done");
+         logToFile(queueNamePattern + " [processed=" + processed + "]: Done");
       }
    }
 
@@ -293,7 +364,7 @@ public class OneToThree {
    }
 
    public void createReportFile() throws Exception {
-      String reportFileName = "OneToThree-report.log";
+      String reportFileName = "OneToThree-report-" + serverScopeOne.getNodeId() + ".log";
       to_file = new File(reportFileName);
       if (to_file.getParent() != null) {
          to_file.getParentFile().mkdirs();
@@ -314,8 +385,9 @@ public class OneToThree {
       int sec = (int) (stopWatch.elapsed() / 1000);
       if (sec < 1)
          sec = 1;
-      int avg = total / sec;
-      String str = "Total processed=" + total + " " + stopWatch.nice() + " average=" + avg + " messages/sec\n"
+      int avg = totalProcessed / sec;
+      String str = "Total analyzed=" + numAnalysed + ", total processed=" + totalProcessed + " " + stopWatch.nice()
+            + " average=" + avg + " messages/sec\n"
             + "See reporting in '" + to_file.getAbsolutePath() + "'";
       try {
          logToFile(str);
@@ -376,6 +448,8 @@ public class OneToThree {
    }
 
    public void wipeOutThree() throws Exception {
+      logToFile("one-cluster.node.id=" + serverScopeOne.getNodeId() + " three-cluster.node.id="
+            + serverScopeThree.getNodeId());
       boolean interactive = globalOne.getProperty().get("interactive", true);
       if (interactive) {
          int ret = Global.waitOnKeyboardHit("Do you really want to destroy XBSTORE/XBREF/XBMEAT ? <y>");
