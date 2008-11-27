@@ -37,7 +37,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp, 
 
 /* Local helper function */
 static bool _isMyThread(Timeout *timeout) {
-    if (timeout == 0 ||  timeout->threadId == 0)
+    if (timeout == 0/* ||  timeout->threadId == 0*/)
        return false;
 	return pthread_equal(pthread_self(), timeout->threadId) != 0;
 }
