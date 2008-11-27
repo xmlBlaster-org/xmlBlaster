@@ -59,6 +59,10 @@ public class XBStore {
     */
    public XBStore(String node, String type, String postfix) {
       super();
+      if (node != null && node.startsWith("/node/"))
+         node = node.substring("/node/".length()); // XmlBlasterAccess delivers
+                                                   // traditionally absolute
+                                                   // name
       this.node = node;
       this.type = type;
       this.postfix = postfix;
@@ -153,9 +157,13 @@ public class XBStore {
    public void setPostfix(String postfix) {
       this.postfix = postfix;
    }
+   
+   public String getLogId() {
+      return "node=" + getNode() + " type=" + getType() + " postfix=" + getPostfix();
+   } 
 
    public String toString() {
-      return getType() + ":" + getNode() + getPostfix();
+      return getLogId();// getType() + ":" + getNode() + getPostfix();
    }
 
    /**
