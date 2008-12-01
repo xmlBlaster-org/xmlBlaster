@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.I_QueueEntry;
 
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
@@ -242,7 +241,7 @@ public abstract class XBFactory extends XBFactoryBase {
    private final static boolean useString = true;
    private final static boolean useString2 = false;
    private final static boolean useBinary = false;
-   private final static boolean useCharacter = false;
+   // private final static boolean useCharacter = false;
 
    /**
     * String/VARCHAR/CLOB helper to avoid NULL and to take care on Umlauts/UTF-8
@@ -339,7 +338,8 @@ public abstract class XBFactory extends XBFactoryBase {
     * An example of prefix:
     * "delete from tableName where dataId in(";
     */
-   protected final List whereInStatement(String reqPrefix, XBEntry[] entries, int maxStatementLength, int maxNumStatements) {
+   protected final List<String> whereInStatement(String reqPrefix, XBEntry[] entries, int maxStatementLength,
+         int maxNumStatements) {
       final String reqPostfix = ")";
       boolean isFirst = true;
       int initialLength = reqPrefix.length() + reqPostfix.length() + 2;
@@ -347,7 +347,7 @@ public abstract class XBFactory extends XBFactoryBase {
       int length = initialLength;
       int currentLength = 0;
 
-      List ret = new ArrayList();
+      List<String> ret = new ArrayList<String>();
       int count = 0;
       for (int i=0; i<entries.length; i++) {
          String req = null;
@@ -401,7 +401,7 @@ public abstract class XBFactory extends XBFactoryBase {
     */
    public long deleteList(XBStore store, Connection conn, XBEntry[] entries, int maxStLength, int maxNumSt, boolean commitInBetween, int timeout) throws SQLException {
       String reqPrefix = deleteCompleteSt + " where xbstoreid=" + store.getId() + " " + inList;
-      List reqList = whereInStatement(reqPrefix, entries, maxStLength, maxNumSt);
+      List<String> reqList = whereInStatement(reqPrefix, entries, maxStLength, maxNumSt);
       commitInBetween = commitInBetween && !conn.getAutoCommit();
       long sum = 0;
       try {
@@ -480,10 +480,11 @@ public abstract class XBFactory extends XBFactoryBase {
     * error occurs it stops.
     * 
     */
-   public List/*<XBEntry>*/ getList(XBStore store, Connection conn, XBEntry[] entries, int maxStLength, int maxNumSt, int timeout) throws SQLException, IOException {
+   public List<XBEntry> getList(XBStore store, Connection conn, XBEntry[] entries, int maxStLength, int maxNumSt,
+         int timeout) throws SQLException, IOException {
       String reqPrefix = getCompleteSt + " where xbstoreid=" + store.getId() + " " + inList;
-      List ret = new ArrayList();
-      List reqList = whereInStatement(reqPrefix, entries, maxStLength, maxNumSt);
+      List<XBEntry> ret = new ArrayList<XBEntry>();
+      List<String> reqList = whereInStatement(reqPrefix, entries, maxStLength, maxNumSt);
       try {
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
@@ -509,48 +510,6 @@ public abstract class XBFactory extends XBFactoryBase {
    }
    
    protected abstract long getByteSize(ResultSet rs, int offset) throws SQLException;
-   
-   /**
-    * @param store
-    * @param conn
-    * @param numOfEntries
-    * @param numOfBytes
-    * @param timeout
-    * @return
-    * @throws SQLException
-    */
-   public List/*<XBEntry>*/ getFirstEntries(XBStore store, Connection conn, long numOfEntries, long numOfBytes, int timeout)
-      throws SQLException, IOException {
-      PreparedStatement ps = null;
-      try {
-         ps = conn.prepareStatement(getFirstEntriesSt);
-         if (numOfEntries != -1)
-            ps.setMaxRows((int)numOfEntries);
-         boolean storeMustBeSet = getFirstEntriesSt.indexOf('?') > -1;
-         if (storeMustBeSet)
-            ps.setLong(1, store.getId());
-      
-         ResultSet rs = ps.executeQuery();
-         long countEntries = 0L;
-         long countBytes = 0L;
-         List list = new ArrayList();
-         while ( (rs.next()) && ((countEntries < numOfEntries) || (numOfEntries < 0)) &&
-               ((countBytes < numOfBytes) || (numOfBytes < 0))) {
-            long byteSize = getByteSize(rs, 0);
-            if ( (numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
-               XBEntry entry = rsToEntry(store, rs);
-               list.add(entry);
-               countBytes += byteSize;
-               countEntries++;
-            }
-         }
-         return list;
-      }
-      finally {
-         if (ps != null)
-            ps.close();
-      }
-   }
    
    /**
     * Gets the real number of entries. 

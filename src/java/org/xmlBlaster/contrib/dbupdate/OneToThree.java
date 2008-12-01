@@ -50,7 +50,7 @@ public class OneToThree {
    private Global globalThree;
    private File to_file;
    private FileOutputStream out_;
-   private Map xbStoreMap = new TreeMap();
+   private Map<String, XBStore> xbStoreMap = new TreeMap<String, XBStore>();
    private int processed;
    private int totalProcessed;
    private int numAnalysed;
@@ -274,7 +274,7 @@ public class OneToThree {
                   // "heron"
                   String nodeId = globalThree.getDatabaseNodeStr();
                   // MethodName: "publish", "subscribe"
-                  String relatingType = entry.getEmbeddedType();
+                  // String relatingType = entry.getEmbeddedType();
                   // "connection_clientsubscriber1"
                   String queueName = entry.getStorageId().getOldPostfix();
                   StorageId oldStorageId = StorageId.valueOf(globalOne, queueName);

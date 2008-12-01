@@ -16,7 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -28,8 +29,8 @@ import org.xmlBlaster.contrib.I_Info;
  */
 
 public class XBMeatFactory extends XBFactory {
-   private final static Logger log = Logger
-         .getLogger(XBMeatFactory.class.getName());
+   // private final static Logger log =
+   // Logger.getLogger(XBMeatFactory.class.getName());
 
    private final static int ID = 1;
    private final static int DURABLE = 2;
@@ -440,7 +441,7 @@ public class XBMeatFactory extends XBFactory {
       return xbMeat;
    }
 
-   protected XBEntry rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
+   protected XBMeat rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
       return buildFromRs(rs, 0);
    }
 
@@ -476,7 +477,48 @@ public class XBMeatFactory extends XBFactory {
 
       return xbMeat;
    }
+   
+   /**
+    * @param store
+    * @param conn
+    * @param numOfEntries
+    * @param numOfBytes
+    * @param timeout
+    * @return
+    * @throws SQLException
+    */
+   public List<XBMeat> getFirstMeatEntries(XBStore store, Connection conn, long numOfEntries, long numOfBytes,
+         int timeout) throws SQLException, IOException {
+      PreparedStatement ps = null;
+      try {
+         ps = conn.prepareStatement(getFirstEntriesSt);
+         if (numOfEntries != -1)
+            ps.setMaxRows((int) numOfEntries);
+         boolean storeMustBeSet = getFirstEntriesSt.indexOf('?') > -1;
+         if (storeMustBeSet)
+            ps.setLong(1, store.getId());
 
+         ResultSet rs = ps.executeQuery();
+         long countEntries = 0L;
+         long countBytes = 0L;
+         List<XBMeat> list = new ArrayList<XBMeat>();
+         while ((rs.next()) && ((countEntries < numOfEntries) || (numOfEntries < 0))
+               && ((countBytes < numOfBytes) || (numOfBytes < 0))) {
+            long byteSize = getByteSize(rs, 0);
+            if ((numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
+               XBMeat entry = rsToEntry(store, rs);
+               list.add(entry);
+               countBytes += byteSize;
+               countEntries++;
+            }
+         }
+         return list;
+      } finally {
+         if (ps != null)
+            ps.close();
+      }
+   }
+   
    protected long getByteSize(ResultSet rs, int offset) throws SQLException {
       return rs.getLong(BYTE_SIZE + offset);
    }

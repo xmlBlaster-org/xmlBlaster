@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -1202,7 +1203,8 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
     * @param numOfEntries the maximum number of entries to process
     *
     */
-   private final ReturnDataHolder processResultSetForDeleting(ResultSet rs, int numOfEntries, long numOfBytes)
+   private final ReturnDataHolder processResultSetForDeleting(ResultSet rs, int numOfEntries, long numOfBytes,
+         List<Long> retL)
       throws SQLException, XmlBlasterException {
 
       if (log.isLoggable(Level.FINER)) log.finer("processResultSetForDeleting invoked");
@@ -1212,7 +1214,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
          ((ret.countBytes < numOfBytes) || (numOfBytes < 0))) {
          currentAmount = rs.getLong(2);
          if ( (numOfBytes < 0) || (ret.countBytes+currentAmount < numOfBytes) || (ret.countEntries == 0)) {
-            ret.list.add(new Long(rs.getLong(1)));
+            retL.add(new Long(rs.getLong(1)));
             ret.countBytes += currentAmount;
             ret.countEntries++;
          }
@@ -1481,7 +1483,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
             if (stillEntriesInQueue) stillEntriesInQueue = rs.next();
             if ((!stillEntriesInQueue) && (ret.list.size()>0)) {
                ret.countEntries--;
-               I_Entry entryToDelete = (I_Entry)ret.list.remove(ret.list.size()-1);
+               I_Entry entryToDelete = ret.list.remove(ret.list.size() - 1);
                ret.countBytes -= entryToDelete.getSizeInBytes();
                boolean persistent = entryToDelete.isPersistent();
                if (persistent) {
@@ -1496,7 +1498,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
             //first strip the unique ids:
             long[] uniqueIds = new long[ret.list.size()];
             for (int i=0; i < uniqueIds.length; i++)
-               uniqueIds[i] = ((I_Entry)ret.list.get(i)).getUniqueId();
+               uniqueIds[i] = (ret.list.get(i)).getUniqueId();
             String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND " + this.dataIdColName + " in(";
             ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
             for (int i=0; i < reqList.size(); i++) {
@@ -1821,13 +1823,15 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
          String req = "select " + this.dataIdColName + "," + this.byteSizeColName + " from " + this.entriesTableName + " WHERE queueName='" + queueName + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
          query = new PreparedQuery(pool, req, false, -1);
          // I only want the uniqueId (dataId)
-         ret = processResultSetForDeleting(query.rs, (int)numOfEntries, amount);
+         List<Long> retL = new ArrayList<Long>();
+         ret = processResultSetForDeleting(query.rs, (int) numOfEntries, amount, retL);
 
-         int nmax = ret.list.size();
+         int nmax = retL.size();
          if (nmax < 1) return ret;
 
          long[] uniqueIds = new long[nmax];
-         for (int i=0; i < nmax; i++) uniqueIds[i] = ((Long)ret.list.get(i)).longValue();
+         for (int i = 0; i < nmax; i++)
+            uniqueIds[i] = (retL.get(i)).longValue();
 
          ArrayList reqList = whereInStatement("delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND " + this.dataIdColName + " in(", uniqueIds);
          ret.countEntries = 0L;

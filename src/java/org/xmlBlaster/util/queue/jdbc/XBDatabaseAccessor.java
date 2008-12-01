@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -146,7 +147,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
    private static Logger log = Logger.getLogger(XBDatabaseAccessor.class.getName());
    private I_DbPool pool;
    private I_EntryFactory factory;
-   private WeakHashMap listener;
+   private WeakHashMap<I_StorageProblemListener, String> listener;
 
    private XBStoreFactory storeFactory;
    private XBMeatFactory meatFactory;
@@ -224,7 +225,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
           return false;
        }
        this.factory  = global.getEntryFactory();
-       this.listener = new WeakHashMap();
+       this.listener = new WeakHashMap<I_StorageProblemListener, String>();
 
        QueueGlobalInfo globalInfo = new QueueGlobalInfo();
        globalInfo.init(global, plugInfo);
@@ -875,7 +876,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * Cleans up the specified queue. It deletes all queue entries in the 'entries' table.
     * @return the number of queues deleted (not the number of entries).
     */
-   public final int cleanUp(XBStore store) throws XmlBlasterException {
+   public int cleanUp(XBStore store) throws XmlBlasterException {
 
       if (!isConnected) {
          if (log.isLoggable(Level.FINE))
@@ -1119,7 +1120,8 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          ReturnDataHolder ret = null;
          ret = refFactory.getAndDeleteLowest(store, conn, numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, doDelete, maxStatementLength, maxNumStatements, timeout);
          final I_EntryFilter filter = null;
-         ret.list = (ArrayList)createEntries(store, null, ret.list, filter, storage);
+         ret.list = (ArrayList<I_Entry>) createEntries(store, null, ret.refList, filter, storage);
+         ret.refList = null;
          success = true;
          return ret;
       }
@@ -1155,7 +1157,6 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     */
    public void deleteStore(long storeId) throws XmlBlasterException {
       Connection conn = null;
-      long ret = 0L;
       boolean success = false;
       try {
          conn = pool.reserve();
@@ -1292,8 +1293,8 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(false);
-         List/*<XBRef>*/ tmp = refFactory.getFirstEntries(store, conn, numOfEntries, -1L, timeout);
-         XBRef[] refs = (XBRef[])tmp.toArray(new XBRef[tmp.size()]);
+         List<XBRef> tmp = refFactory.getFirstRefEntries(store, conn, numOfEntries, -1L, timeout);
+         XBRef[] refs = tmp.toArray(new XBRef[tmp.size()]);
          XBMeat[] meats = null;
          for (int i=0; i < refs.length; i++) {
             if (meats != null) {
@@ -1334,7 +1335,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * @param maxPrio the maximum priority to retrieve (inclusive).
     *
     */
-   public List/*<I_Entry>*/ getEntriesByPriority(XBStore store, int numOfEntries,
+   public List<I_Entry> getEntriesByPriority(XBStore store, int numOfEntries,
                              long numOfBytes, int minPrio, int maxPrio)
       throws XmlBlasterException {
 
@@ -1349,10 +1350,11 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          conn = pool.reserve();
          conn.setAutoCommit(true);
          final boolean onlyId = false;
-         List ret = refFactory.getEntriesByPriority(store, conn, numOfEntries, numOfBytes, minPrio, maxPrio, onlyId);
+         List<XBRef> refList = refFactory.getEntriesByPriority(store, conn, numOfEntries, numOfBytes, minPrio, maxPrio,
+               onlyId);
          final I_Storage storage = null;
          final I_EntryFilter filter = null;
-         ret = createEntries(store, null, ret, filter, storage);
+         List<I_Entry> ret = createEntries(store, null, refList, filter, storage);
          return ret;
       }
       catch (Throwable ex) {
@@ -1375,7 +1377,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public List/*<XBRef>*/ getEntriesBySamePriority(XBStore store, int numOfEntries, long numOfBytes)
+   public List<I_Entry> getEntriesBySamePriority(XBStore store, int numOfEntries, long numOfBytes)
       throws XmlBlasterException {
 
       if (!this.isConnected) {
@@ -1388,11 +1390,10 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         List ret = refFactory.getEntriesBySamePriority(store, conn, numOfEntries, numOfBytes);
+         List<XBRef> refList = refFactory.getEntriesBySamePriority(store, conn, numOfEntries, numOfBytes);
          final I_Storage storage = null;
          final I_EntryFilter filter = null;
-         ret = createEntries(store, null, ret, filter, storage);
-         return ret;
+         return createEntries(store, null, refList, filter, storage);
       }
       catch (Throwable ex) {
          success = false;
@@ -1405,7 +1406,8 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       }
    }
    
-   public List/*<I_Entry>*/ getRefEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter, I_Storage storage, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+   public List<I_Entry> getRefEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter,
+         I_Storage storage, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
          return null;
@@ -1416,9 +1418,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         List /*<XBEntry>*/ ret = null;
-         ret = refFactory.getFirstRefEntriesStartAt(store, conn, numOfEntries, numOfBytes, timeout, firstEntryExlusive);
-         ret = createEntries(store, null, ret, entryFilter, storage);
+         List<XBRef> refList = refFactory.getFirstRefEntriesStartAt(store, conn, numOfEntries, numOfBytes, timeout,
+               firstEntryExlusive);
+         List<I_Entry> ret = createEntries(store, null, refList, entryFilter, storage);
          return ret;
       }
       catch (Throwable ex) {
@@ -1442,7 +1444,8 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     * @param numOfEntries Access num entries, if -1 access all entries currently found
     * @param numOfBytes is the maximum size in bytes of the array to return, -1 is unlimited .
     */
-   public List/*<I_Entry>*/ getEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter, boolean isRef, I_Storage storage) throws XmlBlasterException {
+   public List<I_Entry> getEntries(XBStore store, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter,
+         boolean isRef, I_Storage storage) throws XmlBlasterException {
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
          return null;
@@ -1453,16 +1456,14 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       try {
          conn = pool.reserve();
          conn.setAutoCommit(true);
-         List /*<XBEntry>*/ ret = null;
          if (isRef) {
-            ret = refFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
-            ret = createEntries(store, null, ret, entryFilter, storage);
+            List<XBRef> ret = refFactory.getFirstRefEntries(store, conn, numOfEntries, numOfBytes, timeout);
+            return createEntries(store, null, ret, entryFilter, storage);
          }
          else {
-            ret = meatFactory.getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
-            ret = createEntries(store, ret, null, entryFilter, storage);
+            List<XBMeat> ret = meatFactory.getFirstMeatEntries(store, conn, numOfEntries, numOfBytes, timeout);
+            return createEntries(store, ret, null, entryFilter, storage);
          }
-         return ret;
       }
       catch (Throwable ex) {
          success = false;
@@ -1496,7 +1497,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
     *
     * @param numOfEntries the maximum number of elements to retrieve
     */
-   public List/*<XBEntry[]>*/ getEntriesWithLimit(XBStore store, I_Entry limitEntry, I_Storage storage)
+   public List<I_Entry> getEntriesWithLimit(XBStore store, I_Entry limitEntry, I_Storage storage)
       throws XmlBlasterException {
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) 
@@ -1510,9 +1511,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          conn = pool.reserve();
          conn.setAutoCommit(true);
          XBRef limitRef = limitEntry.getRef();
-         List list = refFactory.getWithLimit(store, conn, limitRef);
+         List<XBRef> list = refFactory.getWithLimit(store, conn, limitRef);
          final I_EntryFilter filter = null;
-         return createEntries(store, (List)null, list, filter, storage);
+         return createEntries(store, (List<XBMeat>) null, list, filter, storage);
       }
       catch (Throwable ex) {
          success = false;
@@ -1556,13 +1557,34 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       }
 
    }
+   
+   private List<XBRef> getRefList(XBStore store, Connection conn, XBRef[] refs, int maxStLength, int maxNumSt,
+         int timeout)
+         throws SQLException, IOException {
+      List<XBEntry> list = refFactory.getList(store, conn, refs, maxStatementLength, maxNumStatements, timeout);
+      List<XBRef> retRef = new ArrayList<XBRef>(list.size());
+      for (XBEntry xbEntry : list) {
+         retRef.add((XBRef) xbEntry);
+      }
+      return retRef;
+   }
 
+   private List<XBMeat> getMeatList(XBStore store, Connection conn, XBMeat[] refs, int maxStLength, int maxNumSt,
+         int timeout)
+         throws SQLException, IOException {
+      List<XBEntry> list = meatFactory.getList(store, conn, refs, maxStatementLength, maxNumStatements, timeout);
+      List<XBMeat> retMeat = new ArrayList<XBMeat>(list.size());
+      for (XBEntry xbEntry : list) {
+         retMeat.add((XBMeat) xbEntry);
+      }
+      return retMeat;
+   }
 
    /**
     * gets all the entries which have the dataid specified in the argument list.
     * If the list is empty or null, an empty ArrayList object is returned.
     */
-   public List/*<XBEntry>*/ getEntries(XBStore store, XBRef[] refs, XBMeat[] meats)
+   public List<I_Entry> getEntries(XBStore store, XBRef[] refs, XBMeat[] meats)
       throws XmlBlasterException {
 
       if (!this.isConnected) {
@@ -1576,15 +1598,17 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          conn = pool.reserve();
          conn.setAutoCommit(true);
          
-         List retRef = null;
-         List retMeat = null;
-         if (refs != null)
-            retRef = refFactory.getList(store, conn, refs, maxStatementLength, maxNumStatements, timeout);
-         else
-            retMeat = meatFactory.getList(store, conn, meats, maxStatementLength, maxNumStatements, timeout);
+         List<XBRef> retRef = null;
+         List<XBMeat> retMeat = null;
+         if (refs != null) {
+            retRef = getRefList(store, conn, refs, maxStatementLength, maxNumStatements, timeout);
+         }
+         else {
+            retMeat = getMeatList(store, conn, meats, maxStatementLength, maxNumStatements, timeout);
+         }
          final I_Storage storage = null;
          final I_EntryFilter filter = null;
-         List ret = createEntries(store, retMeat, retRef, filter, storage);
+         List<I_Entry> ret = createEntries(store, retMeat, retRef, filter, storage);
          return ret;
       }
       catch (Throwable ex) {
@@ -1672,7 +1696,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       if (properties != null) {
          java.util.Enumeration enumer = properties.keys();
          while (enumer.hasMoreElements()) {
-            String key =(String)enumer.nextElement();
+            String key = (String) enumer.nextElement();
             ownProperties.put(key, properties.getProperty(key));
          }
       }
@@ -1692,7 +1716,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          XBDatabaseAccessor queueFactory = (useXBDatabaseAccessorDelegate) ? new XBDatabaseAccessorDelegate()
                : new XBDatabaseAccessor();
          queueFactory.initFactory(glob, pluginInfo);
-         final boolean deleteAllTransients = false; // TODO check if this is correct
+         final boolean deleteAllTransients = false;
          queueFactory.setUp(deleteAllTransients);
          return queueFactory;
       }
@@ -1755,7 +1779,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       return factory.createEntry(store, meat, ref);
    }
    
-   private List createEntries(XBStore store, List/*<XBMeat>*/ meatList, List/*<XBRef>*/ refList, I_EntryFilter filter, I_Storage storage) throws XmlBlasterException {
+   private List<I_Entry> createEntries(XBStore store, List<XBMeat> meatList, List<XBRef> refList,
+         I_EntryFilter filter,
+         I_Storage storage) throws XmlBlasterException {
       if (meatList != null && refList != null && meatList.size() != refList.size())
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, ".createEntries: wrong number of entries : meat " + meatList.size() + " and ref " + refList.size() + " but should be the same for both");
       int nmax = 0;
@@ -1764,7 +1790,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       else if (refList != null)
          nmax = refList.size();
          
-      List ret = new ArrayList();
+      List<I_Entry> ret = new ArrayList<I_Entry>();
       for (int i=0; i < nmax; i++) {
          XBMeat meat = null;
          XBRef ref = null;

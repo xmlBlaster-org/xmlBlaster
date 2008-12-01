@@ -376,12 +376,12 @@ public class ServerEntryFactory implements I_EntryFactory
    }
    
 
-   private Map getCSV(String csv) {
-      Map map = null;
+   private Map<String, String> getCSV(String csv) {
+      Map<String, String> map = null;
       if (csv != null)
          map = StringPairTokenizer.CSVToMap(csv);
       else
-         map = new HashMap/*<String,String>*/();
+         map = new HashMap<String, String>();
       return map;
    }
 
@@ -397,7 +397,7 @@ public class ServerEntryFactory implements I_EntryFactory
       String type = store.getType();
       long timestamp = 0L;
       
-      Map metaInfoMap = null;
+      Map<String, String> metaInfoMap = null;
       if (ref != null) {
          timestamp = ref.getId();
          metaInfoMap = getCSV(ref.getMetaInfo());
@@ -412,7 +412,7 @@ public class ServerEntryFactory implements I_EntryFactory
       }
 
       if (metaInfoMap == null) {
-         metaInfoMap = new HashMap/* <String,String> */();
+         metaInfoMap = new HashMap<String, String>();
       }
 
       if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) { // still used

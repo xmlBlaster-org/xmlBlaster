@@ -297,7 +297,7 @@ public class XBRefFactory extends XBFactory {
       }
    }
 
-   protected XBEntry rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
+   protected XBRef rsToEntry(XBStore store, ResultSet rs) throws SQLException, IOException {
       XBRef xbRef = new XBRef();
       xbRef.setId(rs.getLong(REF_ID));
       xbRef.setStoreId(rs.getLong(STORE_ID));
@@ -319,11 +319,46 @@ public class XBRefFactory extends XBFactory {
       }
       return xbRef;
    }
+   
+   public List<XBRef> getFirstRefEntries(XBStore store, Connection conn, long numOfEntries, long numOfBytes, int timeout)
+         throws SQLException, IOException {
+      PreparedStatement ps = null;
+      try {
+         ps = conn.prepareStatement(getFirstEntriesSt);
+         if (numOfEntries != -1)
+            ps.setMaxRows((int) numOfEntries);
+         boolean storeMustBeSet = getFirstEntriesSt.indexOf('?') > -1;
+         if (storeMustBeSet)
+            ps.setLong(1, store.getId());
 
-   public List/*<XBEntry>*/ getFirstRefEntriesStartAt(XBStore store, Connection conn, long numOfEntries, long numOfBytes, int timeout, I_QueueEntry firstEntryExlusive)
+         ResultSet rs = ps.executeQuery();
+         long countEntries = 0L;
+         long countBytes = 0L;
+         List<XBRef> list = new ArrayList<XBRef>();
+         while ((rs.next()) && ((countEntries < numOfEntries) || (numOfEntries < 0))
+               && ((countBytes < numOfBytes) || (numOfBytes < 0))) {
+            long byteSize = getByteSize(rs, 0);
+            if ((numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
+               XBRef entry = rsToEntry(store, rs);
+               list.add(entry);
+               countBytes += byteSize;
+               countEntries++;
+            }
+         }
+         return list;
+      } finally {
+         if (ps != null)
+            ps.close();
+      }
+   }
+
+
+   public List<XBRef> getFirstRefEntriesStartAt(XBStore store, Connection conn, long numOfEntries, long numOfBytes,
+         int timeout, I_QueueEntry firstEntryExlusive)
    throws SQLException, IOException {
-      if (firstEntryExlusive == null)
-         return getFirstEntries(store, conn, numOfEntries, numOfBytes, timeout);
+      if (firstEntryExlusive == null) {
+         return getFirstRefEntries(store, conn, numOfEntries, numOfBytes, timeout);
+      }
       
       PreparedStatement ps = null;
       try {
@@ -338,12 +373,12 @@ public class XBRefFactory extends XBFactory {
          ResultSet rs = ps.executeQuery();
          long countEntries = 0L;
          long countBytes = 0L;
-         List list = new ArrayList();
+         List<XBRef> list = new ArrayList<XBRef>();
          while ( (rs.next()) && ((countEntries < numOfEntries) || (numOfEntries < 0)) &&
                ((countBytes < numOfBytes) || (numOfBytes < 0))) {
             long byteSize = getByteSize(rs, 0);
             if ( (numOfBytes < 0) || (countBytes + byteSize < numOfBytes) || (countEntries == 0)) {
-               XBEntry entry = rsToEntry(store, rs);
+               XBRef entry = rsToEntry(store, rs);
                list.add(entry);
                countBytes += byteSize;
                countEntries++;
@@ -402,14 +437,20 @@ public class XBRefFactory extends XBFactory {
 
    /**
     * Under the same transaction it gets and deletes all the entries which fit
-    * into the constrains specified in the argument list.
-    * The entries are really deleted only if doDelete is true, otherwise they are left untouched on the queue
-    * @see org.xmlBlaster.util.queue.I_Queue#takeLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)
+    * into the constrains specified in the argument list. The entries are really
+    * deleted only if doDelete is true, otherwise they are left untouched on the
+    * queue
+    * 
+    * @return ReturnDataHolder.refList is filled!! (ReturnDataHolder.list is
+    *         empty)
+    * @see org.xmlBlaster.util.queue.I_Queue#takeLowest(int, long,
+    *      org.xmlBlaster.util.queue.I_QueueEntry, boolean)
     */
-   public ReturnDataHolder getAndDeleteLowest(XBStore store, Connection conn, int numOfEntries, long numOfBytes,
+   ReturnDataHolder getAndDeleteLowest(XBStore store, Connection conn, int numOfEntries, long numOfBytes,
       int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete, int maxStLength, int maxNumSt, int timeout) throws SQLException, IOException {
 
       ReturnDataHolder ret = new ReturnDataHolder();
+      ret.refList = new ArrayList<XBRef>();
       PreparedStatement st = null;
       try {
          // TODO optimize this statement by adding a LIMIT
@@ -428,7 +469,7 @@ public class XBRefFactory extends XBFactory {
             int prio = ref.getPrio();
             long dataId = ref.getId();
             if ((prio < maxPriority) || ((prio == maxPriority) && (dataId > minUniqueId)) ) {
-               ret.list.add(ref);
+               ret.refList.add(ref);
                ret.countBytes += ref.getByteSize();
                if (ref.isDurable())
                   ret.countPersistentBytes += ref.getByteSize();
@@ -446,9 +487,9 @@ public class XBRefFactory extends XBFactory {
             // leave at least one entry
             if (stillEntriesInQueue) 
                stillEntriesInQueue = rs.next();
-            if ((!stillEntriesInQueue) && (ret.list.size()>0)) {
+            if ((!stillEntriesInQueue) && (ret.refList.size() > 0)) {
                ret.countEntries--;
-               XBRef entryToDelete = (XBRef)ret.list.remove(ret.list.size()-1);
+               XBRef entryToDelete = (XBRef) ret.refList.remove(ret.refList.size() - 1);
                ret.countBytes -= entryToDelete.getByteSize();
                boolean persistent = entryToDelete.isDurable();
                if (persistent) {
@@ -462,7 +503,7 @@ public class XBRefFactory extends XBFactory {
 
          if (doDelete) {
             final boolean commitInBetween = false;
-            XBRef[] refs = (XBRef[])ret.list.toArray(new XBRef[ret.list.size()]);
+            XBRef[] refs = ret.refList.toArray(new XBRef[ret.refList.size()]);
             deleteList(store, conn, refs, maxStLength, maxNumSt, commitInBetween, timeout);
          }
          return ret;
@@ -474,8 +515,9 @@ public class XBRefFactory extends XBFactory {
    }
 
 
-   private List/*<XBRef>*/ rs2List(XBStore store, ResultSet rs, long numOfEntries, long numOfBytes, boolean onlyId) throws SQLException, IOException {
-      List entries = new ArrayList();
+   private List<XBRef> rs2List(XBStore store, ResultSet rs, long numOfEntries, long numOfBytes, boolean onlyId)
+         throws SQLException, IOException {
+      List<XBRef> entries = new ArrayList<XBRef>();
       int count = 0;
       long amount = 0L;
 
@@ -512,7 +554,7 @@ public class XBRefFactory extends XBFactory {
     * @param maxPrio the maximum priority to retrieve (inclusive).
     *
     */
-   public List/*<XBRef>*/ getEntriesByPriority(XBStore store, Connection conn, int numOfEntries,
+   public List<XBRef> getEntriesByPriority(XBStore store, Connection conn, int numOfEntries,
                              long numOfBytes, int minPrio, int maxPrio, boolean onlyId)
       throws SQLException, IOException {
 
@@ -537,7 +579,7 @@ public class XBRefFactory extends XBFactory {
    }
 
 
-   public List/*<XBRef>*/ getWithLimit(XBStore store, Connection conn, XBRef limitRef) throws SQLException, IOException {
+   public List<XBRef> getWithLimit(XBStore store, Connection conn, XBRef limitRef) throws SQLException, IOException {
       PreparedStatement st = null;
       try {
          st = conn.prepareStatement(getWithLimitSt);
@@ -566,7 +608,7 @@ public class XBRefFactory extends XBFactory {
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public List/*<XBRef>*/ getEntriesBySamePriority(XBStore store, Connection conn, int numOfEntries, long numOfBytes)
+   public List<XBRef> getEntriesBySamePriority(XBStore store, Connection conn, int numOfEntries, long numOfBytes)
       throws SQLException, IOException {
       PreparedStatement st = null;
       try {
@@ -654,7 +696,7 @@ public class XBRefFactory extends XBFactory {
    public long deleteList(XBStore store, Connection conn, XBEntry[] entries, int maxStLength, int maxNumSt, boolean commitInBetween, int timeout) throws SQLException {
       long ret = super.deleteList(store, conn, entries, maxStLength, maxNumSt, commitInBetween, timeout);
       // prepare to delete meats if any:
-      List/*<XBMeat>*/ meatList = new ArrayList/*<XBMeat>*/();
+      List<XBMeat> meatList = new ArrayList<XBMeat>();
       for (int i=0; i < entries.length; i++) {
          XBRef ref = (XBRef)entries[i];
          if (!store.isRefCounted()) {
