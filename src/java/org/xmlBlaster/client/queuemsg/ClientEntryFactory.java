@@ -216,7 +216,12 @@ public class ClientEntryFactory implements I_EntryFactory
       int priority = ref.getPrio();
       long sizeInBytes = meat.getByteSize();
       try {
-         if (methodName == MethodName.PUBLISH_ONEWAY || methodName == MethodName.PUBLISH) {
+         // MethodName.PING
+         // MethodName.UPDATE
+         // MethodName.UPDATE_ONEWAY
+         // MethodName.EXCEPTION
+         if (methodName == MethodName.PUBLISH_ONEWAY || methodName == MethodName.PUBLISH
+               || methodName == MethodName.PUBLISH_ARR) {
             MsgQosData msgQosData = glob.getMsgQosFactory().readObject(qos);
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, msgQosData);
