@@ -10,27 +10,26 @@ package org.xmlBlaster.client.protocol.socket;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.Socket;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
-
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 
 
@@ -201,7 +200,9 @@ public class SocketConnection implements I_XmlBlasterConnection
                      "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
                }
                else {
-                  log.severe("Didn't expect null socket for " + this.clientAddress.getSessionName() + ": " + Global.getStackTraceAsString(null));
+                  log.severe(getLoginName() + " " + getType() + " " + getLocalSocketUrlStr()
+                        + " Didn't expect null socket for "
+                        + this.clientAddress.getSessionName() + ": " + Global.getStackTraceAsString(null));
                   glob.removeObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
                }
             }
@@ -319,6 +320,19 @@ public class SocketConnection implements I_XmlBlasterConnection
          return null;
       }
       return this.localSocketUrl;
+   }
+
+   /**
+    * A string with the local address and port (the client side).
+    * 
+    * @return For example "socket://myServer.com:7607", never null
+    */
+   public String getLocalSocketUrlStr() {
+      SocketUrl url = this.localSocketUrl;
+      if (url != null) {
+         return url.getUrl();
+      }
+      return "";
    }
 
    /**
