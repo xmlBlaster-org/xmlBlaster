@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17576 Changed I_Queue interface to use List<I_Entry> instead of ArrayList
+
+ o r17575 New persistency: All DB access is going now over XBDatabaseAccessorDelegate
+
  o r17564 Fixed ClassCastException in MsgQueuePublishEntry.getReceiver()
 
  o r17553 C++ client library: Bug fix for not calling postSend() in case of catch(...) and not handled by client code

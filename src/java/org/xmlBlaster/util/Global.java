@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Formatter;
@@ -89,6 +90,7 @@ import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
@@ -2211,7 +2213,7 @@ public class Global implements Cloneable
       if (queue.getNumOfEntries() < 1)
          return new String[] { "The " + label + " queue is empty" };
 
-      ArrayList list = queue.peek(numOfEntries, -1);
+      List<I_Entry> list = queue.peek(numOfEntries, -1);
 
       if (list.size() == 0)
          return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };

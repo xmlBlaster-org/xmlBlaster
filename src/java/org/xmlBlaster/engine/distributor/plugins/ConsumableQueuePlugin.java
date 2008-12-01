@@ -7,9 +7,9 @@ package org.xmlBlaster.engine.distributor.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.ServerScope;
@@ -20,8 +20,8 @@ import org.xmlBlaster.engine.distributor.I_MsgDistributor;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -29,6 +29,7 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchWorker;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
@@ -194,7 +195,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    void processHistoryQueue() {
       if (log.isLoggable(Level.FINER)) log.finer("processQueue");
       try {
-         ArrayList lst = null;
+         List<I_Entry> lst = null;
          while (true) {
             //synchronized(this) {
                TopicHandler topicHandler = this.serverScope.getTopicAccessor().access(this.topicId);

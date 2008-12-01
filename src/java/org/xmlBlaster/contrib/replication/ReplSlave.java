@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -29,9 +30,9 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
@@ -45,6 +46,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XmlScriptParser;
@@ -632,7 +634,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    /**
     * 
     */
-   public ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
+   public ArrayList check(List<I_Entry> entries, I_Queue queue) throws Exception {
       this.queue = queue;
       synchronized (this.initSync) {
          this.tmpStatus = -1;
@@ -1242,7 +1244,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       if (this.queue.getNumOfEntries() == 0)
          return "The queue for the slave '" + this.name + "' is empty: not dumping anything";
       try {
-         ArrayList list = this.queue.peek(maxNum, maxSize);
+         List<I_Entry> list = this.queue.peek(maxNum, maxSize);
          FileOutputStream out = new FileOutputStream(fileName);
          for (int i=0; i < list.size(); i++) {
             ReferenceEntry entry = (ReferenceEntry)list.get(i);

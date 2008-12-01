@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -33,6 +33,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.BlockingQueueWrapper;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
@@ -251,7 +252,7 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 	 */
 	public int sendUpdates(Writer out, boolean onlyContent, int numEntries, long timeout)
 			throws XmlBlasterException, IOException {
-		ArrayList entries = null;
+	   List<I_Entry> entries = null;
 		if (timeout == 0) { // None Blocking
 			entries = this.updateQueue.takeWithPriority(numEntries, -1, PriorityEnum.MIN_PRIORITY
 					.getInt(), PriorityEnum.MAX_PRIORITY.getInt());

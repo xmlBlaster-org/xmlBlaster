@@ -1,4 +1,5 @@
 // xmlBlaster/demo/HelloWorld4.java
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,7 @@ import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
 import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 
@@ -148,7 +150,7 @@ public class HelloWorld4
                               connection.getQueue().getNumOfEntries() + " messages: " +
                               connection.getQueue().toXml(""));
                      try {
-                        java.util.ArrayList list = connection.getQueue().peek(-1, -1);
+                    	 List<I_Entry> list = connection.getQueue().peek(-1, -1);
                         for (int i=0; i<list.size(); i++) {
                            log.info(((MsgQueueEntry)list.get(i)).toXml());
                         }

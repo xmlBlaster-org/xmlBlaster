@@ -8,6 +8,7 @@ package org.xmlBlaster.util.dispatch.plugins.prio;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +26,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.property.I_PropertyChangeListener;
 import org.xmlBlaster.util.property.PropertyChangeEvent;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -287,10 +289,11 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * </p>
     * @see I_MsgDispatchInterceptor#handleNextMessages(DispatchManager, ArrayList)
     */
-   public final ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList entries) throws XmlBlasterException {
+   public final List<I_Entry> handleNextMessages(DispatchManager dispatchManager, List<I_Entry> entries)
+         throws XmlBlasterException {
 
       // take messages from queue (none blocking) ...
-      ArrayList entryList = dispatchManager.getQueue().peekSamePriority(-1, -1L);
+      List<I_Entry> entryList = dispatchManager.getQueue().peekSamePriority(-1, -1L);
 
       // filter expired entries etc. ...
       // you should always call this method after taking messages from queue
@@ -423,7 +426,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          I_Queue holdbackQueue = managerEntry.getHoldbackQueue();
          if (holdbackQueue != null && holdbackQueue.getNumOfEntries() > 0) {
             log.info("Flushing " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId());
-            ArrayList list = null;
+            List<I_Entry> list = null;
             int lastSize = -99;
             while (holdbackQueue.getNumOfEntries() > 0) {
 

@@ -1,43 +1,24 @@
 package org.xmlBlaster.test.classtest.queue;
 
+import java.util.List;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.StopWatch;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.SessionName;
-// import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-// import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.key.PublishKey;
-
-import org.xmlBlaster.util.queuemsg.DummyEntry;
-
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
-import junit.framework.*;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
-import java.lang.reflect.Constructor;
-import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 /**
  * Test JdbcQueuePlugin failover when persistent store disappears. 
@@ -60,14 +41,10 @@ public class CacheQueueDisconnectTest extends TestCase {
    private String ME = "CacheQueueDisconnectTest";
    protected Global glob;
    private static Logger log = Logger.getLogger(CacheQueueDisconnectTest.class.getName());
-   private StopWatch stopWatch = new StopWatch();
 
-   private int numOfQueues = 10;
-   private int numOfMsg    = 10000;
    private long sizeOfMsg  = 100L;
    private I_Queue queue   = null;
 
-   public ArrayList queueList = null;
    public static String[] PLUGIN_TYPES = { new String("CACHE") };
    public int count = 0;
    boolean suppressTest = false;
@@ -89,8 +66,6 @@ public class CacheQueueDisconnectTest extends TestCase {
       this.glob = Global.instance();
 
 
-      this.numOfQueues = glob.getProperty().get("queues", 2);
-      this.numOfMsg = glob.getProperty().get("entries", 100);
       this.sizeOfMsg = glob.getProperty().get("sizes", 10L);
       this.suppressTest = false;
       this.count = currImpl;
@@ -127,7 +102,6 @@ public class CacheQueueDisconnectTest extends TestCase {
 
       // cleaning up the database from previous runs ...
 
-      QueuePropertyBase prop = null;
       try {
          // test initialize()
 //         this.queue.destroy();
@@ -172,7 +146,6 @@ public class CacheQueueDisconnectTest extends TestCase {
       queue.initialize(queueId, prop);
       queue.clear();
 
-      int sweeps = 50;
       int num = 20;
       long sleepDelay = 50L;
 
@@ -190,7 +163,7 @@ public class CacheQueueDisconnectTest extends TestCase {
             }
          }
 
-         ArrayList lst = queue.peek(-1, -1L);
+         List<I_Entry> lst = queue.peek(-1, -1L);
          assertEquals(me + ": wrong number of entries in queue", entries.length, lst.size());
          for (int i=0; i < entries.length; i++) {
             long uniqueId = ((DummyEntry)lst.get(i)).getUniqueId();

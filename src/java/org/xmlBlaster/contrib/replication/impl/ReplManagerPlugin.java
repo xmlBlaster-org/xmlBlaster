@@ -15,6 +15,26 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -57,13 +77,6 @@ import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
-import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
@@ -72,6 +85,13 @@ import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -79,27 +99,9 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * ReplManagerPlugin is a plugin wrapper if you want to run DbWatcher inside xmlBlaster. 
@@ -955,7 +957,8 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#handleNextMessages(org.xmlBlaster.util.dispatch.DispatchManager, java.util.ArrayList)
     */
-   public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException {
+   public List<I_Entry> handleNextMessages(DispatchManager dispatchManager, List<I_Entry> pushEntries)
+         throws XmlBlasterException {
 
       if (!this.initialized) {
          synchronized(this) {
@@ -992,7 +995,7 @@ public class ReplManagerPlugin extends GlobalInfo
       // take messages from queue (none blocking) ...
       I_Queue cbQueue = dispatchManager.getQueue();
       // ArrayList entryList = cbQueue.peekSamePriority(-1, this.maxSize);
-      ArrayList entryList = cbQueue.peekSamePriority(maxEntriesToRetrieve, this.maxSize);
+      List<I_Entry> entryList = cbQueue.peekSamePriority(maxEntriesToRetrieve, this.maxSize);
       log.info("handleNextMessages invoked with '" + entryList.size() + "' entries (max was '" + maxEntriesToRetrieve + "'");
 
       // filter expired entries etc. ...

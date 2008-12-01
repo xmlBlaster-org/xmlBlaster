@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,7 +29,8 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
    private boolean waiting;
 
    public interface I_BlockingQueueCb {
-      ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException;
+      List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+            I_QueueEntry limitEntry) throws XmlBlasterException;
    }
 
    /**
@@ -115,11 +116,12 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
     * @return The ArrayList containing the I_Entry entries of the queue found.
     * @throws XmlBlasterException if the queue is null or if the backend queue throws an Exception.
     */
-   private final synchronized ArrayList blockingQueueOperation(int numOfEntries, long timeout, int minPrio, int maxPrio, I_QueueEntry limitEntry, I_BlockingQueueCb cb) throws XmlBlasterException {
+   private final synchronized List<I_Entry> blockingQueueOperation(int numOfEntries, long timeout, int minPrio,
+         int maxPrio, I_QueueEntry limitEntry, I_BlockingQueueCb cb) throws XmlBlasterException {
 	  I_Queue q = this.queue;
       if (q == null)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_JDBC_INVALID, "The invoked queue is null (already shutdown ?)");
-      ArrayList ret = q.peek(numOfEntries, -1L);
+      List<I_Entry> ret = q.peek(numOfEntries, -1L);
       // TODO: if numOfEntries == -1 und timeout > 0L we expect at least one
       if ((ret.size() > 0 && ret.size() >= numOfEntries) || timeout == 0L) // should be sufficient a ==
          return ret;
@@ -153,51 +155,61 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
       }
    }
 
-   public ArrayList blockingPeek(int numOfEntries, long timeout) throws XmlBlasterException {
+   public List<I_Entry> blockingPeek(int numOfEntries, long timeout) throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  0, 0, null, new I_BlockingQueueCb() {
-         public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
+         public List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+               I_QueueEntry limitEntry) throws XmlBlasterException {
             return queue.peek(numEntries, numBytes);
          }
       });
    }
 
-   public ArrayList blockingTakeLowest(int numOfEntries, long timeout, I_QueueEntry limitEntry) throws XmlBlasterException {
+   public List<I_Entry> blockingTakeLowest(int numOfEntries, long timeout, I_QueueEntry limitEntry)
+         throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  0, 0, limitEntry, new I_BlockingQueueCb() {
-         public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
+         public List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+               I_QueueEntry limitEntry) throws XmlBlasterException {
             boolean leaveOne = false;
             return queue.takeLowest(numEntries, numBytes, limitEntry, leaveOne);
          }
       });
    }
 
-   public ArrayList blockingPeekLowest(int numOfEntries, long timeout, I_QueueEntry limitEntry) throws XmlBlasterException {
+   public List<I_Entry> blockingPeekLowest(int numOfEntries, long timeout, I_QueueEntry limitEntry)
+         throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  0, 0, limitEntry, new I_BlockingQueueCb() {
-         public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
+         public List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+               I_QueueEntry limitEntry) throws XmlBlasterException {
             boolean leaveOne = false;
             return queue.peekLowest(numEntries, numBytes, limitEntry, leaveOne);
          }
       });
    }
 
-   public ArrayList blockingTakeWithPriority(int numOfEntries, long timeout, int minPrio, int maxPrio) throws XmlBlasterException {
+   public List<I_Entry> blockingTakeWithPriority(int numOfEntries, long timeout, int minPrio, int maxPrio)
+         throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  minPrio, maxPrio, null, new I_BlockingQueueCb() {
-         public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
+         public List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+               I_QueueEntry limitEntry) throws XmlBlasterException {
             return queue.takeWithPriority(numEntries, numBytes, minPrio, maxPrio);
          }
       });
    }
 
-   public ArrayList blockingPeekWithPriority(int numOfEntries, long timeout, int minPrio, int maxPrio) throws XmlBlasterException {
+   public List<I_Entry> blockingPeekWithPriority(int numOfEntries, long timeout, int minPrio, int maxPrio)
+         throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  minPrio, maxPrio, null, new I_BlockingQueueCb() {
-         public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
+         public List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+               I_QueueEntry limitEntry) throws XmlBlasterException {
             return queue.peekWithPriority(numEntries, numBytes, minPrio, maxPrio);
          }
       });
    }
 
-   public ArrayList blockingPeekSamePriority(int numOfEntries, long timeout) throws XmlBlasterException {
+   public List<I_Entry> blockingPeekSamePriority(int numOfEntries, long timeout) throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  0, 0, null, new I_BlockingQueueCb() {
-         public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
+         public List<I_Entry> queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio,
+               I_QueueEntry limitEntry) throws XmlBlasterException {
             return queue.peekSamePriority(numEntries, numBytes);
          }
       });

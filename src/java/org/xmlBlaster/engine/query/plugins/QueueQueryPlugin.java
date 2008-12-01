@@ -8,11 +8,12 @@ package org.xmlBlaster.engine.query.plugins;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.engine.query.I_Query;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
@@ -24,9 +25,10 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
@@ -191,7 +193,7 @@ public class QueueQueryPlugin implements I_Query, I_StorageSizeListener {
          }
       }
       
-      ArrayList list = queue.peek(maxEntries, maxSize);
+      List<I_Entry> list = queue.peek(maxEntries, maxSize);
       ArrayList entryListChecked = DispatchManager.prepareMsgsFromQueue(ME, log, queue, list);
       
       MsgQueueEntry[] entries = (MsgQueueEntry[])entryListChecked.toArray(new MsgQueueEntry[entryListChecked.size()]);

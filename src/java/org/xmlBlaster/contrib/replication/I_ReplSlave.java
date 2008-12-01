@@ -7,11 +7,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 
 /**
@@ -76,7 +78,7 @@ public interface I_ReplSlave extends I_ContribPlugin {
    void reactivateDestination(long minReplKey, long maxReplKey) throws Exception;
    
 
-   ArrayList check(ArrayList pushEntries, I_Queue queue) throws Exception;
+   ArrayList check(List<I_Entry> pushEntries, I_Queue queue) throws Exception;
 
    void postCheck(MsgUnit[] processedEntries) throws Exception;
    

@@ -7,6 +7,7 @@ Comment:   Interface to access information about a client instance
 package org.xmlBlaster.util.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.I_Entry;
 
 /**
  * Declares available methods of a queue implementation for administration. 
@@ -58,7 +59,8 @@ public interface I_AdminQueue extends I_AdminPlugin {
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
     */
-   public java.util.ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)       throws org.xmlBlaster.util.XmlBlasterException;
+   public java.util.List<I_Entry> takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
+         throws org.xmlBlaster.util.XmlBlasterException;
 
    /**
     * Returns the first element in the queue

@@ -5,13 +5,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins;
 
+import java.util.List;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
-
-import java.util.ArrayList;
+import org.xmlBlaster.util.queue.I_Entry;
 
 /**
  * The Interface allows to control how messages are sent to the remote side. 
@@ -90,7 +91,8 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     *            Other exceptions will lead to giving up sending messages as configured with I_MsgErrorHandler,
     *            usually shutdown queue and sending dead messages.
     */
-   public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException;
+   public List<I_Entry> handleNextMessages(DispatchManager dispatchManager, List<I_Entry> pushEntries)
+         throws XmlBlasterException;
 
    /**
     * Method invoked after having successfully sent the entries in asynchronous modus.

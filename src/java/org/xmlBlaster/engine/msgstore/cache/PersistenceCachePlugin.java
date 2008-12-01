@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.msgstore.cache;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -238,7 +238,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   // this.transientStore.getMaxNumOfEntries();
                   long maxEntries = this.transientStore.getMaxNumOfEntries();
 
-                  ArrayList entries = null;
+                  List<I_Entry> entries = null;
                   try {
                      entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek((int)maxEntries, maxBytes);
                      int n = entries.size();

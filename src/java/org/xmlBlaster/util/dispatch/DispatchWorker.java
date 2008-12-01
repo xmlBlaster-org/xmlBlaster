@@ -5,16 +5,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
-import java.util.ArrayList;
 
 
 /**
@@ -84,8 +85,8 @@ public final class DispatchWorker implements Runnable
     */
    public void run() {
       if (log.isLoggable(Level.FINER)) log.finer("Starting remote dispatch with " + this.msgQueue.getNumOfEntries() + " entries.");
-      ArrayList entryList = null;
-      ArrayList entryListChecked = null;
+      List<I_Entry> entryList = null;
+      List<I_Entry> entryListChecked = null;
       try {
          I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDispatchInterceptor();
          if (msgInterceptor != null) {
@@ -97,7 +98,7 @@ public final class DispatchWorker implements Runnable
                //entryList = (MsgQueueEntry[])this.msgQueue.take(-1); --> get()
                // not blocking and only all of the same priority:
                entryList = this.msgQueue.peekSamePriority(dispatchManager.getBurstModeMaxEntries(), dispatchManager.getBurstModeMaxBytes()); // -1, -1L -> get all entries in cache
-               entryListChecked = dispatchManager.prepareMsgsFromQueue(entryList);
+            entryListChecked = dispatchManager.prepareMsgsFromQueue(entryList);
             //}
          }
 

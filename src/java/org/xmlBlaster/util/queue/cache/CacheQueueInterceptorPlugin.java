@@ -5,37 +5,36 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.cache;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queue.I_QueuePutListener;
-import org.xmlBlaster.util.queue.I_StoragePlugin;
-import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.def.Constants;
-
-import java.util.ArrayList;
-import org.xmlBlaster.util.queue.QueuePluginManager;
-
-// import org.xmlBlaster.util.queue.jdbc.I_ConnectionStateListener;
-// currently only for a dump ...
-import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
-import org.xmlBlaster.util.queue.I_StorageProblemListener;
-
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Properties;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.I_AdminQueue;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.I_QueuePutListener;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
+import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 
 /**
  * Implements a queue cache. 
@@ -178,7 +177,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if (limitEntry == null) log.fine(ME+"The reference entry is null");
             else log.fine(ME+"The reference entry is '" + limitEntry.getUniqueId() + "' and its flag 'stored' is '" + limitEntry.isStored() + "'");
          }
-         ArrayList list = null;
+         List<I_Entry> list = null;
 
          if (limitEntry == null || limitEntry.isStored()) {
             isInclusive = false;
@@ -446,7 +445,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * @see I_Queue#getEntries(I_EntryFilter)
     */
-   public ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
+   public List<I_Entry> getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
            if (this.persistentQueue == null) return new ArrayList();
            return this.persistentQueue.getEntries(entryFilter);
    }
@@ -533,9 +532,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                     (exceedingEntries >= 0L && this.persistentQueue.getMaxNumOfEntries() > this.transientQueue.getMaxNumOfEntries())) {
                   if (log.isLoggable(Level.FINE)) log.fine(ME+"Swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
             
-                  ArrayList transients = null;
+                  List<I_Entry> transients = null;
                   try {
-                     ArrayList swaps = null;
+                     List<I_Entry> swaps = null;
                      boolean needsLoading = false;
                      if (this.transientQueue.getNumOfEntries() == 0)
                         swaps = this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
@@ -547,7 +546,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                         log.fine(ME+"Swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
                      }
                      // get the transients
-                     transients = new ArrayList();
+                     transients = new ArrayList<I_Entry>();
                      for (int i=0; i < swaps.size(); i++) {
                         I_QueueEntry entry = (I_QueueEntry)swaps.get(i);
                         if (!entry.isPersistent()) {
@@ -603,7 +602,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * @see I_Queue#takeWithPriority(int,long,int,int)
     */
-   public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
+   public List<I_Entry> takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "takeWithPriority not implemented");
       // if (this.notifiedAboutAddOrRemove) {}
@@ -628,7 +627,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * Aware: peekLowest is not implemented!!
     * @see I_Queue#peekLowest(int, long, I_QueueEntry, boolean)
     */
-   public ArrayList peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+   public List<I_Entry> peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "peekLowest is not implemented");
    }
@@ -638,9 +637,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * Aware: takeLowest for more than one entry is not implemented!!
     * @see I_Queue#takeLowest(int, long, I_QueueEntry, boolean)
     */
-   public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+   public List<I_Entry> takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
-      ArrayList list = null;
+      List<I_Entry> list = null;
       boolean doNotify = false;
       try {
          synchronized(this) {
@@ -723,7 +722,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if (numOfEntries == 0)
          return new String[] { "Please pass number of messages to peak" };
       try {
-         ArrayList list = peek(numOfEntries, -1L);
+         List<I_Entry> list = peek(numOfEntries, -1L);
          if (list == null || list.size()<1)
             return new String[] { "No entry found" };
          String[] ret = new String[list.size()];
@@ -754,20 +753,21 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * @see I_Queue#peek(int,long)
     */
-   public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
+   public List<I_Entry> peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       synchronized(this.peekSync) {
          return this.transientQueue.peek(numOfEntries, numOfBytes);
       }
    }
 
-   public ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException {
+   public List<I_Entry> peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive)
+         throws XmlBlasterException {
       throw new IllegalAccessError("CacheQueueInterceptorPlugin has peekStartAt not implemented");
    }
 
    /**
     * @see I_Queue#peekSamePriority(int, long)
     */
-   public ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
+   public List<I_Entry> peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       synchronized(this.peekSync) {
          return this.transientQueue.peekSamePriority(numOfEntries, numOfBytes);
       }
@@ -776,7 +776,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * @see I_Queue#peekWithPriority(int, long, int, int)
     */
-   public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
+   public List<I_Entry> peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
+         throws XmlBlasterException {
       synchronized(this.peekSync) {
          return this.transientQueue.peekWithPriority(numOfEntries, numOfBytes, minPriority, maxPriority);
       }
@@ -786,7 +787,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#peekWithLimitEntry(I_QueueEntry)
     * @deprecated
     */
-   public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
+   public List<I_Entry> peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       synchronized(this.peekSync) {
          return this.transientQueue.peekWithLimitEntry(limitEntry);
       }
@@ -845,7 +846,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if (nmax < 0) nmax = Integer.MAX_VALUE;
 
       I_Entry[] entries = null;
-      ArrayList  list = null;
+      List<I_Entry> list = null;
       boolean[] tmp = null;
       try {
          synchronized(this) {
@@ -962,7 +963,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       synchronized (this) {
          try {
            if (isPersistenceAvailable()) {
-               ArrayList persistents = new ArrayList();
+               List<I_Entry> persistents = new ArrayList<I_Entry>();
                for (int i=0; i < queueEntries.length; i++) {
                   if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
                }
@@ -1051,9 +1052,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (log.isLoggable(Level.FINE)) log.fine(ME+"Swapping: reloading from persistence for a length of " + freeBytes);
 
          // 1. Look into persistent store ...
-         ArrayList list = null;
+         List<I_Entry> list = null;
          try {
-            ArrayList listLowest = this.transientQueue.peekLowest(1, -1, null, false);
+            List<I_Entry> listLowest = this.transientQueue.peekLowest(1, -1, null, false);
             I_QueueEntry firstEntry = null;
             if (listLowest.size() == 1) {
                firstEntry = (I_QueueEntry)listLowest.get(0); 
@@ -1080,7 +1081,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
 
          // 3. Erase the swapped and transient entries from persistence ...
-         ArrayList transients = new ArrayList();
+         List<I_Entry> transients = new ArrayList<I_Entry>();
          int n = list.size();
          for(int i=0; i<n; i++) {
             if (!((I_Entry)list.get(i)).isPersistent()) {
@@ -1108,7 +1109,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    public long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
-      ArrayList list = null;
+      List<I_Entry> list = null;
       boolean[] tmp = null;
       synchronized(this) {
          if (numOfEntries > Integer.MAX_VALUE)

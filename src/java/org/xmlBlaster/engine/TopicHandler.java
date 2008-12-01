@@ -8,6 +8,7 @@ package org.xmlBlaster.engine;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -684,7 +685,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
                      long count = numHist-this.historyQueue.getMaxNumOfEntries();
                      // TODO: Implement count>1 in takeLowest():
-                     ArrayList entryList = this.historyQueue.takeLowest((int)count, -1L, null, false);
+                     List<I_Entry> entryList = this.historyQueue.takeLowest((int) count, -1L, null, false);
                      if (entryList.size() != count) {
                         log.severe(ME+": Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
                      }
@@ -704,7 +705,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                try {
                   long numHist = getNumOfHistoryEntries();
                   if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
-                     ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
+                     List<I_Entry> entryList = this.historyQueue.takeLowest(1, -1L, null, false);
                      if (entryList.size() != 1) {
                         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, ME,
                               "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
@@ -1603,7 +1604,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    public MsgUnitWrapper[] getMsgUnitWrapperArr(int num, boolean newestFirst) throws XmlBlasterException {
       if (this.historyQueue == null)
          return new MsgUnitWrapper[0];
-      ArrayList historyList = this.historyQueue.peek(num, -1);
+      List<I_Entry> historyList = this.historyQueue.peek(num, -1);
       if (log.isLoggable(Level.FINE)) log.fine(ME+": getMsgUnitWrapperArr("+num+","+newestFirst+"), found " + historyList.size() + " historyList entries");
       ArrayList aliveMsgUnitWrapperList = new ArrayList();
       ArrayList historyDestroyList = null;

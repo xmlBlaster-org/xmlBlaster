@@ -1,32 +1,34 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
-import org.xmlBlaster.util.queue.BlockingQueueWrapper;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.I_Storage;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.plugin.PluginInfo;
-
-import org.xmlBlaster.util.queuemsg.DummyEntry;
-
-import java.util.ArrayList;
-
-import junit.framework.*;
+import org.xmlBlaster.util.queue.BlockingQueueWrapper;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 /**
  * Test RamQueuePlugin.
@@ -308,7 +310,7 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: put(I_QueueEntry[])
          int numLoop = 10;
-         ArrayList list = new ArrayList();
+         List<I_Entry> list = new ArrayList<I_Entry>();
 
          //========== Test 2: put(I_QueueEntry)
          this.queue.removeStorageSizeListener(null);
@@ -341,7 +343,7 @@ public class I_QueueTest extends TestCase {
          this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
          log.info("#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 
-         ArrayList entryList = null;
+         List<I_Entry> entryList = null;
          try {
             entryList = queue.peekLowest(1, -1L, null, false);
             assertEquals("PEEK #1 failed"+queue.toXml(""), 1, entryList.size());
@@ -404,7 +406,7 @@ public class I_QueueTest extends TestCase {
    /**
     * @see checkSizeAndEntries(String, I_QueueEntry[], I_Queue)
     */
-   private void checkSizeAndEntries(String txt, ArrayList queueEntries, I_Queue queue) {
+   private void checkSizeAndEntries(String txt, List<I_Entry> queueEntries, I_Queue queue) {
       checkSizeAndEntries(txt, (I_QueueEntry[])queueEntries.toArray(new I_QueueEntry[queueEntries.size()]), queue);
    }
 
@@ -455,7 +457,7 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: put(I_QueueEntry[])
          int numLoop = 10;
-         ArrayList list = new ArrayList();
+         List<I_Entry> list = new ArrayList<I_Entry>();
 
          this.queue.removeStorageSizeListener(null);
          this.queue.addStorageSizeListener(this.queueSizeListener);
@@ -549,7 +551,7 @@ public class I_QueueTest extends TestCase {
          BlockingQueueWrapper wrapper = new BlockingQueueWrapper(200L);
          wrapper.init(queue);
          int numOfEntries = 2;
-         ArrayList ret = wrapper.blockingPeek(numOfEntries, 1000L);
+         List<I_Entry> ret = wrapper.blockingPeek(numOfEntries, 1000L);
          assertEquals("Wrong number of entries found", 2, ret.size());
          queue.removeNum(2);
          numOfEntries = 2;
@@ -654,7 +656,7 @@ public class I_QueueTest extends TestCase {
             queue.put(queueEntries, false);
 
             for (int ii=-1; ii<100; ii++) {
-               ArrayList results = queue.peek(ii, -1L); // does no remove
+               List<I_Entry> results = queue.peek(ii, -1L); // does no remove
                assertTrue("Missing entry", results != null);
                int expected = ii;
                if (ii == -1 || ii >= queueEntries.length)
@@ -687,7 +689,7 @@ public class I_QueueTest extends TestCase {
             int[] prios = { 9, 7, 5 };
             for (int j=0; j<prios.length; j++) {
                for (int ii=0; ii<10; ii++) {
-                  ArrayList results = queue.peekSamePriority(-1, -1L); // does no remove
+                  List<I_Entry> results = queue.peekSamePriority(-1, -1L); // does no remove
                   assertTrue("Expected results", results != null);
                   assertEquals(ME+": Wrong number of 9 priorities", 4, results.size());
                   for (int k=0; k<results.size(); ++k)
@@ -725,7 +727,7 @@ public class I_QueueTest extends TestCase {
             queue.put(queueEntries, false);
 
             for (int ii=0; ii<10; ii++) {
-               ArrayList results = queue.peekWithPriority(-1, -1L, 7, 9); // does no remove
+               List<I_Entry> results = queue.peekWithPriority(-1, -1L, 7, 9); // does no remove
                assertTrue("Expected results", results != null);
                assertEquals(ME+": Wrong number of 9 priorities", 8, results.size());
                for (int k=0; k<results.size(); ++k) {
@@ -751,7 +753,7 @@ public class I_QueueTest extends TestCase {
             queue.put(queueEntries, false);
 
             try {
-               ArrayList results = queue.peek(100, 60); // does no remove
+               List<I_Entry> results = queue.peek(100, 60); // does no remove
                assertNotNull(ME+": the result should not be null");
                assertEquals(ME+": Expected one entry on peek(100,60)", 1, results.size());
             }
@@ -1078,7 +1080,7 @@ public class I_QueueTest extends TestCase {
       assertEquals(me+": Wrong amount of persistent entries in queue before takeLowest invocation ", entriesLeft, queue.getNumOfPersistentEntries());
       assertEquals(me+": Wrong size of persistent entries in queue before takeLowest invocation ", size*entriesLeft, queue.getNumOfPersistentBytes());
 
-      ArrayList list = null;
+      List<I_Entry> list = null;
       try {
          list = queue.peekLowest(numEntries, numBytes, refEntry, leaveOne);  // gives back all minus one
          assertEquals(me+": Wrong number of entries in peekLowest return ", currentEntries, list.size());
@@ -1191,7 +1193,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
             // should return an empty array since the timestamp is  the last
-            ArrayList list = queue.takeLowest(-1, -1, queueEntry, true);
+            List<I_Entry> list = queue.takeLowest(-1, -1, queueEntry, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", 0, list.size());
             queue.clear();
@@ -1217,7 +1219,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
             // should return an empty array since the timestamp is  the last
-            ArrayList list = queue.takeLowest(-1, -1, queueEntry, true);
+            List<I_Entry> list = queue.takeLowest(-1, -1, queueEntry, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", list.size(), imax-6-1);
             queue.clear();
@@ -1241,7 +1243,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong number put", imax, queue.getNumOfEntries());
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
-            ArrayList list = queue.takeLowest(-1, -1, null, true);
+            List<I_Entry> list = queue.takeLowest(-1, -1, null, true);
 
             assertEquals(ME+": Wrong size in takeLowest return ", list.size(), entries.length-1);
             for (int i=1; i < imax; i++) {
@@ -1310,9 +1312,9 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong number put", imax, queue.getNumOfEntries());
             assertEquals(ME+": Wrong size in bytes put", size, queue.getNumOfBytes());
 
-            ArrayList listPeekSamePrio = queue.peekSamePriority(-1, -1L);
-            ArrayList listPeekWithPrio = queue.peekWithPriority(-1, -1L, 0, 10);
-            ArrayList listPeek = queue.peek(-1, -1L);
+            List<I_Entry> listPeekSamePrio = queue.peekSamePriority(-1, -1L);
+            List<I_Entry> listPeekWithPrio = queue.peekWithPriority(-1, -1L, 0, 10);
+            List<I_Entry> listPeek = queue.peek(-1, -1L);
 
             //they all should give the same result ...
             for (int i=0; i<imax; i++) {
@@ -1427,7 +1429,7 @@ public class I_QueueTest extends TestCase {
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
 
-            ArrayList list = queue.peekWithLimitEntry(entries[3]);
+            List<I_Entry> list = queue.peekWithLimitEntry(entries[3]);
             assertEquals(ME+": Wrong number of peeked entries (with limit) ", 3, list.size());
             for (int i=0; i < list.size(); i++) {
                assertEquals(ME + ": Wrong order in peeked entries (with limit): ", entries[i].getUniqueId(), ((I_QueueEntry)list.get(i)).getUniqueId());
@@ -1454,7 +1456,7 @@ public class I_QueueTest extends TestCase {
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
 
-            ArrayList list = queue.peekWithLimitEntry(limitEntry);
+            List<I_Entry> list = queue.peekWithLimitEntry(limitEntry);
             assertEquals(ME+": Wrong number of peeked entries (with limit) ", 0, list.size());
             queue.removeRandom(entries);
             assertEquals(ME+": Wrong size in peekWithLimitEntry after cleaning ", queue.getNumOfEntries(), 0);
@@ -1477,7 +1479,7 @@ public class I_QueueTest extends TestCase {
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
 
-            ArrayList list = queue.peekWithLimitEntry(limitEntry);
+            List<I_Entry> list = queue.peekWithLimitEntry(limitEntry);
             assertEquals(ME+": Wrong number of peeked entries (with limit) ", imax, list.size());
             for (int i=0; i < list.size(); i++) {
                assertEquals(ME + ": Wrong order in peeked entries (with limit): ", entries[i].getUniqueId(), ((I_QueueEntry)list.get(i)).getUniqueId());
@@ -1502,7 +1504,7 @@ public class I_QueueTest extends TestCase {
             queue.put(entries, false);
             assertEquals(ME+": Wrong number of entries after putting same entries ", imax, queue.getNumOfEntries());
 
-            ArrayList list = queue.peekWithLimitEntry(null);
+            List<I_Entry> list = queue.peekWithLimitEntry(null);
             assertEquals(ME+": Wrong number of peeked entries (with limit) ", 0, list.size());
 
             queue.removeRandom(entries);
@@ -1546,7 +1548,7 @@ public class I_QueueTest extends TestCase {
             int imax = 20;
 
             DummyEntry[] entries = new DummyEntry[imax];
-            ArrayList list = new ArrayList();
+            List<I_Entry> list = new ArrayList<I_Entry>();
 
             for (int i=0; i < imax; i++) {
                entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
@@ -1650,7 +1652,7 @@ public class I_QueueTest extends TestCase {
             int imax = 3; 
             long msgSize = 202010L;
             DummyEntry[] entries = new DummyEntry[imax];
-            ArrayList list = new ArrayList();
+            List<I_Entry> list = new ArrayList<I_Entry>();
 
             for (int i=0; i < imax; i++) {
                entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
@@ -1659,7 +1661,7 @@ public class I_QueueTest extends TestCase {
 
             queue.put(entries, false);
             this.checkSizeAndEntries("sizesCheck test 1: ", list, queue);
-            ArrayList entriesArray = queue.peek(imax, -1L);
+            List<I_Entry> entriesArray = queue.peek(imax, -1L);
             assertEquals("wrong number of big entries retrieved", imax, entriesArray.size());
             queue.removeRandom(entries);
             list.removeAll(list);
@@ -1730,7 +1732,7 @@ public class I_QueueTest extends TestCase {
             log.info("overflow: an exception here is OK since it was expected due to overflow of the queue");
          }
    
-         ArrayList ret = queue.peek(4, -1L);
+         List<I_Entry> ret = queue.peek(4, -1L);
          assertEquals("the number of entries in the queue", 2, ret.size());
          for (int i=0; i < 2; i++) {
             assertEquals(ME + ".overflow: entry '" + i + "' in sequence is wrong", entries[i].getUniqueId(), ((I_QueueEntry)ret.get(i)).getUniqueId());

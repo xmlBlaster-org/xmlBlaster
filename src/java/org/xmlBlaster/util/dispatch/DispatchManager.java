@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.dispatch;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +27,7 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
@@ -445,7 +447,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * Called by DispatchWorker if an Exception occured in sync mode
     * Only on client side
     */
-   void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
+   void handleSyncWorkerException(List<I_Entry> entryList, Throwable throwable) throws XmlBlasterException {
 
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
 
@@ -541,7 +543,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * Called by DispatchWorker if an Exception occurred in async mode. 
     * @throws XmlBlasterException should never happen but is possible during removing entries from queue
     */
-   void handleWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
+   void handleWorkerException(List<I_Entry> entryList, Throwable throwable) throws XmlBlasterException {
       // Note: The DispatchManager is notified about connection problems directly by its DispatchConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Async delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
@@ -733,7 +735,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     *       and plugins may change the content - and this should not modify the queue entries</li>
     * </ol>
     */
-   public ArrayList prepareMsgsFromQueue(ArrayList entryList) {
+   public ArrayList prepareMsgsFromQueue(List<I_Entry> entryList) {
 
       if (entryList == null || entryList.size() < 1) {
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time: " + toXml(""));
@@ -742,7 +744,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       return prepareMsgsFromQueue(ME, log, this.msgQueue, entryList);
    }
 
-   public static ArrayList prepareMsgsFromQueue(String logId, Logger log, I_Queue queue, ArrayList entryList) {
+   public static ArrayList prepareMsgsFromQueue(String logId, Logger log, I_Queue queue, List<I_Entry> entryList) {
       // Remove all expired messages and do a shallow copy
       int size = entryList.size();
       ArrayList result = new ArrayList(size);

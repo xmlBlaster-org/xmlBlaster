@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -46,6 +47,7 @@ import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -500,7 +502,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             I_Queue newQueue = createSubjectQueue(prop);
             if (newQueue.isTransient()) {
                log.info(ME+": Reconfiguring subject queue: Copying " + this.subjectQueue.getNumOfEntries() + " entries from old " + origProp.getType() + " queue to " + prop.getTypeVersion() + " queue");
-               java.util.ArrayList list = null;
+               List<I_Entry> list = null;
                int lastSize = -99;
                while (this.subjectQueue.getNumOfEntries() > 0) {
 

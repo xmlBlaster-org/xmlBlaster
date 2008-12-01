@@ -6,12 +6,11 @@ Comment:   Interface for the queues (persistent and cache)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queue.StorageId;
-
-import java.util.ArrayList;
-import java.util.Properties;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Properties;
+
+import org.xmlBlaster.util.XmlBlasterException;
 
 
 /**
@@ -109,7 +108,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     *  with the callback entryFilter.intercept(I_Entry).
     *  @return The found entries
     */
-   ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException;
+   List<I_Entry> getEntries(I_EntryFilter entryFilter) throws XmlBlasterException;
 
    // This is not true: Puts one queue entry on top of the queue possibly waiting indefinitely until it is accepted.
 
@@ -169,7 +168,8 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
     */
-//   ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+   // List<I_Entry> take(int numOfEntries, long numOfBytes) throws
+   // XmlBlasterException;
 
    /**
     * Takes given number of entries out of the queue. The ordering is first priority and secondly timestamp.
@@ -182,7 +182,8 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
     */
-   ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException;
+   List<I_Entry> takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
+         throws XmlBlasterException;
 
    /**
     * Takes entries from the back of the queue. It takes so many entries as the
@@ -208,7 +209,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @param leaveOne Usually set to false. (true for cache queue to never flush transient queue totally)
     * @return the list containing all 'I_QueueEntry' entries which fit into the constrains, never null.
     */
-   ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+   List<I_Entry> takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException;
 
 
@@ -216,7 +217,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
    /**
     * Same as takeLowest but it does not remove the entries.
     */
-   ArrayList peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
+   List<I_Entry> peekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException;
 
    /**
@@ -237,7 +238,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+   List<I_Entry> peek(int numOfEntries, long numOfBytes) throws XmlBlasterException;
 
    /**
     * Returns maximum the first num element in the queue
@@ -248,7 +249,8 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   ArrayList peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive) throws XmlBlasterException;
+   List<I_Entry> peekStartAt(int numOfEntries, long numOfBytes, I_QueueEntry firstEntryExlusive)
+         throws XmlBlasterException;
 
    /**
     * Returns maximum the first num element in the queue of highest priority
@@ -260,7 +262,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+   List<I_Entry> peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException;
 
    /**
     * Returns maximum given number of entries from the queue (none blocking).
@@ -272,7 +274,8 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
     */
-   ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException;
+   List<I_Entry> peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
+         throws XmlBlasterException;
 
    /**
     * It returns the entries which are higher than the entry specified in the argument list.
@@ -283,7 +286,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * Note: The limitEntry does not need to be in the queue.
     * @deprecated you should use directly removeWithLimitEntry
     */
-   ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException;
+   List<I_Entry> peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException;
 
    /**
     * It removes the entries which are higher than the entry specified in the argument list.

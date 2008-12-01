@@ -1,27 +1,29 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import java.util.logging.Logger;
+import java.sql.Connection;
+import java.util.List;
 import java.util.logging.Level;
-import org.xmlBlaster.util.StopWatch;
+import java.util.logging.Logger;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-
-import org.xmlBlaster.util.queuemsg.DummyEntry;
-
-import java.sql.Connection;
-import java.util.ArrayList;
-
-import junit.framework.*;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 /**
  * Test JdbcQueuePlugin failover when persistent store disappears. 
@@ -79,14 +81,10 @@ public class JdbcQueueTest extends TestCase {
    private String ME = "JdbcQueueTest";
    protected Global glob;
    private static Logger log = Logger.getLogger(JdbcQueueTest.class.getName());
-   private StopWatch stopWatch = new StopWatch();
-
-   private int numOfQueues = 10;
-   private int numOfMsg    = 10000;
    private long sizeOfMsg  = 100L;
    private I_Queue queue   = null;
 
-   public ArrayList queueList = null;
+   public List<I_Entry> queueList = null;
 //   public static String[] PLUGIN_TYPES = { new String("JDBC"), new String("CACHE") };
    public static String[] PLUGIN_TYPES = { new String("JDBC") };
    public int count = 0;
@@ -111,8 +109,6 @@ public class JdbcQueueTest extends TestCase {
       this.glob = Global.instance();
 
 
-      this.numOfQueues = glob.getProperty().get("queues", 2);
-      this.numOfMsg = glob.getProperty().get("entries", 100);
       this.sizeOfMsg = glob.getProperty().get("sizes", 10L);
       this.suppressTest = false;
       this.count = currImpl;
@@ -294,7 +290,7 @@ public class JdbcQueueTest extends TestCase {
          I_Queue tmpQueue2 = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
          long numOfEntries = tmpQueue2.getNumOfEntries();
          assertEquals("Wrong number of entries in queue", 3L, numOfEntries);
-         ArrayList lst = tmpQueue2.peek(-1, -1L);
+         List<I_Entry> lst = tmpQueue2.peek(-1, -1L);
          assertEquals("Wrong number of entries retrieved from queue", 3, lst.size());
          queue.shutdown();
       }
@@ -351,7 +347,7 @@ public class JdbcQueueTest extends TestCase {
             long delta = System.currentTimeMillis() - time1;
             log.info("multiple put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
            
-            ArrayList list = tmpQueue.peek(-1, -1L);
+            List<I_Entry> list = tmpQueue.peek(-1, -1L);
             assertEquals("Wrong number of entries in queue", nmax, list.size());
            
             time1 = System.currentTimeMillis();
@@ -386,7 +382,6 @@ public class JdbcQueueTest extends TestCase {
 
    public void testConnectionPool() {
       try {
-         String me = ME + "-testConnectionPool";
          log.info(" starting ");
          int numConn = 3;
          int maxWaitingThreads = 10;

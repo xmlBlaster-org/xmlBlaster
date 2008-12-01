@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +43,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.property.Property;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Queue;
 
@@ -820,7 +822,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       if (queue.getNumOfEntries() < 1)
          return new String[] { "The " + label + " queue is empty" };
 
-      java.util.ArrayList list = queue.peek(numOfEntries, -1);
+      List<I_Entry> list = queue.peek(numOfEntries, -1);
 
       if (list.size() == 0)
          return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };
@@ -866,7 +868,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       if (queue.getNumOfEntries() < 1)
          return new String[] { "The " + label + " queue is empty" };
 
-      ArrayList list = queue.peek(numOfEntries, -1);
+      List<I_Entry> list = queue.peek(numOfEntries, -1);
 
       if (list.size() == 0)
          return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };

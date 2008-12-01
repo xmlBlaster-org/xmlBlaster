@@ -5,25 +5,25 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import java.util.logging.Logger;
+import java.util.List;
 import java.util.logging.Level;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.client.qos.DisconnectQos;
-
-import java.util.ArrayList;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * The default error recovery implementation for messages which are lost
@@ -129,7 +129,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
                if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
                   while (msgQueue.getNumOfEntries() > 0L) {
-                     ArrayList list = msgQueue.peek(-1, MAX_BYTES);
+                     List<I_Entry> list = msgQueue.peek(-1, MAX_BYTES);
                      MsgQueueEntry[] msgArr = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
                      if (msgArr.length > 0) {
                         glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);

@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +33,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 
@@ -278,7 +279,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    public final int sendInitialQueueEntries() throws XmlBlasterException {
       if (this.queue == null)
          return 0;
-      ArrayList list = this.queue.peek(-1, -1L);
+      List<I_Entry> list = this.queue.peek(-1, -1L);
       for (int i=0; i < list.size(); i++) {
          MsgQueuePublishEntry entry = (MsgQueuePublishEntry)list.get(i);
          MsgKeyData key = entry.getMsgKeyData();

@@ -8,6 +8,7 @@ package org.xmlBlaster.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +74,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -1749,7 +1751,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.clientQueue.getNumOfEntries() < 1)
             return new String[] { "The client queue is empty" };
 
-         java.util.ArrayList list = this.clientQueue.peek(numOfEntries, -1);
+         List<I_Entry> list = this.clientQueue.peek(numOfEntries, -1);
 
          if (list.size() == 0)
             return new String[] { "Peeking messages from client queue failed, the reason is not known" };

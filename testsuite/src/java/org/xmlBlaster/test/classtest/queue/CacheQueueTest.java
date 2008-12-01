@@ -1,27 +1,28 @@
 package org.xmlBlaster.test.classtest.queue;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.logging.Logger;
+
+import junit.framework.TestCase;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
-import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-
-import org.xmlBlaster.util.queuemsg.DummyEntry;
-
-import java.util.ArrayList;
-import java.util.Hashtable;
-
-import junit.framework.*;
-import java.util.Enumeration;
 import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queuemsg.DummyEntry;
 
 /**
  * Test CacheQueueInterceptorPlugin.
@@ -70,7 +71,6 @@ public class CacheQueueTest extends TestCase {
    private static Logger log = Logger.getLogger(CacheQueueTest.class.getName());
    private CacheQueueInterceptorPlugin queue = null;
    private I_Queue[] queues;
-   public ArrayList queueList = null;
 
    public CacheQueueTest(String name) {
       this(Global.instance(), name);
@@ -320,8 +320,8 @@ public class CacheQueueTest extends TestCase {
                         assertEquals(ME + " number of persistent entries is wrong ", persistentEntries.length, nPersistents);
                         assertEquals(ME + " number of transient entries is wrong ", transients.length, nTransient);
 
-                        ArrayList total = new ArrayList();
-                        ArrayList ret = refQueue.peekSamePriority(-1, -1L);
+                        List<I_Entry> total = new ArrayList();
+                        List<I_Entry> ret = refQueue.peekSamePriority(-1, -1L);
                         refQueue.removeRandom((I_QueueEntry[])ret.toArray(new I_QueueEntry[ret.size()]));
                         while (ret.size() > 0) {
                            total.addAll(ret);
@@ -431,7 +431,7 @@ public class CacheQueueTest extends TestCase {
          this.queue.put(entries[i], false);
       }
 
-      ArrayList list = this.queue.peek(-1, -1L);
+      List<I_Entry> list = this.queue.peek(-1, -1L);
       assertEquals(ME + " number of entries when retrieving is wrong ", entries2, list.size());
       for (int i=0; i < list.size(); i++) {
          long uniqueId = ((I_QueueEntry)list.get(i)).getUniqueId();
