@@ -5,36 +5,36 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.ram;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.Global;
-
-import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queue.I_QueuePutListener;
-import org.xmlBlaster.util.queue.ReturnDataHolder;
-import org.xmlBlaster.util.queue.I_StoragePlugin;
-import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.queue.I_StorageProblemListener;
-
-import java.util.Comparator;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.SortedSet;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Properties;
-import java.io.OutputStream;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.I_QueuePutListener;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.ReturnDataHolder;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 
 
 /**
@@ -786,13 +786,15 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       }
 
       if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
-         String reason = "Queue overflow (num of entries), " + property.getMaxEntries() +
+         String reason = "RAM Queue overflow (num of entries), " + property.getMaxEntries()
+               +
                   " messages are in queue, try increasing '" + this.property.getPropName("maxEntries") + "' on client login.";
          if (log.isLoggable(Level.FINE)) log.fine(reason+toXml());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
       if (this.getNumOfBytes() > property.getMaxBytes()) { // Allow superload one time only
-         String reason = "Queue overflow, " + this.getNumOfBytes() + " bytes are in queue, try increasing '" +
+         String reason = "RAM Queue overflow, " + this.getNumOfBytes() + " bytes are in queue, try increasing '"
+               +
                          this.property.getPropName("maxBytes") + "' on client login.";
          if (log.isLoggable(Level.FINE)) log.fine(reason+toXml());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
