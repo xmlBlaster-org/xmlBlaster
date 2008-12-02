@@ -162,7 +162,8 @@ public class ClientEntryFactory implements I_EntryFactory
          }
          else if (methodName == MethodName.DUMMY) { // for testsuite only
             byte[] bytes = (byte[])obj[0];
-            DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, bytes, persistent);
+            DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp),
+                  storageId, bytes.length, bytes, persistent);
             //entry.setUniqueId(timestamp);
             return entry;
          }
@@ -265,7 +266,8 @@ public class ClientEntryFactory implements I_EntryFactory
          else if (methodName == MethodName.DUMMY) { // for testsuite only
             DummyEntry entry = null;
             if (content != null)
-               entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, content, ref.isDurable());
+               entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId,
+                     sizeInBytes, content, ref.isDurable());
             else
                entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, ref.isDurable());
             return entry;

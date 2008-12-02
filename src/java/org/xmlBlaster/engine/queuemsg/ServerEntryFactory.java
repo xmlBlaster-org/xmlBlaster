@@ -535,7 +535,8 @@ public class ServerEntryFactory implements I_EntryFactory
             prio = ref.getPrio();
          
          if (content != null)
-            entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(prio), new Timestamp(timestamp), storageId, content, ref.isDurable());
+            entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(prio), new Timestamp(timestamp), storageId,
+                  sizeInBytes, content, ref.isDurable());
          else
             entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(prio), new Timestamp(timestamp), storageId, sizeInBytes, ref.isDurable());
          return entry;

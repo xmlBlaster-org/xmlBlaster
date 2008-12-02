@@ -39,10 +39,15 @@ public class DummyEntry extends MsgQueueEntry {
       }
    }
 
-   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, byte[] content, boolean persistent) {
+   /**
+    * Called by ClientEntryFactory and ServerEntryFactory only
+    */
+   public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, long sizeInBytes,
+         byte[] content, boolean persistent) {
       super(glob, ENTRY_TYPE, priority, timestamp, storageId, persistent);
       this.content = content;
-      if (this.content != null) this.sizeOfMsg = (long)this.content.length;
+      this.sizeOfMsg = sizeInBytes;
+      // if (this.content != null) this.sizeOfMsg = (long)this.content.length;
    }
 
    public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, boolean persistent) {
