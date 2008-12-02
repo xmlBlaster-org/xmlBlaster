@@ -766,6 +766,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       catch (Throwable ex) {
          if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex);
+         
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntry", "", ex); 
       }
       finally {

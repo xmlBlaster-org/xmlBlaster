@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -21,7 +20,8 @@ import org.xmlBlaster.contrib.I_Info;
  */
 
 public class XBStoreFactory extends XBFactory {
-   private static Logger log = Logger.getLogger(XBStoreFactory.class.getName());
+   // private static Logger log =
+   // Logger.getLogger(XBStoreFactory.class.getName());
    private final static int ID = 1;
    private final static int NODE = 2;
    private final static int TYPE = 3;
@@ -116,6 +116,7 @@ public class XBStoreFactory extends XBFactory {
       }
       */
       else { // if (getDbVendor().equals(HSQLDB))
+         pingSt = "select 1 from ${table}"; // HSQLDB needs from in stmt
          buf.append("create table ${table} (\n");
          buf.append("      xbstoreid bigint primary key,\n");
          buf.append("      xbnode varchar(256) not null,\n");
