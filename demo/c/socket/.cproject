@@ -5,6 +5,11 @@
 <storageModule moduleId="org.eclipse.cdt.core.settings">
 <cconfiguration id="cdt.managedbuild.config.gnu.exe.debug.1743229659">
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.debug.1743229659" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+<macros>
+<stringListMacro name="XMLBLASTER_HOME" type="VALUE_TEXT_LIST">
+<value name="/home/xmlblast/xmlBlaster"/>
+</stringListMacro>
+</macros>
 <externalSettings/>
 <extensions>
 <extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
