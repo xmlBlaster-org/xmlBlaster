@@ -87,6 +87,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    cb->updateCb = updateCb;
    cb->updateCbUserData = updateCbUserData; /* A optional pointer from the client code which is returned to the update() function call */
    memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(ResponseListener));
+   pthread_mutex_init(&cb->responseListenerMutex, NULL); /* returns always 0 */
    cb->addResponseListener = addResponseListener;
    cb->removeResponseListener = removeResponseListener;
    cb->_threadIsAliveOnce = true;
@@ -198,8 +199,10 @@ void freeCallbackServerUnparsed(CallbackServerUnparsed **cb_)
       shutdownCallbackServer(cb);
       hasTerminated = cb->waitOnCallbackThreadTermination(cb, 5000);
       freeProperties(cb->props);
-      if (hasTerminated)
-    	  free(cb); /* Prefer to have a leak instead of a crash */
+      if (hasTerminated) {
+         pthread_mutex_destroy(&cb->responseListenerMutex);
+    	   free(cb); /* Prefer to have a leak instead of a crash */
+      }
       *cb_ = 0;
    }
 }
@@ -220,20 +223,47 @@ static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nb
    return readn(fd, ptr, nbytes, fpNumRead, userP2);
 }
 
+static int responseListenerMutexLock(CallbackServerUnparsed *cb) {
+   int retInt = 0;
+   if ((retInt = pthread_mutex_lock(&cb->responseListenerMutex)) != 0) {
+      char p[XMLBLASTEREXCEPTION_MESSAGE_LEN];
+      SNPRINTF(p, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Error trying to lock cbMutex %d", __FILE__, __LINE__, retInt);
+      cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, p);
+   }
+   return retInt;
+}
+
+static int responseListenerMutexUnLock(CallbackServerUnparsed *cb) {
+   int retInt = 0;
+   if ((retInt = pthread_mutex_unlock(&cb->responseListenerMutex)) != 0) {
+      char p[XMLBLASTEREXCEPTION_MESSAGE_LEN];
+      char errnoStr[XMLBLASTEREXCEPTION_MESSAGE_LEN];
+      strerror_r(retInt, errnoStr, XMLBLASTEREXCEPTION_MESSAGE_LEN);
+      SNPRINTF(p, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Error trying to unlock cbMutex %d = %s", __FILE__, __LINE__, retInt, errnoStr);
+      cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, p);
+   }
+   return retInt;
+}
+
 static bool addResponseListener(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp) {
    int i;
    if (responseEventFp == 0) {
       return false;
    }
+   responseListenerMutexLock(cb);
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
       if (cb->responseListener[i].msgRequestInfoP == 0) {
          cb->responseListener[i].msgRequestInfoP = msgRequestInfoP;
          cb->responseListener[i].responseEventFp = responseEventFp;
          if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "addResponseListener(i=%d, requestId=%s)", i, msgRequestInfoP->requestIdStr);
+         responseListenerMutexUnLock(cb);
          return true;
       }
    }
+   responseListenerMutexUnLock(cb);
    cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
       "PANIC too many requests (%d) are waiting for a response, you are not registered", MAX_RESPONSE_LISTENER_SIZE);
    return false;
@@ -244,29 +274,37 @@ static ResponseListener *getResponseListener(CallbackServerUnparsed *cb, const c
    if (requestId == 0) {
       return 0;
    }
+   responseListenerMutexLock(cb);
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
-      if (cb->responseListener[i].msgRequestInfoP == 0) {
+      const MsgRequestInfo * const pp = cb->responseListener[i].msgRequestInfoP;
+      if (pp == 0) {
          continue;
       }
-      if (!strcmp(cb->responseListener[i].msgRequestInfoP->requestIdStr, requestId)) {
+      if (!strcmp(pp->requestIdStr, requestId)) {
+         responseListenerMutexUnLock(cb);
          return &cb->responseListener[i];
       }
    }
+   responseListenerMutexUnLock(cb);
    cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "RequestId '%s' is not registered", requestId);
    return 0;
 }
 
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId) {
    int i;
+   responseListenerMutexLock(cb);
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
-      if (cb->responseListener[i].msgRequestInfoP == 0) {
+      const MsgRequestInfo * const pp = cb->responseListener[i].msgRequestInfoP;
+      if (pp == 0) {
          continue;
       }
-      if (!strcmp(cb->responseListener[i].msgRequestInfoP->requestIdStr, requestId)) {
+      if (!strcmp(pp->requestIdStr, requestId)) {
          cb->responseListener[i].msgRequestInfoP = 0;
+         responseListenerMutexUnLock(cb);
          return &cb->responseListener[i];
       }
    }
+   responseListenerMutexUnLock(cb);
    cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Can't remove requestId '%s', requestId is not registered", requestId);
    return (ResponseListener *)0;
 }
@@ -285,41 +323,44 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
       closeAcceptSocket(cb);
       /* Notify pending requests, otherwise they block in their mutex for a minute ... */
       for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
-         if (cb->responseListener[i].msgRequestInfoP == 0) {
+         XmlBlasterException exception;
+         ResponseListener *listener;
+         MsgRequestInfo *msgRequestInfoP;
+
+         responseListenerMutexLock(cb);
+         listener = &cb->responseListener[i];
+         if (listener->msgRequestInfoP == 0) {
+            responseListenerMutexUnLock(cb);
             continue;
          }
-#ifdef __IPhoneOS__
-         if (true) { /* false? BADACCESS when accessing mutex later on */
-#else
-         if (true) {
-#endif
-            /* Handle waiting MSG_TYPE_INVOKE threads (oneways are not in this list) */
-            ResponseListener *listener = &cb->responseListener[i];
-            MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
-            XmlBlasterException exception;
-            initializeXmlBlasterException(&exception);
+         /* Handle waiting MSG_TYPE_INVOKE threads (oneways are not in this list) */
+         msgRequestInfoP = listener->msgRequestInfoP;
+         cb->responseListener[i].msgRequestInfoP = 0;
+         responseListenerMutexUnLock(cb);
 
-            cb->responseListener[i].msgRequestInfoP = 0;
+         initializeXmlBlasterException(&exception);
 
-            /* Simulate an exception on client side ... */
-            socketDataHolder->type = (char)MSG_TYPE_EXCEPTION;
-            strncpy0(socketDataHolder->requestId, msgRequestInfoP->requestIdStr, MAX_REQUESTID_LEN);
-            strncpy0(socketDataHolder->methodName, msgRequestInfoP->methodName, MAX_METHODNAME_LEN);
+         /* Simulate an exception on client side ... */
+         socketDataHolder->type = (char)MSG_TYPE_EXCEPTION;
+         strncpy0(socketDataHolder->requestId, msgRequestInfoP->requestIdStr, MAX_REQUESTID_LEN);
+         strncpy0(socketDataHolder->methodName, msgRequestInfoP->methodName, MAX_METHODNAME_LEN);
 
-            exception.remote = true;
-            strncpy0(exception.errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-            SNPRINTF(exception.message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                  "[%.100s:%d] Lost connection to xmlBlaster with server side EOF", __FILE__, __LINE__);
+         exception.remote = true;
+         strncpy0(exception.errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception.message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Lost connection to xmlBlaster with server side EOF", __FILE__, __LINE__);
 
-            encodeXmlBlasterException(&socketDataHolder->blob, &exception, false);
+         encodeXmlBlasterException(&socketDataHolder->blob, &exception, false);
 
-            /* Takes a clone of socketDataHolder->blob */
-            listener->responseEventFp(msgRequestInfoP, socketDataHolder);
+         /* Takes a clone of socketDataHolder->blob */
+         listener->responseEventFp(msgRequestInfoP, socketDataHolder);
+         /* Now the client thread has wakened up and returns:
+          * msgRequestInfoP is invalid now as it was on client thread stack
+          */
 
-            freeBlobHolderContent(&socketDataHolder->blob);
-            if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
-               "Notified pending requestId '%s' about lost socket connection", socketDataHolder->requestId);
-         }
+         freeBlobHolderContent(&socketDataHolder->blob);
+         if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+            "Notified pending requestId '%s' about lost socket connection", socketDataHolder->requestId);
       }
       return;
    }
@@ -454,7 +495,7 @@ static int listenLoop(ListenLoopArgs* ls)
 
 
 /**
- * Started by pthread_create(runCallbackServer).
+ * Started by XmlBlasterAccessUnparsed.c pthread_create(runCallbackServer).
  * <p />
  * Open a socket and only leaves when the connection is lost (on EOF),
  * in this case implicit pthread_exit() is called.
@@ -466,10 +507,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 {
    int rc;
    int retVal = 0;
-   ListenLoopArgs* tcpLoop = 0;
-   ListenLoopArgs* udpLoop = 0;
 
-   bool useUdpForOneway = cb->socketUdp != -1;
+   const bool useUdpForOneway = cb->socketUdp != -1;
 
    cb->threadIsAlive = true;
    cb->_threadIsAliveOnce = true;
@@ -486,6 +525,9 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
    }
 
    if (useUdpForOneway) {
+      ListenLoopArgs* tcpLoop = 0;
+      ListenLoopArgs* udpLoop = 0;
+
       /* We need to create two threads: one for TCP and one for the UDP callback listener */
       pthread_t tcpListenThread, udpListenThread;
 
@@ -494,32 +536,27 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); tcpLoop->cb = cb; tcpLoop->udp = false;
       rc = pthread_create(&tcpListenThread, NULL, (void * (*)(void *))listenLoop, tcpLoop);
 
-      if (useUdpForOneway) {
-         udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
-         rc = pthread_create(&udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
-      }
+      udpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs)); udpLoop->cb = cb; udpLoop->udp = true;
+      rc = pthread_create(&udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
 
       if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "Waiting to join tcpListenThread ...");
       pthread_join(tcpListenThread, NULL);
       free(tcpLoop);
-      if (useUdpForOneway) {
-         if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+
+      if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
             "Waiting to join udpListenThread ...");
-         pthread_join(udpListenThread, NULL);
-         free(udpLoop);
-      }
+      pthread_join(udpListenThread, NULL);
+      free(udpLoop);
+
       rc = pthread_mutex_destroy(&cb->listenMutex);
       if (rc != 0) /* EBUSY */
          cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
    }
    else {
       /* TCP only: no separate thread is needed (is called from XmlBlasterAccessUnparsed:pthread_create) */
-      tcpLoop = (ListenLoopArgs*)malloc(sizeof(ListenLoopArgs));
-      tcpLoop->cb = cb;
-      tcpLoop->udp = false;
-      retVal = listenLoop(tcpLoop);
-      free(tcpLoop);
+      ListenLoopArgs tcpLoop; tcpLoop.cb = cb; tcpLoop.udp = false;
+      retVal = listenLoop(&tcpLoop);
    }
 
    if (cb->logLevel>=XMLBLASTER_LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,

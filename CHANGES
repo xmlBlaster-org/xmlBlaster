@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17581 C-client library: 
+          Introduced Timestamp.c for thread safe requestId counter
+	  CallbackServer responseListener handling is now mutex protected
+	  cb->removeResponseListener added as MsgRequestInfoP is on stack (still race condition is possible!!!)
+
  o r17576 Changed I_Queue interface to use List<I_Entry> instead of ArrayList
 
  o r17575 New persistency: All DB access is going now over XBDatabaseAccessorDelegate

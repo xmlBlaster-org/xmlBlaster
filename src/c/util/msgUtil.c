@@ -667,6 +667,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
 #else /* HAVE_FUNC_GETHOSTBYNAME_R_6 Linux */ /* defined(__hpux) with gcc 2.8 - 3.4.3 */
    struct hostent *hp=0;
    int herr=0,res=0;
+   if (errP != 0) *errP = 0; /* To avoid compiler warning */
 
    assert(tmphstbuf != 0);
 

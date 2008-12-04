@@ -13,6 +13,7 @@
 #include <string.h>
 #include <util/helper.h>
 #include <util/Timeout.h>
+#include <util/Timestamp.h>
 #include "test.h"
 
 static int countTimeouts = 0;

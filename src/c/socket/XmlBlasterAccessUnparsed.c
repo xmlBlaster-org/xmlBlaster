@@ -36,6 +36,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterAccessUnparsed.h>
+#include <util/Timestamp.h>
 
 /**
  * Little helper to collect args for the new created thread
@@ -227,7 +228,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
    freeProperties(xa->props);
 
    rc = pthread_mutex_destroy(&xa->writenMutex); /* On Linux this does nothing, but returns an error code EBUSY if the mutex was locked */
-   if (rc != 0) /* EBUSY */
+   if (rc != 0) /* EBUSY=16 "Device or resource busy": char *strerror_r(int errnum, char *buf, size_t buflen); */
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "pthread_mutex_destroy(writenMutex) returned %d, we ignore it", rc);
 
    rc = pthread_mutex_destroy(&xa->readnMutex);
@@ -482,6 +483,8 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    int retVal, i;
 
    if (msgRequestInfoP->rollback) {
+      xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfoP->requestIdStr);
+      /* cb->shutdown(), cb->waitOnCallbackThreadTermination() */
       mutexUnlock(msgRequestInfoP, exception);
       return (MsgRequestInfo *)0;
    }
@@ -506,6 +509,12 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
       if (useTimeout == true) {
          int error = pthread_cond_timedwait(&msgRequestInfoP->responseCond, &msgRequestInfoP->responseMutex, &abstime);
          if (error == ETIMEDOUT) {
+            /*
+             * TODO: msgRequestInfoP is on the stack and if we now return
+             * it will be invalid:
+             * removeResponseListener() removes it from the callback thread
+             * but what if the callback thread currently uses it?
+             */
             xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfoP->requestIdStr);
             strncpy0(exception->errorCode, "communication.responseTimeout", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis",

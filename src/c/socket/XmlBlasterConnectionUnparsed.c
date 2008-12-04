@@ -26,6 +26,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterConnectionUnparsed.h>
+#include <util/Timestamp.h>
 #define SOCKET_TCP false
 
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
@@ -74,7 +75,6 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->socketToXmlBlaster = -1;
    xb->socketToXmlBlasterUdp = -1;
    xb->isInitialized = false;
-   xb->requestId = 0;
    *xb->secretSessionId = 0;
    xb->initConnection = initConnection;
    xb->initQueue = xmlBlasterInitQueue;
@@ -709,15 +709,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       return false;
    }
 
-   if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
-      "sendData(udp=%s) requestId '%ld' increment to '%ld', dataLen=%d",
-      ((udp==true) ? "true" : "false"), xb->requestId, xb->requestId+1, dataLen_);
-
-   {
-      long tmp = ++xb->requestId; /* TODO: We need to sync requestId !!!! */
-      if (xb->requestId > 1000000000) xb->requestId = 0;
-      SNPRINTF(requestInfo.requestIdStr, MAX_REQUESTID_LEN, "%-ld", tmp);
-   }
+   getTimestampStr(requestInfo.requestIdStr, MAX_REQUESTID_LEN);
 
    requestInfo.methodName = methodName;
    if (xb->preSendEvent != 0) {
@@ -751,6 +743,12 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       rawMsg = encodeSocketMessage(msgType, requestInfo.requestIdStr, requestInfo.methodName, xb->secretSessionId,
                              data_, dataLen_, xb->logLevel >= XMLBLASTER_LOG_DUMP, &rawMsgLen);
    }
+
+   /* AWARE:
+    * From now on requestInfoP is used by callback thread
+    * (was added by successful xb->preSendEvent() above)
+    * If we leave sendData() this is destroyed (requestInfoP is on stack!)
+    */
 
    /* send the header ... */
    if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Lowlevel writing data to socket ...");
@@ -796,7 +794,8 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          requestInfo.responseType = 0;
          requestInfo.blob.dataLen = 0;
          requestInfo.blob.data = 0;
-         /* Here the thread blocks until a response from CallbackServer arrives */
+
+         /* !!! Here the thread blocks until a response from CallbackServer arrives !!! */
          requestInfoP = xb->postSendEvent(&requestInfo, exception);
          if (*exception->message != 0) {
             if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,

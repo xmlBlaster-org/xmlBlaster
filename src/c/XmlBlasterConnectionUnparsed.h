@@ -25,7 +25,7 @@ extern "C" {
 #include <CoreFoundation/CFString.h>
 #include <CFNetwork/CFHost.h>
 #include <CFNetwork/CFSocketStream.h>
-	
+
 #endif
 #include <util/msgUtil.h>
 #include <util/queue/QueueInterface.h>
@@ -54,7 +54,7 @@ typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(MsgRequest
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 
 /**
- * All synchrnous client access to xmlBlaster goes over this struct and its function pointers. 
+ * All synchrnous client access to xmlBlaster goes over this struct and its function pointers.
  */
 struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    int argc;
@@ -68,13 +68,12 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
 #endif
    int socketToXmlBlaster;
 	int socketToXmlBlasterUdp;
-   long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
    XmlBlasterConnectionUnparsedInitConnection initConnection; /**< Used internally or by multi threaded embedding only as this is called by connect() automatically */
    XmlBlasterConnectionUnparsedInitQueue initQueue; /**< Call to initialize persistent queue support on lost connection */
-   XmlBlasterConnectionUnparsedConnect connect;   
-   XmlBlasterConnectionUnparsedDisconnect disconnect;   
+   XmlBlasterConnectionUnparsedConnect connect;
+   XmlBlasterConnectionUnparsedDisconnect disconnect;
    XmlBlasterConnectionUnparsedPublish publish;
    XmlBlasterConnectionUnparsedPublishArr publishArr;
    XmlBlasterConnectionUnparsedPublishOneway publishOneway;
@@ -109,7 +108,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
 	struct Dll_Export XmlBlasterConnectionUnparsedStruct* globalIPhoneXb;
 #endif
 	/**
- * Get an instance of this to get xmlBlaster access. 
+ * Get an instance of this to get xmlBlaster access.
  *
  * Every call creates a new and independent client access instance to xmlBlaster
  */

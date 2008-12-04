@@ -152,6 +152,10 @@ struct CallbackServerUnparsedStruct {
 
    /* Socket read access: */
    XmlBlasterReadFromSocketFuncHolder readFromSocket; /**< Holding function pointer for compressed/uncompressed socket reads */
+
+#ifdef XB_USE_PTHREADS
+   pthread_mutex_t responseListenerMutex; /* Needed for responseListener access protection */
+#endif
 };
 
 /**

@@ -116,10 +116,6 @@ Dll_Export extern bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVE
 Dll_Export extern char getInputKey(const char *str);
 Dll_Export extern char *getStackTrace(int maxNumOfLines);
 Dll_Export extern void sleepMillis(long millis);
-Dll_Export extern int64_t getTimestamp(void);   /* if no 'int64_t=long long' support we need a workaround */
-Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime); /* timespec forces pthread */
-Dll_Export extern const char *getCurrentTimeStr(char *timeStr, int bufSize);
-Dll_Export extern const char *getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize);
 
 #if defined(__FreeBSD__) || defined(__MacOSX__) || defined(__IPhoneOS__) || defined(__hpux__) || defined(__linux__)
 #include <wchar.h>
