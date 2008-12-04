@@ -75,7 +75,7 @@ Dll_Export int64_t getTimestamp() {
 
 Dll_Export char *getTimestampStr(char *buf, size_t buflen) {
    int64_t ts = getTimestamp(); /* INT_LEAST64_MAX=9223372036854775807 */
-   SNPRINTF(buf, buflen, "%"PRId64, ts);
+   SNPRINTF(buf, buflen, PRINTF_PREFIX_INT64_T, ts); /* Windows does not know "%"PRId64 (from inttypes.h) */
    return buf;
 }
 

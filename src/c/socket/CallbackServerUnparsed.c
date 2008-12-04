@@ -234,6 +234,12 @@ static int responseListenerMutexLock(CallbackServerUnparsed *cb) {
    return retInt;
 }
 
+#if defined(_WINDOWS) /* TODO what is the equivalent for Win? */
+static char *strerror_r(int retInt, char * errnoStr, size_t size) {
+	return strerror(retInt);
+}
+#endif
+
 static int responseListenerMutexUnLock(CallbackServerUnparsed *cb) {
    int retInt = 0;
    if ((retInt = pthread_mutex_unlock(&cb->responseListenerMutex)) != 0) {
