@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-Name:      Timestamp.c
+Name:      Timestampc.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Time handling and unique counter
@@ -10,7 +10,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <string.h> /* memset */
 #include "basicDefs.h"
 #include "helper.h"
-#include "Timestamp.h"
+#include "Timestampc.h"
 
 #ifdef _WINDOWS
 #  if defined(WINCE)

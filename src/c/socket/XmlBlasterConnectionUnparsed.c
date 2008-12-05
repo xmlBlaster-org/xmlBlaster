@@ -26,7 +26,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterConnectionUnparsed.h>
-#include <util/Timestamp.h>
+#include <util/Timestampc.h>
 #define SOCKET_TCP false
 
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);

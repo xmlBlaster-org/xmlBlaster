@@ -18,7 +18,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <assert.h>
 #include <time.h>
 #include "helper.h"
-#include "Timestamp.h"
+#include "Timestampc.h"
 
 #ifdef _ENABLE_STACK_TRACE_
 # include <execinfo.h>

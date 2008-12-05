@@ -1,8 +1,8 @@
 /*
- * Timestamp.h
+ * Timestampc.h
  */
-#ifndef XMLBLASTER_UTIL_TIMESTAMP_H_
-#define XMLBLASTER_UTIL_TIMESTAMP_H_
+#ifndef XMLBLASTER_UTIL_TIMESTAMPC_H_
+#define XMLBLASTER_UTIL_TIMESTAMPC_H_
 
 #include <util/basicDefs.h> /* for int64_t (C99), Dll_Export, inline, bool etc. */
 
@@ -73,4 +73,4 @@ Dll_Export extern const char *getCurrentLocalIsoTimestampStr(char *timeStr, int 
 #endif
 
 
-#endif /* XMLBLASTER_UTIL_TIMESTAMP_H_ */
+#endif /* XMLBLASTER_UTIL_TIMESTAMPC_H_ */

@@ -37,7 +37,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterAccess.h>
 #include <util/XmlUtil.h>
-#include <util/Timestamp.h>
+#include <util/Timestampc.h>
 
 static const int XBTYPE_PING=0;
 static const int XBTYPE_POLL=1;

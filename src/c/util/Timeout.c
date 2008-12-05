@@ -16,7 +16,7 @@
 #include <time.h>
 #include "helper.h"
 #include "Timeout.h"
-#include "Timestamp.h"
+#include "Timestampc.h"
 
 #ifdef _ENABLE_STACK_TRACE_
 # include <execinfo.h>

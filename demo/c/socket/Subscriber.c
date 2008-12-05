@@ -13,7 +13,7 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 #include <stdlib.h>
 #include <string.h>
 #include <XmlBlasterAccessUnparsed.h>
-#include <util/Timestamp.h>
+#include <util/Timestampc.h>
 
 static const char *updateExceptionErrorCode = 0;
 static const char *updateExceptionMessage = 0;

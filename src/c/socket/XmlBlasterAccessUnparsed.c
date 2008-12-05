@@ -36,7 +36,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterAccessUnparsed.h>
-#include <util/Timestamp.h>
+#include <util/Timestampc.h>
 
 /**
  * Little helper to collect args for the new created thread
