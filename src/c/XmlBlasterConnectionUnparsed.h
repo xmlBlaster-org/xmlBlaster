@@ -126,6 +126,9 @@ Dll_Export extern void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnpa
  */
 Dll_Export extern const char *xmlBlasterConnectionUnparsedUsage();
 
+#ifdef __IPhoneOS__
+	extern bool isIPhoneSocketConnectionEstablished(XmlBlasterConnectionUnparsed *xb);
+#endif
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

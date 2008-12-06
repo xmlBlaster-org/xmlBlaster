@@ -396,6 +396,10 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 				ret = -1;
 			if(!CFReadStreamOpen (xb->readStream))
 				ret = -1;
+			if (ret != -1) {
+				if (!isIPhoneSocketConnectionEstablished(xb))
+					ret = -1;
+			}
 	    }
 	    else
 		{

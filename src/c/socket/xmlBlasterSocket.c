@@ -21,6 +21,34 @@ void closeSocket(int fd) {
 #endif
 }
 
+#ifdef __IPhoneOS__
+bool isIPhoneSocketConnectionEstablished(XmlBlasterConnectionUnparsed *xb) {
+while(!CFWriteStreamCanAcceptBytes(xb->writeStream))
+{
+	if(xb == 0 || xb->writeStream == nil)
+		return false;
+	
+	CFErrorRef errorRef = CFWriteStreamCopyError (xb->writeStream);
+	if(errorRef != 0)
+	{
+		CFStringRef stringRef = CFErrorCopyDescription(errorRef);
+		char buff[1000];
+		CFStringGetCString (
+							stringRef,
+							buff,
+							1000,
+							kCFStringEncodingUTF8
+							);
+		printf("\nxmlBlasterSocket.c writen() Warning writing to Network is not possible, reason is: %s\n", buff);
+		CFRelease(errorRef);
+		return false;
+	}
+	sleepMillis(100);
+}
+	return true;
+}
+#endif
+
 /**
  * Write the given amount of bytes to socket.
  * This method blocks until data all data is sent, we loop
@@ -46,25 +74,9 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
          if(cfSocketError == kCFSocketError) return -1;
          */
         ssize_t nleft, nwritten;
-        while(!CFWriteStreamCanAcceptBytes(globalIPhoneXb->writeStream))
-        {
-                CFErrorRef errorRef = CFWriteStreamCopyError (globalIPhoneXb->writeStream);
-                if(errorRef != 0)
-                {
-                        CFStringRef stringRef = CFErrorCopyDescription(errorRef);
-                        char buff[1000];
-                        CFStringGetCString (
-                                                                stringRef,
-                                                                buff,
-                                                                1000,
-                                                                kCFStringEncodingUTF8
-                                                                );
-                    printf("\nxmlBlasterSocket.c writen() Warning write %lu to Network is not possible, reason is  %s\n", nbytes, buff);
-                        CFRelease(errorRef);
-                        return -1;
-                }
-                sleepMillis(100);
-    }
+
+	   if (isIPhoneSocketConnectionEstablished(globalIPhoneXb) == false)
+		return -1;
         
         
         nleft = (ssize_t)nbytes;
