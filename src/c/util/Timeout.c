@@ -2,7 +2,7 @@
  Name:      xmlBlaster/src/c/util/Timeout.c
  Project:   xmlBlaster.org
  Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
- Comment:   C Timer with POSIX threads
+ Comment:   C Timer with POSIX threads (XB_USE_PTHREADS)
  Compile:   gcc -Wall -g -o Timeout Timeout.c -DTIMEOUT_UTIL_MAIN -I..
  Testsuite: xmlBlaster/testsuite/src/c/TestUtil.c
  Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
@@ -23,13 +23,9 @@
 #endif
 
 #ifdef _WINDOWS
-#  if XB_USE_PTHREADS
 #    include <pthreads/pthread.h> /* Our pthreads.h: For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
-#  endif
 #else
-#  if XB_USE_PTHREADS
 #    include <pthread.h>      /* The original pthreads.h from the OS */
-#  endif
 #endif
 
 static void *timeoutMainLoop(void *ptr);
@@ -40,7 +36,7 @@ static int setTimeoutListener(Timeout * const timeout, TimeoutCbFp timeoutCbFp, 
 static bool _isMyThread(Timeout *timeout) {
     if (timeout == 0/* ||  timeout->threadId == 0*/)
        return false;
-	return pthread_equal(pthread_self(), timeout->threadId) != 0;
+        return pthread_equal(pthread_self(), timeout->threadId) != 0;
 }
 
 /* Local helper function */
