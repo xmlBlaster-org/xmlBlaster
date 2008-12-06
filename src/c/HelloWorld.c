@@ -6,30 +6,30 @@ Comment:   HelloWorld connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
   Linux C: 
-   gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
+   gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Timestampc.c \
    util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
 
    With zlib compression:
-   gcc -Wall -pedantic -Wno-long-long -D_REENTRANT -g -DXMLBLASTER_ZLIB=1 -I. -o HelloWorld HelloWorld.c util/helper.c
-      util/msgUtil.c util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
+   gcc -Wall -pedantic -Wno-long-long -D_REENTRANT -g -DXMLBLASTER_ZLIB=1 -I. -o HelloWorld HelloWorld.c util/helper.c \
+      util/msgUtil.c util/Timestampc.c util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c \
       -I/opt/zlib/include -L/opt/zlib/lib -lz
    
    Start with: "HelloWorld -plugin/socket/compress/type zlib:stream"
 
-  Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
-   util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
+  Linux C++: g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Timestampc.c \
+   util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c \
             -DXMLBLASTER_C_COMPILE_AS_CPP
   
   Linux Intel compiler:
-        icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
+        icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Timestampc.c \
    util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
   
-  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -DDLL_IGNORE -DXB_NO_PTHREADS -I. HelloWorld.c util\helper.c util\msgUtil.c
+  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -DDLL_IGNORE -DXB_NO_PTHREADS -I. HelloWorld.c util\helper.c util\msgUtil.c util\Timestampc.c \
         util\Properties.c socket\xmlBlasterSocket.c socket\xmlBlasterZlib.c socket\XmlBlasterConnectionUnparsed.c ws2_32.lib
   
   WinCE: -DWINCE ...
 
-  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
+  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Timestampc.c
         util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c
         socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
 
@@ -38,7 +38,7 @@ Compile:
             -Wl,-rpath=../../lib -lpthread
 
   HP-UX 11 with gcc. 2.8.1:
-        gcc -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Properties.c
+        gcc -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Timestampc.c util/Properties.c
         socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterZlib.c
 Date:      05/2003
 -----------------------------------------------------------------------------*/
@@ -63,7 +63,8 @@ int main(int argc, const char* const* argv) {
 #endif
    MsgUnitArr *msgUnitArr;
    XmlBlasterException exception;
-   char *connectQos, *response;
+   const char *connectQos;
+   char *response;
    
    XmlBlasterConnectionUnparsed *xb = getXmlBlasterConnectionUnparsed(argc, argv);
 
@@ -108,4 +109,4 @@ int main(int argc, const char* const* argv) {
 #  endif
    return 0;
 }
-#endif // IPhoneOS
+#endif /* IPhoneOS */
