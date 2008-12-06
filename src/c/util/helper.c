@@ -636,12 +636,15 @@ unsigned long get_pthread_id(pthread_t t)
       long val32;
       /* 2147483647 */
       /* 3081234112 */
-      printf("xmlBlaster helper.c Warning: stripping pthread_id %"PRId64"\n", val64);
-      SNPRINTF(buf, 55, "%"PRId64, val64); /* PRId64 As 32bit system need "%lld" and 64 bit systems need "%ld" */
+      printf("xmlBlaster helper.c Warning: stripping pthread_id "PRINTF_PREFIX_INT64_T"\n", val64);
+      /*printf("xmlBlaster helper.c Warning: stripping pthread_id %"PRId64"\n", val64);*/
+      SNPRINTF(buf, 55, PRINTF_PREFIX_INT64_T, val64);
+      /*SNPRINTF(buf, 55, "%"PRId64, val64); PRId64 As 32bit system need "%lld" and 64 bit systems need "%ld" */
       /*printf("xmlBlaster helper.c Warning: stripping pthread_id string %s\n", buf);*/
       p = buf + strlen(buf) - 9;
       sscanf(p, "%ld", &val32);
-      printf("xmlBlaster helper.c Warning: stripping pthread_id from %"PRId64" to %ld\n", val64, val32);
+      /*printf("xmlBlaster helper.c Warning: stripping pthread_id from %"PRId64" to %ld\n", val64, val32);*/
+      printf("xmlBlaster helper.c Warning: stripping pthread_id from "PRINTF_PREFIX_INT64_T" to %ld\n", val64, val32);
       return val32;
       /*return (long)(val64/(1+int64_t(val64 / INT_LEAST32_MAX)));*/
    }
