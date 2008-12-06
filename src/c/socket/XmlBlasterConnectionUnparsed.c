@@ -67,10 +67,9 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
       return (XmlBlasterConnectionUnparsed *)0;
    }
 #ifdef __IPhoneOS__
-	xb->cfSocketRef = nil;
-	xb->readStream = nil;
-	xb->writeStream = nil;
-
+      xb->cfSocketRef = nil;
+      xb->readStream = nil;
+      xb->writeStream = nil;
 #endif
    xb->socketToXmlBlaster = -1;
    xb->socketToXmlBlasterUdp = -1;
@@ -254,7 +253,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
    xmlBlasterAddr.sin_family=AF_INET;
 
-# if _WINDOWS_NOT_YET_PORTED /* Windows gethostbyname is deprecated */
+# ifdef _WINDOWS_NOT_YET_PORTED /* Windows gethostbyname is deprecated */
    const struct addrinfo hints;
    struct addrinfo** res;
    int getaddrinfo(serverHostName, servTcpPort, &hints, res);
@@ -302,31 +301,11 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    else
       xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
 #ifdef __IPhoneOS__
-
-/*
-	xb->cfSocketRef = CFSocketCreate(kCFAllocatorDefault,
-										PF_INET,
-										SOCK_STREAM,
-										0,
-										kCFSocketNoCallBack,                // Callback flags
-										nil,  // Callback method
-										nil);
-
-	if(xb->cfSocketRef == NULL)
-	{
-		xb->socketToXmlBlaster = -1;
-    }
-	else
-	{
-		xb->socketToXmlBlaster = 0;
-    }
-
-*/
-	xb->socketToXmlBlaster = 0;
+   xb->socketToXmlBlaster = 0;
 #else
    xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
 #endif
-	if (xb->socketToXmlBlaster != -1) {
+        if (xb->socketToXmlBlaster != -1) {
       int ret=0;
       const char *localHostName = xb->props->getString(xb->props, "plugin/socket/localHostname", 0);
       int localPort = xb->props->getInt(xb->props, "plugin/socket/localPort", 0);
@@ -361,7 +340,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                }
             }
             else {
-            	if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Local IP4 usage (without DNS lookup) of IP '%s'", localHostName);
+                if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Local IP4 usage (without DNS lookup) of IP '%s'", localHostName);
                /* use ip4 addr directly to avoid dns lookup */
                localAddr.sin_addr.s_addr = inet_addr(localHostName);
             }
@@ -384,38 +363,29 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
 #ifdef __IPhoneOS__
       globalIPhoneXb = xb;
-	   {
-		   CFStringRef hostnameRef =CFStringCreateWithCString (kCFAllocatorDefault, serverHostName, kCFStringEncodingUTF8);
-		   CFHostRef hostRef = CFHostCreateWithName (kCFAllocatorDefault, hostnameRef);
-		   CFStreamCreatePairWithSocketToCFHost (kCFAllocatorDefault,hostRef, atoi(servTcpPort), &xb->readStream, &xb->writeStream);
-		}
-		if(xb->readStream != nil && xb->writeStream != nil)
-		{
-			ret = 0;
-			if(!CFWriteStreamOpen (xb->writeStream)) /* true if stream was successfully opened */
-				ret = -1;
-			if(!CFReadStreamOpen (xb->readStream))
-				ret = -1;
-			if (ret != -1) {
-				if (!isIPhoneSocketConnectionEstablished(xb))
-					ret = -1;
-			}
-	    }
-	    else
-		{
-			   ret = -1;
-		}
-
-/*
-		CFDataRef cfDataRef = CFDataCreate(kCFAllocatorDefault, (void*)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
-		xb->socketAddr = cfDataRef;
-	//	CFTimeInterval
-	//	Type used to represent elapsed time in seconds.
-	  CFTimeInterval timeout = 30;
-      CFSocketError cfSocketError = CFSocketConnectToAddress(xb->cfSocketRef, cfDataRef, timeout);
- */
+      {
+         CFStringRef hostnameRef =CFStringCreateWithCString (kCFAllocatorDefault, serverHostName, kCFStringEncodingUTF8);
+         CFHostRef hostRef = CFHostCreateWithName (kCFAllocatorDefault, hostnameRef);
+         CFStreamCreatePairWithSocketToCFHost (kCFAllocatorDefault,hostRef, atoi(servTcpPort), &xb->readStream, &xb->writeStream);
+      }
+      if(xb->readStream != nil && xb->writeStream != nil)
+      {
+         ret = 0;
+         if(!CFWriteStreamOpen (xb->writeStream)) /* true if stream was successfully opened */
+            ret = -1;
+         if(!CFReadStreamOpen (xb->readStream))
+            ret = -1;
+         if (ret != -1) {
+            if (!isIPhoneSocketConnectionEstablished(xb))
+               ret = -1;
+         }
+      }
+      else
+      {
+         ret = -1;
+      }
 #else
-		ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
+      ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
 #endif
       if(ret != -1) {
          if (xb->logLevel>=XMLBLASTER_LOG_INFO) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
@@ -610,7 +580,7 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
    if (xb != 0 && xb->isConnected(xb)) {
 #     if defined(_WINDOWS)
       int how = SD_BOTH;   /* SD_BOTH requires Winsock2.h */
-#     elif __IPhoneOS__
+#     elif defined(__IPhoneOS__)
 #     else
       int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
 #     endif
@@ -979,7 +949,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 }
 
 
-#if XMLBLASTER_PERSISTENT_QUEUE_TEST==1
+#ifdef XMLBLASTER_PERSISTENT_QUEUE_TEST
 /**
  * Extracts the priority from the given QoS.
  * @return NORM=5 on error
@@ -1083,7 +1053,7 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
                 &responseSocketDataHolder, exception, SOCKET_TCP) == false) {
 
-#     if XMLBLASTER_PERSISTENT_QUEUE_TEST==1 /* TEST CODE */
+#     ifdef XMLBLASTER_PERSISTENT_QUEUE_TEST /* TEST CODE */
          if (strstr(exception->errorCode, "user.notConnected") != 0 ||
              strstr(exception->errorCode, "communication.noConnection") != 0) { /* On communication problem queue messages */
             int priority = parsePriority(msgUnit->qos);
