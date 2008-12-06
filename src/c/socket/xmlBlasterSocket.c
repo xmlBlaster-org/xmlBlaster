@@ -37,6 +37,8 @@ void closeSocket(int fd) {
 ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
 {
 #ifdef __IPhoneOS__
+#	pragma unused(fd)	/*if (fd < 200) printf("xmlBlasterSocket.c: dummy printf to avoid compiler warning\n");*/
+	
         /*      CFTimeInterval timeOut = -1;
          CFSocketRef socketRef = globalIPhoneXb->cfSocketRef;
          CFDataRef dataRef = CFDataCreate(kCFAllocatorDefault, (void*) ptr, nbytes);
@@ -57,7 +59,7 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
                                                                 1000,
                                                                 kCFStringEncodingUTF8
                                                                 );
-                    printf("\n**************   Warning write to Network is not possible, reason is  %s\n", buff);
+                    printf("\nxmlBlasterSocket.c writen() Warning write %lu to Network is not possible, reason is  %s\n", nbytes, buff);
                         CFRelease(errorRef);
                         return -1;
                 }
@@ -85,7 +87,7 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
                                                                         1000,
                                                                         kCFStringEncodingUTF8
                                                                         );
-                                printf("\n**************** Warning send failed, reason is  %s\n", buff);
+                                printf("xmlBlasterSocket.c writen() Warning send %lu failed, reason is  %s\n", nbytes, buff);
                                 CFRelease(errorRef);
                         }
                         return -1;
@@ -142,6 +144,8 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
         ssize_t nread;
         ssize_t nleft;
         nleft = (ssize_t)nbytes;
+	
+#	pragma unused(fd, fpNumRead, userP)	/*if (fd < 200 || fpNumRead == 0|| userP == 0) printf("xmlBlasterSocket.c: dummy printf to avoid compiler warning\n");*/
         
         /*
          while(!CFReadStreamHasBytesAvailable(globalIPhoneXb->readStream)) 
@@ -172,7 +176,7 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
                                                                         1000,
                                                                         kCFStringEncodingUTF8
                                                                         );
-                                printf("\n===================> Warning recv failed, nread is %u, description is '%s'\n", (unsigned int)nread, buff);
+                                printf("\nxmlBlasterSocket.c readn() Warning recv failed, nread is %u, description is '%s'\n", (unsigned int)nread, buff);
                                 
                                 reasonRef = CFErrorCopyFailureReason (
                                                                                                                                   errorRef
@@ -183,7 +187,7 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
                                                                         1000,
                                                                         kCFStringEncodingUTF8
                                                                         );
-                                printf("===================> Warning recv failed, reason is  %s\n", buff);
+                                printf("xmlBlasterSocket.c readn() Warning recv failed, reason is  %s\n", buff);
                                 
                                 CFRelease(errorRef);
                         }
@@ -192,9 +196,9 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
                 else if(nread == 0)
                 {
              if(CFReadStreamGetStatus(globalIPhoneXb->readStream) == kCFStreamStatusAtEnd)
-                                 break;
-                          else
-                                 continue;
+                break;
+             else
+                continue;
                                  
                 }
                 nleft -= nread;
@@ -204,7 +208,7 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
         return (ssize_t)nbytes-nleft;
         
 #else
-        ssize_t nread;
+   ssize_t nread;
    ssize_t nleft;
    int flag = 0; /* MSG_WAITALL; */
    nleft = (ssize_t)nbytes;
@@ -533,7 +537,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    }
    else
       numRead = fpHolder->readFromSocketFuncP(fpHolder->userP, xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN,
-                          (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->numReadUserP);
+                          (size_t)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->numReadUserP);
    if (numRead <= 0 || *stopP == true) {
       free(rawMsg);
       return false; /* EOF on socket */

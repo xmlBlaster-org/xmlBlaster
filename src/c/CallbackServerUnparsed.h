@@ -191,14 +191,14 @@ extern void freeCallbackServerUnparsed(CallbackServerUnparsed **callbackData);
 /**
  * Help on configuration
  */
-extern const char *callbackServerRawUsage();
+extern const char *callbackServerRawUsage(void);
 
-/**
+/*
  * Function pointer for pthread,
  * the method to invoke on thread creation.
- */
-typedef void * (*cbFp)(void *);
-
+ *
+typedef void * (*CallbackFp)(void *);
+*/
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

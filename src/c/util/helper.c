@@ -144,7 +144,7 @@ Dll_Export void sleepMillis(long millisecs)
 #ifdef _WINDOWS
    Sleep(millisecs);
 #elif __IPhoneOS__
-   usleep(millisecs*1000);
+   usleep((unsigned long)millisecs*1000);
 #elif XMLBLASTER_SLEEP_FALLBACK /* rounded to seconds */
    if (millisecs < 1000)
       millisecs = 1000;
@@ -198,7 +198,7 @@ Dll_Export char **convertWcsArgv(wchar_t **argv_wcs, int argc) {
    int i;
    char **argv = (char **)malloc(argc*sizeof(char*));
    for (i=0; i<argc; i++) {
-      int sizeInBytes = 4*(int)wcslen(argv_wcs[i]);
+      size_t sizeInBytes = 4*(int)wcslen(argv_wcs[i]);
       argv[i] = (char *)malloc(sizeInBytes*sizeof(char));
 #     if _MSC_VER >= 1400 && !defined(WINCE)
        {
@@ -702,7 +702,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
    if (level > currLevel) {
       return;
    }
-   if ((p = (char *)malloc (size)) == NULL)
+   if ((p = (char *)malloc ((size_t)size)) == NULL)
       return;
 
    if (level <= XMLBLASTER_LOG_ERROR) {
@@ -712,7 +712,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
    for (;;) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-      n = vsnprintf0(p, size, fmt, ap);
+      n = vsnprintf0(p, (size_t)size, fmt, ap);
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
@@ -736,7 +736,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
          size = n+1; /* precisely what is needed */
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
-      if ((p = (char *)realloc (p, size)) == NULL) {
+      if ((p = (char *)realloc (p, (size_t)size)) == NULL) {
          free(stackTrace);
          return;
       }
@@ -836,7 +836,7 @@ Dll_Export void initializeExceptionStruct(ExceptionStruct *exception)
  */
 Dll_Export const char *getExceptionStr(char *out, int outSize, const ExceptionStruct *exception)
 {
-   SNPRINTF(out, outSize, "[%s] %s", exception->errorCode, exception->message);
+   SNPRINTF(out, (size_t)outSize, "[%s] %s", exception->errorCode, exception->message);
    return out;
 }
 
@@ -962,9 +962,9 @@ Dll_Export char *blobDump(BlobHolder *blob)
    return toReadableDump(blob->data, blob->dataLen);
 }
 
-Dll_Export void freeBlobDump(char *blobDump)
+Dll_Export void freeBlobDump(char *blobDumpP)
 {
-   free(blobDump);
+   free(blobDumpP);
 }
 
 # ifdef HELPER_UTIL_MAIN

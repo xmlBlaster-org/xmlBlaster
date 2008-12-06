@@ -380,7 +380,7 @@ int gethostbyname_r (const char *name,
     ret->h_addr_list = q; /* update pointer to address list */
     pbuf = buf + ((naddr+naliases+2)*sizeof(*p)); /* skip that area */
     for (p = ph->h_addr_list; p != 0 && *p != 0; p++) {
-      memcpy(pbuf, *p, ph->h_length); /* copy address bytes */
+      memcpy(pbuf, *p, (size_t)ph->h_length); /* copy address bytes */
       *q++ = pbuf; /* the pointer is the one inside buf... */
       pbuf += ph->h_length; /* advance pbuf */
     }

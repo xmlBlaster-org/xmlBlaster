@@ -220,7 +220,7 @@ Dll_Export const char *getCurrentLocalIsoTimestampStr(char *timeStr, int bufSize
         (void) time(&t1);
         /*ctime_r(&t1, (char *)timeStr);*/
         gmtime_r(&t1, &st); /* TODO: localtime_r() with zone offset*/
-        snprintf0(timeStr, bufSize,
+        snprintf0(timeStr, (size_t)bufSize,
                         "20%0.2hd-%0.2hd-%0.2hdT%0.2hd:%0.2hd:%0.2hdZ\n", st.tm_year - 100,
                         st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec);
 #  endif

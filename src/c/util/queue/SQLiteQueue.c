@@ -46,6 +46,9 @@ Todo:      Tuning:
 @see:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 Testsuite: xmlBlaster/testsuite/src/c/TestQueue.c
 -----------------------------------------------------------------------------*/
+#if defined(__IPhoneOS__)
+#include <stdio.h> /* to avoid empty file compiler warning */
+#endif
 #if !defined(__IPhoneOS__)
 #include <stdio.h>
 #include <string.h>

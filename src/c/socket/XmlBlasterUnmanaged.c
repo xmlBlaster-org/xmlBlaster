@@ -254,7 +254,8 @@ Dll_Export bool xmlBlasterUnmanagedIsConnected(struct XmlBlasterAccessUnparsed *
    return xa->isConnected(xa);
 }
 
-Dll_Export const char *xmlBlasterUnmanagedUsage() {
+Dll_Export const char *xmlBlasterUnmanagedUsage(void) {
+
    char *usage = (char *)malloc(XMLBLASTER_MAX_USAGE_LEN*sizeof(char));
    return xmlBlasterAccessUnparsedUsage(usage);
 }

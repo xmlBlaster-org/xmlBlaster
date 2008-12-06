@@ -49,7 +49,7 @@ Properties *createProperties(int argc, const char* const* argv) {
    if (argc > 1) {
       /* strip the executable name and the dash '-' */
       props->argc = argc-1;
-      props->argv = (char **)calloc(props->argc, sizeof(char *));
+      props->argv = (char **)calloc((size_t)props->argc, sizeof(char *));
       for (iarg=1; iarg < argc; iarg++) {
          if (argv[iarg] == 0 || strlen(argv[iarg]) == 0)
             props->argv[iarg-1] = (char *)argv[iarg];

@@ -212,7 +212,7 @@ Dll_Export char* xmlBlasterEscapeXmlBytes(int len, const char *bytes) {
 		if (pos >= (newLen-10)) {
 			newLen += (len < 1000) ? 100 : len/10;
 			res = (char *)realloc(res, newLen * sizeof(char));
-			memset(res+pos, '\0', newLen-pos);
+			memset(res+pos, '\0', (size_t)(newLen-pos));
 		}
 		if (bytes[i] == '&') {
 			strcat(res + pos, AMP);

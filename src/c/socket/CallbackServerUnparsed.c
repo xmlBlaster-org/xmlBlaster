@@ -112,6 +112,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
 bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseUdp)
 {
 #ifdef __IPhoneOS__
+   #	pragma unused(fd) /*if (socketToUse < 200) printf("CallbackServerUparsed.c: dummy printf to avoid compiler warning\n");*/
    cb->portCB = 12345;
    strcpyRealloc(&cb->hostCB, "127.0.0.1"); /* inet_ntoa holds the host in an internal static string */
    /*
@@ -885,7 +886,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
    cb->readFromSocket.numReadFuncP = 0;
 }
 
-const char *callbackServerRawUsage()
+const char *callbackServerRawUsage(void)
 {
    return
       "\n   -dispatch/callback/plugin/socket/hostname [localhost]"
