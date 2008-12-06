@@ -330,14 +330,10 @@ TODO
       <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
       <compilerarg value="-fPIC" />
       <compilerarg value="-Wall" />
-      <compilerarg value="-wd810" />
-      <compilerarg value="-wd981" />
-      <compilerarg value="-wd188" />
-      <compilerarg value="-wd193" />
-      <compilerarg value="-wd279" />
+      <compilerarg value="-wd981" />          <!-- operands are evaluated in unspecified order -->
+      <compilerarg value="-wd193" />          <!-- zero used for undefined preprocessing identifier #if _MSC_VER >= 1400 -->
       <compilerarg value="-wd383" />          <!-- C++ suppress char * to string temporary warn -->
-      <compilerarg value="-wd1683" />         <!-- explicit conversion of a 64-bit integral type to a smaller integral type (potential portability problem) -->
-      <!--compilerarg value="-Wcheck" />         < icc 8 diagnostic switch -->
+      <!-- compilerarg value="-wd1683" / -->         <!-- explicit conversion of a 64-bit integral type to a smaller integral type (potential portability problem) -->
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-D__interface=bar" /> <!-- Added temporary to workaround /usr/include/netinet/in.h delivered by SUSE 9.2 -->
       <compilerarg value="-D__s=bar1" />        <!-- Added temporary to workaround /usr/include/netinet/in.h delivered by SUSE 9.2 -->
