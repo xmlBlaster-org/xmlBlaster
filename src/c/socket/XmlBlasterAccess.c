@@ -423,11 +423,15 @@ static ConnectReturnQos *_xmlBlasterReConnect(XmlBlasterAccess *xa, XmlBlasterAc
 
    response = xa->connectionP->connect(xa->connectionP, (xa->connectQos==0)?0:xa->connectQos->qos, myUpdate, exception);
 
-   if (checkPost(xa, "connect", response, exception) == false ) return 0;
-
    freeXmlBlasterReturnQos(xa->connectReturnQos);
    xa->connectReturnQos = 0;
-   xa->connectReturnQos = createXmlBlasterReturnQos(response); /* reuses response memory */
+
+   if (*exception->errorCode == 0) {
+      xa->connectReturnQos = createXmlBlasterReturnQos(response); /* reuses response memory */
+   }
+
+   /* must have new connectReturnQos for the callback function */
+   if (checkPost(xa, "connect", response, exception) == false ) return 0;
 
    return xa->connectReturnQos;
 }
