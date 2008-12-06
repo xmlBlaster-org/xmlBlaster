@@ -143,7 +143,7 @@ Dll_Export void sleepMillis(long millisecs)
 {
 #ifdef _WINDOWS
    Sleep(millisecs);
-#elif __IPhoneOS__
+#elif defined(__IPhoneOS__)
    usleep((unsigned long)millisecs*1000);
 #elif XMLBLASTER_SLEEP_FALLBACK /* rounded to seconds */
    if (millisecs < 1000)
