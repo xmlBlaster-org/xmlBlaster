@@ -28,7 +28,7 @@ import junit.framework.*;
 public class TestConsumableQueue extends TestCase {
    private Global global;
    // as a container and as a latch
-   static ArrayList responses = new ArrayList();
+   static ArrayList<String> responses = new ArrayList<String>();
    private static long WAIT_DELAY = 1000L;
 
    public TestConsumableQueue(String name) {
@@ -84,7 +84,7 @@ public class TestConsumableQueue extends TestCase {
             for (int i=0; i < 2; i++) responses.wait(WAIT_DELAY);
             Thread.sleep(200L); // wait in case an unexpected update comes in betweeen
             assertEquals("wrong number of updates", 2, responses.size());
-            assertEquals("update should be a dead message", "deadMsg", (String)responses.get(1));
+            assertEquals("update should be a dead message", "deadMsg", responses.get(1));
          }
 
          responses.clear();         
@@ -106,7 +106,7 @@ public class TestConsumableQueue extends TestCase {
             for (int i=0; i < 2; i++) responses.wait(WAIT_DELAY);
             Thread.sleep(200L); // wait in case an unexpected update comes in betweeen
             assertEquals("wrong number of updates", 2, responses.size());
-            assertEquals("update should be a dead message", "deadMsg", (String)responses.get(1));
+            assertEquals("update should be a dead message", "deadMsg", responses.get(1));
          }
          
          sub1.shutdown(false);
