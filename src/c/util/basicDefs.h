@@ -39,7 +39,7 @@ Note:      cl.exe (Windows) always defines _WIN32
 #     define _WINDOWS /* We work with _WINDOWS and _MSC_VER in our code */
 #  endif
 #else  /* UNIX */
-#  define _MSC_VER 0 /* Dummy for UNIX to avoid compiler warnings at: #if _MSC_VER >= 1400 */
+/*#  define _MSC_VER 0 no possible as #ifdefs will return true!*/ /* Dummy for UNIX to avoid compiler warnings at: #if _MSC_VER >= 1400 */
 #endif
 
 #if defined(_WINDOWS)
