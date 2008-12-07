@@ -158,6 +158,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/postgresql.jar:${CLASSPATH}
    fi
 
+   if [ -f ${XMLBLASTER_HOME}/lib/sqlserver.jar ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/lib/sqlserver.jar:${CLASSPATH}
+   fi
+
    if [ -f ${XMLBLASTER_HOME}/lib/jtds.jar ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/jtds.jar:${CLASSPATH}
    fi
