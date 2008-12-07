@@ -2,12 +2,17 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 
-<requirement id='queue.jdbc.commontable' type='NEW' prio='HIGH' status='CLOSED'>
+<requirement id='queue.jdbc.commontable' type='NEW' prio='HIGH' status='DEPRECATED'>
    <topic>
      JDBC Plugin which stores all queues on a common table.
    </topic>
 
    <description>
+   <p><b>
+   This was the default persistence implementation until releas 1.6.4, please
+   read <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html" target="others">queue.jdbc</a>
+   for migration details.
+   </b></p>
      <p>
      When using the <i>org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin</i> XmlBlaster handles jdbc persistent storage
      by using a pool of tables. When a queue is created, such a table is used to store messages of that queue.
@@ -261,6 +266,7 @@ JdbcDriver.mapping[myStrangeDB]=string=text,\
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
    <see type="API">org.xmlBlaster.util.Global</see>
    <see type="REQ">queue</see>
+   <see type="REQ">queue.jdbc</see>
    <see type="REQ">queue.jdbc.postgres</see>
    <see type="REQ">queue.jdbc.oracle</see>
    <see type="REQ">queue.jdbc.firebird</see>

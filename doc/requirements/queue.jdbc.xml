@@ -2,14 +2,16 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 
-<requirement id='queue.jdbc' type='NEW' prio='HIGH' status='INWORK'>
+<requirement id='queue.jdbc' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>
      Describes xmlBlaster persistence layer since v2.0 (2008-11-20).
    </topic>
 
    <description>
      <p>
-     The new xmlBlaster store replaces the old queue.jdbc.commontable.
+     The new xmlBlaster store replaces the old 
+     <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html" target="others">queue.jdbc.commontable</a>
+     since xmlBlaster release newer than v1.6.4.
      </p>
      <p>
      It is acivated in xmlBlaster.properties by using the JdbcQueue plugin
@@ -271,13 +273,14 @@ JdbcDriver.mapping[myStrangeDB]=string=text,\
    </configuration>
 
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
-   <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueue</see>
    <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
    <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
    <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
    <see type="API">org.xmlBlaster.util.Global</see>
    <see type="REQ">queue</see>
+   <see type="REQ" label="The old persistence layer, used until xmlBlaster v1.6.4">queue.jdbc.commontable</see>
    <see type="REQ">queue.jdbc.postgres</see>
    <see type="REQ">queue.jdbc.oracle</see>
    <see type="REQ">queue.jdbc.firebird</see>
