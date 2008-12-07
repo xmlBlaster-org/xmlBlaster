@@ -93,9 +93,16 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
    private int entryCounter;
 
+   private static boolean isWarned;
+
    private StorageSizeListenerHelper storageSizeListenerHelper;
    
    public JdbcQueueCommonTablePlugin() {
+      if (!isWarned) {
+         isWarned = true;
+         log.warning("Be aware: You are using the OLD JdbcQueueCommonTablePlugin database persistence layer with the 'xb_entires' table which was the default up to xmlBlaster v1.6.4. " +
+               "Please consider upgrading to the new persistence schema. Details: http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html");
+      }
       this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
    }
    

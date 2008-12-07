@@ -81,6 +81,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    private long numOfPersistentBytes = -999L;
    private long numOfBytes = -999L;
    boolean isDown = true;
+   private static boolean isWarned;
 
    /** Monitor object used to synchronize the count of sizes */
    private Object modificationMonitor = new Object();
@@ -95,6 +96,11 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    private StorageId storageId;
    
    public JdbcQueue() {
+      if (!isWarned) {
+         isWarned = true;
+         log.warning("Be aware: You are using the new JdbcQueue database persistence layer with three tables 'xbstore', 'xbref', 'xbmeat'. " +
+               "If you have data in the old schema 'xb_entries' they are NOT used. In case you need the old data please read http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html");
+      }
       storageSizeListenerHelper = new StorageSizeListenerHelper(this);
    }
    
