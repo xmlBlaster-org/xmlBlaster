@@ -384,7 +384,7 @@ public class TestPtPDispatch extends TestCase {
    }
    
 // ------------------------------------------------------------------------
-
+/*
    private void subjectQueueOverflow(boolean isPersistent, String msgPrefix) {
       boolean shutdownCb = true;
       prepare(shutdownCb);
@@ -401,7 +401,7 @@ public class TestPtPDispatch extends TestCase {
       doPublish(-1 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       cleanup();
    }
-
+*/
    public void testSubjectQueueOverflowTransient() {
       subjectQueueNoOverflow(false, "SubjectQueueNoOverflowTransient");
    }
