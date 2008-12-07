@@ -14,6 +14,8 @@ import junit.framework.TestSuite;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -125,12 +127,20 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
          log.info("SUCCESS, reconnect is not possible: " + e.getMessage());
       }
 
-      // Now shutdown callback server so that xmlBlaster destroys our first session:
-      try {
-         this.con.getCbServer().shutdown();
+      boolean isSocket = (this.con.getCbServer() instanceof SocketCallbackImpl);
+
+      if (isSocket) {
+         // xmlBlaster destroys our first session:
+         this.con.leaveServer(null);
       }
-      catch (XmlBlasterException e) {
-         fail("Can't setup test: " + e.getMessage());
+      else { // "IOR"
+         // Now shutdown callback server so that xmlBlaster destroys our first session:
+         try {
+            this.con.getCbServer().shutdown();
+         }
+         catch (XmlBlasterException e) {
+            fail("Can't setup test: " + e.getMessage());
+         }
       }
 
       try { Thread.sleep(2000); } catch( InterruptedException i) {} // Wait
