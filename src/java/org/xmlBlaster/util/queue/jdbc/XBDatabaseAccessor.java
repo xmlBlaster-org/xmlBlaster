@@ -59,6 +59,7 @@ import org.xmlBlaster.util.queue.StorageId;
  */
 public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProblemListener, I_StorageProblemNotifier {
 
+   private static boolean logOnceDone;
    
    private class QueueGlobalInfo extends GlobalInfo {
 
@@ -124,11 +125,19 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
             I_DbPool dbPool = (I_DbPool)info.getObject(poolId);
             if (dbPool == null) {
                ClassLoader cl = DbWatcher.class.getClassLoader();
-               String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+               String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbWaitingPool"); // delegate to old pool also used before v1.6.4
+               //String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
                if (dbPoolClass.length() > 0) {
-                   dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
-                   if (log.isLoggable(Level.FINE)) 
-                      log.fine(dbPoolClass + " created and initialized");
+                  if (!logOnceDone) {
+                     logOnceDone = true;
+                     if ("org.xmlBlaster.contrib.db.DbWaitingPool".equals(dbPoolClass))
+                        log.info("Using traditional database pool '" + dbPoolClass + "'");
+                     else
+                        log.info("Using new contrib database pool '" + dbPoolClass + "'");
+                  }
+                  dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
+                  if (log.isLoggable(Level.FINE)) 
+                     log.fine(dbPoolClass + " created and initialized");
                }
                else
                   throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");

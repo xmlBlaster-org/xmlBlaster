@@ -4,6 +4,13 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17598 VERY IMPORTANT CHANGE with xmlBlaster persistence layer, PLEASE READ THIS!
+          The default configuration now uses the new JdbcQueue database persistence layer with three tables 
+	    'xbstore', 'xbref', 'xbmeat'.
+	  If you have data in the old schema 'xb_entries' they are NOT used.
+	  In case you need the old data please read
+	    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
+
  o r17581 C-client library: 
           Introduced Timestamp.c for thread safe requestId counter
 	  CallbackServer responseListener handling is now mutex protected
