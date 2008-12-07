@@ -16,6 +16,8 @@ import junit.framework.TestSuite;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -27,6 +29,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * This client test dead letter generation on callback problems. 
+ * <p />
+ * Works only if callback server is a separate instance (Corba is OK, but not SOCKET).
  * <p />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
@@ -68,6 +72,7 @@ public class TestCallback extends TestCase implements I_Callback
     */
    protected void setUp()
    {
+      /*
       String driverType = glob.getProperty().get("client.protocol", "dummy");
       if (driverType.equalsIgnoreCase("SOCKET"))
          isSocket = true;
@@ -81,12 +86,22 @@ public class TestCallback extends TestCase implements I_Callback
          log.warning("callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoke channel");
          return;
       }
+      */
 
       try {
          Global globAdmin = this.glob.getClone(null);
          conAdmin = globAdmin.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(globAdmin, "admin", passwd);
          conAdmin.connect(qos, this);
+         I_CallbackServer cbs = conAdmin.getCbServer();
+         if (cbs instanceof SocketCallbackImpl) {
+            isSocket = true;
+         }
+         if (isSocket) {
+            log.warning("callback test ignored for driverType=" + cbs.getCbProtocol() + " as callback server uses same socket as invoke channel");
+            conAdmin.disconnect(null);
+            return;
+         }
 
          subscribeDeadMessageOid = conAdmin.subscribe("<key oid='__sys__deadMessage'/>", null).getSubscriptionId();
          log.info("Success: Subscribe on " + subscribeDeadMessageOid + " done");
