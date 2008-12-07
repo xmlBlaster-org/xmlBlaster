@@ -5,26 +5,27 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.xmlBlaster.util.StopWatch;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
+import java.util.logging.Logger;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.util.MsgUnit;
-
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.test.Util;
-import junit.framework.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.StopWatch;
+import org.xmlBlaster.util.XmlBlasterException;
 
 
 /**
@@ -49,8 +50,6 @@ public class TestSubLostClient extends TestCase implements I_Callback
    private static String ME = "TestSubLostClient";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSubLostClient.class.getName());
-
-   private boolean messageArrived = false;
 
    private final String publishOid1 = "dummy1";
    private I_XmlBlasterAccess oneConnection;
@@ -186,7 +185,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
 
          manyClients[ii] = sub;
       }
-      double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
+      double timeForLogins = stopWatch.elapsed()/1000.; // msec -> sec
 
       log.info(numClients + " subscriber clients are ready.");
       log.info("Time " + (long)(numClients/timeForLogins) + " logins/sec");
