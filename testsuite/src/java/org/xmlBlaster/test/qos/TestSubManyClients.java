@@ -209,7 +209,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
          manyClients[ii] = sub;
       }
-      double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
+      double timeForLogins = stopWatch.elapsed()/1000.; // msec -> sec
 
 
       long usedAfter = getUsedServerMemory();
@@ -356,7 +356,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          }
       }
 
-      double timeToPublish = (double)stopWatch.elapsed()/1000.; // msec -> sec
+      double timeToPublish = stopWatch.elapsed()/1000.; // msec -> sec
 
 
       long usedAfter = getUsedServerMemory();
