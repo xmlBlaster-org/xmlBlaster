@@ -65,13 +65,9 @@ Note:      cl.exe (Windows) always defines _WIN32
 #    define true 1
 #    define false 0
 #  endif
-#       define XMLBLASTER_C_bool bool
-#else
-#if defined(_WINDOWS)
-#define XMLBLASTER_C_bool int
-#else
-#define XMLBLASTER_C_bool bool
-#endif
+#  define XMLBLASTER_C_bool bool
+#else  /* __cplusplus */
+#  define XMLBLASTER_C_bool bool
 #endif
 
 #if defined(_WINDOWS)
