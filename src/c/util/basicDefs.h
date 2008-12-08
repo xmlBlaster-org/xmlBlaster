@@ -56,6 +56,16 @@ Note:      cl.exe (Windows) always defines _WIN32
 # define Dll_Export
 #endif
 
+/* Note: cast int to bool like this: i!=0 which is true or false depending on i */
+/* Windows Note for bool:
+The bool type participates in integral promotions. An r-value of type bool can be converted to an r-value of type int, with false becoming zero and true becoming one.
+Microsoft Specific:
+In Visual C++4.2, the Standard C++ header files contained a typedef that equated bool with int.
+In Visual C++ 5.0 and later, bool is implemented as a built-in type with a size of 1 byte.
+That means that for Visual C++ 4.2, a call of sizeof(bool) yields 4, while in Visual C++ 5.0 and later, the same call yields 1.
+This can cause memory corruption problems if you have defined structure members of type bool in Visual C++ 4.2 and are mixing object files (OBJ) and/or
+DLLs built with the 4.2 and 5.0 or later compilers. 
+*/
 #ifndef __cplusplus
 #  if !defined(__sun) && !defined(_WINDOWS)  /* __GNUC_MINOR__=85 : gcc 2.85 does not like it either: how to define? */
 #    include <stdbool.h>
