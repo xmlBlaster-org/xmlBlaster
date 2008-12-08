@@ -198,6 +198,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\src\c\socket\XmlBlasterAccess.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\c\socket\XmlBlasterAccessUnparsed.c"
 					>
 				</File>
@@ -222,6 +226,10 @@
 				Name="util"
 				>
 				<File
+					RelativePath="..\..\..\..\src\c\util\base64c.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\src\c\util\helper.c"
 					>
 				</File>
@@ -231,6 +239,18 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\src\c\util\Properties.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\c\util\Timeout.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\c\util\Timestampc.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\src\c\util\XmlUtil.c"
 					>
 				</File>
 				<Filter
