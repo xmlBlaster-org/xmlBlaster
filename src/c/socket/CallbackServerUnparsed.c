@@ -235,9 +235,10 @@ static int responseListenerMutexLock(CallbackServerUnparsed *cb) {
    return retInt;
 }
 
-#if defined(_WINDOWS) /* TODO what is the equivalent for Win? */
+#if defined(_WINDOWS)
 static char *strerror_r(int retInt, char * errnoStr, size_t size) {
-	return strerror(retInt);
+	/*int ret = */strerror_s(errnoStr, size, retInt);
+	return errnoStr;
 }
 #endif
 
