@@ -9,6 +9,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Collections;
 using org.xmlBlaster.client;
 
 public class TestPInvoke : I_Callback, I_LoggingCallback, I_ProgressCallback
@@ -50,6 +51,7 @@ public class TestPInvoke : I_Callback, I_LoggingCallback, I_ProgressCallback
       xb = XmlBlasterAccessFactory.CreateInstance();
       xb.AddLoggingListener(this);
       xb.Initialize(argv);
+      xb.Initialize(new Hashtable());
 
       string connectQos = String.Format(
          "<qos>\n" +
