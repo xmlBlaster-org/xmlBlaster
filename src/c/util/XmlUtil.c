@@ -112,7 +112,7 @@ Dll_Export long xmlBlasterExtractAttributeLong(const char * const xml,
 	char *valP = xmlBlasterExtractAttributeValue(xml, tag, attributeName);
 	if (valP == 0)
 		return defaultValue;
-	if (sscanf(valP, "%ld", &val) == 1)
+	if (sscanf_s(valP, "%ld", &val) == 1)
 		return val;
 	return defaultValue;
 }
