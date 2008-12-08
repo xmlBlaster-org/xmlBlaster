@@ -950,7 +950,7 @@ static bool persistentQueueDestroy(I_Queue **queuePP, ExceptionStruct *exception
  */
 static bool persistentQueueClear(I_Queue *queueP, ExceptionStruct *exception)
 {
-   int stateOk = true;
+   bool stateOk = true;
    char queryString[LEN256];
    sqlite_vm *pVm = 0;
    DbInfo *dbInfo;
