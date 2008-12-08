@@ -71,9 +71,12 @@ DLLs built with the 4.2 and 5.0 or later compilers.
 #    include <stdbool.h>
 #  endif
 #  ifndef __bool_true_false_are_defined
-#    define bool int
+#    define bool char
+#    define true (char)1
+#    define false (char)0
+/*#    define bool int   Not possible if used with C++ as a bool is 1byte and struct alignement broken, savest ist probably: build -DXMLBLASTER_C_COMPILE_AS_CPP=1 c cpp
 #    define true 1
-#    define false 0
+#    define false 0*/
 #  endif
 #  define XMLBLASTER_C_bool bool
 #else  /* __cplusplus */
