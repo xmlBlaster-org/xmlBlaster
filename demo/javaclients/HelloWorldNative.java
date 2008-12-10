@@ -4,6 +4,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -41,7 +42,8 @@ public class HelloWorldNative implements I_Plugin
          qos.setUserId("A-NATIVE-CLIENT-PLUGIN");
          qos.getSessionQos().setSessionTimeout(0L);
          con.connect(qos, null);    // Login to xmlBlaster as "A-NATIVE-CLIENT-PLUGIN"
-         //Here we could publish or subscribe etc., see HelloWorld3.java how to do it
+         //Here we can publish or subscribe etc., see HelloWorld3.java how to do it
+         con.publish(new MsgUnit(glob, "<key oid='TEST'/>", "Hi", "<qos/>"));
          //con.disconnect(null);
       }
       catch (Exception e) {

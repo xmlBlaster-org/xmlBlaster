@@ -5,20 +5,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
-import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 
 
 /**
@@ -326,8 +326,8 @@ public final class ConnectQos
     * we want connect to.
     * @return never null
     */
-   public AddressBase[] getAddresses() {
-      return this.connectQosData.getAddresses();
+   public AddressBase[] getAddresses(boolean forceCbAddressCreation) {
+      return this.connectQosData.getAddresses(forceCbAddressCreation);
    }
 
    /**

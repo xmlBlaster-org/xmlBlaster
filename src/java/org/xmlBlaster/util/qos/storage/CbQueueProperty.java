@@ -6,8 +6,9 @@ Comment:   Holding callback queue properties
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -20,7 +21,6 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
  */
 public class CbQueueProperty extends QueuePropertyBase
 {
-   private static final String ME = "CbQueueProperty";
    private static Logger log = Logger.getLogger(CbQueueProperty.class.getName());
 
    /**

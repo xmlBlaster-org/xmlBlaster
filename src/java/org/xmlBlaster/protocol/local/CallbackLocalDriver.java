@@ -18,15 +18,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.xmlBlaster.protocol.local;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
@@ -108,7 +109,10 @@ public class CallbackLocalDriver implements I_CallbackDriver {
             engineGlob = (org.xmlBlaster.engine.ServerScope)this.glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
          if (engineGlob == null)
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
-         this.callback = (I_CallbackExtended)engineGlob.getObjectEntry(getRawAddress());
+         // "LOCAL:29653342" added by LocalCallbackImpl.initialize()
+         // "LOCAL:"+localCallbackImpl.hashCode();
+         String raw = getRawAddress();
+         this.callback = (I_CallbackExtended) engineGlob.getObjectEntry(raw);
          if (this.callback == null)
             throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "getCallback");
          return this.callback;

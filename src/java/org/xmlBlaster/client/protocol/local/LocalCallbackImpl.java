@@ -6,13 +6,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.protocol.local;
 
 
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
 
 
 /**
@@ -76,7 +76,7 @@ public class LocalCallbackImpl implements I_CallbackServer
       this.glob = (glob == null) ? Global.instance() : glob;
       this.ME = "LocalCallbackImpl-" + loginName;
 
-      this.callbackId = "LOCAL:"+this.hashCode();
+      this.callbackId = "LOCAL:" + this.hashCode(); // "LOCAL:204920"
       
       // Set this object an the engine.Global so that the server cb handler
       // can find it.
@@ -87,6 +87,9 @@ public class LocalCallbackImpl implements I_CallbackServer
       // Ad the driver to the "naming" store.
       if (cbClient != null) {
          this.cbClient = cbClient;
+         // callbackId "LOCAL:204920" is transported as callbackserver raw
+         // address
+         // Used again by server side CallbackLocalDriver.java.getCallback():
          engineGlob.addObjectEntry(this.callbackId, this.cbClient);
       }
    }
@@ -100,11 +103,12 @@ public class LocalCallbackImpl implements I_CallbackServer
    }
 
    /**
-    * Returns the callback address. 
+    * Returns the callback address.
     * <p />
-    * This is no listen local, as we need no callback server.
-    * It is just the client side local data of the established connection to xmlBlaster.
-    * @return "local"
+    * This is no listen local, as we need no callback server. It is just the
+    * client side local data of the established connection to xmlBlaster.
+    * 
+    * @return "LOCAL:3020001"
     */
    public String getCbAddress() throws XmlBlasterException {
       return callbackId;

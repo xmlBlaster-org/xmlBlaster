@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17619 Bugfix: 2008-12-10
+          Bug introduced with r16911 ConnectQosData.java 2008-05-03 17:35:04
+          Native clients (protocl=LOCAL) without callback server configured (xmlBlasterAccess.connect(qos, null))
+	  can't login to xmlBlaster anymore, this is for example the FilePollerPlugin
+
  o r17598 VERY IMPORTANT CHANGE with xmlBlaster persistence layer, PLEASE READ THIS!
           The default configuration now uses the new JdbcQueue database persistence layer with three tables 
 	    'xbstore', 'xbref', 'xbmeat'.

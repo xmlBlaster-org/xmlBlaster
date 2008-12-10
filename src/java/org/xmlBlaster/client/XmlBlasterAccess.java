@@ -432,9 +432,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   this.msgErrorHandler = new ClientErrorHandler(glob, this);
                }
 
+               boolean forceCbAddressCreation = (updateListener != null);
                this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
-                                       this.connectQos.getAddresses(), sn);
+                                       this.connectQos.getAddresses(forceCbAddressCreation), sn);
 
                getDispatchStatistic(); // Force creation of dispatchStatistic as this syncs on 'this' and could deadlock if don later from a update()
 

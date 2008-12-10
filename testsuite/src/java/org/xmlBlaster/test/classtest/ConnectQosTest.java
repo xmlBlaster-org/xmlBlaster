@@ -213,7 +213,7 @@ public class ConnectQosTest extends TestCase {
          public final String getSecurityPluginType() throws XmlBlasterException
          public final String getSecurityPluginVersion() throws XmlBlasterException
          */
-         AddressBase[] addrArr = qos.getAddresses();
+         AddressBase[] addrArr = qos.getAddresses(true);
          assertEquals("Address array", 1, addrArr.length);
          //Address addr = qos.getAddress();
          //assertEquals("", "http:...", addr.getAddress().trim()); // from client queue property

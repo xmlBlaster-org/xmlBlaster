@@ -5,28 +5,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.PluginLoader;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.property.PropBoolean;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-
-import java.util.Properties;
-import java.util.Vector;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 
 
 /**
@@ -552,14 +552,18 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * we want connect to.
     * @return never null
     */
-   public Address[] getAddresses() {
+   public Address[] getAddresses(boolean forceCbAddressCreation) {
       ClientQueueProperty[] props = getClientQueuePropertyArr();
       ArrayList list = new ArrayList();
       for (int i=0; i<props.length; i++) {
          AddressBase[] adrs = props[i].getAddresses();
-         for (int j=0; j<adrs.length; j++) {
+         for (int j = 0; j < adrs.length; j++) {
             adrs[j].setSessionName(getSessionName());
-            ((Address)adrs[j]).setCallbackAddress(getCurrentCallbackAddress());
+            if (forceCbAddressCreation) {
+               // Not for LOCAL protocol without callback like FilePoller, else
+               // login fails!
+               ((Address) adrs[j]).setCallbackAddress(getCurrentCallbackAddress());
+            }
             list.add(adrs[j]);
          }
       }
