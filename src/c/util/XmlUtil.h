@@ -67,7 +67,7 @@ Dll_Export extern long xmlBlasterExtractAttributeLong(const char * const xml,
  * @param tag For example "node" for a tag &lt;node id='heron'>Good day&lt;/node>
  * @param attributeName "id"
  * @param attributeValue Can be 0
- * @return 'Good day' null if none is found, you need to free it
+ * @return 'Good day' null if none is found, you need to free it with xmlBlasterFree(p);
  */
 Dll_Export extern char *xmlBlasterExtractTagValueWithAttribute(const char * const xml,
 		const char * const tag, const char * const attributeName,
@@ -76,7 +76,7 @@ Dll_Export extern char *xmlBlasterExtractTagValueWithAttribute(const char * cons
  * Find the first given tag and return its value.
  * @param xml The xml string to parse
  * @param tag For example "node" for a tag &lt;node id='heron'>Good day&lt;/node>
- * @return 'Good day' null if none is found, you need to free it
+ * @return 'Good day' null if none is found, you need to free it with xmlBlasterFree(p);
  */
 Dll_Export extern char *xmlBlasterExtractTagValue(const char * const xml,
 		const char * const tag);
