@@ -6,6 +6,7 @@ import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
@@ -53,7 +54,7 @@ public class HelloWorldNative implements I_Plugin
 
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob.getClone(glob.getNativeConnectArgs()); // Sets  "-protocol LOCAL" etc.
-      this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
+      this.glob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       System.out.println("\nHelloWorldNative: init(): The plugin is loaded");
       doLogin();
    }
