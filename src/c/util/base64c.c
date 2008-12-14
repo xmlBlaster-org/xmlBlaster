@@ -105,7 +105,8 @@ static void decodeblock( unsigned char in[4], unsigned char out[3] )
  * @param inStr The zero terminated base64 string
  * @param outLen An out-parameter, is set to the length of the returned bytes
  * @return the decoded bytes with length 'outLen',
- *  is additionally guaranteed to be null terminated (but may contain other zeros)
+ *  is additionally guaranteed to be null terminated (but may contain other zeros).
+ *  The caller must free the returned pointer with free()
  */
 Dll_Export extern char *Base64Decode(const char *inStr, int *outLen) {
     unsigned char in[4], out[3], v;
