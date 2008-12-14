@@ -173,6 +173,7 @@ Dll_Export extern bool strToLong(long *val, const char * const str);
 Dll_Export extern bool strToULong(unsigned long *val, const char * const str);
 Dll_Export extern bool strToInt(int *val, const char * const str);
 Dll_Export extern BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, size_t dataLen);
+Dll_Export extern void freeBlobHolder(BlobHolder *blob);
 Dll_Export extern BlobHolder *freeBlobHolderContent(BlobHolder *blob);
 Dll_Export extern char *blobDump(BlobHolder *blob);
 Dll_Export extern void freeBlobDump(char *blobDumpP); /* deprecated: use xmlBlasterFree() */

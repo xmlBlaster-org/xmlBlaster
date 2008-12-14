@@ -938,6 +938,13 @@ Dll_Export BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, size_t d
    return blob;
 }
 
+Dll_Export void freeBlobHolder(BlobHolder *blob)
+{
+   if (blob == 0) return;
+   freeBlobHolderContent(blob);
+   free(blob);
+}
+
 /**
  * free()'s the data in the given blob, does not free the blob itself.
  * @param blob if NULL we return NULL
