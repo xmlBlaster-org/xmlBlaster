@@ -114,7 +114,7 @@ public class CallbackLocalDriver implements I_CallbackDriver {
          String raw = getRawAddress();
          this.callback = (I_CallbackExtended) engineGlob.getObjectEntry(raw);
          if (this.callback == null)
-            throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "getCallback");
+            throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "getCallback lookup of '" + getRawAddress() + "' failed");
          return this.callback;
       }
    }
