@@ -19,14 +19,14 @@
     <description>Simple unprotected xmlBlaster access</description>
     <servlet-class>org.xmlBlaster.protocol.http.simple.PullServlet</servlet-class>
     <init-param>
+      <description>Any browser may access!</description>
       <param-name>loginName</param-name>
       <param-value>pullServlet</param-value>
-      <description>Any browser may access!</description>
     </init-param>
     <init-param>
+      <description>Any browser may access!</description>
       <param-name>passwd</param-name>
       <param-value>something</param-value>
-      <description>Any browser may access!</description>
     </init-param>
   </servlet>
 
@@ -35,34 +35,34 @@
     <description>XmlScript access with ajax polling</description>
     <servlet-class>org.xmlBlaster.protocol.http.ajax.AjaxServlet</servlet-class>
     <init-param>
+      <description>If now Ajax call arrives after 60 sec the session dies</description>
       <param-name>maxInactiveInterval</param-name>
       <param-value>60000</param-value>
-      <description>If now Ajax call arrives after 60 sec the session dies</description>
     </init-param>
     <init-param>
+      <description>The login name</description>
       <param-name>session.name</param-name>
       <param-value>lkw4</param-value>
-      <description>The login name</description>
     </init-param>
     <init-param>
+      <description>The password to use</description>
       <param-name>password</param-name>
       <param-value>secret</param-value>
-      <description>The password to use</description>
     </init-param>
     <init-param>
+      <description>Compressed SOCKET communication</description>
       <param-name>plugin/socket/compress/type</param-name>
       <param-value>zlib:stream</param-value>
-      <description>Compressed SOCKET communication</description>
     </init-param>
     <init-param>
+      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
       <param-name>dispatch/connection/plugin/socket/hostname</param-name>
       <param-value>192.168.1.20</param-value>
-      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
     </init-param>
     <init-param>
+      <description>Port where xmlBlaster is running if not on default port (example for SOCKET protocol)</description>
       <param-name>dispatch/connection/plugin/socket/port</param-name>
       <param-value>7606</param-value>
-      <description>Port where xmlBlaster is running if not on default port (example for SOCKET protocol)</description>
     </init-param>
     <init-param>
     	<param-name>queue/connection/defaultPlugin</param-name>
@@ -110,23 +110,23 @@
     <servlet-class>org.xmlBlaster.protocol.http.appletproxy.AppletServlet</servlet-class>
 
     <init-param>
+      <description>dumps messages</description>
       <param-name>logging/org.xmlBlaster.protocol.http.appletproxy.AppletServlet</param-name>
       <param-value>FINEST</param-value>
-      <description>dumps messages</description>
     </init-param>
     <init-param>
       <param-name>queue/connection/defaultPlugin</param-name>
       <param-value>RAM,1.0</param-value>
     </init-param>
     <init-param>
+      <description>The login name</description>
       <param-name>session.name</param-name>
       <param-value>joe</param-value>
-      <description>The login name</description>
     </init-param>
     <init-param>
+      <description>The password to use</description>
       <param-name>password</param-name>
       <param-value>secret</param-value>
-      <description>The password to use</description>
     </init-param>
     <init-param>
       <param-name>protocol</param-name>
