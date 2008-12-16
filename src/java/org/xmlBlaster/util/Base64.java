@@ -115,11 +115,12 @@ public class Base64 {
                 
 
     /** Decodes the given Base64 encoded String to a new byte array. 
-        The byte array holding the decoded data is returned. */
-
-
+     *  The byte array holding the decoded data is returned.
+     *  @return never null
+     */
     public static byte [] decode (String s) {
-
+    	if (s == null)
+    		return new byte[0];
         int i = 0;
         ByteArrayOutputStream bos = new ByteArrayOutputStream ();
         int len = s.length ();
