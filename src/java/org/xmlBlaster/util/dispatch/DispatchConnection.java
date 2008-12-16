@@ -182,7 +182,7 @@ abstract public class DispatchConnection implements I_Timeout
       }
       try {
          super.finalize();
-         if (log.isLoggable(Level.FINE)) log.fine(ME + "finalize - garbage collected");
+         //if (log.isLoggable(Level.FINE)) log.fine(ME + "finalize - garbage collected");
       }
       catch (Throwable e) {
          e.printStackTrace();
