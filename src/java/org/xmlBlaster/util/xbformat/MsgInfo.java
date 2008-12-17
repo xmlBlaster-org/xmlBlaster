@@ -329,7 +329,11 @@ public class MsgInfo {
          */
          Timestamp ts = new Timestamp();
          // TODO: getMethodNameStr for debugging only, can be removed again 2008-06-01
-         this.requestId = prefix + getMethodNameStr() + ts.getTimestamp();
+         // NOTE (2008-12-17 michele: if you will take it away, make sure to take away also the semicolumn
+         // otherwise you may have troubles in the email protocol
+         if (prefix.length() > 0 && !(prefix.lastIndexOf(':') == (prefix.length()-1)))
+               prefix += ":";
+         this.requestId = prefix + getMethodNameStr() + ":" + ts.getTimestamp();
       }
       return this.requestId;
    }
@@ -346,6 +350,20 @@ public class MsgInfo {
       return this.requestId;
    }
 
+   /**
+    * The monoton increasing sequence number (extracted from the requestId which could in fact contain other things than
+    * just the long.
+    * @return the long number.
+    */
+   public final long getRequestSequence() {
+      String tmp = getRequestId();
+      int pos = tmp.lastIndexOf(':');
+      if (pos > -1)
+         tmp = tmp.substring(pos);
+      return new Long(tmp).longValue();      
+   }
+   
+   
    /** For example MethodName.PUBLISH */
    public final void setMethodName(MethodName methodName) {
       this.methodName = methodName;
