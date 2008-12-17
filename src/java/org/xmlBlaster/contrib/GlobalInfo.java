@@ -16,7 +16,6 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 package org.xmlBlaster.contrib;
 
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
-import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
