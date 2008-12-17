@@ -25,6 +25,8 @@ import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.I_ChangeListener;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
+import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * Check the database and compare the change timestamp of a table to the previous one. 
@@ -99,7 +101,7 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  * @author Marcel Ruff
  * @author Michele Laghi 
  */
-public class TimestampChangeDetector implements I_ChangeDetector, TimestampChangeDetectorMBean
+public class TimestampChangeDetector implements I_ChangeDetector, TimestampChangeDetectorMBean, I_ReplaceVariable
 {
    private static Logger log = Logger.getLogger(TimestampChangeDetector.class.getName());
    protected I_Info info;
@@ -115,6 +117,7 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
    protected boolean ignoreExistingDataOnStartup;
    protected String changeCommand;
    protected String oldTimestamp;
+   protected String tmpOldTimestamp;
    protected String newTimestamp;
    String MINSTR = " ";
    protected String queryMeatStatement;
@@ -127,6 +130,8 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
    private I_Info persistentInfo;
    
    private boolean ignoreDetection;
+   
+   private ReplaceVariable replaceVariable = new ReplaceVariable();
    
    final private void persistTimestampIfNecessary() {
       if (this.persistentInfo == null)
@@ -249,7 +254,7 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
       // to add this to JMX
       String jmxName = I_Info.JMX_PREFIX + "timestampChangeDetector";
       info.putObject(jmxName, this);
-      log.info("Added object '" + jmxName + "' to I_Info to be added as an MBean");
+      log.info("Added object '" + jmxName + "' to I_Info to be added as an MBean for TimestampChangeDetector");
    }
 
    
@@ -351,7 +356,9 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
 
             if (this.queryMeatStatement != null) { // delegate processing of message meat ...
                ChangeEvent changeEvent = new ChangeEvent(groupColName, null, null, this.changeCommand, null);
-               String stmt = DbWatcher.replaceVariable(this.queryMeatStatement, oldTimestamp==null?MINSTR:oldTimestamp);
+               tmpOldTimestamp = oldTimestamp==null?MINSTR:oldTimestamp;
+               String stmt = replaceVariable.replace(queryMeatStatement, this);
+               // String stmt = DbWatcher.replaceVariable(this.queryMeatStatement, oldTimestamp==null?MINSTR:oldTimestamp);
                try {
                   changeCount = changeListener.publishMessagesFromStmt(stmt, groupColName!=null, changeEvent, conn);
                }
@@ -519,5 +526,22 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
    public boolean  isIgnoreDetection() {
       return this.ignoreDetection;
    }
+
+
+   /**
+    * Enforced by I_ReplaceVariable
+    */
+   public String get(String key) {
+      if (key == null)
+         return null;
+      if ("oldTimestamp".equals(key))
+         return tmpOldTimestamp; // since we don't want to change the oldTimestamp before this replacement
+      if ("newTimestamp".equals(key))
+         return newTimestamp;
+      return key; // if nothing known found
+   }
+   
+   
+   
    
 }
