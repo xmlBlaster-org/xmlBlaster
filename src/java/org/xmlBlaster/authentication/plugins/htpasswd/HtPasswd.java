@@ -63,6 +63,8 @@ import java.util.Vector;
 public class HtPasswd {
 
    private static final String ME = "HtPasswd";
+   
+   private static boolean firstRead = true;
 
    protected Global glob;
    private static Logger log = Logger.getLogger(HtPasswd.class.getName());
@@ -303,6 +305,11 @@ public class HtPasswd {
       if( ! htpasswdFile.canRead() ) {
          log.severe( "Secret file '"+htpasswdFilename + "' has no read permission");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "no read access on file : "+htpasswdFilename );
+      }
+      
+      if(firstRead) {
+    	  firstRead = false;
+          log.info("Using secret file '"+htpasswdFilename + "' for authentication");
       }
       
       long curr = htpasswdFile.lastModified();
