@@ -1,18 +1,17 @@
 package org.xmlBlaster.test.classtest.qos;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.def.Constants;
-
-import org.apache.commons.codec.binary.Base64;
 import java.util.Hashtable;
+import java.util.logging.Logger;
 
 import junit.framework.TestCase;
+
+import org.xmlBlaster.util.Base64;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.address.Destination;
 
 /**
  * Test MsgQosSaxFactory. 
@@ -52,8 +51,8 @@ public class MsgQosTest extends TestCase {
       qos.addClientProperty(cp);
       Hashtable jxPath = qos.toJXPath();
       String value = (String)jxPath.get("/qos/clientProperty[@name='aKey']/text()");
-      byte[] bla = Base64.encodeBase64("bla".getBytes(), false);
-      assertEquals("JXPATH", new String(bla), value);
+      String bla = Base64.encode("bla".getBytes());
+      assertEquals("JXPATH", bla, value);
       String type = (String)jxPath.get("/qos/clientProperty[@name='aKey']/@type");
       assertEquals("JXPATH", "byte[]", type);
       String encoding = (String)jxPath.get("/qos/clientProperty[@name='aKey']/@encoding");

@@ -432,7 +432,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
             if (line == null || line.length() < 1)
                continue;
             if (true) { // doPost) {  // All POST is returned Base64 encoded, all GET as ordinary string
-               byte[] serial = decodeBase64(line.getBytes());
+               byte[] serial = decodeBase64(line);
                //log("DEBUG", "Parsing now: <" + new String(serial) + ">");
 
                ByteArrayInputStream bais = new ByteArrayInputStream(serial);
@@ -583,7 +583,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     */
    //public abstract String encode(String s, String enc);
    
-   public abstract byte[] encodeBase64(byte[] data);
+   public abstract String encodeBase64(byte[] data);
 
    /**
     * decodes binary data to Base64. The returned bytes are all
@@ -592,7 +592,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @param data
     * @return
     */
-   public abstract byte[] decodeBase64(byte[] data);
+   public abstract byte[] decodeBase64(String data);
 
    public abstract I_Connection createConnection(String urlString) throws Exception;
 

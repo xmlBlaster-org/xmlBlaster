@@ -9,7 +9,6 @@ package org.xmlBlaster.util;
 import java.io.UnsupportedEncodingException;
 
 import org.xmlBlaster.util.def.Constants;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * This class encapsulates one client property in a QoS. 
@@ -134,7 +133,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
    public String getStringValue() {
       if (this.value == null) return null;
       if (Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
-         byte[] content = Base64.decodeBase64(this.value.getBytes());
+         byte[] content = Base64.decode(this.value);
          if (getCharset() != null) {
             try {
                return new String(content, getCharset());
@@ -159,7 +158,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
    public byte[] getBlobValue() {
       if (this.value == null) return null;
       if (Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
-         byte[] content = Base64.decodeBase64(this.value.getBytes());
+         byte[] content = Base64.decode(this.value);
          return content;
       }
       return this.value.getBytes();
@@ -249,8 +248,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
    public void setValue(byte[] value) {
       this.type = Constants.TYPE_BLOB;
       this.encoding = Constants.ENCODING_BASE64;
-      byte[] content = Base64.encodeBase64(value, isChunked);
-      this.value = new String(content);
+      this.value = Base64.encode(value);
    }
 
    /**
@@ -274,8 +272,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
       }
       if (Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
          this.encoding = Constants.ENCODING_BASE64; // correct case sensitive
-         byte[] content = Base64.encodeBase64(value.getBytes(), isChunked);
-         this.value = new String(content);
+         this.value = Base64.encode(value.getBytes());
       }
       else {
          this.value = value;
@@ -452,12 +449,12 @@ public class EncodableData implements java.io.Serializable, Cloneable
          System.exit(1);
       }
       if (args.length == 1) {
-         byte[] content = Base64.decodeBase64(args[0].getBytes());
+         byte[] content = Base64.decode(args[0]);
          System.out.println("'" + args[0] + "' -> '" + new String(content) + "'");
       }
       else {
-         byte[] content = Base64.encodeBase64(args[1].getBytes(), false);
-         System.out.println("'" + args[1] + "' -> '" + new String(content) + "'");
+         String content = Base64.encode(args[1].getBytes());
+         System.out.println("'" + args[1] + "' -> '" + content + "'");
       }
       
    }

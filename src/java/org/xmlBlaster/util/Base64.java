@@ -112,7 +112,15 @@ public class Base64 {
             throw new RuntimeException (new StringBuffer("unexpected code: ").append(c).toString());
         }
     }
-                
+
+    public static byte [] decode (byte[] b) {
+    	try {
+			return decode(new String(b, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return decode(new String(b));
+		}
+    }
 
     /** Decodes the given Base64 encoded String to a new byte array. 
      *  The byte array holding the decoded data is returned.

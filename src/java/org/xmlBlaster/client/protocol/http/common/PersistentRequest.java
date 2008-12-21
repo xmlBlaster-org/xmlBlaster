@@ -128,7 +128,7 @@ public class PersistentRequest extends Thread {
             if (line.indexOf("--End") != -1) { // base64 may not contain "--"
                continue;
             }
-            byte[] serial = this.xmlBlasterAccess.decodeBase64(line.getBytes());
+            byte[] serial = this.xmlBlasterAccess.decodeBase64(line);
             log("DEBUG", new StringBuffer().append("Parsing now: <").append(serial).append("> with length ").append(serial.length).toString());
 
             // don't know why but sometimes a special character resulting in a converted empty string
@@ -161,7 +161,7 @@ public class PersistentRequest extends Thread {
                Hashtable qosMap = (Hashtable)ois.readObject();
                Hashtable keyMap = (Hashtable)ois.readObject();
                String contentBase64 = (String)ois.readObject();
-               byte[] content = this.xmlBlasterAccess.decodeBase64(contentBase64.getBytes());
+               byte[] content = this.xmlBlasterAccess.decodeBase64(contentBase64);
                log("DEBUG", new StringBuffer().append("Received update keyOid='").append(keyMap.get("/key/@oid")).append("' stateId=").append(qosMap.get("/qos/state/@id")).toString());
                this.xmlBlasterAccess.update(cbSessionId, keyMap, content, qosMap);
             }

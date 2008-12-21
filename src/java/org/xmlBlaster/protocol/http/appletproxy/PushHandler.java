@@ -11,6 +11,7 @@ import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timeout;
@@ -28,8 +29,6 @@ import javax.servlet.http.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Hashtable;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * This handles and hides the different http push modes when sending
@@ -246,10 +245,10 @@ public class PushHandler implements I_Callback, I_Timeout
       if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart for applet, size=" + chunk.length);
       if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart for applet, content='" + new String(chunk) + "'");
       
-      byte[] base64 = Base64.encodeBase64(chunk, isChunked);
+      String base64 = Base64.encode(chunk);
       if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart for applet, content (encoded)='" + new String(base64) + "'");
       synchronized(outMulti) {
-         outMulti.println(new String(base64));
+         outMulti.println(base64);
          outMulti.println("--End");
          outMulti.flush();
          log.fine("Pushed data successfully as multipart to applet.");
@@ -287,7 +286,7 @@ public class PushHandler implements I_Callback, I_Timeout
          Hashtable keyMap = updateKey.getData().toJXPath();
          out.writeObject(keyMap);
 
-         out.writeObject(new String(Base64.encodeBase64(content, isChunked)));
+         out.writeObject(Base64.encode(content));
 
          pushToApplet(dump.toByteArray());
          if (log.isLoggable(Level.FINE)) log.fine("Sent update message '" + updateKey.getOid() + "' content='" + new String(content) + "' to applet");

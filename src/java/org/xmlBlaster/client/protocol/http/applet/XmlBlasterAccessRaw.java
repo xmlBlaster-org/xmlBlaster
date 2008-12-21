@@ -4,8 +4,8 @@ import java.applet.Applet;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
-import org.apache.commons.codec.binary.Base64;
 import org.xmlBlaster.client.protocol.http.common.*;
+import org.xmlBlaster.util.Base64;
 
 /**
  * A java client implementation to access xmlBlaster using a persistent http connection
@@ -121,12 +121,12 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
       */
    //}
    
-   public byte[] encodeBase64(byte[] data) {
-      return Base64.encodeBase64(data);
+   public String encodeBase64(byte[] data) {
+      return Base64.encode(data);
    }
 
-   public byte[] decodeBase64(byte[] data) {
-      return Base64.decodeBase64(data);
+   public byte[] decodeBase64(String data) {
+      return Base64.decode(data);
    }
 
    public I_Connection createConnection(String urlString) throws Exception {

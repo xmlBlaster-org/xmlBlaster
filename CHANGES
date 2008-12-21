@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17633 Removed org.apache.commons.codec.binary.Base64 dependency
+
  o r17630 Bugfix: fixed bug in email protocol when the requestId was not a long (was apparently introduced 2008-06-01)
 
  o r17619 Bugfix: 2008-12-10

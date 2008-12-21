@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -51,7 +52,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * This servlet supports requests from an applet and sends instant message callbacks to it. 
@@ -719,9 +719,9 @@ public class AppletServlet extends HttpServlet implements I_LogListener
          objectOut.writeObject(obj);
       }
       boolean isChunked = false; // All in one line
-      byte[] base64 = Base64.encodeBase64(dump.toByteArray(), isChunked);
+      String base64 = Base64.encode(dump.toByteArray());
       PrintWriter out = res.getWriter();
-      out.println(new String(base64));
+      out.println(base64);
       out.flush();
    }
 

@@ -16,7 +16,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_ChangePublisher;
@@ -30,6 +29,7 @@ import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.jms.XBSession;
+import org.xmlBlaster.util.Base64;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -385,7 +385,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                clob.getAsciiStream().read(buf);
                rs.close();
                st.close();
-               byte[] out = Base64.decodeBase64(buf);
+               byte[] out = Base64.decode(buf);
                log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
                assertEquals("wrong number of return values ", in.length, out.length);
                for (int i=0; i < in.length; i++) {
@@ -414,7 +414,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                rs.close();
                st.close();
                log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
-               String out = new String(Base64.decodeBase64(buf));
+               String out = new String(Base64.decode(buf));
                assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
             }
             catch (SQLException sqlEx) {
@@ -447,7 +447,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                 st.close();
                 log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
                 
-                byte[] out = Base64.decodeBase64(buf);
+                byte[] out = Base64.decode(buf);
                 assertEquals("wrong number of return values ", in.length, out.length);
                 for (int i=0; i < in.length; i++) {
                    assertEquals("entry '" + i + "' is wrong: ", in[i], out[i]);
@@ -545,7 +545,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                rs.close();
                st.close();
                log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
-               String out = new String(Base64.decodeBase64(buf));
+               String out = new String(Base64.decode(buf));
                assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
             }
             catch (SQLException sqlEx) {
