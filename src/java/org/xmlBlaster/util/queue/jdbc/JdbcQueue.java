@@ -96,11 +96,6 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    private StorageId storageId;
    
    public JdbcQueue() {
-      if (!isWarned) {
-         isWarned = true;
-         log.warning("Be aware: You are using the new JdbcQueue database persistence layer with three tables 'xbstore', 'xbref', 'xbmeat'. " +
-               "If you have data in the old schema 'xb_entries' they are NOT used. In case you need the old data please read http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html");
-      }
       storageSizeListenerHelper = new StorageSizeListenerHelper(this);
    }
    
@@ -1204,6 +1199,13 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       this.glob = glob;
       this.pluginInfo = pluginInfo;
+      if (this.pluginInfo.getParameters().getProperty("xmlBlaster/warnNewJdbcQueue", "true").equals("true")) {
+         if (!isWarned) {
+            isWarned = true;
+            log.warning("Be aware: You are using the new JdbcQueue database persistence layer with three tables 'xbstore', 'xbref', 'xbmeat'. " +
+                  "If you have data in the old schema 'xb_entries' they are NOT used. In case you need the old data please read http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html");
+         }
+      }
    }
 
    /**
