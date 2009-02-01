@@ -384,7 +384,7 @@ public class StringPairTokenizer {
    /**
     * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
     * @param outerToken is for example ";" or ","
-    * @param innterToken is for example "=" or " "
+    * @param innerToken is for example "=" or " "
     * If a value is missing then a null object as value.
     * the map returns pairs 'String,ClientProperty'.
     */
