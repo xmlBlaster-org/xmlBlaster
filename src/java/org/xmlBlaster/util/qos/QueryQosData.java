@@ -407,7 +407,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
          // Note: multiSubscribe==false allows max one subscription on a topic, even it has
          // different mime query plugins (the latest wins)
          String url = subscribeKey.getUrl();
-         url = ReplaceVariable.replaceAll(url, "'", "&apos;"); // to have valid xml (<subscribe id='bla'/>
+         // url = ReplaceVariable.replaceAll(url, "'", "&apos;"); // to have valid xml (<subscribe id='bla'/>
          this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
                                sessionName.getRelativeName(true) + "-" +
                                url;
