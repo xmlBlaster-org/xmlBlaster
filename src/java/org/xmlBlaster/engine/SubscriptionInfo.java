@@ -22,6 +22,7 @@ import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
@@ -547,21 +548,23 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @return XML state of SubscriptionInfo
     */
    public String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(2048);
+      XmlBuffer sb = new XmlBuffer(2048);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<subscription id='").append(getSubscriptionId()).append("'");
-      sb.append(" sessionName='").append(getSessionInfo().getSessionName()).append("'");
-      if (this.topicHandler != null) {
-         sb.append(" oid='").append(topicHandler.getUniqueKey()).append("'");
+      sb.append(offset).append("<subscription id='").appendAttributeEscaped(getSubscriptionId()).append("'");
+      SessionName sessionName = getSessionInfo().getSessionName();
+      if (sessionName != null)
+         sb.append(" sessionName='").appendAttributeEscaped(sessionName.toString()).append("'");
+      if (topicHandler != null) {
+         sb.append(" oid='").appendAttributeEscaped(topicHandler.getUniqueKey()).append("'");
       }
-      if (this.querySub != null) {
-         sb.append(" parent='").append(this.querySub.getSubscriptionId()).append("'");
+      if (querySub != null) {
+         sb.append(" parent='").appendAttributeEscaped(querySub.getSubscriptionId()).append("'");
       }
       SubscriptionInfo[] childrenSubs = getChildrenSubscriptions();
       if (childrenSubs != null) {
-         sb.append(" numChilds='").append(childrenSubs.length).append("'");
+         sb.append(" numChilds='").appendAttributeEscaped("" + childrenSubs.length).append("'");
       }
       sb.append(" creationTime='" + IsoDateParser.getUTCTimestamp(this.creationTime) + "'");
       sb.append(">");
@@ -578,7 +581,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       //sb.append(offset).append(" <creationTime>").append(IsoDate...(this.creationTime)).append("</creationTime>");
       if (childrenSubs != null) {
          for (int ii=0; ii<childrenSubs.length; ii++) {
-            sb.append(offset).append(" <child>").append(childrenSubs[ii].getSubscriptionId()).append("</child>");
+            sb.append(offset).append(" <child>").appendEscaped(childrenSubs[ii].getSubscriptionId()).append("</child>");
          }
       }
       sb.append(offset).append("</subscription>");
