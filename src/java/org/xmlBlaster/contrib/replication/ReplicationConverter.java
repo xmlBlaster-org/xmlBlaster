@@ -304,9 +304,9 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          log.warning("the replication key '" + this.newReplKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
          markProcessed = true;
       }
-      else {
-         this.oldReplKey = this.newReplKey;
-      }
+      // else {
+      //    this.oldReplKey = this.newReplKey;
+      // }
       // puts this in the metadata attributes of the message to be sent over the mom
       this.event.getAttributeMap().put(REPL_KEY_ATTR, "" + this.newReplKey);
 
