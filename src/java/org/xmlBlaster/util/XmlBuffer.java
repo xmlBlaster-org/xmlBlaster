@@ -214,11 +214,64 @@ public class XmlBuffer {
         }
     }
     
+    private final static boolean startsWith(String xml, char[] ch, int pos) {
+       return xml.indexOf(new String(ch), pos) == pos;
+    }
+    
+    public final static String unEscapeXml(String xml) {
+       StringBuffer buf = new StringBuffer();
+       int i, len;
+       if (xml == null)
+          return null;
+
+       len = xml.length();
+       
+       for (i = 0; i < len; i++) {
+          char ch = xml.charAt(i); 
+          if (ch != '&') {
+             buf.append(ch);
+             continue;
+          }
+          if (startsWith(xml, AMP, i)) {
+             buf.append('&');
+             i += AMP.length - 1;
+          } 
+          else if (startsWith(xml, LT, i)) {
+             buf.append('<');
+             i += LT.length - 1;
+          } 
+          else if (startsWith(xml, GT, i)) {
+             buf.append('>');
+             i +=  GT.length - 1;
+          } 
+          else if (startsWith(xml, QUOT, i)) {
+             buf.append('"');
+             i += QUOT.length - 1;
+          } 
+          else if (startsWith(xml, APOS, i)) {
+             buf.append('\'');
+             i += APOS.length - 1;
+          } 
+          else if (startsWith(xml, SLASH_R, i)) {
+             buf.append('\r');
+             i += SLASH_R.length - 1;
+          } 
+          else if (startsWith(xml, NULL, i)) {
+             buf.append('\0');
+             i += NULL.length - 1;
+          }
+       }
+       return buf.toString();
+    }
+
+    
+    
     public static void main(String[] args) throws XmlBlasterException {
        XmlBuffer buf = new XmlBuffer(256);
+       String txt = "__subId:client/NtmService/session/1-xpath://key[contains (@oid,'com.xml.notam')]";
        buf.append("<qos>");
        buf.append("<subscribe id='");
-       buf.appendAttributeEscaped("__subId:client/NtmService/session/1-xpath://key[contains (@oid,'com.xml.notam')]");
+       buf.appendAttributeEscaped(txt);
        buf.append("'/>");
        buf.append("</qos>");
        String xml = buf.toString();
@@ -226,5 +279,11 @@ public class XmlBuffer {
        MsgQosSaxFactory f = new MsgQosSaxFactory(Global.instance());
        MsgQosData data = f.readObject(xml);
        System.out.println(data.getSubscriptionId());
+       
+       buf = new XmlBuffer(256);
+       buf.appendAttributeEscaped(txt);
+       String tmp = buf.toString();
+       System.out.print("Unescaped " + XmlBuffer.unEscapeXml(tmp));
+       
     }
 }

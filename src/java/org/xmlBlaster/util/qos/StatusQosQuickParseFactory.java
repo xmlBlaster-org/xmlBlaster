@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.RcvTimestamp;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
@@ -80,7 +81,7 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
          char apo = str.charAt(from);
          int end = str.indexOf(apo, from+1);
          if (end > 0) {
-            return str.substring(from+1, end);
+            return XmlBuffer.unEscapeXml(str.substring(from+1, end));
          }
       }
       return null;
