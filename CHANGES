@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17643 EventPlugin sending email always from separate timer thread
+
  o r17641 fixed subscriptionId which was wrong if XmlBuffer modified its content to make it xml compliant.
 
  o r17633 Removed org.apache.commons.codec.binary.Base64 dependency
