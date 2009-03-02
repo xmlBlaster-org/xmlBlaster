@@ -7,6 +7,9 @@ Changes for current svn (JDK >= 1.5 only)
  o r17643 EventPlugin sending email always from separate timer thread
 
  o r17641 fixed subscriptionId which was wrong if XmlBuffer modified its content to make it xml compliant.
+          Aware for XPATH subscribes which are escaped: If old client is updated to new client:
+	   Server side queued messages could be wrong dispatched in client code
+	   if subscribe with client side dispatcher is used
 
  o r17633 Removed org.apache.commons.codec.binary.Base64 dependency
 
