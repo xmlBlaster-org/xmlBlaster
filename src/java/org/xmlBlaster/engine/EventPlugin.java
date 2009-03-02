@@ -1425,7 +1425,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          // and prevent other mails from being send
          
          // Build the email, if timer is active append new logging to the content of the existing mail ...
-         EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
+         final EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
          emailData.setSubject(replaceTokens(
                this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode, sessionName));
          String old = (emailData.getContent().length() == 0) ? "" :
@@ -1437,14 +1437,16 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          synchronized(this.smtpDestinationMonitor) {
             // If no timer was active send immeditately (usually the first email)
             if (this.smtpTimeoutHandle == null) {
-               try {
-                  smtpDestinationHelper.smtpClient.sendEmail(emailData);
-               } catch (Throwable e) {
-                  e.printStackTrace();
-               }
-               finally {
-                  this.currentEmailData = null;
-               }
+               this.currentEmailData = null;
+               this.smtpTimeout.addTimeoutListener(new I_Timeout() {
+                  public void timeout(Object userData) {
+                     try {
+                        smtpDestinationHelper.smtpClient.sendEmail(emailData);
+                     } catch (Throwable e) {
+                        e.printStackTrace();
+                     }
+                  }
+               }, 1, null); // after 1 milli, dispatch to timer thread
             }
             else {
                // If a timer is active return, the timout will send the mail
