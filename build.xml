@@ -155,6 +155,8 @@ TODO
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
    <property name="cp.orb" value="lib/miniJacorb.jar:lib/jacorb/idl.jar:lib/jacorb/jacorb.jar:lib/jacorb/logkit-1.2.jar:lib/jacorb/avalon-framework-4.1.5.jar"/>
    <property name="cp.core" value="lib/backport-util-concurrent.jar:lib/concurrent.jar:lib/remotecons.jar:lib/joda-time.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz-all-1.6.0.jar:lib/commons-collections-3.1.jar"/>
+
+   <property name="cp.xmlrpc3" value="lib/xmlrpc3/commons-logging-1.1.jar:lib/xmlrpc3/ws-commons-util-1.0.2.jar:lib/xmlrpc3/xmlrpc-client-3.1.1.jar:lib/xmlrpc3/xmlrpc-common-3.1.1.jar:lib/xmlrpc3/xmlrpc-server-3.1.1.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/log4j.jar:lib/jzlib.jar"/>
    <property name="cp.db" value="lib/postgresql.jar:lib/hsqldb.jar:lib/mysql-connector-java-3.0.8-stable-bin.jar/"/>
    <property name="cp.xpath" value="lib/jaxen.jar"/>
@@ -170,7 +172,7 @@ TODO
    <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
    -->
-   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}:${cp.xmlrpc3}"/>
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
    <property name="svnversion.exe" value="svnversion"/>  <!-- On UNIX: /usr/bin/svnversion -->
