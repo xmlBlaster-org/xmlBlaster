@@ -80,6 +80,55 @@ public class ProtoConverter {
    }
 
 
+   /**
+    * Converts an Object[3] to a MsgUnitRaw. The first element must be a
+    * String object corresponding to the literal for MsgUnitRaw.xmlKey, the
+    * second element is a byte[] object corresponding to MsgUnitRaw.content.
+    * The third (and last) element is a String corresponding to the literal of
+    * MsgUnitRaw.qos.
+    *
+    * @param inObj the Object[3] to convert
+    * @return the MsgUnitRaw to which the vector has been converted to.
+    * @throws XmlBlasterException if the size of vec is different from 3, or
+    *                             if the type of the vector elements does not
+    *                             correspond to the MsgUnitRaw equivalent.
+    *
+    */
+   public static MsgUnitRaw objArray2MsgUnitRaw(Object[] inObj) throws XmlBlasterException {
+      if (inObj == null)
+         return null;
+      MsgUnitRaw ret = null;
+      if (inObj.length != 3) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a MessageUnit from " + inObj.length + " tokens");
+      }
+
+      try {
+         for (int i=0; i < inObj.length; i++) {
+            String xmlKey = (String)inObj[0];
+            byte[] content = null;
+            if (inObj[1] instanceof byte[]) {
+               content = (byte[])inObj[1];
+            }
+            else {
+               String str = (String)inObj[1];
+               content = str.getBytes();
+            }
+            String qos = (String)inObj[2];
+            ret = new MsgUnitRaw(xmlKey, content, qos);
+         }
+      }
+
+      catch (ClassCastException e) {
+         for (int i=0; i<inObj.length; i++) {
+            System.out.println(ME + ": Vector #" + i + " = " + inObj[i].getClass().getName());
+         }
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a MessageUnit", e);
+      }
+
+      return ret;
+   }
+
+
 
    /**
     * Converts a single MsgUnitRaw to a Vector.
@@ -88,9 +137,9 @@ public class ProtoConverter {
     * @return the Vector object containing three elements [String, byte[],
     *         String] representing the MsgUnitRaw.
     */
-   public static Vector messageUnit2Vector (MsgUnitRaw msg)
+   public static Vector<Object> messageUnit2Vector (MsgUnitRaw msg)
    {
-      Vector ret = new Vector();
+      Vector<Object> ret = new Vector<Object>();
       ret.addElement(msg.getKey());
       ret.addElement(msg.getContent());
       ret.addElement(msg.getQos());
@@ -131,20 +180,65 @@ public class ProtoConverter {
 
 
    /**
+    * Converts an Object[][] to a MsgUnitRaw[]. The input Vector must contain
+    * elements of the type Object[][]. Each of such (sub)Objects must have three
+    * elements.
+    * @param vec the input Object[][].
+    * @return the MsgUnitRaw[].
+    * @throws XmlBlasterException if the types in the input vector are not
+    *                             consistent with the required types.
+    */
+   public static MsgUnitRaw[] objMatrix2MsgUnitRawArray(Object[] in) throws XmlBlasterException {
+      if (in == null)
+         return null;
+      
+      MsgUnitRaw[] msgUnitArr = new MsgUnitRaw[in.length];
+
+      try {
+         for (int i=0; i < in.length; i++) {
+            msgUnitArr[i] = objArray2MsgUnitRaw((Object[])in[i]);
+         }
+      }
+
+      catch (ClassCastException e) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a MessageUnit[]", e);
+      }
+
+
+      return msgUnitArr;
+   }
+
+
+   /**
     * Converts a MsgUnitRaw[] object into a Vector.
     * @param msgs The array of MsgUnitRaw objects to convert to a Vector object.
     * @return the Vector containing all information about the msgs parameter.
     */
-   public static Vector messageUnitArray2Vector (MsgUnitRaw[] msgs)
+   public static Vector<Object> messageUnitArray2Vector (MsgUnitRaw[] msgs)
    {
       int size = msgs.length;
-      Vector ret = new Vector();
+      Vector<Object> ret = new Vector<Object>();
       for (int i=0; i < size; i++) {
          ret.addElement(messageUnit2Vector(msgs[i]));
       }
       return ret;
    }
 
+   public static String[] objToStringArray(Object obj) throws XmlBlasterException {
+      if (obj == null)
+         return null;
+      if (obj instanceof Object[]) {
+         Object[] tmp = (Object[])obj;
+         String[] ret = new String[tmp.length];
+         for (int i=0; i < ret.length; i++)
+            ret[i] = (String)tmp[i];
+         return ret;
+      }
+      else {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "The entry to convert to String[] is not of type Object[] it is of type " + obj.getClass().getName());
+      }
+
+   }
 
    /**
     * Converts a Vector to a String[] object. All elements of the Vector must
