@@ -104,6 +104,12 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc3/commons-logging-1.1.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc3/ws-commons-util-1.0.2.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc3/xmlrpc-client-3.1.1.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc3/xmlrpc-common-3.1.1.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc3/xmlrpc-server-3.1.1.jar:${CLASSPATH}
+
    CLASSPATH=${XMLBLASTER_HOME}/lib/jax.jar:${CLASSPATH}
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/remotecons.jar:${CLASSPATH}
