@@ -27,7 +27,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/remotecons.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/servlet.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/tinySQL.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlunit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xtdash.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/ant.jar"/>
@@ -42,5 +41,10 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/joda-time.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/commons-logging-1.1.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/ws-commons-util-1.0.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/xmlrpc-client-3.1.1.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/xmlrpc-common-3.1.1.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/xmlrpc-server-3.1.1.jar"/>
 	<classpathentry kind="output" path="classesEclipse"/>
 </classpath>
