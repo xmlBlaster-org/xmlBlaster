@@ -70,6 +70,22 @@
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/useCDATA</td>
+            <td>false</td>
+            <td>
+	       Encapsulates all parameters with a CDATA. Note that you can use this only if
+	       you are sure that your Messages do not contain already a CDATA (the key, qos and
+	       content), otherwise you will get an exception. This flag is only used for systems
+	       which need to validate the content of the message on a protocol layer, for example
+	       proxies or firewalls. If unsure leave this untouched. If you set this flag on the
+	       server it will modify all updates and callback pings, if you set it on the client
+	       it will influence all requests coming from the client. 
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
    </configuration>
    <configuration where="client">
