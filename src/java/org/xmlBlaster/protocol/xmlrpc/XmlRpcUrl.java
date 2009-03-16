@@ -8,7 +8,6 @@ package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.util.Global;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -31,8 +30,8 @@ public class XmlRpcUrl
    private java.net.InetAddress inetAddress;
    /** The port */
    private int port = XmlRpcDriver.DEFAULT_HTTP_PORT;
-   private boolean isLocal = false;
-
+   private boolean isLocal;
+   
    /**
     * @param hostname if null or empty the local IP will be used
     * @param port any port, not checked
@@ -83,7 +82,6 @@ public class XmlRpcUrl
     */
    public XmlRpcUrl(Global glob, AddressBase address, boolean isLocal, int defaultServerPort) throws XmlBlasterException {
       this.glob = glob;
-
 
       if (isLocal) {
          this.isLocal = true;
@@ -176,13 +174,15 @@ public class XmlRpcUrl
    private void createInetAddress() throws XmlBlasterException {
       try {
          this.inetAddress = java.net.InetAddress.getByName(this.hostname);
-      } catch(java.net.UnknownHostException e) {
+      } 
+      catch(java.net.UnknownHostException e) {
          Thread.currentThread().dumpStack();
          String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/xmlrpc/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
          log.warning(txt);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, txt);
       }
+      
    }
 
    public boolean equals(XmlRpcUrl other) {
@@ -206,5 +206,6 @@ public class XmlRpcUrl
          System.out.println("ERROR: " + e.toString());
       }
    }
+   
 }
 

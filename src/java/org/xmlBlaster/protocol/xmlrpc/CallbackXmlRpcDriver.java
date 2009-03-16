@@ -11,13 +11,15 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.protocol.xmlrpc.XmlRpcClientFactory;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
 
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+
 import java.io.IOException;
 import java.util.Vector;
 
@@ -86,13 +88,13 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @param  callbackAddress Contains the stringified XMLRPC callback handle of
     *                      the client
     */
-   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
+   public void init(Global global, CallbackAddress cbAddress) throws XmlBlasterException
    {
-      this.glob = glob;
+      this.glob = global;
 
-      this.callbackAddress = callbackAddress;
+      this.callbackAddress = cbAddress;
       try {
-         xmlRpcClient = new XmlRpcClient(callbackAddress.getRawAddress());
+         xmlRpcClient = XmlRpcClientFactory.getXmlRpcClient(cbAddress.getRawAddress(), cbAddress);
          if (log.isLoggable(Level.FINE)) log.fine("Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
       }
       catch (IOException ex1) {
@@ -122,7 +124,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       try {
          String[] retVal = new String[msgArr.length];
          for (int ii=0; ii < msgArr.length; ii++) {
-            Vector args = new Vector();
+            Vector<Object> args = new Vector<Object>();
             MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
@@ -131,7 +133,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
           
             if (log.isLoggable(Level.FINE)) log.fine("Send an update to the client ...");
 
-            retVal[ii] = (String)xmlRpcClient.execute("update", args);
+            retVal[ii] = (String)xmlRpcClient.execute("$default.update", args);
 
             if (log.isLoggable(Level.FINE)) log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
@@ -183,7 +185,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       // transform the msgUnits to Vectors
       try {
          for (int ii=0; ii < msgArr.length; ii++) {
-            Vector args = new Vector();
+            Vector<Object> args = new Vector<Object>();
             MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
@@ -192,7 +194,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
           
             if (log.isLoggable(Level.FINE)) log.fine("Send an updateOneway to the client ...");
 
-            xmlRpcClient.execute("updateOneway", args);
+            xmlRpcClient.execute("$default.updateOneway", args);
 
             if (log.isLoggable(Level.FINE)) log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
@@ -222,7 +224,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       try {
          Vector args = new Vector();
          args.addElement(qos);
-         return (String)xmlRpcClient.execute("ping", args);
+         return (String)xmlRpcClient.execute("$default.ping", args);
       }
       catch (XmlRpcException ex) {
          String str = "Sending ping to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();

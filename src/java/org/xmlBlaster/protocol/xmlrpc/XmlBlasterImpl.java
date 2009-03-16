@@ -9,9 +9,11 @@ package org.xmlBlaster.protocol.xmlrpc;
 import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.engine.qos.AddressServer;
 
@@ -31,20 +33,17 @@ import org.xmlBlaster.engine.qos.AddressServer;
  * <p />
  * @author "Michele Laghi" (michele@laghi.eu)
  */
-public class XmlBlasterImpl
-{
-   private static Logger log = Logger.getLogger(XmlBlasterImpl.class.getName());
-   private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
+public class XmlBlasterImpl {
+   private final static String ME = XmlBlasterImpl.class.getName();
+   private static Logger log = Logger.getLogger(ME);
+   private final org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
    private final AddressServer addressServer;
 
 
    /**
     * Constructor.
     */
-   public XmlBlasterImpl(Global glob, XmlRpcDriver driver, org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
-      throws XmlBlasterException
-   {
-
+   public XmlBlasterImpl(Global glob, XmlRpcDriver driver, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor ...");
       this.blasterNative = blasterNative;
       this.addressServer = driver.getAddressServer();
@@ -142,12 +141,11 @@ public class XmlBlasterImpl
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public Vector publishArr(String sessionId, Vector msgUnitArrWrap)
-      throws XmlBlasterException
-   {
+   // public Vector publishArr(String sessionId, Vector msgUnitArrWrap) throws XmlBlasterException {
+   public Vector publishArr(String sessionId, Object[] msgUnitArrWrap) throws XmlBlasterException {
 
-      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr() for " + msgUnitArrWrap.size() + " entries ...");
-      int arrayLength = msgUnitArrWrap.size();
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr() for " + msgUnitArrWrap.length + " entries ...");
+      int arrayLength = msgUnitArrWrap.length;
 
       if (arrayLength < 1) {
          if (log.isLoggable(Level.FINE))
@@ -156,13 +154,17 @@ public class XmlBlasterImpl
       }
 
       try {
-         MsgUnitRaw[] msgUnitArr = ProtoConverter.vector2MsgUnitRawArray(msgUnitArrWrap);
-         String[] strArr = blasterNative.publishArr(this.addressServer, sessionId, msgUnitArr);
-         return ProtoConverter.stringArray2Vector(strArr);
+         if (msgUnitArrWrap != null) {
+            MsgUnitRaw[] msgUnitArr = ProtoConverter.objMatrix2MsgUnitRawArray(msgUnitArrWrap);
+            String[] strArr = blasterNative.publishArr(this.addressServer, sessionId, msgUnitArr);
+            return ProtoConverter.stringArray2Vector(strArr);
+         }
+         else 
+            throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, ME, "Empty array to be published");
       }
       catch (ClassCastException e) {
          log.severe("not a valid MsgUnitRaw: " + e.toString());
-         throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, ME, "Not a valid Message Unit: Class Cast Exception", e);
       }
    }
 
@@ -239,5 +241,6 @@ public class XmlBlasterImpl
    {
       return blasterNative.toXml(extraOffset);
    }
+   
 }
 

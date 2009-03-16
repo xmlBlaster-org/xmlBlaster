@@ -7,6 +7,7 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
@@ -14,14 +15,16 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.protocol.xmlrpc.XblRequestFactoryFactory;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 
-import org.apache.xmlrpc.*;
-import java.io.IOException;
-
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.server.PropertyHandlerMapping;
+import org.apache.xmlrpc.server.XmlRpcServer;
+import org.apache.xmlrpc.webserver.WebServer;
 
 /**
  * XmlRpc driver class to invoke the xmlBlaster server over HTTP XMLRPC.
@@ -36,7 +39,7 @@ import java.io.IOException;
  * The variable plugin/xmlrpc/port (default 8080) sets the http web server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -plugin/xmlrpc/port 9090
+ * java -jar lib/xmlBlaster.jar  -plugin/xmlrpc/port 9080
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -167,8 +170,10 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
       }
 
       // "-plugin/xmlrpc/debug true"
+      /*
       if (this.addressServer.getEnv("debug", false).getValue() == true)
          XmlRpc.setDebug(true);
+       */
    }
 
    /**
@@ -186,10 +191,33 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
       try {
          webServer = new WebServer(this.xmlRpcUrl.getPort(), this.xmlRpcUrl.getInetAddress());
          // publish the public methods to the XmlRpc web server:
-         webServer.addHandler("authenticate", new AuthenticateImpl(glob, this, authenticate));
-         webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, this, xmlBlasterImpl));
+         // webServer.addHandler("authenticate", new AuthenticateImpl(glob, this, authenticate));
+         // webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, this, xmlBlasterImpl));
+         
+         
+         PropertyHandlerMapping mapping = new PropertyHandlerMapping();
+         
+         AuthenticateImpl auImpl = new AuthenticateImpl(glob, this, authenticate);
+         XmlBlasterImpl xblImpl = new XmlBlasterImpl(glob, this, xmlBlasterImpl);
+         
+         XblRequestFactoryFactory factoryFactory = new XblRequestFactoryFactory();
+         factoryFactory.add(auImpl);
+         factoryFactory.add(xblImpl);
+         mapping.setRequestProcessorFactoryFactory(factoryFactory);
+         
+         mapping.addHandler("authenticate", auImpl.getClass());      // register update() method
+         mapping.addHandler("xmlBlaster", xblImpl.getClass());
+         
+         XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
+         xmlRpcServer.setHandlerMapping(mapping);
+         webServer.start();
          log.info("Started successfully XMLRPC driver, access url=" + this.xmlRpcUrl.getUrl());
-      } catch (IOException e) {
+      }
+      catch (IOException e) {
+         log.severe("Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());
+         //e.printStackTrace();
+      }
+      catch (XmlRpcException e) {
          log.severe("Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());
          //e.printStackTrace();
       }
@@ -204,8 +232,9 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
       this.isActive = false;
       if (webServer != null) {
          try {
-            webServer.removeHandler("authenticate");
-            webServer.removeHandler("xmlBlaster");
+            webServer.getXmlRpcServer().setHandlerMapping(null);
+            // getHandlerMapping().removeHandler("authenticate");
+            // webServer.removeHandler("xmlBlaster");
             webServer.shutdown();
          }
          catch(Throwable e) {

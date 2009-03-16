@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol.xmlrpc;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -26,8 +27,7 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  * <p />
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class AuthenticateImpl
-{
+public class AuthenticateImpl {
    private final Global glob;
    private static Logger log = Logger.getLogger(AuthenticateImpl.class.getName());
    private final I_Authenticate authenticate;
@@ -37,11 +37,8 @@ public class AuthenticateImpl
    /**
     * Constructor.
     */
-   public AuthenticateImpl(Global glob, XmlRpcDriver driver, I_Authenticate authenticate)
-      throws XmlBlasterException
-   {
+   public AuthenticateImpl(Global glob, XmlRpcDriver driver, I_Authenticate authenticate) throws XmlBlasterException {
       this.glob = glob;
-
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor ...");
       this.authenticate = authenticate;
       this.addressServer = driver.getAddressServer();
@@ -152,5 +149,6 @@ public class AuthenticateImpl
       return authenticate.toXml(extraOffset);
    }
    */
+   
 }
 
