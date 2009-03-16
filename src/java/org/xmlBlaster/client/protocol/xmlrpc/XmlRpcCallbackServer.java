@@ -8,6 +8,9 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.client.protocol.xmlrpc;
 
 
+import org.apache.xmlrpc.server.PropertyHandlerMapping;
+import org.apache.xmlrpc.server.XmlRpcServer;
+import org.apache.xmlrpc.webserver.WebServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
@@ -19,12 +22,8 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.util.protocol.xmlrpc.XblRequestFactoryFactory;
 import org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl;
-
-import org.apache.xmlrpc.WebServer;
-
 
 /**
  * Example for a XmlRpc callback implementation.
@@ -127,10 +126,15 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                try {
                   webServer = new WebServer(this.xmlRpcUrlCallback.getPort(), this.xmlRpcUrlCallback.getInetAddress());
                   break;
-               } catch(java.net.BindException e) {
+               }
+               /*
+               catch(java.net.BindException e) {
                   log.warning("Port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server is in use already, trying with port " +  (this.xmlRpcUrlCallback.getPort()+1) + ": " + e.toString());
                   this.xmlRpcUrlCallback.setPort(this.xmlRpcUrlCallback.getPort() + 1);
-               } catch(java.io.IOException e) {
+               } 
+               catch(java.io.IOException e) {
+               */
+               catch(Throwable e) {
                   if (e.getMessage().indexOf("Cannot assign requested address") != -1) {
                      if (log.isLoggable(Level.FINE)) log.warning("Host " + this.xmlRpcUrlCallback.getHostname() + " for XMLRPC callback server is invalid: " + e.toString());
                      throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Local host IP '" + this.xmlRpcUrlCallback.getHostname() + "' for XMLRPC callback server is invalid: " + e.toString());
@@ -144,16 +148,29 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                   log.severe("Can't find free port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server, please use '-dispatch/callback/plugin/xmlrpc/port <port>' to specify a free one.");
                }
             }
-            webServer.addHandler("$default", new XmlRpcCallbackImpl(this));      // register update() method
+            
+            XmlRpcCallbackImpl xblImpl = new XmlRpcCallbackImpl(this);
+            PropertyHandlerMapping mapping = new PropertyHandlerMapping();
+            XblRequestFactoryFactory factoryFactory = new XblRequestFactoryFactory();
+            factoryFactory.add(xblImpl);
+            mapping.setRequestProcessorFactoryFactory(factoryFactory);
+            mapping.addHandler("$default", xblImpl.getClass());      // register update() method
+
             this.callbackAddress.setRawAddress(this.xmlRpcUrlCallback.getUrl()); // e.g. "http://127.168.1.1:8082/"
             this.ME = "XmlRpcCallbackServer-" + this.xmlRpcUrlCallback.getUrl();
             //log.info(ME, "Created XmlRpc callback http server");
+         
+            XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
+            xmlRpcServer.setHandlerMapping(mapping);
+            webServer.start();
          }
          else
             log.info("XmlRpc callback http server not created, because of -dispatch/callback/plugin/xmlrpc/port is 0");
-      } catch (XmlBlasterException e) {
+      } 
+      catch (XmlBlasterException e) {
          throw e;
-      } catch (Exception e) {
+      } 
+      catch (Exception e) {
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Could not initialize XMLRPC callback server on '" + this.xmlRpcUrlCallback.getUrl() + "': " + e.toString());
       }
@@ -185,7 +202,8 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    {
       if (webServer != null) {
          try { 
-            webServer.removeHandler("$default");
+            webServer.getXmlRpcServer().setHandlerMapping(null);
+            // getHandlerMapping().removeHandler("$default");
             webServer.shutdown();
          }
          catch(Throwable e) {

@@ -9,36 +9,32 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.client.protocol.xmlrpc;
 
 
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.UpdateKey;
-
-import org.apache.xmlrpc.WebServer;
-
-
 /**
  * The methods of this callback class are exposed to XMLRPC clients,
  * in this case to xmlBlaster when it wants to callback the client.
  * <p />
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class XmlRpcCallbackImpl
-{
+public class XmlRpcCallbackImpl {
    private final String ME = "XmlRpcCallbackImpl";
    private XmlRpcCallbackServer server = null;
 
+   private final static Logger log = Logger.getLogger(XmlRpcCallbackImpl.class.getName());
    /**
     * Construct a persistently named object.
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     */
-   XmlRpcCallbackImpl(XmlRpcCallbackServer server) throws XmlBlasterException
-   {
+   XmlRpcCallbackImpl(XmlRpcCallbackServer server) throws XmlBlasterException {
       this.server = server;
    }
 
+   XmlRpcCallbackImpl() {
+      
+   }
+   
    /**
     * The update method.
     * <p />
@@ -59,9 +55,10 @@ public class XmlRpcCallbackImpl
     * <p />
     * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
     */
-   public void updateOneway(String cbSessionId, String updateKey, byte[] content, String updateQos)
+   public String updateOneway(String cbSessionId, String updateKey, byte[] content, String updateQos)
    {
       server.updateOneway(cbSessionId, updateKey, content, updateQos);
+      return ""; // fake to make new 3.0 xmlrpc happy
    }
 
    /**
@@ -72,5 +69,8 @@ public class XmlRpcCallbackImpl
    {
       return server.ping(str);
    }
+
+   
+   
 } // class XmlRpcCallbackImpl
 
