@@ -1,6 +1,11 @@
 Created-By: xmlBlaster.org maintainers
 Main-Class: org.xmlBlaster.Main
-Class-Path: xmlrpc.jar junit.jar omquery.jar 
+Class-Path: xmlrpc3/commons-logging-1.1.jar 
+ xmlrpc3/ws-commons-util-1.0.2.jar
+ xmlrpc3/xmlrpc-client-3.1.1.jar
+ xmlrpc3/xmlrpc-common-3.1.1.jar
+ xmlrpc3/xmlrpc-server-3.1.1.jar
+ junit.jar omquery.jar 
  jacorb/jacorb.jar jacorb/idl.jar jacorb/logkit-1.2.jar 
  jacorb/avalon-framework-4.1.5.jar 
  xtdash.jar servlet.jar connector.jar 
