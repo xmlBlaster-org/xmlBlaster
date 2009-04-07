@@ -230,6 +230,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
             	else {
             		//e.printStackTrace();
             	}
+                txt += " " + e.createStackTrace(); // includes cause stack trace
             }
             String name = (sessionName == null) ? "" : sessionName.getAbsoluteName();
             log.severe("Generating dead message '" + msgUnit.getLogId() + "'" +
