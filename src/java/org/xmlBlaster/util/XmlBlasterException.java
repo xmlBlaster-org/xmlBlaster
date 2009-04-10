@@ -448,6 +448,16 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       return sw.toString().trim();
    }
 
+   public static String createStackTrace(Throwable e) {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      if (e.getCause() != null) {
+         e.getCause().printStackTrace(pw);
+      }
+      e.printStackTrace(pw);  // prints: toString() and in next lines the stack trace
+      return sw.toString().trim();
+   }
+
    public static String createVersionInfo() {
       StringBuffer buf = new StringBuffer(512);
       buf.append("version=").append(Global.instance().getVersion()).append(",");
