@@ -170,7 +170,7 @@ public class IsoDateParser {
    }
     }
 
-    private static Calendar getCalendar(String isodate)
+    public static Calendar getCalendar(String isodate)
     	throws IllegalArgumentException
     {
    // YYYY-MM-DDThh:mm:ss.sTZD
