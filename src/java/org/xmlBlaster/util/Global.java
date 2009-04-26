@@ -240,7 +240,7 @@ public class Global implements Cloneable
 
    /**
     * Constructs an initial Global object which is initialized
-    * by your properties,
+    * by your properties (without leading '-'),
     * same as Global(args, true, true)
     */
    public Global(Properties props) {
@@ -1778,7 +1778,7 @@ public class Global implements Cloneable
 
    public void finalize() {
       try {
-         if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
+         //if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
          shutdown();
       }
       catch (Throwable e) {
