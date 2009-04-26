@@ -53,6 +53,7 @@ public final class CbDispatchConnection extends DispatchConnection
    private I_CallbackDriver cbDriver;
    private String cbKey;
    private I_AdminSession session;
+
    private SessionName sessionName;
    //private boolean acceptRemoteLoginAsTunnel;
    private boolean useRemoteLoginAsTunnel;
@@ -441,6 +442,10 @@ public final class CbDispatchConnection extends DispatchConnection
       sb.append(offset).append("</CbDispatchConnection>");
 
       return sb.toString();
+   }
+
+   public I_AdminSession getAdminSession() {
+		return this.session;
    }
 
    protected boolean forcePingFailure() {
