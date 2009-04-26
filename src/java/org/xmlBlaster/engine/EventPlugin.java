@@ -29,8 +29,10 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
+import org.xmlBlaster.engine.dispatch.CbDispatchConnection;
 import org.xmlBlaster.engine.msgstore.MapEventHandler;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
@@ -61,6 +63,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
@@ -1618,6 +1621,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
+
+      try {
+         ConnectQosData cd = sessionInfo.getConnectQos().getData();
+         // A client can on connect send a event/connect=false clientProperty to suppress the event fired
+         if (cd.getClientProperty(ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "connect", true) == false) {
+            if (log.isLoggable(Level.FINE)) log.fine("Found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "connect=true for "+sessionName.toString());
+    	    return;
+         }
+      }
+      catch (Throwable e) {
+ 	     e.printStackTrace();
+ 	     log.warning("Accessing connectQos failed: " + e.toString());
+      }
+      
       String relativeName = sessionName.getRelativeName();
 
       String event = ContextNode.SEP + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "connect";
@@ -1716,6 +1733,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
+      
+      try {
+         ConnectQosData cd = sessionInfo.getConnectQos().getData();
+         // A client can on connect send a event/disconnect=false clientProperty to suppress the event fired
+         if (cd.getClientProperty(ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "disconnect", true) == false) {
+            if (log.isLoggable(Level.FINE))  log.fine("Found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "disconnect=true for "+sessionName.toString());
+    	    return;
+         }
+      }
+      catch (Throwable e) {
+ 	     e.printStackTrace();
+ 	     log.warning("Accessing connectQos failed: " + e.toString());
+      }
+      
       String relativeName = sessionName.getRelativeName();
 
       String event = ContextNode.SEP + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "disconnect";
@@ -2273,6 +2304,28 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
       */
 
+      try {
+         //ConnectQosData cd = clientEvent.getSessionInfo().getConnectQos().getData();
+         //dispatchManager.getSecurityInterceptor().getConnectQos();
+         //dispatchManager.getDispatchConnectionsHandler().getCurrentDispatchConnection().getSessionInfoProtector().getConnectQos();
+    	 //log.severe("Debug only: lookup " + sessionName.toString());
+         CbDispatchConnection cbd = (CbDispatchConnection)dispatchManager.getDispatchConnectionsHandler().getCurrentDispatchConnection();
+         I_AdminSession is = cbd.getAdminSession();
+         ConnectQosData cd = is.getConnectQos().getData();
+         //ConnectQosData cd = clientEvent.getSessionInfo().getConnectQos().getData();
+         // A client can on connect send a event/callbackState=false clientProperty to suppress the event fired
+         if (cd.getClientProperty(ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState", true) == false) {
+            if (log.isLoggable(Level.FINE))  log.fine("Found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState=true for "+sessionName.toString());
+    	    return;
+         }
+        //else
+        //    log.severe("Debug only: Not found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState");
+      }
+      catch (Throwable e) {
+    	  e.printStackTrace();
+    	  log.warning("Accessing connectQos failed: " + e.toString());
+      }
+      
       // "/event/callbackState"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + "callbackState";
       // "client/joe/session/1/event/callbackState"
