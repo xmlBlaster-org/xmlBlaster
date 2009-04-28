@@ -153,6 +153,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       <p>Note: The errorCode is stripped to the main category</p>
     */
    protected boolean sendSimpleExceptionFormat;
+   protected boolean forceReadable;
    
    public final static String ROOT_TAG = "xmlBlaster";
    public final static String ROOTRESPONSE_TAG = "xmlBlasterResponse";
@@ -840,6 +841,12 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
       out.write(sb.toString().getBytes());
       
       if (msgUnits != null && msgUnits.length > 0) {
+         Properties props = null;
+         if (forceReadable) {
+            props = new Properties();
+            props.setProperty(Constants.TOXML_FORCEREADABLE, "true");
+         }
+            
          if (msgUnits.length == 1) {
             if (type == MsgInfo.EXCEPTION_BYTE && this.sendSimpleExceptionFormat) {
                // This must be parsable on the other side similar to XmlBlasterException.parseByteArr()
@@ -852,13 +859,13 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
                out.write(buf.toString().getBytes(Constants.UTF8_ENCODING));
             }
             else {
-               msgUnits[0].toXml(offset, out, (Properties)null);
+               msgUnits[0].toXml(offset, out, props);
             }
          }
          else {
             for (int i=0; i < msgUnits.length; i++) {
                out.write("\n  <message>".getBytes());
-               msgUnits[i].toXml(offset, out, (Properties)null);
+               msgUnits[i].toXml(offset, out, props);
                out.write("\n  </message>\n".getBytes());
             }
          }
