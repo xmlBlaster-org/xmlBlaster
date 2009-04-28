@@ -829,6 +829,16 @@ on server side and on java client side.</p>
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+         <tr>
+            <td>forceReadable</td>
+            <td>false</td>
+            <td>
+	       Allows to send the content of the data embedded in a CDATA instead of 
+	       using BASE64. Note that if you choose to set this flag to true, then
+	       it is your responsability to avoid Encoding Problems.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
 
       </table>
 
