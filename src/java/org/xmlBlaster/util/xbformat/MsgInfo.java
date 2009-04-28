@@ -359,7 +359,7 @@ public class MsgInfo {
       String tmp = getRequestId();
       int pos = tmp.lastIndexOf(':');
       if (pos > -1)
-         tmp = tmp.substring(pos);
+         tmp = tmp.substring(pos+1);
       return new Long(tmp).longValue();      
    }
    
