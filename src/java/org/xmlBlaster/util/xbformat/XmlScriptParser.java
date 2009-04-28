@@ -112,6 +112,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.sendResponseRequestId = glob.get("sendResponseRequestId", true, null, pluginConfig);
       this.isNullTerminated = glob.get("isNullTerminated", false, null, pluginConfig);
       super.sendSimpleExceptionFormat = glob.get("sendSimpleExceptionFormat", false, null, pluginConfig);
+      super.forceReadable = glob.get("forceReadable", false, null, pluginConfig);
       super.initialize(glob, null, null);
    }
 
