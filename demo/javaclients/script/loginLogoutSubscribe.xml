@@ -17,11 +17,15 @@
           <address type="XMLRPC" pingInterval='1000' retries='-1' delay='2000' />
        </queue>
        <queue relating='callback' maxEntries='5' maxEntriesCache='2'>
-          <callback type="XMLRPC" pingInterval='1000' retries='-1' delay='1000' />
+          <callback type="XMLRPC" pingInterval='1000' retries='-1' delay='1000'>
+            <burstMode collectTime='400' maxEntries='20' maxBytes='-1' />
+            <ptp>true</ptp>
+
+            <attribute name='key1' type='int'>2005</attribute>
+          </callback>
        </queue>
      </qos>
   </connect>
-
   <subscribe><key oid="__sys__Login"></key><qos><persistent>false</persistent></qos></subscribe>
   <subscribe><key oid="__sys__Logout"></key><qos><persistent>false</persistent></qos></subscribe>
   <!-- wait for two minutes before shutdown -->
