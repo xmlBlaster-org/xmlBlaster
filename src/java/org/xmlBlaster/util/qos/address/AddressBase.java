@@ -467,6 +467,7 @@ public abstract class AddressBase implements Cloneable
    public final void setType(String type) {
       if (type == null) this.type.setValue(this.type.getDefaultValue(), PropEntry.CREATED_BY_DEFAULT);
       else this.type.setValue(type);
+      this.envPrefix = "plugin/"+this.type.getValue().toLowerCase()+"/";
    }
 
    /**
