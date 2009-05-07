@@ -128,8 +128,11 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       ///// TODO Don't start thread!!!
       // If we are a client XmlBlasterAccess reusing a remote login socket
       this.useRemoteLoginAsTunnel = this.callbackAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
-      Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName())); //getAddressServer()
+      String entryKey = SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName());
+      Object obj = glob.getObjectEntry(entryKey); //getAddressServer()
       if (obj != null) {
+         log.info(loginName + " Getting " + getType() + " obj=" + obj +
+                  " entryKey=" + entryKey + " global.instanceId=" +glob.getInstanceId() + "-" + glob.hashCode());
          if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
             this.remoteLoginAsTunnelSocketExecutor = (SocketExecutor)obj;
          }

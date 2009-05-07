@@ -186,14 +186,15 @@ public class SocketConnection implements I_XmlBlasterConnection
       
       try {
          if (this.useRemoteLoginAsTunnel) {
-            Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
+        	String entryKey = SocketExecutor.getGlobalKey(this.clientAddress.getSessionName());
+            Object obj = glob.getObjectEntry(entryKey);
             if (obj != null && obj instanceof org.xmlBlaster.protocol.socket.HandleClient) {
                org.xmlBlaster.protocol.socket.HandleClient h = (org.xmlBlaster.protocol.socket.HandleClient)obj;
                this.sock = h.getSocket();
                // TODO: HandleClient.closeSocket() can set sock = null!
                if (this.sock != null) {
-                  log.info(getType() + (ssl ? " SSL" : "") +
-                     " client is reusing existing SOCKET '"+this.sock.getInetAddress().getHostAddress() + "' configured was '" +
+                  log.info(getLoginName() + " " + getType() + " entryKey=" + entryKey + " global.instanceId=" +glob.getInstanceId() + "-" + glob.hashCode() + (ssl ? " SSL" : "") +
+                     " client is reusing existing SOCKET '"+this.sock.getInetAddress().getHostAddress() + ":" + this.sock.getPort()+ "' configured was '" +
                      this.socketUrl.getUrl() +
                      "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
                      " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway +
@@ -201,14 +202,14 @@ public class SocketConnection implements I_XmlBlasterConnection
                }
                else {
                   log.severe(getLoginName() + " " + getType() + " " + getLocalSocketUrlStr()
-                        + " Didn't expect null socket for "
-                        + this.clientAddress.getSessionName() + ": " + Global.getStackTraceAsString(null));
-                  glob.removeObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
+                        + " Didn't expect null socket for sessionName="
+                        + this.clientAddress.getSessionName() + ": Removing entryKey=" + entryKey + " global.instanceId=" +glob.getInstanceId() + "-" + glob.hashCode() + ": " + Global.getStackTraceAsString(null));
+                  glob.removeObjectEntry(entryKey);
                }
             }
             else {
                // instance of dummy string: no HandleClient available, remote node has not yet connected
-               String str = "Connection to xmlBlaster server failed, no established socket to reuse found";
+               String str = "Connection to xmlBlaster server failed, no established socket to reuse found entryKey=" + entryKey;
                if (log.isLoggable(Level.FINE)) log.fine(str);
                throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
             }
