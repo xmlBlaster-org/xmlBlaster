@@ -21,8 +21,8 @@ import org.xmlBlaster.authentication.SessionInfo;
 public class PluginManager extends PluginManagerBase {
    private final String ME;
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.htpasswd.Manager"; //"org.xmlBlaster.authentication.plugins.simple.Manager";
-   private static final String defaultPluginType = "htpasswd";
-   private static final String defaultPluginVersion = "1.0";
+   private String defaultPluginType = "htpasswd";
+   private String defaultPluginVersion = "1.0";
    private              Authenticate        auth = null;
    private final ServerScope glob;
    private static Logger log = Logger.getLogger(PluginManager.class.getName());
@@ -37,7 +37,10 @@ public class PluginManager extends PluginManagerBase {
          log.warning("* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
          log.warning("The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
       }
-      
+
+      defaultPluginType = glob.getProperty().get("Security.DefaultPluginType", defaultPluginType);
+      defaultPluginVersion = glob.getProperty().get("Security.DefaultPluginVersion", defaultPluginVersion);
+
       String key = createPluginPropertyKey(defaultPluginType, defaultPluginVersion);
       if (glob.getProperty().get(key, (String)null) == null) {
          try { glob.getProperty().set(key, defaultPluginName); } catch(Exception e) { log.warning(e.toString()); }
