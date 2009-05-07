@@ -204,11 +204,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             final SessionName sessionName = new SessionName(this.remoteGlob, null, nodeInfo.getId(), pubSessionId);
             SessionInfo myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
             this.remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+            log.info(sessionName.toString() + " Adding initial 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" +this.remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
             
             if (myRemotePartnerLogin == null) {
                // Create the temporary SessionInfo until the real client arrives
                String[] args = new String[0]; //{ "-queue/connection/defaultPlugin", "RAM,1.0" };
-               Global glob = this.remoteGlob.getClone(args);
+               Global glob = this.remoteGlob; // Why?? .getClone(args);
                String type = "SOCKET";
                String version = "1.0";
                String rawAddress = "socket://:7607";
@@ -297,20 +298,24 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                             log.info("toAlive(" + sessionName.getAbsoluteName() + ")... found existing session to back-tunnel '" + getId() + "' on address '" + myRemotePartnerLogin.getAddressServer().getRawAddress() + "' protocol=" + myRemotePartnerLogin.getAddressServer().getType() + " cbDriver-Handler " + ((cbDriver.getHandler()==null)?"null":cbDriver.getHandler().getAddressServer().getRawAddress()));
                             //log.severe("Register toAlive: CallbackSocketDriver.handler=" + cbDriver.getHandler());
                             remoteGlob.addObjectEntry(globalKey, cbDriver.getHandler());
+                            log.info(sessionName.toString() + " Adding toAlive '" + cbDriver.getHandler() + "' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                          }
                          else {
                             log.info("toAlive(" + sessionName.getAbsoluteName() + ")... no  CallbackSocketDriver to back-tunnel '" + getId() + "' found");
                             remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+                            log.info(sessionName.toString() + " Adding toAlive 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                          }
                       }
                       else {
                          log.info("toAlive(" + sessionName.getAbsoluteName() + ")... no  session to back-tunnel '" + getId() + "' found");
                          remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+                         log.info(sessionName.toString() + " Adding toAlive 'dummyPlaceHolder' (myRemotePartnerLogin=null) entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                       }
                    }
                    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
                       log.warning("toPolling(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+                      log.info(sessionName.toString() + " Adding toPolling 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                       if (oldState == ConnectionStateEnum.ALIVE)
                         ping(); // Force our client connection to POLLING as
                                 // well
@@ -318,6 +323,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
                       log.severe("toDead(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
+                      log.info(sessionName.toString() + " Adding toDead 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                       if (oldState == ConnectionStateEnum.ALIVE)
                         ping(); // Force our client connection to POLLING
                    }
