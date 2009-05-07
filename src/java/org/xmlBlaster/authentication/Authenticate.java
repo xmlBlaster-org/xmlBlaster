@@ -359,7 +359,7 @@ final public class Authenticate implements I_RunlevelListener
       }
       catch (XmlBlasterException e) {
          // If access is denied: cleanup resources
-         log.warning("Access is denied: " + e.getMessage());
+         log.warning("Access is denied: " + e.getMessage() + ": " + connectQos.toString());
          if (securityMgr != null) securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw e;
       }
