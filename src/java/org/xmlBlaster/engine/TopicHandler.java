@@ -744,10 +744,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          msgUnitWrapper.startExpiryTimer();
       }
       catch (XmlBlasterException e) {
-         if (e.isUser())
+         if (e.isUser()) {
            log.warning(ME+": "+e.getMessage());
-         else
-           log.severe(ME+": "+e.getMessage());
+         }
+         else {
+           log.severe(ME+": "+e.getMessage() + " publisher=" + publisherSessionInfo.getSessionName().getAbsoluteName() + " qos=" + msgUnit.getQosData().toXmlReadable());
+           e.printStackTrace();
+         }
          throw e;
       }
       catch (Throwable e) {
