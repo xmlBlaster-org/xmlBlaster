@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17681 Added tunnelling of callbacks on the xmlrpc protocol. This allows to pass requests through a
+          proxy, using https either all the way between client/server or to use an intermediate reverse
+          proxy which converts the https protocol to http. Compression can also be used.
+
  o r17671 CallbackAddress.java fixed envPrefix SOCKET->XMLRPC
 
  o r17655 ported xmlrpc protocol to version 3 (3.1.1) and added possibility to wrap contents in CDATA.
