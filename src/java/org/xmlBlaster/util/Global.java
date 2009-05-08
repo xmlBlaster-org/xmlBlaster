@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -230,6 +231,8 @@ public class Global implements Cloneable
    /** JMX notification sequence number. */
    protected long sequenceNumber = 1;
 
+   private Map weakRegistry = new WeakHashMap<Object, Object>();
+   
    /**
     * Constructs an initial Global object,
     * same as Global(null, true, true)
@@ -2421,6 +2424,29 @@ public class Global implements Cloneable
       statistic.append(byteString(Runtime.getRuntime().freeMemory()));
       statistic.append(".");
       return statistic.toString();
+   }
+   
+   public void putInWeakRegistry(Object key, Object value) {
+      synchronized(weakRegistry) {
+         if (key != null)
+            weakRegistry.put(key, value);
+      }
+   }
+
+   public Object getFromWeakRegistry(Object key) {
+      synchronized(weakRegistry) {
+         if (key == null)
+            return null;
+         return weakRegistry.get(key);
+      }
+   }
+   
+   public Object removeFromWeakRegistry(Object key) {
+      synchronized(weakRegistry) {
+         if (key != null)
+            return weakRegistry.remove(key);
+      }
+      return null;
    }
 
 }
