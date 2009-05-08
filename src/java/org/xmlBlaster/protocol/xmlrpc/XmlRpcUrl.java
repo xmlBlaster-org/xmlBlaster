@@ -31,12 +31,14 @@ public class XmlRpcUrl
    /** The port */
    private int port = XmlRpcDriver.DEFAULT_HTTP_PORT;
    private boolean isLocal;
+   private String path;
+   private String protocol = "http://";
    
    /**
     * @param hostname if null or empty the local IP will be used
     * @param port any port, not checked
     */
-   public XmlRpcUrl(Global glob, String hostname, int port) throws XmlBlasterException {
+   public XmlRpcUrl(Global glob, String hostname, int port, String path) throws XmlBlasterException {
       this.glob = glob;
 
       this.hostname = hostname;
@@ -44,6 +46,7 @@ public class XmlRpcUrl
          this.hostname = glob.getLocalIP();
       }
       this.port = port;
+      this.path = path;
       createInetAddress(); // first check
    }
 
@@ -94,8 +97,20 @@ public class XmlRpcUrl
             createInetAddress(); // first check
             return;
          }
+         
+         String tmp = address.getEnv("hostname", glob.getLocalIP()).getValue();
+         if (tmp != null && (tmp.indexOf("http://") > -1 || tmp.indexOf("https://") > -1)) {
+            address.setRawAddress(tmp);
+            parse(address.getRawAddress());
+            createInetAddress(); // first check
+            return;
+         }
+         this.hostname = tmp;
          this.port = address.getEnv("port", defaultServerPort).getValue();
-         this.hostname = address.getEnv("hostname", glob.getLocalIP()).getValue();
+         this.path = address.getEnv("path", null).getValue();
+         boolean isSSL = address.getEnv("SSL", false).getValue();
+         if (isSSL)
+            protocol = "https://";
          address.setRawAddress(getUrl());
       }
       createInetAddress(); // first check
@@ -120,13 +135,20 @@ public class XmlRpcUrl
     * @return for example "http://myServer.com:8080/"
     */
    public String getUrl() {
-      return "http://" + this.hostname + ":" + this.port + "/";
+      String tmp = protocol + hostname + ":" + port + "/";
+      if (path != null)
+         tmp += path;
+      return tmp;
    }
 
    public String toString() {
       return getUrl();
    }
 
+   public String getProtocol() {
+      return protocol;
+   }
+   
    private void parse(String url) throws XmlBlasterException {
       if (url == null) {
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "Your given XMLRPC url '" + url + "' is invalid");
@@ -139,6 +161,10 @@ public class XmlRpcUrl
       else if (urlLowerCase.startsWith("http:")) {
          url = url.substring("http:".length());
       }
+      if (urlLowerCase.startsWith("https://")) {
+         url = url.substring("https://".length());
+         protocol = "https://";
+      }
 
       int pos = url.indexOf(":");
       String portStr = null;
@@ -148,6 +174,8 @@ public class XmlRpcUrl
          if (portStr != null && portStr.length() > 0) {
             pos = portStr.indexOf("/");
             if (pos > -1) {
+               if (pos < portStr.length() -1)
+                  path = portStr.substring(pos+1);
                portStr = portStr.substring(0, pos); // strip path e.g. "http://myHost:8080/path/subpath"
             }
             try {
@@ -176,7 +204,7 @@ public class XmlRpcUrl
          this.inetAddress = java.net.InetAddress.getByName(this.hostname);
       } 
       catch(java.net.UnknownHostException e) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/xmlrpc/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
          log.warning(txt);

@@ -6,6 +6,10 @@ Comment:   Implementing the xmlBlaster interface for xml-rpc.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -16,6 +20,8 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.engine.qos.AddressServer;
+
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 
 /**
@@ -38,15 +44,18 @@ public class XmlBlasterImpl {
    private static Logger log = Logger.getLogger(ME);
    private final org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
    private final AddressServer addressServer;
-
-
+   private final Global glob;
+   private Map<String, WeakReference<CallbackXmlRpcDriverSingleChannel>> cbMap;
+   private long waitTime;
    /**
     * Constructor.
     */
    public XmlBlasterImpl(Global glob, XmlRpcDriver driver, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor ...");
+      this.glob = glob;
       this.blasterNative = blasterNative;
       this.addressServer = driver.getAddressServer();
+      cbMap = new HashMap<String, WeakReference<CallbackXmlRpcDriverSingleChannel>>();
    }
 
 
@@ -205,7 +214,9 @@ public class XmlBlasterImpl {
       return ProtoConverter.stringArray2Vector(retArr);
    }
 
-
+   public Vector get(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException {
+      return get(sessionId, xmlKey_literal, qos_literal, null);
+   }
 
    /**
     * Synchronous access
@@ -213,16 +224,174 @@ public class XmlBlasterImpl {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
-   public Vector get(String sessionId, String xmlKey_literal, String qos_literal)
+   public Vector get(String sessionId, String xmlKey_literal, String qos_literal, String asString)
       throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       MsgUnitRaw[] msgUnitArr = blasterNative.get(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       // convert the MsgUnitRaw array to a Vector array
-      Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
+      boolean contentAsString = asString != null && "true".equals(asString);
+      Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(contentAsString, msgUnitArr);
 
       return msgUnitArrWrap;
+   }
+
+
+   /**
+    * Synchronous request for updates (simulates an asynchronous update)
+    * @return content
+    */
+   public Object[] updateRequest(String sessionId, String waitTimeTxt, String asString) throws XmlBlasterException {
+      
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("Entering updateRequest() waitTime = " + waitTime + " ms ...");
+      // check in the own sessionId pipe if there is some data available, if not wait some time and then
+      // return
+      // if there are some messages available send them to the client and await an acknowledge or an
+      // exception from him.
+      if (sessionId == null)
+         throw new XmlBlasterException(Global.instance(), ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "no sessionId defined");
+
+      CallbackXmlRpcDriverSingleChannel cb = null;
+      synchronized(cbMap) {
+         WeakReference<CallbackXmlRpcDriverSingleChannel> tmp = null;
+         tmp = cbMap.get(sessionId);
+         if (tmp == null) {
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The callback is null (shutdown?)");
+            // return null;
+         }
+         cb = tmp.get();
+      }
+      
+      Object[] ret = new Object[3];
+      // 0: methodName
+      // 1: refId
+      // 2: Vector containing data
+      long tmpWaitTime = Long.parseLong(waitTimeTxt);
+      long pingInterval = cb.getPingInterval();
+      long halfTime = pingInterval/2;
+      if (pingInterval > 0 && tmpWaitTime > halfTime)
+         waitTime = halfTime;
+      else
+         waitTime = tmpWaitTime;
+         
+      boolean contentAsString = asString != null && "true".equals(asString);
+      
+      if (cb != null) {
+         try {
+            cb.setCurrentThread(Thread.currentThread());
+            cb.respan("XmlBlasterImpl.updateRequest-before.blocking");
+            try {
+               while (true) {
+                  LinkedQueue updQueue = cb.getUpdateQueue();
+                  if (updQueue == null)
+                     throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The callback is shutdown");
+                  UpdateEvent ue = (UpdateEvent)updQueue.poll(this.waitTime);
+                  if (ue != null) {
+                     String methodName = ue.getMethod();
+                     long refId = ue.getUniqueId();
+                     ret[0] = methodName;
+                     ret[1] = "" + refId;
+                     if ("update".equals(methodName))  {
+                        ret[2] = ProtoConverter.messageUnitArray2Vector(contentAsString, ue.getMsgUnit());
+                        cb.respan("XmlBlasterImpl.updateRequest-after-update");
+                        return ret;
+                     }
+                     else if ("updateOneway".equals(methodName)) {
+                        ret[2] = ProtoConverter.messageUnitArray2Vector(contentAsString, ue.getMsgUnit());
+                        cb.respan("XmlBlasterImpl.updateRequest-after-updateOneway");
+                        return ret;
+                     }
+                     else {
+                        log.severe("The method '" + methodName + "' is unkown in this context and should not occur, will ignore it");
+                     }
+                  }
+                  else {
+                     cb.respan("XmlBlasterImpl.updateRequest-no-event");
+                     return null; // better chance next time
+                  }
+               }
+            }
+            catch (InterruptedException ex) {
+               // removeCallback(sessionId);
+               // throw new XmlBlasterException(glob, ErrorCode.INTERNAL_INTERRUPTED, ME, "The update has been interrupted");
+               return null;
+            }
+         }
+         finally {
+            cb.setCurrentThread(null);
+         }
+      }
+      else {
+         removeCallback(sessionId, "callback was null, i.e. garbage collector has removed it when it still was in map");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALSTATE, ME, "No callback found for session " + sessionId);
+      }
+   }
+   
+
+   
+   public void interrupt(String sessionId) {
+      WeakReference<CallbackXmlRpcDriverSingleChannel> tmp = cbMap.get(sessionId);
+      if (tmp == null)
+         return;
+      CallbackXmlRpcDriverSingleChannel cb = tmp.get();
+      if (cb != null)
+         cb.interrupt();
+   }
+
+   public String shutdownCb(String sessionId) {
+      if (log.isLoggable(Level.FINER))
+         log.finer("Entering shutdownCb() sessionId = " + sessionId);
+      // notify the blocking update that the client has terminated to handle its work.
+      WeakReference<CallbackXmlRpcDriverSingleChannel> tmp = cbMap.get(sessionId);
+      if (tmp == null)
+         return "";
+      
+      CallbackXmlRpcDriverSingleChannel cb = tmp.get();
+      if (cb != null)
+         cb.interrupt();
+      return "";
+   }
+   
+   /**
+    * Synchronous request for updates (simulates an asynchronous update)
+    * 
+    * @return dummy to make the xmlrpc happy (if it where null it would not be registered).
+    */
+   public String updateAckOrException(String sessionId, String reqId, Object[] ack, String ex) {
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("Entering updateAckOrException() ack = " + ack + " ex " + ex);
+      // notify the blocking update that the client has terminated to handle its work.
+      WeakReference<CallbackXmlRpcDriverSingleChannel> tmp = cbMap.get(sessionId);
+      if (tmp == null)
+         return "";
+      
+      CallbackXmlRpcDriverSingleChannel cb = tmp.get();
+      if (cb != null) {
+         try {
+            cb.respan("XmlBlasterImpl.ack-before-waiting");
+            UpdateEvent ue = null;
+            if (ex != null && ex.length() > 0) { // ex
+               // String method, MsgUnitRaw[] msgUnit, String qos, String[] ret, long uniqueId
+               ue = new UpdateEvent("exception", null, ex, null, Long.parseLong(reqId));
+            }
+            else { // ack
+               String[] ackTxt = new String[ack.length];
+               for (int i=0; i < ackTxt.length; i++)
+                  ackTxt[i] = (String)ack[i];
+               ue = new UpdateEvent("ack", null, null, ackTxt, Long.parseLong(reqId));
+            }
+            cb.getAckQueue().offer(ue, waitTime);
+         }
+         catch (InterruptedException e) {
+            e.printStackTrace();
+         }
+         catch (XmlBlasterException e) {
+            e.printStackTrace();
+         }
+      }
+      return "";
    }
 
 
@@ -230,16 +399,51 @@ public class XmlBlasterImpl {
     * Test the xml-rpc connection and if xmlBlaster is available for requests.
     * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
-   public String ping(String qos)
-   {
+   public String ping(String qos) {
       return blasterNative.ping(this.addressServer, qos);
    }
 
    //   public String toXml() throws XmlBlasterException;
 
-   public String toXml(String extraOffset) throws XmlBlasterException
-   {
+   public String toXml(String extraOffset) throws XmlBlasterException {
       return blasterNative.toXml(extraOffset);
+   }
+   
+   
+   public void registerSessionId(String sessionId, boolean singleChannel, boolean useCDATA) throws XmlBlasterException {
+      CallbackXmlRpcDriver
+         cb = (CallbackXmlRpcDriver)glob.removeFromWeakRegistry(Thread.currentThread());
+      if (cb != null) {
+         cb.postInit(sessionId, this, singleChannel, useCDATA);
+         // hack to pass the sessionId (the secret session id) to the callback implementation
+         // this is needed since there is no way to associate the sessionId with the callback otherwise
+         CallbackXmlRpcDriverSingleChannel chDriver = cb.getSingleChannelDriver();
+         if (chDriver != null) {
+            synchronized(cbMap) {
+               cbMap.put(sessionId, new WeakReference<CallbackXmlRpcDriverSingleChannel>(chDriver));
+            }
+         }
+      }
+      else
+         log.severe("The callback has not been registered for this protocol " + sessionId);
+   }
+   
+   public void removeCallback(String sessionId, String reason) {
+      synchronized(cbMap) {
+         if (sessionId != null) {
+            log.info("Removing Callback for sessionId '" + sessionId + "' for reason: " + reason);
+            cbMap.remove(sessionId);
+         }
+      }
+   }
+   
+   public CallbackXmlRpcDriverSingleChannel getCb(String sessionId) {
+      synchronized(cbMap) {
+         WeakReference<CallbackXmlRpcDriverSingleChannel> tmp = cbMap.get(sessionId);
+         if (tmp == null)
+            return null;
+         return tmp.get();
+      }      
    }
    
 }

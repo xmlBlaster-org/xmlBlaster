@@ -32,16 +32,17 @@ public class AuthenticateImpl {
    private static Logger log = Logger.getLogger(AuthenticateImpl.class.getName());
    private final I_Authenticate authenticate;
    private final AddressServer addressServer;
-
+   private XmlBlasterImpl xblImpl;
 
    /**
     * Constructor.
     */
-   public AuthenticateImpl(Global glob, XmlRpcDriver driver, I_Authenticate authenticate) throws XmlBlasterException {
+   public AuthenticateImpl(Global glob, XmlRpcDriver driver, I_Authenticate authenticate, XmlBlasterImpl xblImpl) throws XmlBlasterException {
       this.glob = glob;
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor ...");
       this.authenticate = authenticate;
       this.addressServer = driver.getAddressServer();
+      this.xblImpl = xblImpl;
    }
 
 
@@ -97,6 +98,21 @@ public class AuthenticateImpl {
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
+   private final String extractSessionIdFromQos(String literal) {
+      if (literal == null)
+         return null;
+      final String token = "sessionId=";
+      final int length = token.length() + 1;
+      int pos = literal.indexOf(token);
+      if (pos < 0)
+         return null;
+      String tmp = literal.substring(pos + length);
+      pos = tmp.indexOf('\'');
+      if (pos < 0)
+         return null;
+      return tmp.substring(0, pos);
+   }
+   
    /**
     * Login to xmlBlaster.
     * @param qos_literal See ConnectQosServer.java
@@ -104,33 +120,75 @@ public class AuthenticateImpl {
     * @see org.xmlBlaster.engine.qos.ConnectQosServer
     * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
     */
-   public String connect(String qos_literal) throws org.apache.xmlrpc.XmlRpcException
-   {
+   private String connectInternal(String sessionId, String qos_literal, boolean singleChannel) throws org.apache.xmlrpc.XmlRpcException {
       try {
-      String returnValue = null, returnValueStripped = null;
-      if (log.isLoggable(Level.FINER)) log.finer("Entering connect(qos=" + qos_literal + ")");
+         String returnValue = null, returnValueStripped = null;
+         if (log.isLoggable(Level.FINER)) 
+            log.finer("Entering connect(qos=" + qos_literal + ")");
 
-      returnValue = authenticate.connect(this.addressServer, qos_literal);
+         returnValue = authenticate.connect(addressServer, qos_literal, sessionId);
 
-      returnValueStripped = ReplaceVariable.replaceAll(returnValue, "<![CDATA[", "");
-      returnValueStripped = ReplaceVariable.replaceAll(returnValueStripped, "]]>", "");
-      if (!returnValueStripped.equals(returnValue)) {
-         log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
+         returnValueStripped = ReplaceVariable.replaceAll(returnValue, "<![CDATA[", "");
+         returnValueStripped = ReplaceVariable.replaceAll(returnValueStripped, "]]>", "");
+         if (!returnValueStripped.equals(returnValue)) {
+            log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                         "This shouldn't be a problem as long as your credentials doesn't contain '<'");
-      }
-      return returnValueStripped;
+         }
+      
+         sessionId = extractSessionIdFromQos(returnValueStripped);
+         boolean useCDATA = addressServer.getEnv("useCDATA", false).getValue();
+         xblImpl.registerSessionId(sessionId, singleChannel, useCDATA);
+         return returnValueStripped;
       }
       catch (XmlBlasterException e) {
-         throw new org.apache.xmlrpc.XmlRpcException(99, e.getMessage());
+         throw new org.apache.xmlrpc.XmlRpcException(99, e.getMessage(), e);
       }
    }
 
-   public String disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
-   {
+   /**
+    * Login to xmlBlaster. This is the old connect method
+    * @param qos_literal See ConnectQosServer.java
+    * @return The xml string from ConnectReturnQos.java<br />
+    * @see org.xmlBlaster.engine.qos.ConnectQosServer
+    * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
+    */
+   public String connect(String qos_literal) throws org.apache.xmlrpc.XmlRpcException {
+      return connectInternal(null, qos_literal, false);
+   }
+
+   /**
+    * Login to xmlBlaster.
+    * @param qos_literal See ConnectQosServer.java
+    * @return The xml string from ConnectReturnQos.java<br />
+    * @see org.xmlBlaster.engine.qos.ConnectQosServer
+    * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
+    */
+   public String connect(String sessionId, String qos_literal) throws org.apache.xmlrpc.XmlRpcException {
+      return connectInternal(sessionId, qos_literal, false);
+   }
+
+   /**
+    * Login to xmlBlaster.
+    * @param qos_literal See ConnectQosServer.java
+    * @return The xml string from ConnectReturnQos.java<br />
+    * @see org.xmlBlaster.engine.qos.ConnectQosServer
+    * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
+    */
+   public String connectSingleChannel(String sessionId, String qos_literal) throws org.apache.xmlrpc.XmlRpcException  {
+      return connectInternal(sessionId, qos_literal, true);
+   }
+
+   public String disconnect(final String sessionId, String qos_literal) throws org.apache.xmlrpc.XmlRpcException  {
       if (log.isLoggable(Level.FINER)) log.finer("Entering logout()");
-      authenticate.disconnect(this.addressServer, sessionId, qos_literal);
-      if (log.isLoggable(Level.FINER)) log.finer("Exiting logout()");
-      return Constants.RET_OK;
+      try {
+         xblImpl.interrupt(sessionId);
+         authenticate.disconnect(this.addressServer, sessionId, qos_literal);
+         if (log.isLoggable(Level.FINER)) log.finer("Exiting logout()");
+         return Constants.RET_OK;
+      }
+      catch (XmlBlasterException e) {
+         throw new org.apache.xmlrpc.XmlRpcException(99, e.getMessage(), e);
+      }
    }
 
    /**

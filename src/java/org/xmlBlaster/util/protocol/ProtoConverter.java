@@ -137,11 +137,14 @@ public class ProtoConverter {
     * @return the Vector object containing three elements [String, byte[],
     *         String] representing the MsgUnitRaw.
     */
-   public static Vector<Object> messageUnit2Vector (MsgUnitRaw msg)
+   public static Vector<Object> messageUnit2Vector (boolean contentAsString, MsgUnitRaw msg)
    {
       Vector<Object> ret = new Vector<Object>();
       ret.addElement(msg.getKey());
-      ret.addElement(msg.getContent());
+      if (contentAsString)
+         ret.addElement(msg.getContentStr());
+      else
+         ret.addElement(msg.getContent());
       ret.addElement(msg.getQos());
       return ret;
    }
@@ -214,12 +217,12 @@ public class ProtoConverter {
     * @param msgs The array of MsgUnitRaw objects to convert to a Vector object.
     * @return the Vector containing all information about the msgs parameter.
     */
-   public static Vector<Object> messageUnitArray2Vector (MsgUnitRaw[] msgs)
+   public static Vector<Object> messageUnitArray2Vector (boolean contentAsString, MsgUnitRaw[] msgs)
    {
       int size = msgs.length;
       Vector<Object> ret = new Vector<Object>();
       for (int i=0; i < size; i++) {
-         ret.addElement(messageUnit2Vector(msgs[i]));
+         ret.addElement(messageUnit2Vector(contentAsString, msgs[i]));
       }
       return ret;
    }
@@ -331,7 +334,7 @@ public class ProtoConverter {
          }
 
 
-         Vector vec = ProtoConverter.messageUnitArray2Vector(msgs);
+         Vector vec = ProtoConverter.messageUnitArray2Vector(false, msgs);
          Vector strVector = ProtoConverter.stringArray2Vector(strings);
 
          MsgUnitRaw[] msgs2 = ProtoConverter.vector2MsgUnitRawArray(vec);

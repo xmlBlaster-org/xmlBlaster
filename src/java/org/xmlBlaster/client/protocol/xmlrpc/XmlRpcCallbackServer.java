@@ -9,7 +9,9 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 
 
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
+import org.apache.xmlrpc.server.XmlRpcHttpServer;
 import org.apache.xmlrpc.server.XmlRpcServer;
+import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
@@ -22,7 +24,11 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.protocol.xmlrpc.XblRequestFactoryFactory;
+import org.xmlBlaster.util.protocol.xmlrpc.XblWriterFactory;
+import org.xmlBlaster.protocol.xmlrpc.XblWebServer;
 import org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl;
 
 /**
@@ -50,8 +56,57 @@ import org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl;
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class XmlRpcCallbackServer implements I_CallbackServer
-{
+public class XmlRpcCallbackServer implements I_CallbackServer {
+   
+   
+   private class CbRunner extends Thread {
+      
+      private boolean doRun = true;
+      
+      private XmlRpcConnection conn;
+      
+      public CbRunner() throws XmlBlasterException {
+         XmlRpcConnection tmpConn = (XmlRpcConnection)glob.getObjectEntry("xmlrpc3-connection");
+         conn = tmpConn.getCopy();
+      }
+      
+      public void shutdown() {
+         if (conn != null)
+            conn.sendShutdownCb();
+         doRun = false;
+      }
+      
+      private final void doSleep(long delay) {
+         try {
+            Thread.sleep(delay);
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+         }
+      }
+      
+      public void run() {
+         while (doRun) {
+            if (conn != null) {
+               try {
+                  conn.getUpdates(client);
+               }
+               catch (XmlBlasterException ex) {
+                  log.warning("An Exception occured when checking for updates. This may be common if the server has shut down while waiting");
+                  // conn.sendAckOrEx("0", null, ex.getMessage());
+                  doRun = false;
+                  // doSleep(5000L);
+               }
+            }
+            else {
+               doSleep(5000L);
+            }
+         }
+         shutdown();
+      }
+      
+   }
+   
    private String ME = "XmlRpcCallbackServer";
    private Global glob = null;
    private static Logger log = Logger.getLogger(XmlRpcCallbackServer.class.getName());
@@ -65,9 +120,12 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    private WebServer webServer = null;
    protected PluginInfo pluginInfo;
 
+   private CbRunner singleChRunner; 
+
    /** You must call initialize after constructing me */
    public XmlRpcCallbackServer() {}
 
+   
    /** Enforced by I_Plugin */
    public String getType() {
       return getCbProtocol();
@@ -101,10 +159,29 @@ public class XmlRpcCallbackServer implements I_CallbackServer
          this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       this.client = client;
       this.loginName = name;
-      createCallbackServer();
+
+      PropBoolean tmp = callbackAddress.getEnv("singleChannel", false);
+      boolean useCDATA = callbackAddress.getEnv("useCDATA", false).getValue();
+      if (!tmp.getValue())
+         createCallbackServer(useCDATA);
+      else {
+         xmlRpcUrlCallback = new XmlRpcUrl(glob, callbackAddress.getBootstrapHostname(), DEFAULT_CALLBACK_PORT, "tunneled");
+         callbackAddress.setRawAddress(xmlRpcUrlCallback.getUrl()); // e.g. "http://127.168.1.1:8082/"
+         ME = "XmlRpcCallbackServer-" + xmlRpcUrlCallback.getUrl();
+      }
+      glob.addObjectEntry("xmlrpc-callback", this);
       log.info("Success, created XMLRPC callback server for " + loginName);
    }
 
+   public void postInitialize() throws XmlBlasterException {
+      PropBoolean tmp = callbackAddress.getEnv("singleChannel", false);
+      if (tmp.getValue()) {
+         xmlRpcUrlCallback = new XmlRpcUrl(glob, callbackAddress, false, DEFAULT_CALLBACK_PORT);
+         singleChRunner = new CbRunner();
+         singleChRunner.start();
+      }
+      
+   }
 
    /**
     * Building a Callback server, using the tie approach.
@@ -113,8 +190,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * @exception XmlBlasterException if the BlasterCallback server can't be created
     *            id="CallbackCreationError"
     */
-   public void createCallbackServer() throws XmlBlasterException
-   {
+   public void createCallbackServer(boolean useCDATA) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("createCallbackServer() ...");
 
       this.xmlRpcUrlCallback = new XmlRpcUrl(glob, this.callbackAddress, false, DEFAULT_CALLBACK_PORT);
@@ -124,7 +200,9 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             int numTries = 20; // start looking for a free port, begin with default port -dispatch/callback/plugin/xmlrpc/port <port>
             for (int ii=0; ii<numTries; ii++) {
                try {
-                  webServer = new WebServer(this.xmlRpcUrlCallback.getPort(), this.xmlRpcUrlCallback.getInetAddress());
+                  // webServer = new WebServer(xmlRpcUrlCallback.getPort(), xmlRpcUrlCallback.getInetAddress());
+                  SocketUrl socketUrl = new SocketUrl(glob, xmlRpcUrlCallback.getHostname(), xmlRpcUrlCallback.getPort());
+                  webServer = new XblWebServer(xmlRpcUrlCallback, socketUrl, callbackAddress);
                   break;
                }
                /*
@@ -149,7 +227,9 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                }
             }
             
-            XmlRpcCallbackImpl xblImpl = new XmlRpcCallbackImpl(this);
+            boolean inhibitCbExceptions = callbackAddress.getEnv("inhibitCbExceptions", false).getValue();
+            
+            XmlRpcCallbackImpl xblImpl = new XmlRpcCallbackImpl(this, inhibitCbExceptions);
             PropertyHandlerMapping mapping = new PropertyHandlerMapping();
             XblRequestFactoryFactory factoryFactory = new XblRequestFactoryFactory();
             factoryFactory.add(xblImpl);
@@ -160,8 +240,15 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             this.ME = "XmlRpcCallbackServer-" + this.xmlRpcUrlCallback.getUrl();
             //log.info(ME, "Created XmlRpc callback http server");
          
-            XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
+            XmlRpcHttpServer xmlRpcServer = (XmlRpcHttpServer)webServer.getXmlRpcServer();
+            XmlRpcServerConfigImpl serverCfg = new XmlRpcServerConfigImpl();
+            serverCfg.setEnabledForExceptions(true);
+            serverCfg.setEnabledForExtensions(true);
+            xmlRpcServer.setConfig(serverCfg);
             xmlRpcServer.setHandlerMapping(mapping);
+            
+            XblWriterFactory writerFactory = new XblWriterFactory(useCDATA);
+            xmlRpcServer.setXMLWriterFactory(writerFactory);
             webServer.start();
          }
          else
@@ -180,8 +267,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Returns the 'well known' protocol type. 
     * @return "XMLRPC"
     */
-   public String getCbProtocol()
-   {
+   public String getCbProtocol() {
       return "XMLRPC";
    }
    
@@ -189,8 +275,9 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Returns the current callback address. 
     * @return Something like "http://myserver.com:8081/"
     */
-   public String getCbAddress() throws XmlBlasterException
-   {
+   public String getCbAddress() throws XmlBlasterException {
+      if (xmlRpcUrlCallback == null)
+         return null;
       return xmlRpcUrlCallback.getUrl();
    }
    
@@ -198,8 +285,9 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Shutdown the callback server.
     * @return true if everything went fine.
     */
-   public void shutdown()
-   {
+   public void shutdown() {
+      glob.removeObjectEntry("xmlrpc-callback");
+      
       if (webServer != null) {
          try { 
             webServer.getXmlRpcServer().setHandlerMapping(null);
@@ -210,6 +298,10 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             log.warning("Problems during shutdown of XMLRPC callback web server: " + e.toString());
             return;
          }
+      }
+      else if (this.singleChRunner != null) {
+         singleChRunner.shutdown();
+         singleChRunner = null;
       }
       log.info("The XMLRPC callback server is shutdown.");
    }
@@ -223,7 +315,12 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                        String updateQos) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering update(): sessionId: " + cbSessionId);
-      return client.update(cbSessionId, updateKey, content, updateQos);
+      String ret = client.update(cbSessionId, updateKey, content, updateQos);
+      // check if it is an inhibited Exception
+      if (ret != null && XmlRpcCallbackImpl.INHIBITED_CALLBACK_EXCEPTION.equals(ret)) {
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_USER_HOLDBACK, ME, "Exception in Client Callback Method. The cause has been inhibited on the client side by the 'inhibitCbExceptions' flag. You can look at the client logs");
+      }
+      return ret;
    }
 
    /**

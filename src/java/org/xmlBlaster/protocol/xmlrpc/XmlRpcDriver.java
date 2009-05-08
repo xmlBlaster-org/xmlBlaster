@@ -15,7 +15,10 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.protocol.xmlrpc.XblRequestFactoryFactory;
+import org.xmlBlaster.util.protocol.xmlrpc.XblWriterFactory;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -23,7 +26,9 @@ import org.xmlBlaster.protocol.I_Driver;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
+import org.apache.xmlrpc.server.XmlRpcHttpServer;
 import org.apache.xmlrpc.server.XmlRpcServer;
+import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 
 /**
@@ -52,6 +57,7 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
 {
    private String ME = "XmlRpcDriver";
    private Global glob;
+   private PluginInfo pluginInfo;
    private static Logger log = Logger.getLogger(XmlRpcDriver.class.getName());
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
@@ -84,7 +90,7 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
     * @return "XMLRPC"
     */
    public String getProtocolId() {
-      return "XMLRPC";
+      return (pluginInfo == null) ? "XMLRPC" : pluginInfo.getType();
    }
 
    /** Enforced by I_Plugin */
@@ -94,7 +100,7 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
 
    /** Enforced by I_Plugin */
    public String getVersion() {
-      return "1.0";
+      return (pluginInfo == null) ? "1.0" : pluginInfo.getVersion();
    }
 
    /**
@@ -104,6 +110,7 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
       throws XmlBlasterException {
       this.glob = glob;
+      this.pluginInfo = pluginInfo;
       org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
@@ -189,16 +196,19 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
    public synchronized void activate() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering activate");
       try {
-         webServer = new WebServer(this.xmlRpcUrl.getPort(), this.xmlRpcUrl.getInetAddress());
+         final boolean isLocal = false;
+         // SocketUrl socketUrl = new SocketUrl(glob, addressServer, isLocal, DEFAULT_HTTP_PORT);
+         SocketUrl socketUrl = new SocketUrl(glob, xmlRpcUrl.getHostname(), xmlRpcUrl.getPort());
+
+         webServer = new XblWebServer(xmlRpcUrl, socketUrl, addressServer);
          // publish the public methods to the XmlRpc web server:
          // webServer.addHandler("authenticate", new AuthenticateImpl(glob, this, authenticate));
          // webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, this, xmlBlasterImpl));
          
-         
          PropertyHandlerMapping mapping = new PropertyHandlerMapping();
          
-         AuthenticateImpl auImpl = new AuthenticateImpl(glob, this, authenticate);
          XmlBlasterImpl xblImpl = new XmlBlasterImpl(glob, this, xmlBlasterImpl);
+         AuthenticateImpl auImpl = new AuthenticateImpl(glob, this, authenticate, xblImpl);
          
          XblRequestFactoryFactory factoryFactory = new XblRequestFactoryFactory();
          factoryFactory.add(auImpl);
@@ -208,8 +218,17 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
          mapping.addHandler("authenticate", auImpl.getClass());      // register update() method
          mapping.addHandler("xmlBlaster", xblImpl.getClass());
          
-         XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
+         XmlRpcHttpServer xmlRpcServer = (XmlRpcHttpServer)webServer.getXmlRpcServer();
+         XmlRpcServerConfigImpl serverCfg = new XmlRpcServerConfigImpl();
+         serverCfg.setEnabledForExceptions(true);
+         serverCfg.setEnabledForExtensions(true);
+         xmlRpcServer.setConfig(serverCfg);
          xmlRpcServer.setHandlerMapping(mapping);
+         boolean useCDATA = addressServer.getEnv("useCDATA", false).getValue();
+         XblWriterFactory writerFactory = new XblWriterFactory(useCDATA);
+         xmlRpcServer.setXMLWriterFactory(writerFactory);
+
+         
          webServer.start();
          log.info("Started successfully XMLRPC driver, access url=" + this.xmlRpcUrl.getUrl());
       }
@@ -257,26 +276,51 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
       this.glob.unregisterMBean(this.mbeanHandle);
    }
 
+   public String getEnvPrefix() {
+      return (addressServer != null) ? addressServer.getEnvPrefix() : "plugin/"+getType().toLowerCase();
+   }
+
    /**
     * Command line usage.
     * <p />
     * Enforced by interface I_Driver.
     */
-   public String usage()
-   {
+   public String usage() {
       String text = "\n";
       text += "XmlRpcDriver options:\n";
-      text += "   -plugin/xmlrpc/port\n";
+      text += "   -"+getEnvPrefix()+"port\n";
       text += "                       The XMLRPC web server port [" + DEFAULT_HTTP_PORT + "].\n";
-      text += "   -plugin/xmlrpc/hostname\n";
+      text += "   -"+getEnvPrefix()+"hostname\n";
       text += "                       Specify a hostname where the XMLRPC web server runs.\n";
-      text += "                       Default is the localhost.\n";
-      text += "   -plugin/xmlrpc/debug\n";
-      text += "                       true switches on detailed XMLRPC debugging [false].\n";
+      text += "                       Default is the localhost. If you specify the protocol then port and ssl info are taken from here\n";
+      text += "                       for example https://localhost:8443/somePath would ignore port, SSL, path\n";
+      // text += "   -plugin/xmlrpc/debug\n";
+      // text += "                       true switches on detailed XMLRPC debugging [false].\n";
+      
+      text += "   -"+getEnvPrefix()+"SoTimeout\n";
+      text += "                       How long may a socket read block in msec.\n";
+      text += "   -"+getEnvPrefix()+"responseTimeout\n";
+      text += "                       Max wait for the method return value/exception in msec.\n";
+//      text += "                       The default is " +getDefaultResponseTimeout() + ".\n";
+      text += "                       Defaults to 'forever', the value to pass is milli seconds.\n";
+      // text += "   -"+getEnvPrefix()+"backlog\n";
+      // text += "                       Queue size for incoming connection request [50].\n";
+      text += "   -"+getEnvPrefix()+"SSL\n";
+      text += "                       True enables SSL support on socket [false] (if no protocol specified in hostname).\n";
+      text += "   -"+getEnvPrefix()+"keyStore\n";
+      text += "                       The path of your keystore file. Use the java utility keytool.\n";
+      text += "   -"+getEnvPrefix()+"keyStorePassword\n";
+      text += "                       The password of your keystore file.\n";
+      text += "   -dispatch/connection/plugin/socket/compress/type\n";
+      text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";
+      text += "                       '' disables compression, '"+Constants.COMPRESS_ZLIB_STREAM+"' compresses whole stream.\n";
+      text += "                       '"+Constants.COMPRESS_ZLIB+"' both compress the same (both are provided as compatibility to the socket protocol).\n";
+      
       text += "   " + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
       text += "\n";
       return text;
    }
+
    /**
     * @return A link for JMX usage
     */

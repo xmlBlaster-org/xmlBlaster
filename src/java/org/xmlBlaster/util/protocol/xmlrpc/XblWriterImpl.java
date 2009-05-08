@@ -57,7 +57,7 @@ public class XblWriterImpl implements XMLWriter {
 	public void setFlushing(boolean pFlushing) { flushing = pFlushing; }
 	public boolean isFlushing() { return flushing; }
 
-	private boolean useCdata;
+	private boolean useCDATA;
 	
 	/** <p>Sets the JaxbXMLSerializers Writer.</p>
 	 */
@@ -72,7 +72,7 @@ public class XblWriterImpl implements XMLWriter {
 	}
 	
 	public void setUseCData(boolean use) {
-	   useCdata = use;
+	   useCDATA = use;
 	}
 	
 	/** Sets the locator.
@@ -232,11 +232,6 @@ public class XblWriterImpl implements XMLWriter {
    }
    
    
-   boolean containsCDATA(char[] ch) {
-      String tmp = new String(ch);
-      return tmp.indexOf("<![CDATA[") > -1;
-   }
-   
    /** Inserts a string of characters into the document.
     * @param ch The characters being inserted. A substring, to be precise.
     * @param start Index of the first character
@@ -244,16 +239,23 @@ public class XblWriterImpl implements XMLWriter {
     * @throws SAXException Thrown in case of an IOException
     */  
    public void characters(char[] ch, int start, int length) throws SAXException {
-      if (useCdata) {
-         if (containsCDATA(ch))
-            throw new SAXException("The content " + new String(ch) + " contains CDATA and can not be parsed");
+      if (useCDATA) {
          try {
             stopTerminator();
             if (w == null) 
                return;
-            w.write("<![CDATA[");
-            w.write(ch);
-            w.write("]]>");
+            wrapWithCDATAIfNecessary(ch, start, length, w);
+
+            /*
+            stopTerminator();
+            if (w == null) 
+               return;
+            int end = start+length;
+            for (int i = start;  i < end;  i++) {
+               char c = ch[i];
+               w.write(c);
+            }
+            */
          } 
          catch (IOException e) {
             throw new SAXException(e);
@@ -315,6 +317,57 @@ public class XblWriterImpl implements XMLWriter {
 				}
 			}
 		}
+	}
+	
+   private final boolean needsEncoding(String txt) {
+      if (txt == null || txt.trim().length() < 1)
+         return false;
+      if (txt.indexOf('&') > -1)
+         return true;
+      if (txt.indexOf('<') > -1)
+         return true;
+      if (txt.indexOf('>') > -1)
+         return true;
+      if (txt.indexOf('\'') > -1)
+         return true;
+      if (txt.indexOf('"') > -1)
+         return true;
+      return false;
+   }
+   
+	private void wrapWithCDATAIfNecessary(char[] ch, int start, int length, Writer wr) throws IOException, SAXException {
+	   String txt = new String(ch, start, length);
+	   int pos = txt.indexOf("<![CDATA[");
+	   boolean hasCDATA = false;
+	   if (pos > -1) { // check the content outside of the limits
+	      String prefix = txt.substring(0, pos);
+	      if (needsEncoding(prefix)) {
+	         throw new SAXException("The content " + txt + " contains CDATA and can not be parsed");
+	      }
+	      else {
+	         // get the posfix
+	         pos = txt.indexOf("]]>");
+	         if (pos < 0)
+	            throw new SAXException("The content " + txt + " must be encoded and can not be wrapped by a CDATA since no ending ]]> found");
+	         String postfix = txt.substring(pos+"]]>".length()+1);
+	         if (needsEncoding(postfix)) {
+	            throw new SAXException("The content " + txt + " contains CDATA and can not be parsed");
+	         }
+	      }
+	      hasCDATA = true;
+	   }
+	   
+	   boolean needsEncoding = !hasCDATA && needsEncoding(txt);
+	   if (needsEncoding)
+         wr.write("<![CDATA[");
+
+	   int end = start+length;
+      for (int i = start;  i < end;  i++) {
+         char c = ch[i];
+         w.write(c);
+      }
+      if (needsEncoding)
+         wr.write("]]>");
 	}
 	
 	private void writeCData(String v) throws java.io.IOException {

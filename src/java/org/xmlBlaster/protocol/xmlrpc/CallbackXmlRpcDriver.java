@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.protocol.xmlrpc.XmlRpcClientFactory;
@@ -21,6 +22,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Vector;
 
 /**
@@ -33,14 +35,17 @@ import java.util.Vector;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
  */
-public class CallbackXmlRpcDriver implements I_CallbackDriver
-{
+public class CallbackXmlRpcDriver implements I_CallbackDriver {
    private String ME = "CallbackXmlRpcDriver";
    private Global glob = null;
    private static Logger log = Logger.getLogger(CallbackXmlRpcDriver.class.getName());
    private CallbackAddress callbackAddress = null;
    private XmlRpcClient xmlRpcClient = null;
 
+   private CallbackXmlRpcDriverSingleChannel singleChannelDriver;
+   private boolean contentAsString;
+   private boolean initializing = true;
+   
    /** Get a human readable name of this driver */
    public String getName() {
       return ME;
@@ -69,6 +74,9 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+      initializing = true;
+      if (log.isLoggable(Level.FINE))
+         log.fine("init invoked");
    }
 
    /**
@@ -88,20 +96,45 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @param  callbackAddress Contains the stringified XMLRPC callback handle of
     *                      the client
     */
-   public void init(Global global, CallbackAddress cbAddress) throws XmlBlasterException
-   {
+   public void init(Global global, CallbackAddress cbAddress) throws XmlBlasterException {
+      initializing = true;
       this.glob = global;
-
+      // workaround to pass this callback driver object to the other side (the AuthenticateImpl)
+      glob.putInWeakRegistry(Thread.currentThread(), this);
       this.callbackAddress = cbAddress;
-      try {
-         xmlRpcClient = XmlRpcClientFactory.getXmlRpcClient(cbAddress.getRawAddress(), cbAddress);
-         if (log.isLoggable(Level.FINE)) log.fine("Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
-      }
-      catch (IOException ex1) {
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "init() failed", ex1);
-      }
+      if (callbackAddress != null)
+         contentAsString = callbackAddress.getEnv("contentAsString", false).getValue();
+      
+      org.xmlBlaster.engine.ServerScope 
+         engineGlob = (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+      if (engineGlob == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
    }
 
+
+   public void postInit(String sessionId, XmlBlasterImpl xblImpl, boolean singleChannel, boolean useCDATA) throws XmlBlasterException {
+      try {
+         if (singleChannel) {
+            singleChannelDriver = new CallbackXmlRpcDriverSingleChannel();
+            singleChannelDriver.init(glob, callbackAddress);
+            singleChannelDriver.register(sessionId, xblImpl);
+         }
+         else {
+            try {
+               xmlRpcClient = XmlRpcClientFactory.getXmlRpcClient(glob, null, callbackAddress, useCDATA);
+               if (log.isLoggable(Level.FINE)) 
+                  log.fine("Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
+            }
+            catch (IOException ex1) {
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "init() failed", ex1);
+            }
+         }
+      }
+      finally {
+         initializing = false;
+      }
+   }
+   
    /**
     * This sends the update to the client.
     * <p />
@@ -116,10 +149,31 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException
-   {
+   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+
+      // wait until initialization process has been fully completed since we don't know yet how the
+      // client will have it: singleChannel or not
+      long count = 0L;
+      while (initializing) {
+         try {
+            Thread.sleep(50L);
+            count++;
+            if (count > 2400L) // try maximum 2 minutes
+               break;
+         }
+         catch (Exception ex) {
+         }
+      }
+      
+      
+      if (singleChannelDriver != null)
+         return singleChannelDriver.sendUpdate(msgArr);
+      
       if (msgArr == null || msgArr.length < 1) throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal update argument");
- 
+
+      if (xmlRpcClient == null) {
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "The xmlRpcClient on the server side is null");
+      }
       // transform the msgUnits to Vectors
       try {
          String[] retVal = new String[msgArr.length];
@@ -128,9 +182,12 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
-            args.addElement(msgUnit.getContent());
+            if (contentAsString)
+               args.addElement(msgUnit.getContentStr());
+            else
+               args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
-          
+
             if (log.isLoggable(Level.FINE)) log.fine("Send an update to the client ...");
 
             retVal[ii] = (String)xmlRpcClient.execute("$default.update", args);
@@ -156,7 +213,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             e2.setLocation("client");
             throw e2;
          }
-         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex, ErrorCode.USER_UPDATE_ERROR);
+         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex, ErrorCode.USER_UPDATE_ERROR, ME+".sendUpdate");
          e.isServerSide(false);
          e.setLocation(this.getClass().getName());
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();
@@ -176,8 +233,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException
-   {
+   public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      if (singleChannelDriver != null) {
+         singleChannelDriver.sendUpdateOneway(msgArr);
+         return;
+      }
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
 
@@ -189,7 +249,10 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             MsgUnitRaw msgUnit = msgArr[ii];
             args.addElement(callbackAddress.getSecretSessionId());
             args.addElement(msgUnit.getKey());
-            args.addElement(msgUnit.getContent());
+            if (contentAsString)
+               args.addElement(msgUnit.getContentStr());
+            else
+               args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
             if (log.isLoggable(Level.FINE)) log.fine("Send an updateOneway to the client ...");
@@ -219,8 +282,12 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @return    Currently an empty string ""
     * @exception XmlBlasterException If client not reachable
     */
-   public final String ping(String qos) throws XmlBlasterException
-   {
+   public final String ping(String qos) throws XmlBlasterException {
+      if (singleChannelDriver != null)
+         return singleChannelDriver.ping(qos);
+      
+      if (xmlRpcClient == null)
+         return "OK"; // make the initial ping happy since it is not completely set up yet
       try {
          Vector args = new Vector();
          args.addElement(qos);
@@ -239,7 +306,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      if (log.isLoggable(Level.FINE)) log.fine("Registering I_ProgressListener is not supported with this protocol plugin");
+      if (log.isLoggable(Level.FINE)) 
+         log.fine("Registering I_ProgressListener is not supported with this protocol plugin");
       return null;
    }
 
@@ -247,9 +315,13 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * This method shuts down the driver.
     * <p />
     */
-   public void shutdown()
-   {
+   public void shutdown() {
       //if (xmlRpcClient != null) xmlRpcClient.shutdown(); method is missing in XmlRpc package !!!
+      initializing = false;
+      if (singleChannelDriver != null) {
+         singleChannelDriver.shutdown();
+         singleChannelDriver = null;
+      }
       callbackAddress = null;
       xmlRpcClient = null;
       if (log.isLoggable(Level.FINE)) log.fine("Shutdown implementation is missing");
@@ -262,5 +334,10 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       return true;
    }
 
+   public CallbackXmlRpcDriverSingleChannel getSingleChannelDriver() {
+      return singleChannelDriver;
+   }
+
+   
 
 }
