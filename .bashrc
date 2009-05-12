@@ -184,8 +184,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar:${XMLBLASTER_HOME}/lib/mx4j-impl.jar:${XMLBLASTER_HOME}/lib/mx4j-tools.jar 
 
    # quartz scheduler
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz-all-1.6.0.jar
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-collections-3.1.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/quartz-all-1.6.5.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/commons-dbcp-1.2.2.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/commons-pool-1.3.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-collections-3.2.jar
 
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-java.jar
