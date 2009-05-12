@@ -2310,16 +2310,18 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          //dispatchManager.getDispatchConnectionsHandler().getCurrentDispatchConnection().getSessionInfoProtector().getConnectQos();
     	 //log.severe("Debug only: lookup " + sessionName.toString());
          CbDispatchConnection cbd = (CbDispatchConnection)dispatchManager.getDispatchConnectionsHandler().getCurrentDispatchConnection();
-         I_AdminSession is = cbd.getAdminSession();
-         ConnectQosData cd = is.getConnectQos().getData();
-         //ConnectQosData cd = clientEvent.getSessionInfo().getConnectQos().getData();
-         // A client can on connect send a event/callbackState=false clientProperty to suppress the event fired
-         if (cd.getClientProperty(ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState", true) == false) {
-            if (log.isLoggable(Level.FINE))  log.fine("Found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState=true for "+sessionName.toString());
-    	    return;
-         }
-        //else
-        //    log.severe("Debug only: Not found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState");
+         if (cbd != null) {
+            I_AdminSession is = cbd.getAdminSession();
+            ConnectQosData cd = is.getConnectQos().getData();
+            //ConnectQosData cd = clientEvent.getSessionInfo().getConnectQos().getData();
+            // A client can on connect send a event/callbackState=false clientProperty to suppress the event fired
+            if (cd.getClientProperty(ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState", true) == false) {
+               if (log.isLoggable(Level.FINE))  log.fine("Found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState=true for "+sessionName.toString());
+    	       return;
+            }
+           //else
+           //    log.severe("Debug only: Not found " + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "callbackState");
+        }
       }
       catch (Throwable e) {
     	  e.printStackTrace();
