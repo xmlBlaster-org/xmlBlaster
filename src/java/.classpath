@@ -35,8 +35,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxtools.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.1.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz-all-1.6.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/joda-time.jar"/>
@@ -46,5 +44,9 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/xmlrpc-client-3.1.1.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/xmlrpc-common-3.1.1.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc3/xmlrpc-server-3.1.1.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz/commons-dbcp-1.2.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz/commons-pool-1.3.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz/quartz-all-1.6.5.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="output" path="classesEclipse"/>
 </classpath>
