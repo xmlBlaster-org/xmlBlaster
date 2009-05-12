@@ -6,26 +6,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.logging.Logger;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnit;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.test.Util;
-import junit.framework.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 
 
 /**
@@ -119,11 +121,20 @@ public class TestSessionCb extends TestCase
 
          SubscribeKey sk = new SubscribeKey(glob1, oid);
          SubscribeQos sq = new SubscribeQos(glob1);
-         SubscribeReturnQos sr1 = con1.subscribe(sk.toXml(), sq.toXml());
+         con1.subscribe(sk.toXml(), sq.toXml());
 
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
-         con1.getCbServer().shutdown();
+
+         boolean isSocket = (con1.getCbServer() instanceof SocketCallbackImpl);
+         if (isSocket) {
+            // xmlBlaster destroys our first session:
+            con1.leaveServer(null);
+            log.info("Leave server of first client.");
+         }
+         else { // "IOR"
+            con1.getCbServer().shutdown();
+         }
 
          log.info("############ Con1 is down");
 
@@ -141,11 +152,11 @@ public class TestSessionCb extends TestCase
 
          sk = new SubscribeKey(glob2, oid);
          sq = new SubscribeQos(glob2);
-         SubscribeReturnQos sr2 = con2.subscribe(sk.toXml(), sq.toXml());
+         con2.subscribe(sk.toXml(), sq.toXml());
 
          sk = new SubscribeKey(glob2, Constants.OID_DEAD_LETTER);
          sq = new SubscribeQos(glob2);
-         SubscribeReturnQos srDeadMessage = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                deadMessageCounter++;
                log.info("****** Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
@@ -159,7 +170,7 @@ public class TestSessionCb extends TestCase
          PublishKey pk = new PublishKey(glob2, oid, "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob2);
          MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         PublishReturnQos retQos = con2.publish(msgUnit);
+         con2.publish(msgUnit);
          log.info("Published message oid=" + oid);
 
          log.info("############ Con2 is waiting for msg and for DEAD letter ...");
