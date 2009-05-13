@@ -10,6 +10,8 @@ Changes for current svn (JDK >= 1.5 only)
           proxy, using https either all the way between client/server or to use an intermediate reverse
           proxy which converts the https protocol to http. Compression can also be used.
 
+ o r17673 Added Security.DefaultPluginType=hwpasswd configuration possibility
+
  o r17671 CallbackAddress.java fixed envPrefix SOCKET->XMLRPC
 
  o r17655 ported xmlrpc protocol to version 3 (3.1.1) and added possibility to wrap contents in CDATA.
