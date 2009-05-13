@@ -12,7 +12,7 @@ Compile:   Compiles at least on Windows, Linux, Solaris. Further porting should 
            Needs pthread.h but not the pthread library (for exact times)
 
             export LD_LIBRARY_PATH=/opt/sqlite-bin/lib
-            gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c ../helper.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite
+	    gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c ../helper.c ../Timeout.c ../Timestampc.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite -lpthread
             (use optionally  -ansi -pedantic -Wno-long-long
             (Intel C: icc -wd981 ...)
 
