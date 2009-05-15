@@ -149,6 +149,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
     */
    private void parse(InputSource xmlData) throws XmlBlasterException {
       try {
+    	 character.setLength(0);
          SAXParserFactory spf = glob.getSAXParserFactory();
          boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
          spf.setValidating(validate);
