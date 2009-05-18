@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Test C client library
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   cd xmlBlaster; build -DXMLBLASTER_PERSISTENT_QUEUE=1 c-test
+Compile:   cd xmlBlaster; build -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 c-test
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -13,7 +13,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.
 #include <util/queue/QueueInterface.h>
 #include "test.h"
 
-#ifdef XMLBLASTER_PERSISTENT_QUEUE
+#if defined(XMLBLASTER_PERSISTENT_QUEUE) || defined(XMLBLASTER_PERSISTENT_QUEUE_SQLITE3)
 
 static int argc = 0;
 static char** argv = 0;
@@ -645,14 +645,14 @@ int main(int argc_, char **argv_)
 }
 
 
-#else /* XMLBLASTER_PERSISTENT_QUEUE */
+#else /* XMLBLASTER_PERSISTENT_QUEUE_SQLITE3 */
 
 int main(int argc_, char **argv_)
 {
-   printf("C-client is compiled without -DXMLBLASTER_PERSISTENT_QUEUE=1, no persistent queue tested\n");
+   printf("C-client is compiled without -XMLBLASTER_PERSISTENT_QUEUE or -XMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1, no persistent queue tested\n");
    if (*MU_ASSERT_TEXT || tests_run) {} /* To suppress compiler warning */
    return 0;
 }
 
-#endif /* XMLBLASTER_PERSISTENT_QUEUE */
+#endif /* XMLBLASTER_PERSISTENT_QUEUE XMLBLASTER_PERSISTENT_QUEUE_SQLITE3 */
 
