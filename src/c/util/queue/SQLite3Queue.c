@@ -22,11 +22,11 @@ Compile:   Compiles at least on Windows, Linux, Solaris. Further porting should 
 
            Testcompile on Windows
 
-				create sqlite3.lib from sqlite3.def via:
-				 lib /DEF:sqlite3.def
+                                create sqlite3.lib from sqlite3.def via:
+                                 lib /DEF:sqlite3.def
 
            ( /I\c\sqlite3 says where sqlite3.h resides ):
-			  cl /MD /DQUEUE_MAIN /DDLL_IGNORE /DXB_NO_PTHREADS /DSQLITE3=1 /D_WINDOWS /I\c\sqlite3 /I..\.. Sqlite3Queue.c ..\helper.c /link \pialibs\sqlite3.lib
+                          cl /MD /DQUEUE_MAIN /DDLL_IGNORE /DXB_NO_PTHREADS /DSQLITE3=1 /D_WINDOWS /I\c\sqlite3 /I..\.. Sqlite3Queue.c ..\helper.c /link \pialibs\sqlite3.lib
 
 Table layout XB_ENTRIES:
            dataId bigint
@@ -45,7 +45,7 @@ Todo:      Tuning:
 @see:      http://www.sqlite.org/
 @see:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 @see:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
-@see:	   http://www.sqlite.org/threadsafe.html sqlite3 default is thread-safe (serialized)
+@see:      http://www.sqlite.org/threadsafe.html sqlite3 default is thread-safe (serialized)
 Testsuite: xmlBlaster/testsuite/src/c/TestQueue.c
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -466,36 +466,36 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
    }
 
    if (stateOk) { /* set prepared statement tokens */
-	  rc = SQLITE_OK;
-	  int index = 0;
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_int64(dbInfo->pVm_put , ++index, queueEntry->uniqueId);
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_text(dbInfo->pVm_put, ++index, dbInfo->prop.queueName, strlen(dbInfo->prop.queueName), SQLITE_STATIC);
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_int64(dbInfo->pVm_put, ++index, queueEntry->priority);
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_text(dbInfo->pVm_put, ++index, embeddedType, strlen(embeddedType), SQLITE_STATIC);
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_text(dbInfo->pVm_put, ++index, queueEntry->isPersistent?"T":"F", 1, SQLITE_STATIC);
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_int64(dbInfo->pVm_put, ++index, queueEntry->embeddedBlob.dataLen);
-	  if(rc == SQLITE_OK) rc = sqlite3_bind_blob(dbInfo->pVm_put, ++index, queueEntry->embeddedBlob.data, (int)queueEntry->embeddedBlob.dataLen, SQLITE_STATIC);
+          int index = 0;
+          rc = SQLITE_OK;
+          if(rc == SQLITE_OK) rc = sqlite3_bind_int64(dbInfo->pVm_put , ++index, queueEntry->uniqueId);
+          if(rc == SQLITE_OK) rc = sqlite3_bind_text(dbInfo->pVm_put, ++index, dbInfo->prop.queueName, strlen(dbInfo->prop.queueName), SQLITE_STATIC);
+          if(rc == SQLITE_OK) rc = sqlite3_bind_int64(dbInfo->pVm_put, ++index, queueEntry->priority);
+          if(rc == SQLITE_OK) rc = sqlite3_bind_text(dbInfo->pVm_put, ++index, embeddedType, strlen(embeddedType), SQLITE_STATIC);
+          if(rc == SQLITE_OK) rc = sqlite3_bind_text(dbInfo->pVm_put, ++index, queueEntry->isPersistent?"T":"F", 1, SQLITE_STATIC);
+          if(rc == SQLITE_OK) rc = sqlite3_bind_int64(dbInfo->pVm_put, ++index, queueEntry->embeddedBlob.dataLen);
+          if(rc == SQLITE_OK) rc = sqlite3_bind_blob(dbInfo->pVm_put, ++index, queueEntry->embeddedBlob.data, (int)queueEntry->embeddedBlob.dataLen, SQLITE_STATIC);
 
       if (rc != SQLITE_OK) {
-	     switch(rc) {
-		 case SQLITE_RANGE:
-			strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
-			SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d index out of range", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
-		 	LOG __FILE__, "put(%s) SQL error: %d index out of range", int64ToStr(int64Str, queueEntry->uniqueId), rc); break;
-		 case SQLITE_NOMEM:
-		 	LOG __FILE__, "put(%s) SQL error: %d out of memory", int64ToStr(int64Str, queueEntry->uniqueId), rc);
-		 	SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d out of memory", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
-		 	strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN); break;
-		 case SQLITE_MISUSE:
-		 	LOG __FILE__, "put(%s) SQL error: %d misuse: virtual machine not valid", int64ToStr(int64Str, queueEntry->uniqueId), rc);
-		 	SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d misuse: virtual machine not valid", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
-		 	strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN); break;
-		 default:
-		 	LOG __FILE__, "put(%s) SQL error: %d undefined error", int64ToStr(int64Str, queueEntry->uniqueId), rc);
-		 	SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d undefined error", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
-		 	strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN); break;
+             switch(rc) {
+                 case SQLITE_RANGE:
+                        strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+                        SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d index out of range", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
+                        LOG __FILE__, "put(%s) SQL error: %d index out of range", int64ToStr(int64Str, queueEntry->uniqueId), rc); break;
+                 case SQLITE_NOMEM:
+                        LOG __FILE__, "put(%s) SQL error: %d out of memory", int64ToStr(int64Str, queueEntry->uniqueId), rc);
+                        SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d out of memory", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
+                        strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN); break;
+                 case SQLITE_MISUSE:
+                        LOG __FILE__, "put(%s) SQL error: %d misuse: virtual machine not valid", int64ToStr(int64Str, queueEntry->uniqueId), rc);
+                        SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d misuse: virtual machine not valid", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
+                        strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN); break;
+                 default:
+                        LOG __FILE__, "put(%s) SQL error: %d undefined error", int64ToStr(int64Str, queueEntry->uniqueId), rc);
+                        SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] put(%s) SQL error: %d undefined error", __FILE__, __LINE__, int64ToStr(int64Str, queueEntry->uniqueId), rc );
+                        strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN); break;
 
-	 	 }
+                 }
          stateOk = false;
       }
    }
@@ -634,9 +634,9 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, TmpHelper *hel
 
    queueEntry->embeddedBlob.dataLen = sqlite3_column_int64(pVm, XB_ENTRIES_SIZE_IN_BYTES);
 
-	/* sqlite3_column_bytes() can be used to get the length */
+        /* sqlite3_column_bytes() can be used to get the length */
     queueEntry->embeddedBlob.data = (char *)malloc(queueEntry->embeddedBlob.dataLen);
-	memcpy(queueEntry->embeddedBlob.data, (char *)sqlite3_column_blob(pVm, XB_ENTRIES_BLOB), queueEntry->embeddedBlob.dataLen);
+        memcpy(queueEntry->embeddedBlob.data, (char *)sqlite3_column_blob(pVm, XB_ENTRIES_BLOB), queueEntry->embeddedBlob.dataLen);
 
    helper->currEntries += 1;
    helper->currBytes += queueEntry->embeddedBlob.dataLen;
@@ -676,34 +676,34 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName, sqlite3_st
 
       rc = sqlite3_step(pVm);
       switch(rc){
-      	case SQLITE_DONE:
-      		done = true;
-		break;
-		case SQLITE_BUSY:
-			LOG __FILE__, "%s() Sleeping as other thread holds DB.", methodName);
-			sleepMillis(10);
-		break;
-		case SQLITE_ROW:
-		{
-			bool doContinue = true;
-			if(helper != 0) {
-				doContinue = helper->parseDataFp(queueP, currIndex, helper, pVm, exception);
+        case SQLITE_DONE:
+                done = true;
+                break;
+                case SQLITE_BUSY:
+                        LOG __FILE__, "%s() Sleeping as other thread holds DB.", methodName);
+                        sleepMillis(10);
+                break;
+                case SQLITE_ROW:
+                {
+                        bool doContinue = true;
+                        if(helper != 0) {
+                                doContinue = helper->parseDataFp(queueP, currIndex, helper, pVm, exception);
 
-				stateOk = *exception->errorCode == 0;
-			}
-			currIndex++;
-			if(!stateOk || !doContinue) done = true;
-		}
-		break;
-		case SQLITE_ERROR:
-			LOG __FILE__, "%s() SQL execution problem [sqlCode=%d], entry already exists", methodName, rc);
-			done = true;
-			stateOk = false;
-		break;
-		case SQLITE_SCHEMA:
-			LOG __FILE__, "%s() Sql execution problem [sqlCode=%d], inconsistent schema", methodName, rc);
-		case SQLITE_MISUSE:
-		default:
+                                stateOk = *exception->errorCode == 0;
+                        }
+                        currIndex++;
+                        if(!stateOk || !doContinue) done = true;
+                }
+                break;
+                case SQLITE_ERROR:
+                        LOG __FILE__, "%s() SQL execution problem [sqlCode=%d], entry already exists", methodName, rc);
+                        done = true;
+                        stateOk = false;
+                break;
+                case SQLITE_SCHEMA:
+                        LOG __FILE__, "%s() Sql execution problem [sqlCode=%d], inconsistent schema", methodName, rc);
+                case SQLITE_MISUSE:
+                default:
             LOG __FILE__, "%s() SQL execution problem [sqlCode=%d]. See %s for details", methodName, rc, errLink);
             done = true;
             stateOk = false;
@@ -777,30 +777,30 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
             LOG __FILE__, "peekWithSamePriority() Bound to prepared statement [sqlCode=%d]", rc);
             break;
 
-		 case SQLITE_RANGE:
-		    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
-	 	    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d index out of range", __FILE__, __LINE__, rc );
-	 	    LOG __FILE__, "peekWithSamePriority() SQL error: %d index out of range", rc);
-	 	    stateOk = false;
-	 	    break;
-		 case SQLITE_NOMEM:
-		    LOG __FILE__, "peekWithSamePriority() SQL error: %d out of memory", rc);
-		    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d out of memory", __FILE__, __LINE__, rc );
-		    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
-		    stateOk = false;
-		    break;
-		 case SQLITE_MISUSE:
-		    LOG __FILE__, "peekWithSamePriority() SQL error: %d misuse: virtual machine not valid", rc);
-		    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d misuse: virtual machine not valid", __FILE__, __LINE__, rc );
-		    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
-		    stateOk = false;
-		    break;
-		 default:
-		    LOG __FILE__, "peekWithSamePriority() SQL error: %d undefined error", rc);
-		    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d undefined error", __FILE__, __LINE__, rc );
-		    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
-			stateOk = false;
-			break;
+                 case SQLITE_RANGE:
+                    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+                    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d index out of range", __FILE__, __LINE__, rc );
+                    LOG __FILE__, "peekWithSamePriority() SQL error: %d index out of range", rc);
+                    stateOk = false;
+                    break;
+                 case SQLITE_NOMEM:
+                    LOG __FILE__, "peekWithSamePriority() SQL error: %d out of memory", rc);
+                    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d out of memory", __FILE__, __LINE__, rc );
+                    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+                    stateOk = false;
+                    break;
+                 case SQLITE_MISUSE:
+                    LOG __FILE__, "peekWithSamePriority() SQL error: %d misuse: virtual machine not valid", rc);
+                    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d misuse: virtual machine not valid", __FILE__, __LINE__, rc );
+                    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+                    stateOk = false;
+                    break;
+                 default:
+                    LOG __FILE__, "peekWithSamePriority() SQL error: %d undefined error", rc);
+                    SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[%.100s:%d] peekWithSamePriority() SQL error: %d undefined error", __FILE__, __LINE__, rc );
+                    strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+                        stateOk = false;
+                        break;
       }
    }
 
@@ -988,9 +988,10 @@ static bool fillCache(I_Queue *queueP, ExceptionStruct *exception)
                   &dbInfo->pVm_fillCache, queryString, exception);
 
    if (stateOk) { /* start the query, calls parseCacheInfo() */
-   	  TmpHelper helper;
+      TmpHelper helper;
+      int32_t currIndex;
       helper.parseDataFp = parseCacheInfo;
-      int32_t currIndex = getResultRows (queueP, "fillCache", dbInfo->pVm_fillCache, &helper, false, exception);
+      currIndex = getResultRows (queueP, "fillCache", dbInfo->pVm_fillCache, &helper, false, exception);
       stateOk = currIndex > 0;
    }
 
@@ -1071,15 +1072,15 @@ static void shutdownInternal(I_Queue **queuePP, ExceptionStruct *exception)
       queueP->isInitialized = false;
       if(dbInfo) {
          if (dbInfo->pVm_put) {
-		      sqlite3_finalize(dbInfo->pVm_put);
+                      sqlite3_finalize(dbInfo->pVm_put);
             dbInfo->pVm_put = 0;
          }
          if (dbInfo->pVm_peekWithSamePriority) {
-		      sqlite3_finalize(dbInfo->pVm_peekWithSamePriority);
+                      sqlite3_finalize(dbInfo->pVm_peekWithSamePriority);
             dbInfo->pVm_peekWithSamePriority = 0;
          }
          if (dbInfo->pVm_fillCache) {
-		      sqlite3_finalize(dbInfo->pVm_fillCache);
+                      sqlite3_finalize(dbInfo->pVm_fillCache);
            dbInfo->pVm_fillCache = 0;
          }
          if (dbInfo->db) {
