@@ -247,8 +247,8 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
 {
    char *errMsg = 0;
    bool retOk;
-   sqlite3 *db;
-   DbInfo *dbInfo;
+   sqlite3 *db = 0;
+   DbInfo *dbInfo = 0;
 
    if (checkArgs(queueP, "initialize", false, exception) == false ) return false;
    if (queueProperties == 0) {
@@ -301,8 +301,6 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
    /*LOG __FILE__, "logFp           = %d", (int)dbInfo->prop.logFp);*/
    LOG __FILE__, "logLevel        = %d", (int)dbInfo->prop.logLevel);
    /*LOG __FILE__, "userObject      = %d", (void*)dbInfo->prop.userObject);*/
-
-   dbInfo->db = db;
 
    if (sqlite3_open_v2(dbInfo->prop.dbName, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, 0) != SQLITE_OK || db == 0) {
       queueP->isInitialized = false;
@@ -617,18 +615,18 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, TmpHelper *hel
       LOG __FILE__, "peekWithSamePriority() ERROR: Can't parse sqlite3_column_int64(pVm, 0) '%.20s' to uniqueId, ignoring entry.", sqlite3_column_text(pVm, XB_ENTRIES_DATA_ID));
       strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
-               "[%.100s:%d] peekWithSamePriority() ERROR: Can't parse qlite3_column_int64(pVm, 0) '%.20s' col=%s to uniqueId, ignoring entry.", __FILE__, __LINE__, sqlite3_column_text(pVm, XB_ENTRIES_DATA_ID), sqlite3_column_name(pVm, XB_ENTRIES_DATA_ID));
+               "[%.100s:%d] peekWithSamePriority() ERROR: Can't parse qlite3_column_int64(pVm, 0) '%.20s' col=%s to uniqueId, ignoring entry.", __FILE__, __LINE__, (char*)sqlite3_column_text(pVm, XB_ENTRIES_DATA_ID), sqlite3_column_name(pVm, XB_ENTRIES_DATA_ID));
       doContinue = false;
       return doContinue;
    }
 
    LOG __FILE__, "peekWithSamePriority(%s) currIndex=%d", int64ToStr(int64Str, queueEntry->uniqueId), currIndex);
-   numAssigned = sscanf((const char* const)sqlite3_column_text(pVm, XB_ENTRIES_PRIO), "%hd", &queueEntry->priority);
+   numAssigned = sscanf((const char*)sqlite3_column_text(pVm, XB_ENTRIES_PRIO), "%hd", &queueEntry->priority);
    if (numAssigned != 1) {
       LOG __FILE__, "peekWithSamePriority(%s) ERROR: Can't parse sqlite3_column_int64(pVm, XB_ENTRIES_PRIO) '%.20s' to priority, setting it to NORM", int64ToStr(int64Str, queueEntry->uniqueId), sqlite3_column_text(pVm, XB_ENTRIES_PRIO));
       queueEntry->priority = 4;
    }
-   strncpy0(queueEntry->embeddedType, (const char* const)sqlite3_column_text(pVm, XB_ENTRIES_TYPE_NAME), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+   strncpy0(queueEntry->embeddedType, (const char*)sqlite3_column_text(pVm, XB_ENTRIES_TYPE_NAME), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
 
    queueEntry->isPersistent = *sqlite3_column_text(pVm, XB_ENTRIES_PERSISTENT) == 'T' ? true : false;
 
@@ -961,7 +959,6 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, TmpHelper* helper,
    ival = sqlite3_column_int64(pVm, 0);
    dbInfo->numOfEntries = (int32_t)ival;
    dbInfo->numOfBytes = sqlite3_column_int64(pVm, 1);
-
    return true;
 }
 
