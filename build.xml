@@ -2583,6 +2583,7 @@ TODO
          <fileset dir="${build.src.cpp.dir}/log4cplus" includes="**/*.cxx"
                   excludes="${COMPILE_LOG4CPLUS_EXCLUDES},${LOG4CPLUS_OS_EXCLUDES}" />
          <fileset dir="${build.src.cpp.dir}/util/queue" includes="SQLiteQueuePlugin.cpp" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         <fileset dir="${build.src.cpp.dir}/util/queue" includes="SQLiteQueuePlugin.cpp" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
 
          <includepath location="${build.src.cpp.dir}" />
 
@@ -2609,6 +2610,7 @@ TODO
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" value="1" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" /> <!-- Use persistent queue -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
            <define name="XMLBLASTER_NO_RCSID" value="1" if="XMLBLASTER_NO_RCSID" /> <!-- no rcsid string if svnversion makes problem in Global.cpp -->
 
@@ -2657,6 +2659,7 @@ TODO
             <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
             <libset dir="${lib.dir}" libs="${c.lib.name}" />
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
          </linker>
 
@@ -2699,6 +2702,7 @@ TODO
 
             <!-- libsqlite.so --> 
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
 
             <!-- zlib.dll (libz.so) -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
@@ -2823,6 +2827,7 @@ TODO
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" value="1" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" /> <!-- Use persistent queue -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
@@ -2866,6 +2871,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" unless="OSX"/>
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" unless="OSX" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" unless="OSX" />
+            <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" unless="OSX" />
             <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" unless="OSX" />
 
             <!-- Mac OSX: No rpath support Some other Unix systems have an rpath concept where a final linked image can contain a list of additional directories to use when searching for required libraries. Since Mac OS X uses full paths for libraries instead of searching, rpath is less interesting.  -->
@@ -2906,6 +2912,7 @@ TODO
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
 
             <!-- libz.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
@@ -2928,6 +2935,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
             <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" />
             <linkerarg value="-Wl,-rpath=${ICC_HOME}/lib" if="ICC_HOME" />
 
@@ -2963,6 +2971,7 @@ TODO
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
 
             <!-- libz.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
@@ -3029,6 +3038,7 @@ TODO
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
 
             <!-- libz.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB" />
@@ -3077,11 +3087,13 @@ TODO
          <!-- versioninfo extends="xmlBlaster-C-version" filedescription="xmlBlaster C client shared library"/ -->
          <fileset dir="${build.src.c.dir}/socket" includes="*.c"/>
          <fileset dir="${build.src.c.dir}/util" includes="*.c"/>
-         <fileset dir="${build.src.c.dir}/util/queue" includes="*.c" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         <fileset dir="${build.src.c.dir}/util/queue" includes="SQLiteQueue.c" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         <fileset dir="${build.src.c.dir}/util/queue" includes="SQLite3Queue.c" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
          <!-- fileset dir="${build.src.c.dir}/util/zlib" includes="*.c" if="XMLBLASTER_ZLIB"/--> <!--(We currently don't deliver zlib sources in the xmlBlaster distribution)-->
 
          <includepath location="${build.src.c.dir}" />
          <includepath location="${sqlite.include.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
+         <includepath location="${sqlite.include.dir}" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
          <includepath location="${zlib.include.dir}" if="XMLBLASTER_ZLIB" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
@@ -3098,6 +3110,7 @@ TODO
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" value="1" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" /> <!-- Add command line define -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
            <define name="XMLBLASTER_NO_RCSID" value="1" if="XMLBLASTER_NO_RCSID" /> <!-- no rcsid string if svnversion makes problem in msgUtil.c -->
          </defineset>
@@ -3105,12 +3118,14 @@ TODO
          <linker name="gcc"  if="use-gcc" unless="XMLBLASTER_C_COMPILE_AS_CPP">
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
          <linker name="icc"  if="use-icc">
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
@@ -3121,18 +3136,21 @@ TODO
            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC2" />
            <syslibset libs="ws2_32" />
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
          <linker name="bcc"  if="use-bcc">
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
          </linker>
 
          <linker name="CC"  if="use-CC">
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+           <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
@@ -3147,6 +3165,13 @@ TODO
             <switch value="${XMLBLASTER_PERSISTENT_QUEUE}">
                <case value="1">
                   <copy file="${sqlite.lib.dir}/sqlite.dll" tofile="${lib.dir}/sqlite.dll"/>
+               </case>
+               <default>
+               </default>
+            </switch>
+            <switch value="${XMLBLASTER_PERSISTENT_QUEUE_SQLITE3}">
+               <case value="1">
+                  <copy file="${sqlite.lib.dir}/sqlite3.dll" tofile="${lib.dir}/sqlite3.dll"/>
                </case>
                <default>
                </default>
@@ -3226,6 +3251,7 @@ TODO
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" value="1" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" /> <!-- Add command line define -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
          </defineset>
 
@@ -3234,6 +3260,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}" if="linux"/>
             <libset dir="${lib.dir}" libs="${c.lib.name}" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
             <syslibset dir="/lib" libs="socket" if="sun"/>
             <!-- syslibset dir="/lib" libs="dl" unless="unix"/ -->
@@ -3246,6 +3273,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}:${ICC_HOME}/lib" />
             <libset dir="${lib.dir}" libs="${c.lib.name}" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
             <libset dir="${ICC_HOME}/lib" libs="imf" if="ICC_HOME" />
             <syslibset dir="/lib" libs="dl" if="unix"/>
@@ -3259,6 +3287,7 @@ TODO
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}.dll" />  <!-- xmlBlasterClientC.dll -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
             <libset dir="${build.src.c.dir}/socket" libs="pthreadVC2" />
             <syslibset libs="ws2_32" />
@@ -3275,6 +3304,7 @@ TODO
             <syslibset dir="/lib" libs="socket,posix4,nsl"/>
             <libset dir="${lib.dir}" libs="${c.lib.name}" /> <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
+            <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
@@ -3420,6 +3450,7 @@ TODO
          xerces.dll.name=xerces-c_2_7
          
          XMLBLASTER_PERSISTENT_QUEUE=1
+         XMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1
          sqlite.include.dir=E:/sqlite
          sqlite.lib.dir=E:/sqlite
          
