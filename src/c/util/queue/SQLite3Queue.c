@@ -861,11 +861,11 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, const QueueEntryArr 
            dbInfo->prop.tablePrefix, dbInfo->prop.queueName);
 
       for (i=0; i<queueEntryArr->len; i++) {
-         strcat(queryString, int64ToStr(int64Str, queueEntryArr->queueEntryArr[i].uniqueId));
-         if (i<(queueEntryArr->len-1)) strcat(queryString, ",");
+         strncat0(queryString, int64ToStr(int64Str, queueEntryArr->queueEntryArr[i].uniqueId), INT64_STRLEN_MAX+1);
+         if (i<(queueEntryArr->len-1)) strncat0(queryString, ",", 2);
          numOfBytes += ((queueEntryArr->queueEntryArr[i].sizeInBytes > 0) ? queueEntryArr->queueEntryArr[i].sizeInBytes : queueEntryArr->queueEntryArr[i].embeddedBlob.dataLen);
       }
-      strcat(queryString, " )");
+      strncat0(queryString, " )", 3);
       stateOk = compilePreparedQuery(queueP, "randomRemove", &pVm, queryString, exception);
       free(queryString);
    }
