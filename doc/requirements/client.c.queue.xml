@@ -8,7 +8,7 @@
    </topic>
    <description>
      <p>
-     We use the relational database SQLite for our queue implementation.
+     We use the relational database SQLite3 for our queue implementation.
      </p>
      <p class="celltitel">Persistent Queue Features</p>
      <ul>
@@ -46,7 +46,7 @@ const *dummy = "something";
 
 ...
   /* Configure the queue */
-  memset(&amp;queueProperties, sizeof QueueProperties
+  memset(&amp;queueProperties, 0, sizeof QueueProperties);
   strncpy(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
   strncpy(queueProperties.queueName = "connection_clientJoe", QUEUE_ID_MAX);
   strncpy(queueProperties.tablePrefix="XB_", QUEUE_PREFIX_MAX);
@@ -89,44 +89,46 @@ const *dummy = "something";
 
      <p class="celltitel">Setup</p>
      <p>
-     To use the persistent queue you need to download SQLite and compile it for
-     your platform, our C compilation needs <code>sqlite.h</code> for compilation
-     and <code>libsqlite.so</code> for linking (on Windows it is a dll).
-     SQLite version 2.8.14 up to 2.8.16 is needed to have the blob encoding feature.
-     <b>Note that it will not work with version 3.x.x</b>
+     To use the persistent queue you need to download SQLite3 and compile it for
+     your platform, our C compilation needs <code>sqlite3.h</code> for compilation
+     and <code>libsqlite3.so</code> for linking (on Windows it is a dll).
+     It is recommended to use at least version 3.6.14 of sqlite to prevent flaws, 
+     but older versions should also work.
+     There is also the possibility to use the deprecated SQLite 2 interface.
      </p>
 
      <p class="celltitel">Compilation with ant</p>
      <p>
      First add those lines to your <code>xmlBlaster/build.properties</code> (or
      add it to <code>HOME/build.properties</code> which has precedence or add it
-     on command line with a leading -D option which is strongest)
+     on command line with a leading -D option which is strongest).
+     If you prefere SQLite2 over SQLite3, use <code>XMLBLASTER_PERSISTENT_QUEUE=1</code> instead.
      </p>
      <pre>
 # UNIX example:
-XMLBLASTER_PERSISTENT_QUEUE=1
-sqlite.include.dir=/opt/sqlite-bin/include
-sqlite.lib.dir=/opt/sqlite-bin/lib
+XMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1
+sqlite.include.dir=/opt/sqlite3-bin/include
+sqlite.lib.dir=/opt/sqlite3-bin/lib
      </pre>
      <p>
-     This expects <code>/opt/sqlite-bin/include/sqlite.h</code> and <code>/opt/sqlite-bin/lib/libsqlite.so*</code>
+     This expects <code>/opt/sqlite3-bin/include/sqlite3.h</code> and <code>/opt/sqlite-bin/lib/libsqlite3.so*</code>
      for the above UNIX example.
+     (in SQLite2, the files are called <code>sqlite.h</code> and <code>libsqlite.so*</code> respectively.
      </p>
-     <p>NOTE: For Windows you can download the ready compiled sqlite library.
-     Creation of an import library from the sqlitedll.zip (http://www.sqlite.org/sqlitedll.zip)
-     for MS Visual C++ is achieved by the following command:
+     <p>NOTE: For Windows you can download the ready compiled sqlite library (see http://sqlite.org/download.html).
+     Creation of an import library from the zip file for MS Visual C++ is achieved by the following command:
      </p>
      <pre>
-LIB /DEF:sqlite.def
+LIB /DEF:sqlite3.def
      </pre>
      <p>
-     This makes the files sqlite.lib and sqlite.exp files. The sqlite.lib can then be used to link your programs against the SQLite DLL. 
+     This creates the files sqlite3.lib and sqlite3.exp files. The sqlite3.lib can then be used to link your programs against the SQLite3 DLL. 
      </p>
      <pre>
 # Windows example:
-XMLBLASTER_PERSISTENT_QUEUE=1
-sqlite.include.dir=C:/sqlite
-sqlite.lib.dir=C:/sqlite
+XMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1
+sqlite.include.dir=C:/sqlite3
+sqlite.lib.dir=C:/sqlite3
      </pre>
      <p>
      and compile it:
@@ -136,7 +138,7 @@ build c-delete c
      </pre>
      or similiar (with verbose switched on):
      <pre>
-build -verbose -DXMLBLASTER_PERSISTENT_QUEUE=1 -Dsqlite.include.dir= ... c
+build -verbose -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 -Dsqlite.include.dir= ... c
      </pre>
 
      <p class="celltitel">Compilation manually</p>
@@ -147,14 +149,14 @@ build -verbose -DXMLBLASTER_PERSISTENT_QUEUE=1 -Dsqlite.include.dir= ... c
 cd xmlBlaster/src/c/util/queue
 
 Linux C:
- export LD_LIBRARY_PATH=/opt/sqlite-bin/lib
- gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c
-     ../helper.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite
+ export LD_LIBRARY_PATH=/opt/sqlite3-bin/lib
+ gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLite3Queue SQLite3Queue.c
+     ../helper.c -I/opt/sqlite3-bin/include -L/opt/sqlite3-bin/lib -lsqlite3
 
 Linux C++:
 
 Mac OSX:
- export DYLD_LIBRARY_PATH=/opt/sqlite-bin/lib
+ export DYLD_LIBRARY_PATH=/opt/sqlite3-bin/lib
 
 Windows:
 
@@ -170,20 +172,9 @@ Solaris:
       </p>
    </example>
 
-
-   <example lang="C" type="HTML">
-      <p><a NAME="sqlite3"></a></p>
-      <p class="celltitel">Port to sqlite 3</p>
-<p>The port is not finished, see the prototype <code>xmlBlaster/src/c/util/queue/SQLite3Queue.c.TODO</code></p>
-<pre>
-./configure --prefix /opt/sqlite-3.3.8-bin --enable-debug --enable-cross-thread-connections --enable-threadsafe
-export LD_LIBRARY_PATH=/opt/sqlite-3.3.8-bin/lib
-</pre>
-   </example>
-
    <example lang="any" type="HTML">
       <p><a NAME="sqliteExample"></a></p>
-      <p class="celltitel">sqlite command line example</p>
+      <p class="celltitel">sqlite3 command line example</p>
       <p>From time to time you may want to look into the C client queue,
       here are some command line examples:
       </p>
@@ -270,6 +261,17 @@ sqlite> .quit
 
        <tr>
        <td>3</td>
+       <td>Linux 2.6.29</td>
+       <td><a href="http://gcc.gnu.org/" target="others">gcc 4.3.3</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.6.4+</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
+       <td>2009-05-19</td>
+       <td><a href="mailto:agib@gmx.de">Adrian</a></td>
+       <td><font size="-2">build -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 c-delete c</font></td>
+       </tr>
+
+       <tr>
+       <td>4</td>
        <td>WindowsXP</td>
        <td>VC++ 7 (Jan.2003)</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
@@ -277,6 +279,17 @@ sqlite> .quit
        <td>2004-05-06</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><font size="-2">build -Duse-msvc=true -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c</font></td>
+       </tr>
+
+       <tr>
+       <td>5</td>
+       <td>Windows Vista</td>
+       <td>VC++ 9</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.6.4+</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>2009-05-19</td>
+       <td><a href="mailto:agib@gmx.de">Adrian</a></td>
+       <td><font size="-2">build -Duse-msvc=true -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 c-delete c</font></td>
        </tr>
 
       </table>
@@ -329,7 +342,7 @@ sqlite> .quit
          </p>
          <pre>
 cd xmlBlaster
-build  -DXMLBLASTER_PERSISTENT_QUEUE=1 c-test
+build  -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 c-test
          </pre>
         <p>
         To run the tests invoke
