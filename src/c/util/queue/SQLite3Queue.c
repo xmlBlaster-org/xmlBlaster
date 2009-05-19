@@ -443,7 +443,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
 
    dbInfo = getDbInfo(queueP);
 
-   if (dbInfo->numOfEntries >= dbInfo->prop.maxNumOfEntries) {
+   if (dbInfo->numOfEntries >= (size_t)dbInfo->prop.maxNumOfEntries) {
       strncpy0(exception->errorCode, "resource.overflow.queue.entries", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] The maximum number of queue entries = %d is exhausted", __FILE__, __LINE__, dbInfo->prop.maxNumOfEntries);
@@ -630,7 +630,7 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, TmpHelper *hel
 
    queueEntry->isPersistent = *sqlite3_column_text(pVm, XB_ENTRIES_PERSISTENT) == 'T' ? true : false;
 
-   queueEntry->embeddedBlob.dataLen = sqlite3_column_int64(pVm, XB_ENTRIES_SIZE_IN_BYTES);
+   queueEntry->embeddedBlob.dataLen = (size_t)sqlite3_column_int64(pVm, XB_ENTRIES_SIZE_IN_BYTES);
 
         /* sqlite3_column_bytes() can be used to get the length */
     queueEntry->embeddedBlob.data = (char *)malloc(queueEntry->embeddedBlob.dataLen);
