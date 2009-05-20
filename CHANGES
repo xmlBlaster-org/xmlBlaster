@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn (JDK >= 1.5 only)
 =======================
+
+ o r17711 Added additional features to xmlrpc (xmlScript and inhibit CDATA in content)
  
  o r17703 Bugfix: now subscriptions done with a negative sessionId are throwing an exception and are not 
           queued on the client side when the server is not available, this fixes a bug which resulted in a 
