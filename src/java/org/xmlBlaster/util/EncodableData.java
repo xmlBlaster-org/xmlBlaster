@@ -373,6 +373,10 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @return
     */
    public final String toXml(String extraOffset, String tmpTagName, boolean forceReadable) {
+      return toXml(extraOffset, tmpTagName, forceReadable, false);
+   }
+   
+   public final String toXml(String extraOffset, String tmpTagName, boolean forceReadable, boolean inhibitContentCDATAWrapper) {
       if (tmpTagName == null)
          tmpTagName = this.tagName;
       
@@ -397,9 +401,11 @@ public class EncodableData implements java.io.Serializable, Cloneable
             if (val.indexOf("<") != -1 ||
                 val.indexOf("&") != -1) {
                sb.append(">");
-               sb.append("<![CDATA[");
+               if (!inhibitContentCDATAWrapper)
+                  sb.append("<![CDATA[");
                sb.append(val);
-               sb.append("]]>");
+               if (!inhibitContentCDATAWrapper)
+                  sb.append("]]>");
                sb.append("</").append(tmpTagName).append(">");
                return sb.toString();
             }

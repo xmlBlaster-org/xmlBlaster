@@ -76,7 +76,12 @@ public class Constants {
     */
    public final static String I_AUTHENTICATE_PROPERTY_KEY = "/xmlBlaster/I_Authenticate";
 
-
+   /**
+    * Used in the MsgUnitRaw to pass as key for the properties to tell the toXml Methods
+    * to inhibit wrapping by a CDATA. This is used to avoid unallowed nested CDATA.
+    */
+   public final static String INHIBIT_CONTENT_CDATA_WRAPPING = "inhibitContentCDATAWrapping";
+   
    /**
     * The IANA registered xmlBlaster port,
     * see <a href="http://www.iana.org/assignments/port-numbers">IANA Port Numbers</a>

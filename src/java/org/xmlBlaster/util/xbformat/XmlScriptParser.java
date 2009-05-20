@@ -8,6 +8,7 @@ package org.xmlBlaster.util.xbformat;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -113,6 +114,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.isNullTerminated = glob.get("isNullTerminated", false, null, pluginConfig);
       super.sendSimpleExceptionFormat = glob.get("sendSimpleExceptionFormat", false, null, pluginConfig);
       super.forceReadable = glob.get("forceReadable", false, null, pluginConfig);
+      super.inhibitContentCDATAWrapping = glob.get(Constants.INHIBIT_CONTENT_CDATA_WRAPPING, false, null, pluginConfig);
       super.initialize(glob, null, null);
    }
 

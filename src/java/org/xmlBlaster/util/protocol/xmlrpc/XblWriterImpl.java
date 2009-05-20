@@ -335,41 +335,41 @@ public class XblWriterImpl implements XMLWriter {
       return false;
    }
    
-	private void wrapWithCDATAIfNecessary(char[] ch, int start, int length, Writer wr) throws IOException, SAXException {
-	   String txt = new String(ch, start, length);
-	   int pos = txt.indexOf("<![CDATA[");
-	   boolean hasCDATA = false;
-	   if (pos > -1) { // check the content outside of the limits
-	      String prefix = txt.substring(0, pos);
-	      if (needsEncoding(prefix)) {
-	         throw new SAXException("The content " + txt + " contains CDATA and can not be parsed");
-	      }
-	      else {
-	         // get the posfix
-	         pos = txt.indexOf("]]>");
-	         if (pos < 0)
-	            throw new SAXException("The content " + txt + " must be encoded and can not be wrapped by a CDATA since no ending ]]> found");
-	         String postfix = txt.substring(pos+"]]>".length()+1);
-	         if (needsEncoding(postfix)) {
-	            throw new SAXException("The content " + txt + " contains CDATA and can not be parsed");
-	         }
-	      }
-	      hasCDATA = true;
-	   }
-	   
-	   boolean needsEncoding = !hasCDATA && needsEncoding(txt);
-	   if (needsEncoding)
+   private void wrapWithCDATAIfNecessary(char[] ch, int start, int length, Writer wr) throws IOException, SAXException {
+      String txt = new String(ch, start, length);
+      int pos = txt.indexOf("<![CDATA[");
+      boolean hasCDATA = false;
+      if (pos > -1) { // check the content outside of the limits
+         String prefix = txt.substring(0, pos);
+         if (needsEncoding(prefix)) {
+            throw new SAXException("The content " + txt + " contains CDATA and can not be parsed");
+         }
+         else {
+            // get the posfix
+            pos = txt.indexOf("]]>");
+            if (pos < 0)
+               throw new SAXException("The content " + txt + " must be encoded and can not be wrapped by a CDATA since no ending ]]> found");
+            String postfix = txt.substring(pos+"]]>".length()+1);
+            if (needsEncoding(postfix)) {
+               throw new SAXException("The content " + txt + " contains CDATA and can not be parsed");
+            }
+         }
+         hasCDATA = true;
+      }
+      
+      boolean needsEncoding = !hasCDATA && needsEncoding(txt);
+      if (needsEncoding)
          wr.write("<![CDATA[");
 
-	   int end = start+length;
+      int end = start+length;
       for (int i = start;  i < end;  i++) {
          char c = ch[i];
          w.write(c);
       }
       if (needsEncoding)
          wr.write("]]>");
-	}
-	
+   }
+   
 	private void writeCData(String v) throws java.io.IOException {
 		int len = v.length();
 		for (int j = 0;  j < len;  j++) {
