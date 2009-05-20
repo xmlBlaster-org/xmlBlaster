@@ -58,6 +58,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    
    private final static String AUTH = "authenticate.";
    private final static String XMLBLASTER = "xmlBlaster.";
+   public final static String XML_SCRIPT_INVOKE = "xmlScriptInvoke";
    
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -136,7 +137,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       contentAsString = clientAddress.getEnv("contentAsString", false).getValue();
       xmlScript = clientAddress.getEnv("xmlScript", false).getValue();
       if (xmlScript)
-         serializer = new XmlScriptSerializer(glob);
+         serializer = new XmlScriptSerializer(glob, pluginInfo);
       
       if (this.pluginInfo != null)
          this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
@@ -255,7 +256,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * @see I_XmlBlasterConnection#setConnectReturnQos(ConnectReturnQos)
     */
    public void setConnectReturnQos(ConnectReturnQos connectReturnQos) throws XmlBlasterException {
-      this.sessionId = connectReturnQos.getSecretSessionId();
+      sessionId = connectReturnQos.getSecretSessionId();
+      if (serializer != null)
+         serializer.setSecretSessionId(sessionId);
       XmlRpcCallbackServer cb = (XmlRpcCallbackServer)glob.getObjectEntry("xmlrpc-callback");
       if (cb != null)
          cb.postInitialize();
@@ -282,11 +285,26 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             cb.shutdown();
          
          if (this.xmlRpcClient != null) {
-            // prepare the argument vector for the xml-rpc method call
-            Vector<String> args = new Vector<String>();
-            args.addElement(sessionId);
-            args.addElement((disconnectQos==null)?" ":disconnectQos);
-            this.xmlRpcClient.execute("authenticate.disconnect", args);
+            if (serializer != null) {
+               try {
+                  String literal = serializer.getDisconnect(disconnectQos);
+                  final boolean singleChannel = false; // since not a connect!
+                  sendXmlScript(literal, AUTH, singleChannel);
+                  return true;
+               }
+               catch (XmlBlasterException ex) {
+                  log.severe("Exception occured when shutting down: " + ex.getMessage());
+                  ex.printStackTrace();
+                  
+               }
+            }
+            else {
+               // prepare the argument vector for the xml-rpc method call
+               Vector<String> args = new Vector<String>();
+               args.addElement(sessionId);
+               args.addElement((disconnectQos==null)?" ":disconnectQos);
+               this.xmlRpcClient.execute("authenticate.disconnect", args);
+            }
          }
 
          try {
@@ -336,10 +354,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * Subscribe to messages.
     * <p />
     */
-   public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException
-   {
+   public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + sessionId + ")");
       try {
+         if (serializer != null) {
+            String literal = serializer.getSubscribe(xmlKey_literal, qos_literal);
+            final boolean singleChannel = false; // since no connect
+            return (String)sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
          // prepare the argument vector for the xml-rpc method call
          Vector<String> args = new Vector<String>();
          args.addElement(this.sessionId);
@@ -362,19 +384,25 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * <p />
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">The interface.unSubscribe requirement</a>
     */
-   public final String[] unSubscribe (String xmlKey_literal,
-                                 String qos_literal) throws XmlBlasterException
-   {
+   public final String[] unSubscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering unsubscribe(): id=" + sessionId);
 
       try {
-         // prepare the argument list:
-         Vector<String> args = new Vector<String>();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
+         Object obj = null;
+         if (serializer != null) {
+            String literal = serializer.getUnSubscribe(xmlKey_literal, qos_literal);
+            final boolean singleChannel = false; // since no connect
+            obj = sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
+         else {
+            // prepare the argument list:
+            Vector<String> args = new Vector<String>();
+            args.addElement(sessionId);
+            args.addElement(xmlKey_literal);
+            args.addElement(qos_literal);
 
-         Object obj = getXmlRpcClient().execute("xmlBlaster.unSubscribe", args);
+            obj = getXmlRpcClient().execute("xmlBlaster.unSubscribe", args);
+         }
          return ProtoConverter.objToStringArray(obj);
       }
       catch (XmlRpcException e) {
@@ -387,23 +415,29 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * Publish a message.
     */
-   public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException
-   {
+   public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + sessionId);
 
       //PublishQos publishQos = new PublishQos(msgUnit.getQos());
       //msgUnit.getQos() = publishQos.toXml();
 
       try {
-         Vector<Object> args = new Vector<Object>();
-         args.addElement(sessionId);
-         args.addElement(msgUnit.getKey());
-         if (contentAsString)
-            args.addElement(msgUnit.getContentStr());
-         else
-            args.addElement(msgUnit.getContent());
-         args.addElement(msgUnit.getQos());
-         return (String)getXmlRpcClient().execute("xmlBlaster.publish", args);
+         if (serializer != null) {
+            String literal = serializer.getPublish(msgUnit);
+            final boolean singleChannel = false; // since no connect
+            return (String)sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
+         else {
+            Vector<Object> args = new Vector<Object>();
+            args.addElement(sessionId);
+            args.addElement(msgUnit.getKey());
+            if (contentAsString)
+               args.addElement(msgUnit.getContentStr());
+            else
+               args.addElement(msgUnit.getContent());
+            args.addElement(msgUnit.getQos());
+            return (String)getXmlRpcClient().execute("xmlBlaster.publish", args);
+         }
       }
 
       catch (ClassCastException e) {
@@ -421,9 +455,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * <p />
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public final String[] publishArr(MsgUnitRaw[] msgUnitArr)
-      throws XmlBlasterException
-   {
+   public final String[] publishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr: id=" + sessionId);
 
       if (msgUnitArr == null) {
@@ -432,15 +464,22 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
                                        "The argument of method publishArr() are invalid");
       }
 
+      Object tmpObj = null;
       try {
+         if (serializer != null) {
+            String literal = serializer.getPublishArr(msgUnitArr);
+            final boolean singleChannel = false; // since no connect
+            tmpObj = sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
+         else {
+            Vector<Object> msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(contentAsString, msgUnitArr);
+            // prepare the argument list (as a Vector)
+            Vector<Object> args = new Vector<Object>();
+            args.addElement(sessionId);
+            args.addElement(msgUnitArrWrap);
 
-         Vector<Object> msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(contentAsString, msgUnitArr);
-         // prepare the argument list (as a Vector)
-         Vector<Object> args = new Vector<Object>();
-         args.addElement(sessionId);
-         args.addElement(msgUnitArrWrap);
-
-         Object tmpObj = getXmlRpcClient().execute("xmlBlaster.publishArr", args);
+            tmpObj = getXmlRpcClient().execute("xmlBlaster.publishArr", args);
+         }
          return ProtoConverter.objToStringArray(tmpObj);
       }
 
@@ -471,11 +510,18 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       try {
-         Vector<Object> msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(contentAsString, msgUnitArr);
-         Vector<Object> args = new Vector<Object>();
-         args.addElement(sessionId);
-         args.addElement(msgUnitArrWrap);
-         getXmlRpcClient().execute("xmlBlaster.publishOneway", args);
+         if (serializer != null) {
+            String literal = serializer.getPublishOneway(msgUnitArr);
+            final boolean singleChannel = false; // since no connect
+            sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
+         else {
+            Vector<Object> msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(contentAsString, msgUnitArr);
+            Vector<Object> args = new Vector<Object>();
+            args.addElement(sessionId);
+            args.addElement(msgUnitArrWrap);
+            getXmlRpcClient().execute("xmlBlaster.publishOneway", args);
+         }
       }
       catch (ClassCastException e) {
          log.severe(e.toString());
@@ -515,11 +561,19 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       try {
          // prepare the argument list (as a Vector) for xml-rpc
-         Vector<String> args = new Vector<String>();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
-         Object obj = getXmlRpcClient().execute("xmlBlaster.erase", args);
+         Object obj = null;
+         if (serializer != null) {
+            String literal = serializer.getErase(xmlKey_literal, qos_literal);
+            final boolean singleChannel = false; // since no connect
+            obj = sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
+         else {
+            Vector<String> args = new Vector<String>();
+            args.addElement(sessionId);
+            args.addElement(xmlKey_literal);
+            args.addElement(qos_literal);
+            obj = getXmlRpcClient().execute("xmlBlaster.erase", args);
+         }
          return ProtoConverter.objToStringArray(obj);
       }
 
@@ -557,13 +611,21 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       try {
-         Vector<Object> args = new Vector<Object>();
-         args.addElement(sessionId);
-         args.addElement(xmlKey_literal);
-         args.addElement(qos_literal);
-         args.addElement("" + contentAsString);
-         // Vector retVector = (Vector)getXmlRpcClient().execute("xmlBlaster.get", args);
-         Object[] tmpObj = (Object[])getXmlRpcClient().execute("xmlBlaster.get", args);
+         Object[] tmpObj = null;
+         if (serializer != null) {
+            String literal = serializer.getGet(xmlKey_literal, qos_literal);
+            final boolean singleChannel = false; // since no connect
+            tmpObj = (Object[])sendXmlScript(literal, XMLBLASTER, singleChannel);
+         }
+         else {
+            Vector<Object> args = new Vector<Object>();
+            args.addElement(sessionId);
+            args.addElement(xmlKey_literal);
+            args.addElement(qos_literal);
+            args.addElement("" + contentAsString);
+            // Vector retVector = (Vector)getXmlRpcClient().execute("xmlBlaster.get", args);
+            tmpObj = (Object[])getXmlRpcClient().execute("xmlBlaster.get", args);
+         }
          
          // extractXmlBlasterException the vector of vectors to a MsgUnitRaw[] type
          return ProtoConverter.objMatrix2MsgUnitRawArray(tmpObj);
@@ -626,12 +688,18 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String str) throws XmlBlasterException
-   {
+   public String ping(String str) throws XmlBlasterException {
       try {
-         Vector<String> args = new Vector<String>();
-         args.addElement("");
-         return (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
+         if (serializer != null) {
+            String literal = serializer.getPing(str);
+            final boolean singleChannel = false; // since no connect
+            return (String)sendXmlScript(literal, AUTH, singleChannel);
+         }
+         else {
+            Vector<String> args = new Vector<String>();
+            args.addElement("");
+            return (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
+         }
       }
       catch (ClassCastException e) {
          log.severe(e.toString());
@@ -829,10 +897,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       return text;
    }
 
-   private final Object sendXmlScript(String prefix, String literal, boolean singleChannel) throws XmlRpcException, XmlBlasterException {
+   private final Object sendXmlScript(String literal, String prefix, boolean singleChannel) throws XmlRpcException, XmlBlasterException {
       Vector<String> args = new Vector<String>();
       args.addElement(literal);
-      String method = prefix + "xmlScriptInvoke";
+      String method = prefix + XML_SCRIPT_INVOKE;
       if (singleChannel)
          method += "SingleChannel";
       if (log.isLoggable(Level.FINE)) 

@@ -10,8 +10,10 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 /**
@@ -24,11 +26,15 @@ public class XmlScriptSerializer {
    
    private I_ProgressListener progressListener; // currently not used.
    
+   private XmlScriptParser parser;
+   
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     */
-   public XmlScriptSerializer(Global glob) {
+   public XmlScriptSerializer(Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob;
+      parser = new XmlScriptParser();
+      parser.init(glob, null, pluginInfo);
    }
 
    public void setSecretSessionId(String secretSessionId) {
@@ -78,7 +84,7 @@ public class XmlScriptSerializer {
     * 
     */
    public String getPublishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      return getLiteral(msgUnitArr, MethodName.PUBLISH);
+      return getLiteral(msgUnitArr, MethodName.PUBLISH_ARR);
    }
 
    /**
@@ -91,7 +97,7 @@ public class XmlScriptSerializer {
    /**
     * 
     */
-   public String erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
+   public String getErase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       return getLiteral(xmlKey_literal, qos_literal, MethodName.ERASE);
    }
 
@@ -108,7 +114,7 @@ public class XmlScriptSerializer {
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String qos) throws XmlBlasterException {
+   public String getPing(String qos) throws XmlBlasterException {
       return getLiteral(qos, MethodName.PING);
    }
    
@@ -129,7 +135,7 @@ public class XmlScriptSerializer {
       MsgInfo msgInfo = new MsgInfo(this.glob, MsgInfo.INVOKE_BYTE, methodName, secretSessionId, progressListener);
       msgInfo.addMessage(msgArr);
       msgInfo.createRequestId(null);
-      return msgInfo.toLiteral();
+      return parser.toLiteral(msgInfo);
    }
 
    private String getLiteral(MsgUnitRaw msgUnit, MethodName methodName) throws XmlBlasterException {
