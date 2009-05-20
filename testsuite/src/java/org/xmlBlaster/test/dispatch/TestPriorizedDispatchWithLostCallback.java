@@ -252,6 +252,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          updateMsgs = new MsgInterceptor(glob, log, null); // just used as message container
          this.updateInterceptor.clear();
          try {
+            // TODO change this since it can not work when using xmlrpc with singleChannel=true
             cbServer = new XmlRpcCallbackServer();
             CallbackAddress cbAddress = new CallbackAddress(glob);
             cbServer.initialize(this.glob, name, cbAddress, new AbstractCallbackExtended(glob) {
