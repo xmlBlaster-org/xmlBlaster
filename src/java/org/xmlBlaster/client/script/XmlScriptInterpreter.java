@@ -154,6 +154,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     */
    protected boolean sendSimpleExceptionFormat;
    protected boolean forceReadable;
+   protected boolean inhibitContentCDATAWrapping;
    
    public final static String ROOT_TAG = "xmlBlaster";
    public final static String ROOTRESPONSE_TAG = "xmlBlasterResponse";
@@ -845,6 +846,8 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
          if (forceReadable) {
             props = new Properties();
             props.setProperty(Constants.TOXML_FORCEREADABLE, "true");
+            if (inhibitContentCDATAWrapping)
+               props.setProperty("inhibitContentCDATAWrapping", "true");
          }
             
          if (msgUnits.length == 1) {

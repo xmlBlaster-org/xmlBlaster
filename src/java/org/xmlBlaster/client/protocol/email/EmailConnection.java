@@ -23,7 +23,6 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +49,8 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    private PluginInfo pluginInfo;
    private boolean isLoggedIn;
    private boolean isInitialized;
-
+   private boolean stripSecurityQosCDATA;
+   
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     */
@@ -81,6 +81,8 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       this.glob = (glob == null) ? Global.instance() : glob;
       this.pluginInfo = pluginInfo;
       if (log.isLoggable(Level.FINE)) log.fine("Entering init()");
+      
+      stripSecurityQosCDATA = glob.get("stripSecurityQosCDATA", false, null, pluginInfo);
    }
 
    /**
@@ -147,6 +149,17 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
 
       try {
          // sessionId is usually null on login, on reconnect != null
+
+         if (stripSecurityQosCDATA) {
+            String qosOrig = connectQos;
+            String qosStripped = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosOrig, "<![CDATA[", "");
+            connectQos = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosStripped, "]]>", "");
+            if (!connectQos.equals(qosOrig)) {
+               log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
+                              "This shouldn't be a problem as long as your credentials doesn't contain '<'");
+            }
+         }
+         
          String ret = (String)super.sendEmail(connectQos, MethodName.CONNECT, SocketExecutor.WAIT_ON_RESPONSE);
          //super.setEmailSessionId(super.getSecretSessionId());
          return ret;
