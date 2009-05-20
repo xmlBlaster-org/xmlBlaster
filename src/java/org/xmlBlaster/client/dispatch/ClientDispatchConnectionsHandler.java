@@ -102,6 +102,13 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
 
          else if (MethodName.SUBSCRIBE == msgQueueEntry.getMethodName()) {
+            if (getDispatchManager().getSessionName().getPublicSessionId() < 1) {
+               // we should never allow a subscription without a positive sessionId if the 
+               // server is not accessible
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_TEMPORARY_UNAVAILABLE, ME,
+                     "The Subscription for '" + getDispatchManager().getSessionName().toString() + "' failed since the server is currently not available");
+            }
+            
             MsgQueueSubscribeEntry entry = (MsgQueueSubscribeEntry)msgQueueEntry;
             if (!entry.getSubscribeQosData().hasSubscriptionId()) {
                entry.getSubscribeQosData().generateSubscriptionId(glob.getXmlBlasterAccess().getSessionName(), entry.getSubscribeKeyData());
