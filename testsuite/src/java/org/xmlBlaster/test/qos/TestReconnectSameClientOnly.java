@@ -16,6 +16,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
+import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -128,8 +129,9 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
       }
 
       boolean isSocket = (this.con.getCbServer() instanceof SocketCallbackImpl);
+      boolean isRpc = (this.con.getCbServer() instanceof XmlRpcCallbackImpl);
 
-      if (isSocket) {
+      if (isSocket || isRpc) {
          // xmlBlaster destroys our first session:
          this.con.leaveServer(null);
       }
