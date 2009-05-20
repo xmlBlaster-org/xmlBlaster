@@ -236,8 +236,11 @@
             and returned by the subscribe() invocation (faked return)<br />
             An example for a generated subscriptionId is <i>__subId:joe/2:345212004</i><br />
             C++ note: The client side queuing is transient only.
+            Java note: Only subscriptions done with a positive sessionId are kept in the queue,
+	    if the server is not available and a subscription is done with a negative sessionId,
+	    an RESOURCE_TEMPORARY_UNAVAILABLE Exception is thrown and the subscription is not queued.
             </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td>(<img src="ok.gif" border="0" alt="yes" />)</td>
             <td>(<img src="ok.gif" border="0" alt="yes" />)</td>
          </tr>
 
