@@ -165,6 +165,10 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
    public void toXml(String extraOffset, OutputStream out, Properties props) throws IOException {
       boolean forceReadable = (props!=null && props.containsKey(Constants.TOXML_FORCEREADABLE)) ?
             (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false;
+            
+      boolean inhibitContentCDATAWrapper = (props!=null && props.containsKey(Constants.INHIBIT_CONTENT_CDATA_WRAPPING)) ?
+         (Boolean.valueOf(props.getProperty(Constants.INHIBIT_CONTENT_CDATA_WRAPPING)).booleanValue()) : false;
+            
       StringBuffer sb = new StringBuffer(qos.length() + key.length() + 256);
       String offset = "\n";
       if (extraOffset == null) extraOffset = "";
@@ -185,10 +189,14 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
          return;
       }
 
-      dumpContent(extraOffset, out, this.content, forceReadable);
+      dumpContent(extraOffset, out, this.content, forceReadable, inhibitContentCDATAWrapper);
    }
 
    public static void dumpContent(String extraOffset, OutputStream out, byte[] content, boolean forceReadable) throws IOException {
+      dumpContent(extraOffset, out, content, forceReadable, false);
+   }
+   
+   public static void dumpContent(String extraOffset, OutputStream out, byte[] content, boolean forceReadable, boolean inhibitContentCDATAWrapper) throws IOException {
 
       // TODO: Potential charset problem when not Base64 protected
       boolean doEncode = false;
@@ -208,7 +216,7 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
       if (doEncode) {
          // link=''?  name=null, size=1000L type=Constants.TYPE_BLOB encoding=Constants.ENCODING_BASE64
          EncodableData data = new EncodableData(MsgUnitRaw.CONTENT_TAG, null, content);
-         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable);
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable, inhibitContentCDATAWrapper);
          out.write(contentXml.getBytes());
       }
       else {
@@ -218,7 +226,7 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
                Constants.TYPE_STRING,
                Constants.ENCODING_NONE,
                new String(content));
-         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable);
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable, inhibitContentCDATAWrapper);
          out.write(contentXml.getBytes());
       }
    }
