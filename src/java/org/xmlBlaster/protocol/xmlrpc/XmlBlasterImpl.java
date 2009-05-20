@@ -6,10 +6,13 @@ Comment:   Implementing the xmlBlaster interface for xml-rpc.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -18,7 +21,13 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.ProtoConverter;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.MsgInfoParserFactory;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 import org.xmlBlaster.engine.qos.AddressServer;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -71,6 +80,87 @@ public class XmlBlasterImpl {
       String oid = blasterNative.subscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       return oid;
+   }
+
+
+   /**
+    * invokeSubscribe to messages.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+    */
+   public Object xmlScriptInvoke(String literal) throws XmlBlasterException {
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("xmlScriptInvoke: " + literal);
+      
+      XmlScriptParser parser = new XmlScriptParser();
+      final I_ProgressListener progressListener = null;
+      final I_PluginConfig pluginConfig = null;
+      parser.init(glob, progressListener, pluginConfig);
+      InputStream is = new ByteArrayInputStream(literal.getBytes());
+      try {
+         MsgInfo[] msgInfoArr = parser.parse(is);
+         if (msgInfoArr != null) {
+            for (int i=0; i < msgInfoArr.length; i++) {
+               MsgInfo msgInfo = msgInfoArr[i];
+               MethodName method = msgInfo.getMethodName();
+               String sessionId = msgInfo.getSecretSessionId();
+               MsgUnitRaw[] msgUnitRawArr = msgInfo.getMessageArr();
+               String key = null;
+               MsgUnitRaw msgUnitRaw = null;
+               
+               if (msgUnitRawArr != null && msgUnitRawArr.length > 0) {
+                  msgUnitRaw = msgUnitRawArr[0];
+                  key = msgUnitRaw.getKey();
+               }
+               String qos = msgInfo.getQos();
+               
+               if (method.isConnect()) {
+                  
+               }
+               else if (method.isDisconnect()) {
+                  
+               }
+               else if (method.isErase()) {
+                  return erase(sessionId, key, qos);
+               }
+               else if (method.isGet()) {
+                  final String asString = "true";
+                  return get(sessionId, key, qos, asString);
+               }
+               else if (method.isPublish()) {
+                  byte[] content = null;
+                  if (msgUnitRaw != null)
+                     content = msgUnitRaw.getContent();
+                  return publish(sessionId, key, content, qos);
+               }
+               else if (method.isPublishArray()) {
+                  String[] strArr = blasterNative.publishArr(addressServer, sessionId, msgUnitRawArr);
+                  return ProtoConverter.stringArray2Vector(strArr);
+               }
+               else if (method.isPublishOnway()) {
+                  blasterNative.publishOneway(addressServer, sessionId, msgUnitRawArr);
+                  return "";
+               }
+               else if (method.isSubscribe()) {
+                  return subscribe(sessionId, key, qos);
+               }
+               else if (method.isUnSubscribe()) {
+                  return unSubscribe(sessionId, key, qos);
+               }
+               else { // how to handle pings !!!!!!
+                  // log.warning("The method '" + method.getMethodName() + "' is not implemented");
+                  return "OK";
+               }
+               return null;
+            }
+         }
+         
+         
+      }
+      catch (IOException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+      }
+      
+      return null;
    }
 
 

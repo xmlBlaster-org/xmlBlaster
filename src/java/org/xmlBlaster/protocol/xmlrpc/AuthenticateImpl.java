@@ -6,9 +6,13 @@ Comment:   Implementing the xmlBlaster interface for xml-rpc.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.apache.xmlrpc.XmlRpcException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -18,6 +22,12 @@ import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
@@ -28,6 +38,7 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class AuthenticateImpl {
+   private final static String ME = AuthenticateImpl.class.getName();
    private final Global glob;
    private static Logger log = Logger.getLogger(AuthenticateImpl.class.getName());
    private final I_Authenticate authenticate;
@@ -207,6 +218,52 @@ public class AuthenticateImpl {
       return authenticate.toXml(extraOffset);
    }
    */
+   
+   
+   /**
+    * invokeSubscribe to messages.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+    */
+   public Object xmlScriptInvoke(String literal) throws XmlBlasterException {
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("xmlScriptInvoke: " + literal);
+      
+      XmlScriptParser parser = new XmlScriptParser();
+      final I_ProgressListener progressListener = null;
+      final I_PluginConfig pluginConfig = null;
+      parser.init(glob, progressListener, pluginConfig);
+      
+      InputStream is = new ByteArrayInputStream(literal.getBytes());
+      try {
+         MsgInfo[] msgInfoArr = parser.parse(is);
+         if (msgInfoArr != null) {
+            for (int i=0; i < msgInfoArr.length; i++) {
+               MsgInfo msgInfo = msgInfoArr[i];
+               String sessionId = msgInfo.getSecretSessionId();
+               String qos = msgInfo.getQos();
+               MethodName method = msgInfo.getMethodName(); 
+               if (method.isConnect()) {
+                  return connect(qos);
+               }
+               else if (method.isDisconnect()) {
+                  return disconnect(sessionId, qos);
+               }
+               else { // how to handle pings !!!!!!
+                  return ping(qos);
+               }
+            }
+         }
+      }
+      catch (IOException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+      }
+      catch (XmlRpcException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+      }
+      
+      return null;
+   }
+
    
 }
 
