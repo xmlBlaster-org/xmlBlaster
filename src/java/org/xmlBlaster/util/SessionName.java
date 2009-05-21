@@ -112,6 +112,9 @@ public final class SessionName implements java.io.Serializable {
          throw new IllegalArgumentException(ME + ": Your given name is null");
       }
 
+      // missing clusterNodeId is similar to relative addressing
+      if (name.startsWith("/node//")) // ROOT_MARKER_TAG
+         name = name.substring(7);
       String relative = name;
 
       // parse absolute part
