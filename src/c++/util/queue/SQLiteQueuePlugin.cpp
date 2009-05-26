@@ -410,7 +410,7 @@ string SQLiteQueuePlugin::usage()
  * Customized logging output is handled by this method. 
  * We redirect logging output from the C implementation to our C++ logging plugin.
  * <p>
- * Please compile with <code>XMLBLASTER_PERSISTENT_QUEUE</code> defined.
+ * Please compile with <code>XMLBLASTER_PERSISTENT_QUEUE_SQLITE3</code> defined.
  * </p>
  * @param queueP
  * @param currLevel The actual log level of the client

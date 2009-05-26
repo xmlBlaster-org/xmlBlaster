@@ -23,7 +23,7 @@ using namespace org::xmlBlaster::util::qos::address;
       QueuePropertyBase::initialize(Constants::RELATING_CLIENT); // == "connection"
 
       /*
-#     ifndef XMLBLASTER_PERSISTENT_QUEUE
+#     if !defined (XMLBLASTER_PERSISTENT_QUEUE) || !defined (XMLBLASTER_PERSISTENT_QUEUE_SQLITE3)
       // TODO !!!: Hack: We need to force default to RAM instead of CACHE
       // as we have no C++ CACHE implementation  (see QueueFactory.cpp for the other workaround)
       string envType = global_.getProperty().getStringProperty("queue/connection/type", "");
@@ -101,17 +101,17 @@ using namespace org::xmlBlaster::util::qos::address;
       text += string("                       0 switches recording of invocations off, -1 sets it to unlimited.\n");
       text += string("   -queue/connection/type [CACHE].\n");
       text += string("                       The C++ client side queue plugin type, choose 'RAM' for a pure memory based queue.\n");
-#     ifdef XMLBLASTER_PERSISTENT_QUEUE
+#     if defined(XMLBLASTER_PERSISTENT_QUEUE) || defined(XMLBLASTER_PERSISTENT_QUEUE_SQLITE3)
       text += string("                       Choose 'SQLite' for a pure persistent client side queue.\n");
 #     else
-      text += string("                       Please recompile with -DXMLBLASTER_PERSISTENT_QUEUE=1 defined\n");
+      text += string("                       Please recompile with -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 defined\n");
       text += string("                       to have a persistent client side queue 'SQLite'.\n");
 #     endif
       text += string("   -queue/connection/version ") + DEFAULT_version + string("].\n");
       text += string("                       The queue plugin type.\n");
       text += string("   -queue/connection/maxBytes [" + lexical_cast<std::string>(DEFAULT_bytesDefault) + "].\n");
       text += string("                       The maximum size in bytes of this queue.\n");
-#     ifdef XMLBLASTER_PERSISTENT_QUEUE
+#     if defined(XMLBLASTER_PERSISTENT_QUEUE) || defined (XMLBLASTER_PERSISTENT_QUEUE_SQLITE3)
       text += string("SQLite specific setting:\n");
       text += string("   -queue/connection/url [xmlBlasterClientCpp.db].\n");
       text += string("                       The location and file name of the database.\n");

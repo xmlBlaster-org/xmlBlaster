@@ -18,7 +18,7 @@ Comment:   Factory to create different queue implementations
 #include <util/queue/QueueFactory.h>
 #include <util/queue/RamQueuePlugin.h>
 #include <util/queue/CacheQueuePlugin.h>
-#ifdef XMLBLASTER_PERSISTENT_QUEUE
+#if defined (XMLBLASTER_PERSISTENT_QUEUE) || defined (XMLBLASTER_PERSISTENT_QUEUE_SQLITE3)
 #  include <util/queue/SQLiteQueuePlugin.h>
 #endif
 #include <string>
@@ -73,10 +73,10 @@ I_Queue& QueueFactory::getPlugin(org::xmlBlaster::util::Global& global, const or
       return *(new RamQueuePlugin(global, property));
    }
    else if (typ == Constants::SQLITE) {
-#     ifdef XMLBLASTER_PERSISTENT_QUEUE
+#     if defined(XMLBLASTER_PERSISTENT_QUEUE) || defined(XMLBLASTER_PERSISTENT_QUEUE_SQLITE3)
          return *(new SQLiteQueuePlugin(global, property));  //#ifdef XMLBLASTER_PERSISTENT_QUEUE
 #     else
-         log.error(ME, "Please compile with -DXMLBLASTER_PERSISTENT_QUEUE=1 defined to have SQLite persistent queue support");
+         log.error(ME, "Please compile with -DXMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1 defined to have SQLite persistent queue support");
 #     endif
    }
    string embeddedMsg = string("Plugin: '") + property.getType() +

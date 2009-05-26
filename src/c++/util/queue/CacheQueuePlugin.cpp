@@ -7,7 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/QueueFactory.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#ifdef XMLBLASTER_PERSISTENT_QUEUE // to compile on Windows
+#if defined (XMLBLASTER_PERSISTENT_QUEUE) || defined (XMLBLASTER_PERSISTENT_QUEUE_SQLITE3) // to compile on Windows
 #  include <util/queue/SQLiteQueuePlugin.h> // temporary for usage -> remove again
 #endif
 
@@ -205,7 +205,7 @@ string CacheQueuePlugin::usage()
 {
    std::string text = string("");
    text += string("\nThe CACHE queue plugin configuration:");
-#ifdef XMLBLASTER_PERSISTENT_QUEUE // to compile on Windows
+#if defined (XMLBLASTER_PERSISTENT_QUEUE) || defined (XMLBLASTER_PERSISTENT_QUEUE_SQLITE3) // to compile on Windows
    text += SQLiteQueuePlugin::usage();   // TODO: depending on persistency
 #else
    text += ClientQueueProperty::usage();
