@@ -53,6 +53,28 @@ public class CommonTableDatabaseAccessorDelegate extends CommonTableDatabaseAcce
       }
 
       if (e.isErrorCode(ErrorCode.RESOURCE_DB_UNKNOWN)) {
+    	 Throwable cause = e.getCause();
+    	 if (cause != null) {
+    		 if (cause instanceof java.lang.OutOfMemoryError) {
+   	             e.changeErrorCode(ErrorCode.RESOURCE_DB_UNAVAILABLE);
+    	         throw e; // -> immediate shutdown
+    		 }
+    		 if (cause instanceof XmlBlasterException) {
+    			 XmlBlasterException e2 = (XmlBlasterException)cause;
+    			 if (e2.isInternal()) {
+       	             e.changeErrorCode(ErrorCode.RESOURCE_DB_UNAVAILABLE);
+    		         throw e; // -> immediate shutdown
+    			 }
+    			 Throwable cause2 = e2.getCause();
+    	    	 if (cause2 != null) {
+    	    		 if (cause2 instanceof java.lang.OutOfMemoryError) {
+    	   	             e.changeErrorCode(ErrorCode.RESOURCE_DB_UNAVAILABLE);
+    	    	         throw e; // -> immediate shutdown
+    	    		 }
+    	    	 }
+    		 }
+    	 }
+    	 
          // Only ErrorCode.RESOURCE_DB_UNKNOWN
          e.printStackTrace();
          log.severe("We try again (try #" + (retryCounter+1) + " of " + MAX_RETRIES + "): " + e.toString());
