@@ -142,7 +142,7 @@ public class EmailData {
     * Create a simple message.
     * 
     * @param recipient
-    *           For example "jack@gmx.net"
+    *           For example "jack@gmx.net" or "jack@gmx.net,jeff@gmx.net"
     * @param from
     *           For example "sue@gmx.net"
     * @param subject
@@ -152,9 +152,13 @@ public class EmailData {
     */
    public EmailData(String recipient, String from, String subject,
          String content) {
-      this.recipients = new InternetAddress[recipient == null ? 0 : 1];
-      if (recipient != null)
-         this.recipients[0] = toInternetAddress(recipient);
+      this.recipients = new InternetAddress[0];
+      if (recipient != null) {
+   	     String[] arr = StringPairTokenizer.toArray(recipient, ",");
+         this.recipients = new InternetAddress[arr.length];
+         for (int i=0; i<arr.length; i++)
+        	 this.recipients[i] = toInternetAddress(arr[i]);
+      }
       this.from = toInternetAddress(from);
       this.subject = subject;
       this.content = content;
@@ -480,6 +484,8 @@ public class EmailData {
     * omitted and this tag occurs for example in the CDATA section of the
     * content. Therefor we always dump the complete xml in toXml().
     * Not for production use, Attachments are not yet supported!
+    * <p />
+    * Multiple &lt;to> tags are allowed or a single with comma separated addresses.
     */
    public static EmailData parseXml(String xml) {
       int start = 0;
@@ -497,7 +503,13 @@ public class EmailData {
          }
          start = startTmp;
          if (sb.length() > 0) {
-            toList.add(sb.toString());
+        	if (sb.indexOf(",") != -1) {
+        		String[] arr = StringPairTokenizer.toArray(sb.toString(), ",");
+        		for (int i=0; i<arr.length; i++)
+        			toList.add(arr[i]);
+        	}
+        	else
+        		toList.add(sb.toString());
          }
       }
       String[] recipients = (String[]) toList
