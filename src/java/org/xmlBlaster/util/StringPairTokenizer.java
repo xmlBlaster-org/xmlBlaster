@@ -301,6 +301,8 @@ public class StringPairTokenizer {
     * Example:<br />
     * NameList=Josua,David,Ken,Abel<br />
     * Will return each name separately in the array.
+    * <p />
+    * Note: An empty field ",," is ommitted
     * @param key the key to look for
     * @param defaultVal The default value to return if key is not found
     * @param separator  The separator, typically ","
