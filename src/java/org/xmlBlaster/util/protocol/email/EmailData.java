@@ -157,7 +157,7 @@ public class EmailData {
    	     String[] arr = StringPairTokenizer.toArray(recipient, ",");
          this.recipients = new InternetAddress[arr.length];
          for (int i=0; i<arr.length; i++)
-        	 this.recipients[i] = toInternetAddress(arr[i]);
+        	 this.recipients[i] = toInternetAddress(arr[i].trim());
       }
       this.from = toInternetAddress(from);
       this.subject = subject;
@@ -506,7 +506,7 @@ public class EmailData {
         	if (sb.indexOf(",") != -1) {
         		String[] arr = StringPairTokenizer.toArray(sb.toString(), ",");
         		for (int i=0; i<arr.length; i++)
-        			toList.add(arr[i]);
+        			toList.add(arr[i].trim());
         	}
         	else
         		toList.add(sb.toString());
