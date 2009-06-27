@@ -346,6 +346,18 @@ public class EmailData {
       return this.recipients;
    }
 
+   public String getToAddressesStr() {
+	   if (this.recipients == null) {
+		   return "";
+	   }
+	   StringBuffer buf = new StringBuffer();
+	   for (int i=0; i<this.recipients.length; i++) {
+		   if (i>0) buf.append(";");
+		   buf.append(this.recipients[i].getAddress());
+	   }
+	   return buf.toString();
+   }
+
    /**
     * @return The subject of the message, never null
     */
