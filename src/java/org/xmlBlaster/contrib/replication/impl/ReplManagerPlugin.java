@@ -985,7 +985,8 @@ public class ReplManagerPlugin extends GlobalInfo
       int maxEntriesToRetrieve = this.maxNumOfEntries;
       synchronized (this.replSlaveMap) {
          slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
-         if (slave.getStatusAsInt() != I_ReplSlave.STATUS_NORMAL) {
+         int status = slave.getStatusAsInt(); 
+         if (status != I_ReplSlave.STATUS_NORMAL && status != I_ReplSlave.STATUS_INCONSISTENT) {
             log.info("Setting the number of entries to retreive to '1' since status is '" + slave.getStatus() + "' (otherwise it would be '" + this.maxNumOfEntries + "'");
             maxEntriesToRetrieve = 1;
          }

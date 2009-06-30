@@ -422,8 +422,10 @@ public class SqlInfoStreamPublisher implements I_ChangePublisher, I_Timeout {
           ex.printStackTrace();
           doExit = true;
        }
-       if(doExit)
-          System.exit(0);
+       if(doExit) {
+          // System.exit(0);
+          log.info("THE END OF THE INPUT FILES HAS BEEN REACHED: you can stop the application now");
+       }
     }
 
     public static void main(String args[]) {

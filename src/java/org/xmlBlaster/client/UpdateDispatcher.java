@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBuffer;
+
 import java.util.HashMap;
 import java.util.Set;
 
@@ -45,6 +47,12 @@ public final class UpdateDispatcher
          throw new IllegalArgumentException("The subscriptionId is null");
       }
       CallbackInfo info = (CallbackInfo)this.callbackMap.get(subscriptionId);
+      
+      if (info == null) {
+         String tmp = XmlBuffer.unEscapeXml(subscriptionId);
+         info = (CallbackInfo)this.callbackMap.get(tmp);
+      }
+      
       return (info == null) ? null: info.callback;
    }
    
