@@ -695,6 +695,7 @@ public class MsgInfo {
    }
 
    /**
+    * Note this method gets (returns) the associated I_MsgInfoParser if it was not initialized before.
     * @param className
     *           Can be null
     * @param pluginConfig Can be null
@@ -752,7 +753,9 @@ public class MsgInfo {
     * @return The stringified message, null bytes are replaced by '*'
     */
    public final String toLiteral() throws XmlBlasterException {
-      return getMsgInfoParser(null, pluginConfig).toLiteral(this);
+      if (this.msgInfoParser != null)
+         return getMsgInfoParser(null, pluginConfig).toLiteral(this);
+      return "(msgInfoParser not configured yet): " + dump();
    }
 
    public static String toLiteral(byte[] rawMsg) throws XmlBlasterException {
