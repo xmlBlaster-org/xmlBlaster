@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn (JDK >= 1.5 only)
 =======================
+
+ o r17724 fixed what did not have been completely fixed on r17703
+
  o r17722 keys in the callbackMap are not xml encoded. subscriptionIds coming from the server are encoded. 
           This way the entry was never found in the map and it resulted in invoking the connection general 
           listener instead. This has now been fixed.
