@@ -20,6 +20,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -676,6 +677,19 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    public boolean putPre(I_QueueEntry[] queueEntries) throws XmlBlasterException {
       if (!this.isSyncMode) {
+         for (int i=0; i < queueEntries.length; i++) {
+            if (queueEntries[i] instanceof MsgQueueEntry) {
+               MsgQueueEntry msgQueueEntry = (MsgQueueEntry)queueEntries[i];
+               if (MethodName.SUBSCRIBE == msgQueueEntry.getMethodName()) {
+                  if (getSessionName().getPublicSessionId() < 1) {
+                     // we should never allow a subscription without a positive sessionId if the 
+                     // server is not accessible
+                     throw new XmlBlasterException(glob, ErrorCode.RESOURCE_TEMPORARY_UNAVAILABLE, ME,
+                           "Manager: The Subscription for '" + getSessionName().toString() + "' failed since the server is currently not available");
+                  }
+               }
+            }
+         }
          if (this.inAliveTransition) {
             // Do not allow other threads to put messages to queue during transition to alive
             synchronized (ALIVE_TRANSITION_MONITOR) {
