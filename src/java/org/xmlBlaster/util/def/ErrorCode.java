@@ -469,8 +469,29 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED_UNKNOWNLOGINNAME = new ErrorCode("user.security.authentication.accessDenied.unknownLoginName",
+	         "Login failed due to unkown login name.",
+	         new ResourceInfo[] {
+	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+	         }
+	      );
+
+   public static final ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED_WRONGPASSWORD = new ErrorCode("user.security.authentication.accessDenied.wrongPassword",
+	         "Login failed due to wrong password.",
+	         new ResourceInfo[] {
+	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+	         }
+	      );
+
    public static final ErrorCode USER_SECURITY_AUTHENTICATION_INACTIVE = new ErrorCode("user.security.authentication.inactive",
 	         "Login failed, the account is not active anymore.",
+	         new ResourceInfo[] {
+	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+	         }
+	      );
+
+   public static final ErrorCode USER_SECURITY_AUTHENTICATION_EXPIRED = new ErrorCode("user.security.authentication.expired",
+	         "Login failed, the account is expired.",
 	         new ResourceInfo[] {
 	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
 	         }
