@@ -677,6 +677,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    public boolean putPre(I_QueueEntry[] queueEntries) throws XmlBlasterException {
       if (!this.isSyncMode) {
+    	  /*
          for (int i=0; i < queueEntries.length; i++) {
             if (queueEntries[i] instanceof MsgQueueEntry) {
                MsgQueueEntry msgQueueEntry = (MsgQueueEntry)queueEntries[i];
@@ -690,6 +691,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                }
             }
          }
+         */
          if (this.inAliveTransition) {
             // Do not allow other threads to put messages to queue during transition to alive
             synchronized (ALIVE_TRANSITION_MONITOR) {
