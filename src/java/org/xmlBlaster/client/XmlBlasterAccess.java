@@ -150,6 +150,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private boolean shutdown = false;
    
    private Object userObject;
+   
+   private XmlBlasterException toDeadXmlBlasterException;
 
    /**
     * Create an xmlBlaster accessor.
@@ -1363,12 +1365,25 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
+    * Workaround to transport the reason for the toDead() transition as
+    * the interface {@link I_ConnectionStateListener#reachedDead(ConnectionStateEnum, I_XmlBlasterAccess) is missing
+    * to pass the exception to the client.
+    * <p>
+    * Currently the client needs a downcast to XmlBlasterAccess (not in I_XmlBlasterAccess)
+    * @return Can be null
+    */
+   public XmlBlasterException getToDeadXmlBlasterException() {
+		return toDeadXmlBlasterException;
+	}
+
+   /**
     * Call by DispatchManager on connection state transition.
     * <p>Enforced by interface I_ConnectionStatusListener</p>
     */
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD + " connectInProgress=" + this.connectInProgress);
       if (this.connectionListener != null) {
+    	 this.toDeadXmlBlasterException = xmlBlasterException; // hack, description see #getToDeadXmlBlasterException
          this.connectionListener.reachedDead(oldState, this);
       }
    }

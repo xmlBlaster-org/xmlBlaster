@@ -184,7 +184,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
 
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
    /**

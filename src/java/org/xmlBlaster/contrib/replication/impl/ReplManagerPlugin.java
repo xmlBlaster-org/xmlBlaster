@@ -1079,9 +1079,9 @@ public class ReplManagerPlugin extends GlobalInfo
    }
 
    /**
-    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, XmlBlasterException)
     */
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
    /**

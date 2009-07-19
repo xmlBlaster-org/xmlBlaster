@@ -2462,7 +2462,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
     */
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
       callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.DEAD);
    }
 

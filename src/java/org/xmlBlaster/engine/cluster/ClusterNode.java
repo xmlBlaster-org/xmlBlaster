@@ -320,7 +320,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                         ping(); // Force our client connection to POLLING as
                                 // well
                    }
-                   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+                   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
                       log.severe("toDead(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                       log.info(sessionName.toString() + " Adding toDead 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());

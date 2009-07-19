@@ -198,7 +198,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       boolean ret = this.connectionStatusListeners.add(connectionStatusListener);
       if (fireInitial) {
          if (isDead())
-            connectionStatusListener.toDead(this, ConnectionStateEnum.DEAD, "Initial call");
+            connectionStatusListener.toDead(this, ConnectionStateEnum.DEAD, null/*"Initial call"*/);
          else if (isPolling())
             connectionStatusListener.toPolling(this, ConnectionStateEnum.POLLING);
          else
@@ -374,7 +374,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       for (int i=0; i<listeners.length; i++) {
          try {
             // Only pass original ex.getMessage() - not the changed errorCode
-            listeners[i].toDead(this, oldState, ex.getMessage());
+            listeners[i].toDead(this, oldState, ex);
          }
          catch (Throwable e) {
             e.printStackTrace();
@@ -383,7 +383,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
-         this.msgInterceptor.toDead(this, oldState, ex.getMessage());
+         this.msgInterceptor.toDead(this, oldState, ex);
 
       if (oldState != ConnectionStateEnum.UNDEF)
          givingUpDelivery(ex);

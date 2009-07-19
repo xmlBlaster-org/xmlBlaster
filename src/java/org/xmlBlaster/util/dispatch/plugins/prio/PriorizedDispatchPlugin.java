@@ -498,7 +498,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public final void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+   public final void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
       changeManagerState(dispatchManager, ConnectionStateEnum.DEAD, true);
    }
 

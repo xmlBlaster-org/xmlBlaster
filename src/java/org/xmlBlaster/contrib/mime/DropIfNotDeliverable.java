@@ -187,7 +187,7 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
    }
 
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
