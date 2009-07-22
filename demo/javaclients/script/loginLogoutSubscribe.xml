@@ -7,12 +7,12 @@
 
    <connect>
      <qos>
-       <securityService type="htpasswd" version="1.0"><![CDATA[
-         <user>tester</user>
-         <passwd>tester</passwd>
+       <securityService type="avitech" version="1.0"><![CDATA[
+         <user>testsuite1</user>
+         <passwd>service</passwd>
        ]]></securityService>
        <persistent>true</persistent>
-       <session name='tester/1' />
+       <session name='testsuite/1' />
        <queue relating='connection'>
           <address type="XMLRPC" pingInterval='1000' retries='-1' delay='2000' />
        </queue>

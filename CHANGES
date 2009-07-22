@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17730 added flag mail.messageIdFileName to allow to change the filename for the message id in the mail 
+          protocol
+
  o r17724 fixed what did not have been completely fixed on r17703
 
  o r17722 keys in the callbackMap are not xml encoded. subscriptionIds coming from the server are encoded. 
