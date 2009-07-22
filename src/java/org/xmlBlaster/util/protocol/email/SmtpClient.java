@@ -146,8 +146,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    class AsyncSender implements Runnable {
       private final SmtpClient smtpClient;
       private final BlockingQueue queue;
-
-      AsyncSender(SmtpClient smtpClient, BlockingQueue q) {
+      private String messageIdFileName;
+      
+      AsyncSender(SmtpClient smtpClient, BlockingQueue q, String messageIdFileName) {
+         this.messageIdFileName = messageIdFileName;
          this.smtpClient = smtpClient;
          this.queue = q;
       }
@@ -157,7 +159,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             EmailData emailData = null;
             try {
                emailData = (EmailData)queue.take();
-               this.smtpClient.sendEmailSync(emailData);
+               this.smtpClient.sendEmailSync(emailData, this.messageIdFileName);
             } catch (XmlBlasterException ex) {
                // no log.severe or log.warning because of recursion
                if (log.isLoggable(Level.INFO))
@@ -315,6 +317,9 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          props.put("mail.debug", glob.get("mail.debug", System.getProperty(
                "mail.debug", "false"), null, pluginConfig));
 
+      String msgIdFileName = glob.get("mail.messageIdFileName", System
+            .getProperty("mail.messageIdFileName"), null, pluginConfig);
+
       String uri = glob.get("mail.smtp.url", System
             .getProperty("mail.smtp.url"), null, pluginConfig);
       if (uri == null) {
@@ -405,7 +410,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                this.asyncSendQueueBlockOnOverflow, null,
                pluginConfig);
          this.asyncSendQueue = new ArrayBlockingQueue(this.asyncSendQueueSizeMax);
-         this.asyncSender = new AsyncSender(this, this.asyncSendQueue);
+         this.asyncSender = new AsyncSender(this, this.asyncSendQueue, msgIdFileName);
          Thread t = new Thread(this.asyncSender, getType() + "-AsyncSender");
          t.start();
       }
@@ -606,7 +611,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       if (from==null || from.trim().length() < 1 || "String".equalsIgnoreCase(from)) from = "xmlBlaster@localhost";
       EmailData emailData = new EmailData(to, from, "[xmlBlaster SmtpClient] Test email", "Hello world!");
       try {
-         sendEmail(emailData);
+         sendEmail(emailData, null);
       } catch (XmlBlasterException e) {
          e.printStackTrace();
          throw new IllegalArgumentException(e.toString());
@@ -615,12 +620,16 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    }
 
    public void sendEmail(EmailData emailData) throws XmlBlasterException {
+      sendEmail(emailData, null);
+   }
+   
+   public void sendEmail(EmailData emailData, String msgIdFileName) throws XmlBlasterException {
       if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
       if (emailData.isSendAsync()) {
          sendEmailAsync(emailData);
       }
       else {
-         sendEmailSync(emailData);
+         sendEmailSync(emailData, msgIdFileName);
       }
    }
 
@@ -629,7 +638,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * @param emailData
     *        Container holding the message to send
     */
-   public void sendEmailSync(EmailData emailData) throws XmlBlasterException {
+   public void sendEmailSync(EmailData emailData, String msgIdFileName) throws XmlBlasterException {
       if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
       try {
          MimeMessage message = new MimeMessage(getSession());
@@ -663,7 +672,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                // 'xx.xbf' names will be send unquoted
                mbp.setFileName(holder[i].getFileName());
                byte[] content = holder[i].getContent();
-               if (this.messageIdForceBase64 && emailData.isMessageIdAttachment(holder[i])
+               if (this.messageIdForceBase64 && emailData.isMessageIdAttachment(holder[i], msgIdFileName)
                     || this.contentForceBase64 && emailData.isMsgUnitAttachment(holder[i])) {
                   //We don't need to do it, javamail does it for us
                   //content = Base64.encode(holder[i].getContent()).getBytes(Constants.UTF8_ENCODING);
@@ -685,7 +694,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                   //String tmp = MimeUtility.encodeText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);
                   //mbp.setText(tmp, Constants.UTF8_ENCODING);
                   String contentStr = new String(content, Constants.UTF8_ENCODING);
-                  if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i])) {
+                  if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i], msgIdFileName)) {
                      // <messageId><sessionId>unknown</sessionId><requestId>1140597982821000000</requestId><methodName>update</methodName><expires>2006-02-23T08:46:22.821Z</expires></messageId>
                      contentStr = ReplaceVariable.replaceAll(contentStr, "<requestId>", "\r\n<requestId>");
                      contentStr = ReplaceVariable.replaceAll(contentStr, "<methodName>", "\r\n<methodName>");
@@ -865,7 +874,7 @@ Some body text
          EmailData msg = new EmailData(to, from, subject, content);
          if (ts != null) msg.setExpiryTime(ts);
          System.out.println("Sending message " + msg.toXml(true));
-         mail.sendEmail(msg);
+         mail.sendEmail(msg, null);
          System.out.println("Sent a message from '" + from + "' to '" + to
                + "'");
       } catch (Exception e) {

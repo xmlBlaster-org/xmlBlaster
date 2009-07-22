@@ -121,6 +121,8 @@ public class EmailData {
    
    public boolean sendAsync;
 
+   private String messageIdFileName = MESSAGEID_TAG+MESSAGEID_EXTENSION;
+   
    /**
     * @return the sendAsync
     */
@@ -138,6 +140,10 @@ public class EmailData {
       this.sendAsync = sendAsync;
    }
 
+   public void setMessageIdFileName(String name) {
+      messageIdFileName = name;
+   }
+   
    /**
     * Create a simple message.
     * 
@@ -545,9 +551,9 @@ public class EmailData {
     * It is more safe to explicitely use our requestId markup.
     * @return Returns the requestId, never null
     */
-   public String getRequestId() {
+   public String getRequestId(String msgIdFileName) {
       if (this.requestId == null) {
-         this.requestId = extractMessageId(REQUESTID_TAG);
+         this.requestId = extractMessageId(REQUESTID_TAG, msgIdFileName);
          if (this.requestId == null) {
             if (this.sentDate != null) {
                this.requestIdFromSentDate = true;
@@ -571,9 +577,9 @@ public class EmailData {
     * Can (but must not) be identical to the SessionInfo-secretSessionId
     * @return Returns the sessionId, never null
     */
-   public String getSessionId() {
+   public String getSessionId(String msgIdFileName) {
       if (this.sessionId == null) {
-         this.sessionId = extractMessageId(SESSIONID_TAG);
+         this.sessionId = extractMessageId(SESSIONID_TAG, msgIdFileName);
       }
       return (this.sessionId == null) ? "" : this.sessionId;
    }
@@ -595,8 +601,8 @@ public class EmailData {
     * @return null if none is found
     * or for example <messageId><sessionId>somesecret</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     */
-   public String getMessageId() {
-      AttachmentHolder attachmentHolder = getMessageIdAttachment();
+   public String getMessageId(String msgIdFileName) {
+      AttachmentHolder attachmentHolder = getMessageIdAttachment(msgIdFileName);
       if (attachmentHolder == null) return null;
       return new String(attachmentHolder.getContent());
    }
@@ -610,7 +616,9 @@ public class EmailData {
     * @return null if none is found
     * or for example <messageId><sessionId>somesecret</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     */
-   public AttachmentHolder getMessageIdAttachment() {
+   public AttachmentHolder getMessageIdAttachment(String msgIdFileName) {
+      if (msgIdFileName == null)
+         msgIdFileName = messageIdFileName;
       String subject = getSubject();
       final String startToken = "<" + MESSAGEID_TAG + ">";
       if (subject.indexOf(startToken) == -1) {
@@ -645,13 +653,13 @@ public class EmailData {
          if (endIndex > startIndex)
             subject = subject.substring(startIndex, endIndex+endToken.length());
          // "messageId.mid"
-         return new AttachmentHolder(MESSAGEID_TAG+MESSAGEID_EXTENSION,subject);
+         return new AttachmentHolder(msgIdFileName, subject);
       }
       return null;
    }
    
-   public boolean isMessageIdAttachment(AttachmentHolder holder) {
-      AttachmentHolder messageIdHolder = getMessageIdAttachment();
+   public boolean isMessageIdAttachment(AttachmentHolder holder, String msgIdFileName) {
+      AttachmentHolder messageIdHolder = getMessageIdAttachment(msgIdFileName);
       if (messageIdHolder == null) return false;
       return messageIdHolder.equals(holder);
    }
@@ -665,8 +673,8 @@ public class EmailData {
     *           "requestId" or "sessionId" or "methodName"
     * @return null if none is found
     */
-   public String extractMessageId(String tag) {
-      String str = getMessageId();
+   public String extractMessageId(String tag, String msgIdFileName) {
+      String str = getMessageId(msgIdFileName);
       final String startToken = "<" + tag + ">";
 
       if (str != null) {
@@ -777,7 +785,7 @@ public class EmailData {
     * @param emailData email to check
     * @return true if is expired
     */
-   public boolean isExpired() {
+   public boolean isExpired(String msgIdFileName) {
       // Currently we have two approaches to transport expiryDate:
       // first as an email-Header: "Expires: "
       // second in our messageId XML markup: <expires>2005-12-24T16:45:12Z</expires>
@@ -790,7 +798,7 @@ public class EmailData {
          return false;
       }
 
-      String expires = extractMessageId(EmailData.EXPIRES_TAG);
+      String expires = extractMessageId(EmailData.EXPIRES_TAG, msgIdFileName);
       if (expires != null) {
          /* The string may contain CR LF as shown here (added by any MTA):
          <messageId><sessionId>lm4e560ghdFzj</sessionId><requestId>1138093430247000000</requestId><methodName>ping</methodName><expires>2006-01-24T
@@ -887,7 +895,7 @@ public class EmailData {
          String[] receivers = { "Receiver" };
          String subject = "<messageId><expires>2006-01-24\r\nT09:04:50.248Z</expires></messageId>";      
          EmailData msg = new EmailData(receivers, "Sender", subject, "A content");
-         System.out.println("Is " + ((msg.isExpired()) ? "" : "not ") + "expired");
+         System.out.println("Is " + ((msg.isExpired(null)) ? "" : "not ") + "expired");
       }
    }
 

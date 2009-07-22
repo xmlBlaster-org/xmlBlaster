@@ -155,6 +155,8 @@ implements I_Plugin, I_Timeout,
    
    public static final String DISCARD = "--discard--";
 
+   private static String messageIdFileName;
+   
    /**
     * The Pop3Driver is a singleton in the Global scope. 
     * Access this singleton for the given global, and if it
@@ -164,7 +166,7 @@ implements I_Plugin, I_Timeout,
     * @return never null
     * @throws XmlBlasterException 
     */
-   public static Pop3Driver getPop3Driver(Global glob, I_PluginConfig pluginConfig)
+   public static Pop3Driver getPop3Driver(Global glob, I_PluginConfig pluginConfig, String msgIdFileName)
                               throws XmlBlasterException {
       Global serverNode = (org.xmlBlaster.util.Global)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       if (serverNode == null) serverNode = glob;
@@ -178,11 +180,15 @@ implements I_Plugin, I_Timeout,
             pop3Driver = new Pop3Driver();
             // Uhhh - a downcast:
             pop3Driver.init(glob, pluginConfig); // adds itself as ObjectEntry
+            pop3Driver.setMessageIdFileName(msgIdFileName);
          }
          return pop3Driver;
       }
    }
 
+   private void setMessageIdFileName(String msgIdFileName) {
+      this.messageIdFileName = msgIdFileName;
+   }
    /**
     * Used by Authenticator to access user name and password
     */
@@ -291,7 +297,7 @@ implements I_Plugin, I_Timeout,
          log.fine("Added listener with key=" + key);
 
       // Try to deliver hold back messages
-      tryToDeliverHoldbackMails();
+      tryToDeliverHoldbackMails(messageIdFileName);
    }
 
    public Object deregisterForEmail(String secretSessionId, String requestId) {
@@ -376,7 +382,7 @@ implements I_Plugin, I_Timeout,
     * @param calledFromHoldbackMap is true if we try a redelivery
     * @return The listener notified or null if none was found
     */
-   private String notify(EmailData emailData, boolean calledFromHoldbackMap) {
+   private String notify(EmailData emailData, boolean calledFromHoldbackMap, String msgIdFileName) {
       if (emailData == null)
          return null;
 
@@ -385,7 +391,7 @@ implements I_Plugin, I_Timeout,
       //if (emailData.isExpired())
       //   return DISCARD;
       
-      String key = emailData.getSessionId() + emailData.getRequestId();
+      String key = emailData.getSessionId(msgIdFileName) + emailData.getRequestId(msgIdFileName);
       I_ResponseListener listenerSession = null;
       I_ResponseListener listenerRequest = null;
       I_ResponseListener listenerClusterNodeId = null;
@@ -393,7 +399,7 @@ implements I_Plugin, I_Timeout,
          listenerRequest = (I_ResponseListener) this.listeners.get(key);
          if (listenerRequest == null) {
             listenerSession = (I_ResponseListener) this.listeners
-                  .get(emailData.getSessionId());
+                  .get(emailData.getSessionId(msgIdFileName));
             if (listenerSession == null) {
                listenerClusterNodeId = (I_ResponseListener) this.listeners
                      .get(this.glob.getId());
@@ -406,7 +412,7 @@ implements I_Plugin, I_Timeout,
          if (log.isLoggable(Level.FINER))
             log.finer("Request specific listener found for key=" + key
                   + ", email is " + emailData.toString());
-         listenerRequest.incomingMessage(emailData.getRequestId(),
+         listenerRequest.incomingMessage(emailData.getRequestId(msgIdFileName),
                emailData);
          return key;
       }
@@ -415,11 +421,11 @@ implements I_Plugin, I_Timeout,
       if (listenerSession != null) {
          if (log.isLoggable(Level.FINER))
             log.finer("SessRequest specific listener found for key="
-                  + emailData.getSessionId() + ", email is "
+                  + emailData.getSessionId(msgIdFileName) + ", email is "
                   + emailData.toString());
-         listenerSession.incomingMessage(emailData.getRequestId(),
+         listenerSession.incomingMessage(emailData.getRequestId(msgIdFileName),
                emailData);
-         return emailData.getSessionId();
+         return emailData.getSessionId(msgIdFileName);
       }
 
       // A cluster node is interested in all messages (EmailDriver.java)
@@ -427,9 +433,9 @@ implements I_Plugin, I_Timeout,
          if (log.isLoggable(Level.FINER))
             log.finer("Node specific listener found for key="
                   + this.glob.getId() + ", email is " + emailData.toString());
-         listenerClusterNodeId.incomingMessage(emailData.getRequestId(),
+         listenerClusterNodeId.incomingMessage(emailData.getRequestId(msgIdFileName),
                emailData);
-         return emailData.getSessionId();
+         return emailData.getSessionId(msgIdFileName);
       }
       
       if (calledFromHoldbackMap) {
@@ -438,7 +444,7 @@ implements I_Plugin, I_Timeout,
          return null; // try again later
       }
 
-      if (emailData.isExpired())
+      if (emailData.isExpired(msgIdFileName))
          return DISCARD;
 
       if (this.holdbackExpireTimeout > 0) {
@@ -446,7 +452,7 @@ implements I_Plugin, I_Timeout,
          this.holdbackMap.put(new Long(timestamp.getTimestamp()), emailData);
          log.warning("None of our registered listeners '" + getListeners()
                + "' matches for key=" + key + ", email '" 
-               + emailData.extractMessageId(EmailData.METHODNAME_TAG)
+               + emailData.extractMessageId(EmailData.METHODNAME_TAG, msgIdFileName)
                + "' is holdback in RAM, we try later again");
       }
       else {
@@ -570,7 +576,7 @@ implements I_Plugin, I_Timeout,
     * if the client stops immediately the mails are lost but redelivered by the server
     * after the responseTimeout.
     */
-   private void tryToDeliverHoldbackMails() {
+   private void tryToDeliverHoldbackMails(String msgIdFileName) {
       if (this.holdbackExpireTimeout > 0 && getNumberOfHoldbackEmails() > 0) {
          Long[] keys = getHoldbackTimestamps();
          Timestamp now = new Timestamp();
@@ -582,7 +588,7 @@ implements I_Plugin, I_Timeout,
                this.holdbackMap.remove(keys[i]);
                handleLostEmail(emailData);
             } else {
-               String listenerKey = notify(emailData, true);
+               String listenerKey = notify(emailData, true, msgIdFileName);
                if (listenerKey != null) {
                   if (!DISCARD.equals(listenerKey)) {
                      if (log.isLoggable(Level.FINE))
@@ -604,7 +610,7 @@ implements I_Plugin, I_Timeout,
 
       // TODO: Remove here again, but for now we leave it to have an expiry check
       //        we need to add a specific holdbackExpireTimeout Timer 
-      tryToDeliverHoldbackMails();
+      tryToDeliverHoldbackMails(messageIdFileName);
 
       try {
          EmailData[] msgs = readInbox(Pop3Driver.CLEAR_MESSAGES);
@@ -615,7 +621,7 @@ implements I_Plugin, I_Timeout,
             EmailData emailData = msgs[i];
             if (log.isLoggable(Level.FINER))
                log.finer("Got from POP3 email" + emailData.toXml(true));
-            String notifiedListener = notify(emailData, false);
+            String notifiedListener = notify(emailData, false, messageIdFileName);
             if (notifiedListener == null) {
                if (log.isLoggable(Level.FINE))
                   log.fine("None of the registered listeners ("

@@ -162,6 +162,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       this.subjectTemplate = this.glob.get("mail.subject",
             "XmlBlaster Generated Email "+SUBJECT_MESSAGEID_TOKEN, null, this.pluginConfig);
 
+      messageIdFileName = this.glob.get("mail.messageIdFileName", messageIdFileName, null, pluginConfig);
 
       this.isShutdown = false;
       if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + this.fromAddress.toString() + " to=" + to);
@@ -186,7 +187,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
                throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
             }
             // On client side we create it dynamically as configured in xmlBlaster.properties
-            this.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginConfig);
+            this.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginConfig, messageIdFileName);
          }
       }
       return this.pop3Driver;
@@ -378,7 +379,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             msgInfo.setRequestIdGuessed(emailData.isRequestIdFromSentDate());
             msgInfo.setBounceObject(BOUNCE_MAILFROM_KEY, emailData.getFrom());
             // The messageId could be in the subject and not in the attachment
-            msgInfo.setBounceObject(BOUNCE_MESSAGEID_KEY, emailData.getMessageId());
+            msgInfo.setBounceObject(BOUNCE_MESSAGEID_KEY, emailData.getMessageId(messageIdFileName));
             AttachmentHolder[] attachments = emailData.getAttachments();
             for (int i=0; i<attachments.length; i++) {
                AttachmentHolder a = attachments[i];
@@ -398,7 +399,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
 
       // Response and Exception messages should NEVER expire
-      if (emailData.isExpired() && msgInfos[0].isInvoke()) {
+      if (emailData.isExpired(messageIdFileName) && msgInfos[0].isInvoke()) {
          log.warning("Message is expired, we discard it: " + emailData.toString());
          return;
       }
@@ -409,9 +410,9 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          MsgInfo msgInfo = msgInfos[i];
          // If counterside has stripped information we add it again from the messageId attachment
          if (msgInfo.getRequestId().length() == 0)
-            msgInfo.setRequestId(emailData.getRequestId());
+            msgInfo.setRequestId(emailData.getRequestId(messageIdFileName));
          if (msgInfo.getSecretSessionId().length() == 0)
-            msgInfo.setSecretSessionId(emailData.getSessionId());
+            msgInfo.setSecretSessionId(emailData.getSessionId(messageIdFileName));
    
          try {
             if (i==0 && msgInfo.isInvoke()) {
@@ -649,7 +650,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          emailData.addAttachment(a);
       }
       
-      getSmtpClient().sendEmail(emailData);
+      getSmtpClient().sendEmail(emailData, messageIdFileName);
       //this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,
       //      attachmentName, attachment, attachmentName2, messageId,
       //      Constants.UTF8_ENCODING);
