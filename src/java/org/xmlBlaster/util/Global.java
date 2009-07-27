@@ -1801,7 +1801,7 @@ public class Global implements Cloneable
       }
       this.isDoingShutdown = true;
 
-      if (log.isLoggable(Level.FINE)) log.fine("Destroying util.Global handle");
+      if (log != null && log.isLoggable(Level.FINE)) log.fine("Destroying util.Global handle");
 
       /* This is a singleton, so only the last Global instance may do a shutdown
       try {
