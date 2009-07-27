@@ -64,6 +64,8 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
    
    // Teh default is to re-throw only connect() exception
    private boolean throwAllExceptions;
+   
+   private boolean allowImplicitConnect = true;
 
    /**
     * This constructor is the most generic one (more degrees of freedom)
@@ -82,6 +84,12 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
       this.callback = callback;
       this.connectQosFactory = new ConnectQosSaxFactory(this.glob);
       this.disconnectQosFactory = new DisconnectQosSaxFactory(this.glob);
+      
+      try {
+		 this.allowImplicitConnect = this.glob.get("xmlBlaster/XmlScript/allowImplicitConnect", this.allowImplicitConnect, null, null);
+      } catch (XmlBlasterException e) {
+		 e.printStackTrace();
+	  }
 
       if (this.access != null) {
          this.isConnected = this.access.isConnected();
@@ -145,6 +153,8 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
       try {
          if (MethodName.CONNECT.equals(methodName) || !this.isConnected) {
             boolean implicitConnect = !MethodName.CONNECT.equals(methodName);
+            if (implicitConnect && !this.allowImplicitConnect)
+            	throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, ME, "Please provide an initial connect string or set -xmlBlaster/XmlScript/allowImplicitConnect true", null);
             // if (this.qos.length() < 1) this.qos.append("<qos />");
             String ret = null;
             I_Callback cb = null;
