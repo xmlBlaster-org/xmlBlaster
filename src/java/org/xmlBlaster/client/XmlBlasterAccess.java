@@ -438,6 +438,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses(forceCbAddressCreation), sn);
+               // the above can call toDead() and the client may have called shutdown(): this.connectQos == null again
+               if (this.dispatchManager.isDead())
+                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "connect call failed, your toDead() code did shutdown?");
 
                getDispatchStatistic(); // Force creation of dispatchStatistic as this syncs on 'this' and could deadlock if don later from a update()
 
@@ -657,6 +660,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       // Relaxed check to allow shutdown of database without successful connection
       if (this.connectQos == null /*!isConnected()*/) {
          log.warning(getLogId()+"You called disconnect() but you are are not logged in, we ignore it.");
+         if (glob != null)
+        	 glob.shutdown();
+         //shutdown(disconnectQos);
          return false;
       }
 
