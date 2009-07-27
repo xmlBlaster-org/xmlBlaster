@@ -318,7 +318,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          maxNumStatements = info.getInt("maxNumStatements", defaultMaxNumStatements);
          log.info("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
          if (logWarn && info.getInt("maxNumStatements",-1)==-1)
-            log.warning("The maxStatements returned fromt the database metadata is '" + defaultMaxNumStatements + "', will set the default to 50 unless you explicitly set '-queue.persistent.maxNumStatements <num>'");
+            log.warning("The maxStatements returned fromt the database metadata is '0', will set the default to 50 unless you explicitly set '-maxNumStatements <num>'");
 
          // -queue.persistent.maxSelectLimit -1 (off)
          maxSelectLimit = info.getInt("maxSelectLimit", -1);
