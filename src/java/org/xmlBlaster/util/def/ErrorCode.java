@@ -150,6 +150,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_MAINTENANCE = new ErrorCode("resource.maintenance",
+	         "The resource is under maintenance, please try again later",
+	         new ResourceInfo[] {
+	         }
+	      );
+
    public static final ErrorCode RESOURCE_OUTOFMEMORY = new ErrorCode("resource.outOfMemory",
          "The JVM has no more RAM memory, try increasing it like 'java -Xms18M -Xmx256M org.xmlBlaster.Main'",
          new ResourceInfo[] {
