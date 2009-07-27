@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17737 XmlBlasterAccess.java changed behaviour:
+          On toDead() the connect() method now throws a XmlBlasterException of type COMMUNICATION_NOCONNECTION_DEAD
+
  o r17730 added flag mail.messageIdFileName to allow to change the filename for the message id in the mail 
           protocol
 
