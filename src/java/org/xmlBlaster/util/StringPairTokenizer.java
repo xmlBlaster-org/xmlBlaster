@@ -399,7 +399,7 @@ public class StringPairTokenizer {
     * Fails if key contains token "&#061;"
     * and fails if value contains token "&#034;" 
     * @param csv
-    * @return
+    * @return never null
     */
    public static Map<String, String> CSVToMap(String csv) {
       if (csv == null || csv.length() < 1)
