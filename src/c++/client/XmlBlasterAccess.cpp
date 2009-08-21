@@ -194,7 +194,7 @@ void XmlBlasterAccess::setCallbackDispatcherActive(bool isActive)
    connectQos_->getCbAddress()->setDispatcherActive(isActive);
 }
 
-string XmlBlasterAccess::sendAdministrativeCommand(const string &command)
+string XmlBlasterAccess::sendAdministrativeCommand(const string &command, PublishQos *publishQosP)
 {
    bool isGet = command.find("get ") == 0 || command.find("GET ") == 0;
    bool isSet = command.find("set ") == 0 || command.find("SET ") == 0;
@@ -203,8 +203,7 @@ string XmlBlasterAccess::sendAdministrativeCommand(const string &command)
    if (isSet || (!isGet && cmd.find("=") != string::npos)) {
       string oid = string("__cmd:") + cmd;
       PublishKey  key(global_, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
-      PublishQos  qos(global_);
-      MessageUnit msgUnit(key, "", qos);
+      MessageUnit msgUnit(key, "", ( publishQosP ) ? *publishQosP : PublishQos(global_) );
       try {
          PublishReturnQos ret = publish(msgUnit);
          if (log_.trace()) log_.trace(ME, "Send '" + cmd + " '");

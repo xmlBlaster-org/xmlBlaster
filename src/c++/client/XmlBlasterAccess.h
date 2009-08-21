@@ -390,10 +390,11 @@ public:
     *        The "__cmd:" is added by us
     *        To enforce a getter or setter you can write "get client/joe/?dispatcherActive" or
     *        "set client/joe/?dispatcherActive=false"
+    * @param  publishQosP optional Qos, e.g. to set persistance for set command 
     * @return When setting a value you get the returned state, else the retrieved data
     * @throws XmlBlasterException on problems
     */
-   std::string sendAdministrativeCommand(const std::string &command);
+   std::string sendAdministrativeCommand(const std::string &command, org::xmlBlaster::client::qos::PublishQos *publishQosP = (org::xmlBlaster::client::qos::PublishQos *)0);
 
    /**
     * This is the callback method invoked from xmlBlaster
