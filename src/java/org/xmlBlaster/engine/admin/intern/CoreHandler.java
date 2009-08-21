@@ -474,7 +474,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             }
          }
          // for property '?exit=-1' the setExit is not found as no getExit exist, so try again
-         if (argValuesAsStrings.length > 0 && "exit".equals(property)) {
+         if (argValuesAsStrings != null && argValuesAsStrings.length > 0 && "exit".equals(property)) {
             method = aClass.getMethod("setExit", new Class[] { java.lang.String.class }); // call requestBroker.setExit(String)
          }
          
@@ -494,10 +494,14 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
                }
                obj = ret;
             }
+            //else if (obj instanceof Long) {
+            //	// clearCallbackQueue returns number of cleared entries
+            //}
          }
          return obj;
       }
       catch (Exception e) {
+    	  e.printStackTrace();
          if (e instanceof XmlBlasterException) throw (XmlBlasterException)e;
          if (log != null && aClass != null && argValuesAsStrings != null && argValuesAsStrings.length > 0 &&
              argValuesAsStrings[0] != null) {
