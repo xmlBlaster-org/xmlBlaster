@@ -200,7 +200,7 @@ string XmlBlasterAccess::sendAdministrativeCommand(const string &command, Publis
    bool isSet = command.find("set ") == 0 || command.find("SET ") == 0;
    const string cmd = ((isGet || isSet)) ? command.substr(4) : command;
    
-   if (isSet || (!isGet && cmd.find("=") != string::npos)) {
+   if (publishQosP ||(isSet || (!isGet && cmd.find("=") != string::npos)) ) {
       string oid = string("__cmd:") + cmd;
       PublishKey  key(global_, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
       MessageUnit msgUnit(key, "", ( publishQosP ) ? *publishQosP : PublishQos(global_) );
