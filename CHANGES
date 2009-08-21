@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17739 NPE for set administrative command (CoreHandler.java)
+
  o r17737 XmlBlasterAccess.java changed behaviour:
           On toDead() the connect() method now throws a XmlBlasterException of type COMMUNICATION_NOCONNECTION_DEAD
 
