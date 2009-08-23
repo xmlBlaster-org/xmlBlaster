@@ -203,7 +203,8 @@ string XmlBlasterAccess::sendAdministrativeCommand(const string &command, Publis
    if (publishQosP ||(isSet || (!isGet && cmd.find("=") != string::npos)) ) {
       string oid = string("__cmd:") + cmd;
       PublishKey  key(global_, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
-      MessageUnit msgUnit(key, "", ( publishQosP ) ? *publishQosP : PublishQos(global_) );
+      PublishQos qos(global_);
+      MessageUnit msgUnit(key, "", ( publishQosP ) ? *publishQosP : qos );
       try {
          PublishReturnQos ret = publish(msgUnit);
          if (log_.trace()) log_.trace(ME, "Send '" + cmd + " '");
