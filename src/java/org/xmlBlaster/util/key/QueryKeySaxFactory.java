@@ -274,20 +274,20 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
 
          sb.append(offset).append("<key");
       if (queryKeyData.getOid() != null)
-         sb.append(" oid='").append(queryKeyData.getOid()).append("'");
+         sb.append(" oid='").appendAttributeEscaped(queryKeyData.getOid()).append("'");
       if (queryKeyData.getContentMime() != null && !queryKeyData.getContentMime().equals(KeyData.CONTENTMIME_DEFAULT))
-         sb.append(" contentMime='").append(queryKeyData.getContentMime()).append("'");
+         sb.append(" contentMime='").appendAttributeEscaped(queryKeyData.getContentMime()).append("'");
       if (queryKeyData.getContentMimeExtended() != null && !queryKeyData.getContentMimeExtended().equals(KeyData.CONTENTMIMEEXTENDED_DEFAULT))
-         sb.append(" contentMimeExtended='").append(queryKeyData.getContentMimeExtended()).append("'");
+         sb.append(" contentMimeExtended='").appendAttributeEscaped(queryKeyData.getContentMimeExtended()).append("'");
       if (queryKeyData.getDomain() != null && queryKeyData.getDomain().length() > 0)
-         sb.append(" domain='").append(queryKeyData.getDomain()).append("'");
+         sb.append(" domain='").appendAttributeEscaped(queryKeyData.getDomain()).append("'");
       if (queryKeyData.getQueryType() != null && !Constants.EXACT.equals(queryKeyData.getQueryType()))
          sb.append(" queryType='").append(queryKeyData.getQueryType()).append("'");
 
       boolean isClosed = false;
       if (queryKeyData.getQueryString() != null) {
          if (!isClosed) { sb.append(">"); isClosed=true; }
-         sb.append(offset).append(Constants.INDENT).append(queryKeyData.getQueryString());
+         sb.append(offset).append(Constants.INDENT).appendEscaped(queryKeyData.getQueryString());
       }
       AccessFilterQos[] list = queryKeyData.getAccessFilterArr();
       for (int ii=0; list != null && ii<list.length; ii++) {
