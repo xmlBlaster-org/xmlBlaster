@@ -1,5 +1,7 @@
 package org.xmlBlaster.util.protocol.xmlrpc;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
@@ -38,6 +40,40 @@ public class XmlRpcClientFactory {
    public final static XmlRpcClient getXmlRpcClient(Global glob, XmlRpcUrl xmlRpcUrl, AddressBase address, boolean useCDATA) throws MalformedURLException, XmlBlasterException {
       XmlRpcClient xmlRpcClient = new XmlRpcClient();
       useCDATA = address.getEnv("useCDATA", useCDATA).getValue();
+
+      String transportFactoryName = address.getEnv("transportFactory", "").getValue();
+      if (transportFactoryName.trim().length() > 1) {
+         log.info("Going to initialize with transport factory " + transportFactoryName);
+         try {
+            Class<XmlRpcTransportFactory> 
+               forName = (Class<XmlRpcTransportFactory>) Class.forName(transportFactoryName.trim());
+            Constructor<XmlRpcTransportFactory> constr = forName.getConstructor(XmlRpcClient.class);
+            XmlRpcTransportFactory
+               transportFactory = constr.newInstance(xmlRpcClient);
+            xmlRpcClient.setTransportFactory(transportFactory);
+         }
+         catch (ClassNotFoundException e) {
+            log.severe("Exception " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+         }
+         catch (NoSuchMethodException e) {
+            log.severe("Exception " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+         }
+         catch (InstantiationException e) {
+            log.severe("Exception " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+         }
+         catch (InvocationTargetException e) {
+            log.severe("Exception " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+         }
+         catch (IllegalAccessException e) {
+            log.severe("Exception " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+         }
+         
+      }
       
       XblWriterFactory writerFactory = new XblWriterFactory(useCDATA);
       xmlRpcClient.setXmlWriterFactory(writerFactory);
@@ -108,6 +144,7 @@ public class XmlRpcClientFactory {
       XmlRpcTransportFactory transportFactory = xmlRpcClient.getTransportFactory();
       
       if (transportFactory instanceof XmlRpcSun15HttpTransportFactory) {
+         log.info("Going to set proxy for transport factory for " + transportFactory.getClass().getName());
          XmlRpcSun15HttpTransportFactory trFact = (XmlRpcSun15HttpTransportFactory)transportFactory;
          if (proxyHost != null) {
             if (proxyPort == null)
@@ -122,6 +159,9 @@ public class XmlRpcClientFactory {
             else
                log.warning("The SSL Socket Factory was null but SSL is required");
          }
+      }
+      else {
+         log.info("The transport factory is of type '" + transportFactory.getClass().getName() + "' which is not pf type XmlRpcSun15HttpTransportFactory");
       }
       
       return xmlRpcClient;

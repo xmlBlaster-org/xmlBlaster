@@ -23,6 +23,8 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.XMLConstants;
 
@@ -31,6 +33,87 @@ import javax.xml.XMLConstants;
  * later.
  */
 public class XblWriterImpl implements XMLWriter {
+   
+   private class FineWriter extends Writer {
+    
+      private Writer w;
+      private StringBuffer buf;
+      
+      public FineWriter(Writer w) {
+         this.w = w;
+         buf = new StringBuffer(512);
+      }
+      private void flushLog() {
+         log.fine(buf.toString());
+         buf = new StringBuffer(512);
+      }
+      
+      public Writer append(char c) throws IOException {
+         buf.append(c);
+         return w.append(c);
+      }
+
+      public Writer append(CharSequence csq, int start, int end)
+            throws IOException {
+         buf.append(csq, start, end);
+         return w.append(csq, start, end);
+      }
+
+      public Writer append(CharSequence csq) throws IOException {
+         buf.append(csq);
+         return w.append(csq);
+      }
+
+      public void close() throws IOException {
+         flushLog();
+         w.close();
+      }
+
+      public boolean equals(Object obj) {
+         return w.equals(obj);
+      }
+
+      public void flush() throws IOException {
+         flushLog();
+         w.flush();
+      }
+
+      public int hashCode() {
+         return w.hashCode();
+      }
+
+      public String toString() {
+         return w.toString();
+      }
+
+      public void write(char[] cbuf, int off, int len) throws IOException {
+         buf.append(new String(cbuf, off, len));
+         w.write(cbuf, off, len);
+      }
+
+      public void write(char[] cbuf) throws IOException {
+         buf.append(new String(cbuf));
+         w.write(cbuf);
+      }
+
+      public void write(int c) throws IOException {
+         buf.append((char)c);
+         w.write(c);
+      }
+
+      public void write(String str, int off, int len) throws IOException {
+         buf.append(str, off, len);
+         w.write(str, off, len);
+      }
+
+      public void write(String str) throws IOException {
+         buf.append(str);
+         w.write(str);
+      }
+   }
+   
+   private final static Logger log = Logger.getLogger(XblWriterImpl.class.getName());
+   
 	private static final int STATE_OUTSIDE = 0;
 	private static final int STATE_IN_START_ELEMENT = 1;
 	private static final int STATE_IN_ELEMENT = 2;
@@ -62,7 +145,10 @@ public class XblWriterImpl implements XMLWriter {
 	/** <p>Sets the JaxbXMLSerializers Writer.</p>
 	 */
 	public void setWriter(Writer pWriter) {
-		w = pWriter;
+	   if (log.isLoggable(Level.FINE))
+	      w = new FineWriter(pWriter);
+	   else
+	      w = pWriter;
 	}
 
 	/** <p>Returns the JaxbXMLSerializers Writer.</p>
@@ -369,7 +455,7 @@ public class XblWriterImpl implements XMLWriter {
       if (needsEncoding)
          wr.write("]]>");
    }
-   
+
 	private void writeCData(String v) throws java.io.IOException {
 		int len = v.length();
 		for (int j = 0;  j < len;  j++) {
