@@ -59,7 +59,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    private final static String AUTH = "authenticate.";
    private final static String XMLBLASTER = "xmlBlaster.";
    public final static String XML_SCRIPT_INVOKE = "xmlScriptInvoke";
-   
+   /**
+    * This flag is used since it may be necessary to throw away the connection if a proxy or a
+    * gateway is somehow holding the session and after a failure constantly throwing exceptions.
+    */
+   private boolean forceNewConnectionOnReconnect = true;
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     */
@@ -127,10 +131,12 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
-      if (this.xmlRpcClient != null) {
-         return;
+      
+      if (!forceNewConnectionOnReconnect) {
+         if (this.xmlRpcClient != null) {
+            return;
+         }
       }
-
       glob.addObjectEntry("xmlrpc3-connection", this);
 
       this.clientAddress = address;
@@ -157,6 +163,15 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
    }
 
+   /**
+    * This is used by the callback driver in case the xmlScript has been set to true (for update responses
+    * and ca
+    * @return
+    */
+   public XmlScriptSerializer getSerializer() {
+      return serializer;
+   }
+   
    public void resetConnection() {
       log.fine("XmlRpcCLient is initialized, no connection available");
       this.xmlRpcClient = null;
@@ -639,10 +654,24 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
    }
 
-
    public static XmlBlasterException extractXmlBlasterException(Global glob, XmlRpcException e, String txt) {
       // return extractXmlBlasterException(glob, e, ErrorCode.INTERNAL_UNKNOWN, txt);
-      return extractXmlBlasterException(glob, e, ErrorCode.COMMUNICATION_NOCONNECTION, txt);
+      StringBuffer buf = new StringBuffer();
+      buf.append("XmlRpcException: \n");
+      buf.append("code='").append(e.code).append("'");
+      if (e.linkedException != null)
+         buf.append("linked exception: '").append(e.linkedException).append("'\n");
+      if (e.getCause() != null)
+         buf.append("cause (ex): '").append(e.getCause()).append("'\n");
+      buf.append("localizedMessage: '").append(e.getLocalizedMessage()).append("'");
+      buf.append("message: '").append(e.getMessage()).append("'");
+      buf.append("toString: '").append(e.toString()).append("'");
+      log.severe(buf.toString());
+      ErrorCode errCode = ErrorCode.COMMUNICATION_NOCONNECTION;
+      int code = e.code;
+      if (code >= 400 && code < 500 && code != 408)
+         errCode = ErrorCode.USER_MESSAGE_INVALID;
+      return extractXmlBlasterException(glob, e, errCode, txt);
    }
    
    /**
@@ -677,7 +706,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
       else
          // ex = XmlBlasterException.parseToString(glob, e.toString(), fallback);
-         ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, txt, "", e);
+         if (fallback == null)
+            fallback = ErrorCode.COMMUNICATION_NOCONNECTION;
+         ex = new XmlBlasterException(glob, fallback, txt, "", e);
 
       ex.isServerSide(true);
       return ex;

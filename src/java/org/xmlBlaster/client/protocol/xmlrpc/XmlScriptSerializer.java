@@ -48,7 +48,7 @@ public class XmlScriptSerializer {
     * @exception XmlBlasterException if login fails
     */
    public String getConnect(String connectQos) throws XmlBlasterException {
-      return getLiteral(connectQos, MethodName.CONNECT);
+      return getLiteral(connectQos, MethodName.CONNECT, MsgInfo.INVOKE_BYTE);
    }
 
     /**
@@ -57,7 +57,7 @@ public class XmlScriptSerializer {
     * @param sessionId The client sessionId
     */       
    public String getDisconnect(String qos) throws XmlBlasterException {
-      return getLiteral(qos, MethodName.DISCONNECT);
+      return getLiteral(qos, MethodName.DISCONNECT, MsgInfo.INVOKE_BYTE);
    }
 
    /**
@@ -84,14 +84,14 @@ public class XmlScriptSerializer {
     * 
     */
    public String getPublishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      return getLiteral(msgUnitArr, MethodName.PUBLISH_ARR);
+      return getLiteral(msgUnitArr, MethodName.PUBLISH_ARR, MsgInfo.INVOKE_BYTE);
    }
 
    /**
     * 
     */
    public String getPublishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      return getLiteral(msgUnitArr, MethodName.PUBLISH_ONEWAY);
+      return getLiteral(msgUnitArr, MethodName.PUBLISH_ONEWAY, MsgInfo.INVOKE_BYTE);
    }
 
    /**
@@ -115,31 +115,40 @@ public class XmlScriptSerializer {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String getPing(String qos) throws XmlBlasterException {
-      return getLiteral(qos, MethodName.PING);
+      return getLiteral(qos, MethodName.PING, MsgInfo.INVOKE_BYTE);
    }
    
+   public String getPingResponse(String qos) throws XmlBlasterException {
+      return getLiteral(qos, MethodName.PING, MsgInfo.RESPONSE_BYTE);
+   }
    
-   // THESE MUST BE IMPLEMENTED !!!!
+   public String getUpdateResponse(String ok) throws XmlBlasterException {
+      return getLiteral(ok, MethodName.UPDATE, MsgInfo.RESPONSE_BYTE);
+   }
    
-   private String getLiteral(String qos, MethodName methodName) throws XmlBlasterException {
+   public String getUpdateException(String ex) throws XmlBlasterException {
+      return getLiteral(ex, MethodName.UPDATE, MsgInfo.EXCEPTION_BYTE);
+   }
+   
+   private String getLiteral(String qos, MethodName methodName, byte typeByte) throws XmlBlasterException {
       MsgUnitRaw[] msgArr = { new MsgUnitRaw(null, (byte[])null, qos) };
-      return getLiteral(msgArr, methodName);
+      return getLiteral(msgArr, methodName, typeByte);
    }
 
    private String getLiteral(String key, String qos, MethodName methodName) throws XmlBlasterException {
       MsgUnitRaw[] msgArr = { new MsgUnitRaw(key, (byte[])null, qos) };
-      return getLiteral(msgArr, methodName);
+      return getLiteral(msgArr, methodName, MsgInfo.INVOKE_BYTE);
    }
 
-   private String getLiteral(MsgUnitRaw[] msgArr, MethodName methodName) throws XmlBlasterException {
-      MsgInfo msgInfo = new MsgInfo(this.glob, MsgInfo.INVOKE_BYTE, methodName, secretSessionId, progressListener);
+   private String getLiteral(MsgUnitRaw[] msgArr, MethodName methodName, byte typeByte) throws XmlBlasterException {
+      MsgInfo msgInfo = new MsgInfo(this.glob, typeByte, methodName, secretSessionId, progressListener);
       msgInfo.addMessage(msgArr);
       msgInfo.createRequestId(null);
       return parser.toLiteral(msgInfo);
    }
 
    private String getLiteral(MsgUnitRaw msgUnit, MethodName methodName) throws XmlBlasterException {
-      return getLiteral(new MsgUnitRaw[] { msgUnit }, methodName);
+      return getLiteral(new MsgUnitRaw[] { msgUnit }, methodName, MsgInfo.INVOKE_BYTE);
    }
    
 }

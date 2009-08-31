@@ -10,7 +10,6 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
 import org.apache.xmlrpc.server.XmlRpcHttpServer;
-import org.apache.xmlrpc.server.XmlRpcServer;
 import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
@@ -66,7 +65,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
       private XmlRpcConnection conn;
       
       public CbRunner() throws XmlBlasterException {
-         XmlRpcConnection tmpConn = (XmlRpcConnection)glob.getObjectEntry("xmlrpc3-connection");
+         XmlRpcConnection tmpConn = getXmlRpcConnection();
          conn = tmpConn.getCopy();
       }
       
@@ -120,11 +119,22 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
    private WebServer webServer = null;
    protected PluginInfo pluginInfo;
 
-   private CbRunner singleChRunner; 
+   private CbRunner singleChRunner;
 
    /** You must call initialize after constructing me */
    public XmlRpcCallbackServer() {}
 
+   
+   private XmlRpcConnection getXmlRpcConnection() {
+      return (XmlRpcConnection)glob.getObjectEntry("xmlrpc3-connection");
+   }
+
+   private XmlScriptSerializer getSerializer() {
+      XmlRpcConnection conn = getXmlRpcConnection();
+      if (conn == null)
+         return null;
+      return conn.getSerializer();
+   }
    
    /** Enforced by I_Plugin */
    public String getType() {
@@ -162,6 +172,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
 
       PropBoolean tmp = callbackAddress.getEnv("singleChannel", false);
       boolean useCDATA = callbackAddress.getEnv("useCDATA", false).getValue();
+
       if (!tmp.getValue())
          createCallbackServer(useCDATA);
       else {
@@ -190,7 +201,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
     * @exception XmlBlasterException if the BlasterCallback server can't be created
     *            id="CallbackCreationError"
     */
-   public void createCallbackServer(boolean useCDATA) throws XmlBlasterException {
+   private void createCallbackServer(boolean useCDATA) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("createCallbackServer() ...");
 
       this.xmlRpcUrlCallback = new XmlRpcUrl(glob, this.callbackAddress, false, DEFAULT_CALLBACK_PORT);
@@ -320,6 +331,15 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
       if (ret != null && XmlRpcCallbackImpl.INHIBITED_CALLBACK_EXCEPTION.equals(ret)) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_USER_HOLDBACK, ME, "Exception in Client Callback Method. The cause has been inhibited on the client side by the 'inhibitCbExceptions' flag. You can look at the client logs");
       }
+      
+      try {
+         XmlScriptSerializer serializer = getSerializer();
+         if (serializer != null)
+            ret = serializer.getUpdateResponse(ret);
+      }
+      catch (Exception ex) {
+         log.severe("Could not process update return due to " + ex.getMessage());
+      }
       return ret;
    }
 
@@ -346,9 +366,16 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
     * Ping to check if the callback server is alive. 
     * @see org.xmlBlaster.protocol.I_CallbackDriver#ping(String)
     */
-   public String ping(String str)
-   {
-      return Constants.RET_OK;
+   public String ping(String str) {
+      try {
+         XmlScriptSerializer serializer = getSerializer();
+         if (serializer != null)
+            return serializer.getPingResponse(Constants.RET_OK);
+         return Constants.RET_OK;
+      }
+      catch (Exception ex) {
+         return null;
+      }
    }
 } // class XmlRpcCallbackServer
 
