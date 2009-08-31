@@ -190,9 +190,21 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
 
             if (log.isLoggable(Level.FINE)) log.fine("Send an update to the client ...");
 
-            retVal[ii] = (String)xmlRpcClient.execute("$default.update", args);
+            String tmp = (String)xmlRpcClient.execute("$default.update", args);
 
-            if (log.isLoggable(Level.FINE)) log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
+            final String XMLSCRIPT_UPDATE_TAG_START = "<update type='R'>";
+            final String XMLSCRIPT_UPDATE_TAG_END = "</update>";
+            int pos = tmp.indexOf(XMLSCRIPT_UPDATE_TAG_START);
+            if (pos > -1) {
+               tmp = tmp.substring(pos + XMLSCRIPT_UPDATE_TAG_START.length());
+               pos = tmp.indexOf(XMLSCRIPT_UPDATE_TAG_END);
+               if (pos > -1)
+                  tmp = tmp.substring(0, pos);
+               tmp = tmp.trim();
+            }
+            retVal[ii] = tmp;
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
          return retVal;
       }
@@ -291,7 +303,20 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
       try {
          Vector args = new Vector();
          args.addElement(qos);
-         return (String)xmlRpcClient.execute("$default.ping", args);
+         String ret = (String)xmlRpcClient.execute("$default.ping", args);
+         
+         final String XMLSCRIPT_PING_TAG_START = "<ping type='R'>";
+         final String XMLSCRIPT_PING_TAG_END = "</ping>";
+         int pos = ret.indexOf(XMLSCRIPT_PING_TAG_START);
+         if (pos > -1) {
+            ret = ret.substring(pos + XMLSCRIPT_PING_TAG_START.length());
+            pos = ret.indexOf(XMLSCRIPT_PING_TAG_END);
+            if (pos > -1)
+               ret = ret.substring(0, pos);
+            ret = ret.trim();
+         }
+
+         return ret;
       }
       catch (XmlRpcException ex) {
          String str = "Sending ping to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
