@@ -433,6 +433,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    public boolean receiveReply(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       if (log.isLoggable(Level.FINE)) log.fine("Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
+      top: // used for the break in case we are on the client side when an invocation is done
+      
       if (receiver.isInvoke()) {
          // handling invocations ...
 
@@ -445,6 +447,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             xmlBlasterImpl.publishOneway(getAddressServer(), receiver.getSecretSessionId(), arr);
          }
          else if (MethodName.PUBLISH == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
@@ -498,6 +504,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             }
          }
          else if (MethodName.GET == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
@@ -522,6 +532,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             }
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
@@ -529,6 +543,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
@@ -536,6 +554,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
@@ -543,9 +565,17 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.CONNECT == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             return false;
          }
          else if (MethodName.DISCONNECT == receiver.getMethodName()) {
+            if (!glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               break top;
+            }
             return false;
          }
          else {

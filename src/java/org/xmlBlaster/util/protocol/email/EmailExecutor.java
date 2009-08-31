@@ -442,6 +442,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
                   msgInfos[k].setSecretSessionId(msgInfo.getSecretSessionId());
             }
          } catch (Throwable e) {
+            if (log.isLoggable(Level.FINE))
+               e.printStackTrace();
             log.warning("Can't process email data from "
                   + pop3Url + ": " + e.toString());
             return;
