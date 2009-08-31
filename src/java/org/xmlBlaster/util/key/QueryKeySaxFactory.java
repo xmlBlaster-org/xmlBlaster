@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 
@@ -267,7 +268,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String writeObject(QueryKeyData queryKeyData, String extraOffset) {
-      StringBuffer sb = new StringBuffer(256);
+      XmlBuffer sb = new XmlBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
