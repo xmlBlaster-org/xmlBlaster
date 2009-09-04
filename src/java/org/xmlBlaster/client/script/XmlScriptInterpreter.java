@@ -16,6 +16,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.EncodableData;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -122,6 +123,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    // private boolean inQos, inKey, inContent;
    private int inQos, inKey, inContent, inCDATA;
    private String link;
+   private String contentUrl; // file:/tmp/demo.png
    private String sessionId;
    private String requestId;
    private byte type; // I=invoke R=response E=exception
@@ -361,6 +363,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          String sizeStr = atts.getValue("size"); // long
          String type = atts.getValue("type"); // byte[]
          String encoding = atts.getValue("encoding"); // base64
+         this.contentUrl = atts.getValue("url"); // file:/tmp/demo.png
          this.contentData = new EncodableData(CONTENT_TAG, null, type, encoding);
          try {
             if (sizeStr != null) {
@@ -600,9 +603,12 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 
    protected MsgUnit buildMsgUnit() throws XmlBlasterException {
       byte[] currentContent = null;
-      if (this.link == null)
-         currentContent = (this.contentData == null) ? new byte[0] : this.contentData.getBlobValue(); 
-      else {
+      if (this.contentUrl != null) {
+    	  if (this.contentUrl.startsWith("file://")) // TODO: Support all URLS
+    		  this.contentUrl = this.contentUrl.substring("file://".length());
+    	  currentContent = FileLocator.readFile(this.contentUrl);
+      }
+      else if (this.link != null) {
          if (this.attachments != null && this.attachments.containsKey(this.link)) {
             Object obj = this.attachments.get(this.link);
             if (obj instanceof String) {
@@ -620,6 +626,10 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
             // throw exception
          }
       }
+      else {
+    	  currentContent = (this.contentData == null) ? new byte[0] : this.contentData.getBlobValue();
+      }
+
       MsgUnit msgUnit = new MsgUnit(this.key.toString(),
          currentContent, this.qos.toString());
       return msgUnit;
