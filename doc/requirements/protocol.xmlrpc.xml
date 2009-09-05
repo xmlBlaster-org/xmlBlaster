@@ -13,7 +13,12 @@
       we provide client examples in C, Perl, PHP, Python, Macromedia Flash, CSharp (C#) and Java which use
       XmlRpc to connect to xmlBlaster. Please see <i>xmlBlaster/demo/javaclients</i>.
       </p>
-      <p><b>This documentation is under construction</b></p>
+      <p>
+         It is now possible to run xmlrpc over https and through an http Proxy or a reverse Proxy. You could
+	 for example choose to run HTTPS to an Apache Server configured as a reverse proxy where the connection
+	 to the XmlBlaster Server is done either by HTTP or by HTTPS. In the later case you can let the
+	 XmlBlaster Server take care about the authentication of the client.
+      </p>
    </description>
 
    <example lang="Java" type="HTML">
@@ -62,7 +67,7 @@
                 </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
-
+<!--
          <tr>
             <td>plugin/xmlrpc/debug</td>
             <td>false</td>
@@ -70,7 +75,7 @@
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
-
+-->
          <tr>
             <td>plugin/xmlrpc/useCDATA</td>
             <td>false</td>
@@ -86,6 +91,118 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
+         <tr>
+            <td>plugin/xmlrpc/responseTimeout</td>
+            <td>0</td>
+            <td>
+	    	The time it shall wait in milliseconds before interrupting the request. If zero
+		or negative it is not set.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/SoTimeout</td>
+            <td>0</td>
+            <td>
+	    	If zero or negative it is not set. It has the same meaning as for the SOCKET Protocol.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/compress/type</td>
+            <td></td>
+            <td>
+	       Its only possible value is either an empty string (unset) or 'zlib'. Compression will be
+	       done on the protocol layer. You only need to define this on the client side, the server
+	       will then recognize if the client is expecting compressed or uncompressed data.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/proxyHost</td>
+            <td>null</td>
+            <td>
+	    	If you use a proxy this specifies the hostname or IP of the host to use. Note that if
+		you have not specified this property, it will be implicitly set to localhost if you
+		specified <i>proxyPort</i>.
+	    </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/proxyPort</td>
+            <td>null</td>
+            <td>
+	       If you set this property the protocol will use a proxy, even if you did not explicitly
+	       specify a proxyPort or the proxySet property. If you set this property and the proxyHost
+	       property is not explicitly set, the later will be set to <i>localhost</i>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/proxyHostSSL</td>
+            <td></td>
+            <td>
+	       You specify this property only if you want HTTPS Traffic to be directed to a proxy
+	       different from the HTTP Proxy. If you do not specify anything here, then the same
+	       host will be used for HTTP and HTTPS.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/proxyPortSSL</td>
+            <td></td>
+            <td>
+	       You specify this property only if you want HTTPS Traffic to be directed to a proxy
+	       port different from the HTTP Proxy port. If you do not specify anything here, 
+	       then the same port will be used for HTTP and HTTPS.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/basicUserName</td>
+            <td></td>
+            <td>
+	       If basic authentication is activated on the server side (for example in a reverse proxy),
+	       then you can pass that username here.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/basicPassword</td>
+            <td></td>
+            <td>
+	       If basic authentication is activated on the server side (for example in a reverse proxy),
+	       then you can pass the password to be used here.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/xmlrpc/basicEncoding</td>
+            <td></td>
+            <td>
+	       If basic authentication is activated on the server side (for example in a reverse proxy),
+	       then you can pass the encoding to be used here.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+<!--
+         <tr>
+            <td>plugin/xmlrpc/userAgent</td>
+            <td>false</td>
+            <td>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+-->
       </table>
    </configuration>
    <configuration where="client">
