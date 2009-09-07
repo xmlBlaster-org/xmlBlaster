@@ -231,19 +231,23 @@ public class SessionNameTest extends TestCase {
       }
 
       try {
+         // missing clusterNodeId is similar to relative addressing,
+         // changed 2009-05-21 Marcel to not throw exception anymore
          new SessionName(glob, "/node//joe/2");
-         fail("testParse failed, \"/node//joe/2\" should throw an exception.");
+         System.out.println("SUCCESS: \"/node//joe/2\" missing clusterNodeId is similar to relative addressing.");
       }
       catch (IllegalArgumentException e) {
-         System.out.println("SUCCESS: " + e.toString());
+         fail("testParse failed: " + e.toString());
       }
          
       try {
+         // missing clusterNodeId is similar to relative addressing,
+         // changed 2009-05-21 Marcel to not throw exception anymore
          new SessionName(glob, "/node//client/joe/2");
-         fail("testParse failed, \"/node//client/joe/2\" should throw an exception.");
+         System.out.println("SUCCESS: /node//client/joe/2 missing clusterNodeId is similar to relative addressing.");
       }
       catch (IllegalArgumentException e) {
-         System.out.println("SUCCESS: " + e.toString());
+         fail("testParse failed: " + e.toString());
       }
          
       System.out.println("***SessionNameTest: testParse [SUCCESS]");
