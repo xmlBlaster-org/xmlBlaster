@@ -31,7 +31,8 @@ public class XblWebServer extends WebServer {
          return socketUrl.createServerSocketSSL(backlog, addressBase);
       }
       catch (XmlBlasterException ex) {
-         throw new IOException(ex.getMessage(), ex);
+         ex.printStackTrace();
+         throw new IOException(ex.getMessage()); // JDK1.6: , ex);
       }
    }
 
