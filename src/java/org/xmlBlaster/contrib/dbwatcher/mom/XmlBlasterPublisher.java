@@ -656,6 +656,9 @@ public class XmlBlasterPublisher implements
       }
    }
 
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
    /**
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */

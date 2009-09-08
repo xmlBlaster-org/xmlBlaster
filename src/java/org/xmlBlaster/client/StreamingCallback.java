@@ -567,6 +567,13 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
       this.initialized = true;
    }
 
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedAlive(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public synchronized void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      log.fine("I am alive and sync now");
+   }
+
    /* (non-Javadoc)
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */

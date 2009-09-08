@@ -327,6 +327,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                       if (oldState == ConnectionStateEnum.ALIVE)
                         ping(); // Force our client connection to POLLING
                    }
+                   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                   }
+                   
                 }, fireInitial);
              }
             /* done by fireInitial
@@ -721,6 +724,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       I_ConnectionStateListener connectionListener = this.connectionStateListener;
       if (connectionListener != null)
          connectionListener.reachedAlive(oldState, connection);
+   }
+
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
    }
 
    /**

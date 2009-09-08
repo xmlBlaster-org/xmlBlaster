@@ -248,6 +248,9 @@ public class TestTailback extends TestCase implements I_ConnectionStateListener
       log.info("I_ConnectionStateListener-"+connection.getId()+": We were lucky, reconnected to xmlBlaster");
    }
 
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       if (log!=null) log.warning("I_ConnectionStateListener-"+connection.getId()+": Lost connection to xmlBlaster");
    }

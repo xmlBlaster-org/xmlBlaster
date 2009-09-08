@@ -657,6 +657,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
    }
 
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
    /**
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */

@@ -174,6 +174,9 @@ public class ServerHelper {
                log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " +
                                      ConnectionStateEnum.DEAD + ": Lost connection to " + connection.getGlobal().getId());
             }
+            public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+            }
+
          });
 
       ConnectQos qos = new ConnectQos(glob, clientName, "secret");

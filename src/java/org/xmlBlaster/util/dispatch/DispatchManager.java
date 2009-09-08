@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
@@ -322,6 +323,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       // 3. Deliver. Will be delayed if burst mode timer is activated, will switch to sync mode if necessary
       activateDispatchWorker();
+   }
+
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+      for (int i=0; i<listeners.length; i++) {
+         listeners[i].toAlive(this, oldState);
+      }
    }
 
    /** Call by DispatchConnectionsHandler on state transition */
@@ -642,6 +650,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
             log.severe(ME+": Burst mode timer was activated and we switched to synchronous delivery" +
                           " - handling of this situation is not coded yet");
          removeBurstModeTimer();
+
+         // 1. We allow a client to intercept and for example destroy all entries in the queue
+         I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+         for (int i=0; i<listeners.length; i++)
+            listeners[i].toAliveSync(this, ConnectionStateEnum.ALIVE);
       }
    }
 

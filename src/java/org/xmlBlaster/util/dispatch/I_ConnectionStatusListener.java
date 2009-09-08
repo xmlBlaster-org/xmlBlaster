@@ -18,6 +18,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 public interface I_ConnectionStatusListener
 {
    void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState);
+   void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState);
    void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState);
    /**
     * @param dispatchManager

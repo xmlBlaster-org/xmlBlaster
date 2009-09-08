@@ -294,6 +294,9 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
       doSubscribe();    // initialize on startup and on reconnect
    }
 
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warning("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
    }

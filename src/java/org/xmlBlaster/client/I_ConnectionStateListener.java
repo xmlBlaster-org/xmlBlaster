@@ -50,6 +50,18 @@ public interface I_ConnectionStateListener
    void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
 
    /**
+    * 
+    * Invoked when the dispatcher goes to synch again after having delivered entries which where
+    * in the queue when the state changed to ALIVE. Note that this could take some time or in
+    * the worst case it could never been invoked if the queue is never completely processed.
+    * 
+    * @param oldState is always ALIVE.
+    * @param connection
+    */
+   void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
+
+
+   /**
     * This is the callback method invoked from XmlBlasterAccess
     * informing the client that the connection state has changed to POLLING.
     *

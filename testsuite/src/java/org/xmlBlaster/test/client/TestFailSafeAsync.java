@@ -288,12 +288,15 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
    }
 
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+   
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info("I_ConnectionStateListener: We were lucky, (re)connected to xmlBlaster");
       subscribe();    // initialize subscription again
       reconnected = true;
       allTailbackAreFlushed = true;
    }
-
+   
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       if (log != null) log.warning("I_ConnectionStateListener: Lost connection to xmlBlaster");
       allTailbackAreFlushed = false;

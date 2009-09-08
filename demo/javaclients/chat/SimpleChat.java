@@ -368,6 +368,9 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       else
          log.info("We were lucky, reconnected to xmlBlaster, no backup messages to flush");
    }
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
 
    /**
      * This is the callback method invoked from I_XmlBlasterAccess

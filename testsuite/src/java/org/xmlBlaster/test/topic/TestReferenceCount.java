@@ -265,6 +265,9 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
       log.info("I_ConnectionStateListener-"+connection.getId()+": We were lucky, reconnected to xmlBlaster");
    }
 
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       if (log!=null) log.warning("I_ConnectionStateListener-"+connection.getId()+": Lost connection to xmlBlaster");
    }

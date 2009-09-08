@@ -111,6 +111,9 @@ public class HelloWorld6
                   log.warning("I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD -> Good bye");
                   System.exit(1);
                }
+               public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               }
+
             });
 
          // We connect to xmlBlaster and register the callback handle:

@@ -22,6 +22,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.MsgInterceptor;
@@ -244,10 +245,14 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     * <p />
     * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       doSubscribe();    // initialize on startup and on reconnect
    }
+   
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+   
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warning("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);

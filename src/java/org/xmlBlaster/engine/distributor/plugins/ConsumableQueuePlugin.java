@@ -187,6 +187,9 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
+   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   }
+   
    /**
     * Takes entries from the history queue and distributes it to the dispatcher
     * framework until there are entries available or until the dispatcher framework

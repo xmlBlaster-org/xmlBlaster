@@ -227,6 +227,9 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   }
+
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       doSubscribe();    // initialize subscription
       try {

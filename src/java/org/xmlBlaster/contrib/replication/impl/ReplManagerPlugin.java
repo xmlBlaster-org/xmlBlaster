@@ -1078,6 +1078,9 @@ public class ReplManagerPlugin extends GlobalInfo
    public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
 
+   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   }
+   
    /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, XmlBlasterException)
     */

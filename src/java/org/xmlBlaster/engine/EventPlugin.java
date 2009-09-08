@@ -2452,6 +2452,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.ALIVE);
    }
 
+   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   }
+   
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
@@ -2507,6 +2510,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       connectionStateChange(connection, oldState, ConnectionStateEnum.ALIVE);
+   }
+
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
    }
 
    /**

@@ -155,6 +155,9 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 				}
 			}
 
+		   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+		   }
+
 			public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
 				log.warning("I_ConnectionStateListener.reachedPolling(): No connection to "
 						+ glob.getId() + ", we are polling ...");

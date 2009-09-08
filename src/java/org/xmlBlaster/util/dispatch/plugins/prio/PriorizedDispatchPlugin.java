@@ -484,6 +484,9 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
       changeManagerState(dispatchManager, ConnectionStateEnum.ALIVE, true);
    }
 
+   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   }
+   
    /**
     * Call by DispatchConnectionsHandler on state transition
     * <p />

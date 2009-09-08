@@ -96,6 +96,9 @@ public class LeaveServer {
                         + connection.getGlobal().getId()
                         + " to xmlBlaster is DEAD, doing exit.");
                }
+               public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               }
+
             });
 
             ConnectQos qos = new ConnectQos(glob);

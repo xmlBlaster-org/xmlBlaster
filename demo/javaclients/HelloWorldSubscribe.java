@@ -300,6 +300,9 @@ public class HelloWorldSubscribe implements I_Callback
                log.severe("I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
                System.exit(1);
             }
+            public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+            }
+
          });
 
          // ConnectQos checks -session.name and -passwd from command line

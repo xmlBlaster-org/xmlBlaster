@@ -495,6 +495,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             log.info((num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
             this.dispatchManager.switchToSyncMode();
          }
+         else {
+            if (this.connectionListener != null)
+               this.connectionListener.reachedAliveSync(ConnectionStateEnum.ALIVE, this);
+         }
       }
       else {
          if (this.connectionListener != null) {
@@ -1337,6 +1341,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
    }
 
+   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+      if (this.connectionListener != null) {
+         this.connectionListener.reachedAlive(oldState, this);
+      }
+   }
+   
    /**
     * If we have reconnected to xmlBlaster and the xmlBlaster server instance
     * is another one which does not know our session state and subscribes we need to clear all
@@ -1965,6 +1975,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             }
             public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+            }
+            public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " in sync");
             }
          });
 

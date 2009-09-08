@@ -186,6 +186,9 @@ public class HelloWorld4
                   log.severe("I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
                   System.exit(1);
                }
+               public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               }
+
             });
 
 

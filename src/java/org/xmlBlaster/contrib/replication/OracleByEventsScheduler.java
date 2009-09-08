@@ -87,7 +87,10 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                      log.fine("Checking now Database again. pollInterval=" + this.pollIntervall + " ...");
                   try {
                      OracleByEventsScheduler.registerEvent(conn, this.event);
-                     this.changeDetector.checkAgain(null);
+                     
+                     while (changeDetector.checkAgain(null) > 0) {
+                        Thread.sleep(5L);
+                     }
                      log.fine("scheduler: before blocking " + count);
                      OracleByEventsScheduler.waitForEvent(conn, this.event, this.pollIntervall);
                      log.fine("scheduler: after blocking " + count);

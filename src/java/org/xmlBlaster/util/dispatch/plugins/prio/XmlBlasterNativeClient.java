@@ -117,6 +117,9 @@ public final class XmlBlasterNativeClient implements I_Callback
                             connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
             }
 
+            public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+            }
+
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.warning("I_ConnectionStateListener: No connection to " + connection.getGlobal().getId());
                connected = false;

@@ -225,6 +225,9 @@ public class HelloWorldPublish
                           connection.getGlobal().getId() + " to xmlBlaster is DEAD.");
                   //System.exit(1);
                }
+               public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               }
+
             });
 
          // This listener receives only events from asynchronously send messages from queue.
