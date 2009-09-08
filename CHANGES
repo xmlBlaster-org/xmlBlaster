@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn (JDK >= 1.5 only)
 =======================
 
+ o r17755 Incompatible java client API change: Added I_ConnectionStatusListener#toAliveSync
+          which tells the listener as soon as all client side messages are delivered to the server
+	  and further server calls are synchronous (the returned data is from the real server).
+	  The compiler will tell the places to add this method to your code.
+
  o r17744 fixed XmlBuffer also for the QueryKeyData
 
  o r17739 NPE for set administrative command (CoreHandler.java)
