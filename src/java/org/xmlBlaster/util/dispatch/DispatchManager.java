@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jacorb.security.sas.ISASContext;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
@@ -644,17 +645,20 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (this.syncDispatchWorker == null) this.syncDispatchWorker = new DispatchWorker(glob, this);
 
          this.isSyncMode = true;
-         log.info(ME+": Switched to synchronous message delivery");
+         boolean isAlive = isAlive();
+         log.info(ME+": Switched to synchronous message delivery, inAliveTransition=" + this.inAliveTransition + " isAlive=" + isAlive + " trySyncMode=" + this.trySyncMode);
 
          if (this.timerKey != null)
             log.severe(ME+": Burst mode timer was activated and we switched to synchronous delivery" +
                           " - handling of this situation is not coded yet");
          removeBurstModeTimer();
 
-         // 1. We allow a client to intercept and for example destroy all entries in the queue
-         I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
-         for (int i=0; i<listeners.length; i++)
-            listeners[i].toAliveSync(this, ConnectionStateEnum.ALIVE);
+         //if (isAlive) { // For FailSafePing
+         if (!this.inAliveTransition && isAlive) { // For FailSafeAsync
+            I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+            for (int i=0; i<listeners.length; i++)
+               listeners[i].toAliveSync(this, ConnectionStateEnum.ALIVE);
+         }
       }
    }
 
@@ -745,7 +749,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * @see I_QueuePutListener#putPost(I_QueueEntry[])
     */
    public void putPost(I_QueueEntry[] queueEntries) throws XmlBlasterException {
-      if (!this.isSyncMode) {
+      if (!this.isSyncMode && !this.inAliveTransition) {
          if (this.dispatcherActive) notifyAboutNewEntry();
          if (queueEntries.length > 0 && ((MsgQueueEntry)queueEntries[0]).wantReturnObj()) {
             // Simulate return values, and manipulate missing informations into entries ...
@@ -909,6 +913,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    public boolean isPolling() {
       return this.dispatchConnectionsHandler.isPolling();
+   }
+
+   public boolean isAlive() {
+      return this.dispatchConnectionsHandler.isAlive();
    }
 
    /**

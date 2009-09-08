@@ -1343,7 +1343,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (this.connectionListener != null) {
-         this.connectionListener.reachedAlive(oldState, this);
+         this.connectionListener.reachedAliveSync(oldState, this);
       }
    }
    
