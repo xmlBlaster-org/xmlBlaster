@@ -5,28 +5,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.property.PropString;
-import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.test.Util;
+import junit.framework.TestCase;
+
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.test.MsgInterceptor;
-import junit.framework.*;
+import org.xmlBlaster.test.Util;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.qos.address.Address;
 
 
 /**
@@ -246,11 +246,12 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, reconnected sync to xmlBlaster");
       doSubscribe();    // initialize on startup and on reconnect
    }
    
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
    }
    
 

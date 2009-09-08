@@ -5,30 +5,31 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.property.PropString;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
+import java.util.logging.Logger;
+
+import junit.framework.TestCase;
+
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-
-import org.xmlBlaster.test.Util;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.test.MsgInterceptor;
-import junit.framework.*;
+import org.xmlBlaster.test.Util;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.qos.address.Address;
 
 
 /**
@@ -54,7 +55,6 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
    private static String ME = "TestFailSafeAsync";
    private Global glob;
    private static Logger log = Logger.getLogger(TestFailSafeAsync.class.getName());
-   private boolean messageArrived = false;
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
@@ -70,7 +70,6 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
    private final String contentMime = "text/plain";
 
    private boolean reconnected;
-   private boolean allTailbackAreFlushed;
 
    /** TEST: Sendin 0-19 directly, sending 20-39 to recorder (no connection), sending 40-100 directly */
    private final int maxEntries = 100;
@@ -110,7 +109,6 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       numNormalPublishReceived = 0;
 
       reconnected = false;
-      allTailbackAreFlushed = true;
 
       glob.init(Util.getOtherServerPorts(serverPort));
 
@@ -294,12 +292,10 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       log.info("I_ConnectionStateListener: We were lucky, (re)connected to xmlBlaster");
       subscribe();    // initialize subscription again
       reconnected = true;
-      allTailbackAreFlushed = true;
    }
    
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       if (log != null) log.warning("I_ConnectionStateListener: Lost connection to xmlBlaster");
-      allTailbackAreFlushed = false;
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
@@ -365,8 +361,6 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
          }
          */
 
-         messageArrived = true;
-      
       } // synchronized as we have the client as publisher and the invocation recorder as a publisher
       
       return "";

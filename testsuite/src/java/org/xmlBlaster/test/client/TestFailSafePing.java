@@ -6,28 +6,27 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.client;
 
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.test.MsgInterceptor;
+import org.xmlBlaster.test.Util;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.MsgUnit;
-
-import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.MsgInterceptor;
-import junit.framework.*;
 
 
 /**
@@ -138,6 +137,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
+         log.info("Erased " + arr.length);
       }
       catch(XmlBlasterException e) {
          log.severe("XmlBlasterException: " + e.getMessage());
@@ -227,10 +227,11 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
    }
 
    public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, reconnected sync to xmlBlaster");
       doSubscribe();    // initialize subscription
       try {
          doPublish();
