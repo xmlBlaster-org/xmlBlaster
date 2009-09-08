@@ -81,6 +81,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    /** async delivery is activated only when this flag is 'true'. Used to temporarly inhibit dispatch of messages */
    private boolean dispatcherActive = true;
+   
+   private boolean shallCallToAliveSync;
+   private boolean inDispatchManagerCtor;
 
    private SessionName sessionName;
 
@@ -95,7 +98,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                           AddressBase[] addrArr, SessionName sessionName) throws XmlBlasterException {
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
-
+      this.inDispatchManagerCtor = true;
       this.ME = msgQueue.getStorageId().getId();
       this.glob = glob;
 
@@ -132,6 +135,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
 
       this.dispatchConnectionsHandler.initialize(addrArr);
+      this.inDispatchManagerCtor = false;
    }
 
    /**
@@ -324,6 +328,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       // 3. Deliver. Will be delayed if burst mode timer is activated, will switch to sync mode if necessary
       activateDispatchWorker();
+
+      if (this.shallCallToAliveSync && !this.inDispatchManagerCtor && this.isSyncMode)
+         callToAliveSync();
    }
 
    public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
@@ -645,21 +652,30 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (this.syncDispatchWorker == null) this.syncDispatchWorker = new DispatchWorker(glob, this);
 
          this.isSyncMode = true;
-         boolean isAlive = isAlive();
-         log.info(ME+": Switched to synchronous message delivery, inAliveTransition=" + this.inAliveTransition + " isAlive=" + isAlive + " trySyncMode=" + this.trySyncMode);
 
          if (this.timerKey != null)
             log.severe(ME+": Burst mode timer was activated and we switched to synchronous delivery" +
                           " - handling of this situation is not coded yet");
          removeBurstModeTimer();
 
-         //if (isAlive) { // For FailSafePing
-         if (!this.inAliveTransition && isAlive) { // For FailSafeAsync
-            I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
-            for (int i=0; i<listeners.length; i++)
-               listeners[i].toAliveSync(this, ConnectionStateEnum.ALIVE);
+         boolean isAlive = isAlive();
+         log.info(ME+": Switched to synchronous message delivery, inAliveTransition=" + this.inAliveTransition + " isAlive=" + isAlive + " trySyncMode=" + this.trySyncMode);
+         if (isAlive) { // For FailSafePing
+            if (this.inAliveTransition) { // For FailSafeAsync
+               this.shallCallToAliveSync = true;
+            }
+            else {
+               callToAliveSync();
+            }
          }
       }
+   }
+      
+   private void callToAliveSync() {
+      this.shallCallToAliveSync = false;
+      I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+      for (int i=0; i<listeners.length; i++)
+         listeners[i].toAliveSync(this, ConnectionStateEnum.ALIVE);
    }
 
    /**
