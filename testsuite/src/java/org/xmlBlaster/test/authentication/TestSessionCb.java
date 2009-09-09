@@ -54,12 +54,6 @@ public class TestSessionCb extends TestCase
    private int deadMessageCounter = 0;
 
    /**
-   * Test does not work with SOCKET protocol as here we use the same socket for
-   * callback and we can't simulate a lost callback
-   */
-   private boolean isSocket = false;
-
-   /**
     * Constructs the TestSessionCb object.
     */
    public TestSessionCb(Global glob, String testName) {
@@ -71,20 +65,11 @@ public class TestSessionCb extends TestCase
    /**
     */
    protected void setUp() {
-      String driverType = glob.getProperty().get("client.protocol", "dummy");
-      if (driverType.equalsIgnoreCase("SOCKET"))
-         isSocket = true;
-
-      if (isSocket) {
-         log.warning("callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoce channel");
-         return;
-      }
    }
 
    /**
     */
    protected void tearDown() {
-      if (isSocket) return;
       if (con2 != null) {
          try {
             EraseKey ek = new EraseKey(glob, oid);
@@ -101,7 +86,14 @@ public class TestSessionCb extends TestCase
    /**
     */
    public void testSessionCb() {
-      if (isSocket) return;
+      if (!Client.isSeparateCallbackServer(glob)) {
+         /*
+          * Test does not work with SOCKET protocol as here we use the same socket for
+          * callback and we can't simulate a lost callback
+          */
+         log.warning("callback test ignored for driverType SOCKET as callback server uses same socket as invoce channel");
+         return;
+      }
       log.info("testSessionCb() ...");
       final Global glob1 = glob.getClone(null);
       final Global glob2 = glob.getClone(null);
@@ -127,7 +119,7 @@ public class TestSessionCb extends TestCase
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
 
-         isSocket = !Client.shutdownCb(con1, Client.Shutdown.LEAVE_SERVER);
+         Client.shutdownCb(con1, Client.Shutdown.LEAVE_SERVER);
          log.info("############ Con1 is down");
 
          assertInUpdate = null;

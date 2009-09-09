@@ -7,9 +7,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.util;
 
 import java.util.ArrayList;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.EraseKey;
@@ -24,10 +24,10 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.TopicProperty;
 
 public class Client implements I_Callback {
@@ -178,6 +178,30 @@ public class Client implements I_Callback {
       return "OK";
    }
    
+   public static boolean isSeparateCallbackServer(Global glob) {
+      return !isSocket(glob);
+      // TODO: Check if XMLRPC is in tunneling mode
+   }
+
+   public static boolean isSocket(Global glob) {
+      String driverType = glob.getProperty().get("client.protocol", (String)null);
+      if (driverType == null)
+         driverType = glob.getProperty().get("protocol", (String)null);
+      if (driverType == null)
+         return true; // SOCKET is default
+      if (driverType.equalsIgnoreCase("SOCKET"))
+         return true;
+      String plugin = glob.getProperty().get("ClientProtocolPlugin["+driverType+"][1.0]", "");
+      if (plugin.equals("org.xmlBlaster.client.protocol.socket.SocketConnection"))
+         return true;
+      return false;
+   }
+   
+   public static boolean isSocket(I_XmlBlasterAccess conn) {
+      boolean isSocket = (conn.getCbServer() instanceof SocketCallbackImpl);
+      return isSocket;
+   }
+
    /**
     * Returns true if it shot down, false if it did a leave Server.
     * @param conn
