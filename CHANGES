@@ -9,6 +9,8 @@ Changes for 2.0.0 [2009-09-09] r17766 (JDK >= 1.5 only)
           and further server calls are synchronous (the returned data is from the real server).
           The compiler will tell the places to add this method to your code.
 
+ o r17749 Dropped Active X support via JDK bridge. Please use the new C backed C# code.
+
  o r17744 fixed XmlBuffer also for the QueryKeyData
 
  o r17739 NPE for set administrative command (CoreHandler.java)
