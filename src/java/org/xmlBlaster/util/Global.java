@@ -141,7 +141,7 @@ public class Global implements Cloneable
    public static long maxFileDescriptorCount;
 
    /** Version string, please change for new releases (4 digits) */
-   private String versionDefault = "1.6.4";
+   private String versionDefault = "2.0.0";
    /** This will be replaced by build.xml with the current version */
    private String version = "@version@";
    /** This will be replaced by build.xml with the current subversion revision number */

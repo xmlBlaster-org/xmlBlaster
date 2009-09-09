@@ -1,4 +1,4 @@
-This is xmlBlaster version 1.6.4 2008-11-18 'JDK14-GoodBye'
+This is xmlBlaster version 2.0.0 2009-09-09 'Premium'
 
 
 XmlBlaster  is  under development or productive in a huge range
@@ -7,12 +7,19 @@ telecommunication,  radar,  car  industry,  process monitoring,
 live tracking, mobile phone integration (J2ME), PDA integration
 (C#), iPhone integration (Objective C) and more.
 
-This  release  is backward compatible to the previous, it is a
-bug fix maintenance release. See CHANGES for more details.
+This  release  is backward  compatible to the  previous for its
+client-server protocols.
+
+It is *NOT* backward compatible for the  database schema of its
+persistent queues! Please read below!
+
+The client  Java API  may require   minor  adjustments, but the 
+compiler will tell you the places if any (e.g.  added method to
+interface class which you could use).
 
 It  is  tested  under Linux/Solaris/Windows/WINCE/MacOSX/iPhone
 with  JDK  1.4-1.6  and  g++  2.9x/3.x/4.x, icc 8.x and 9.x and
-10.x, MSVisualC++ 2005 and 2008, SunCC compilers (32bit/64bit).
+11.x, MSVisualC++ 2005 and 2008, SunCC compilers (32bit/64bit).
 There  is  no  reason  why other platforms/compilers should not
 work, just try it.
 
@@ -24,22 +31,15 @@ Real-time  database  replication  is  tested  between different
 Oracle versions and between Oracle and DB2 (as a sink).
 
 New features include
-o Mature and powerful database replication
-o Extended cluster operation like SSL reverse tunneling
-o New xmlBlaster persistence layer (JdbcQueue, experimental)
-o C client library extensions and port to MacOSX and iPhone
-o Extended amdin-control over JMX (jconsole)
-o Extended Checkpoint plugin for legal recording of message flow
-o PHP 5 support
-o AjaxServlet extensions
-o Extended Security plugin API for powerful AAA plugins
-o Automatic database dead lock revocery
-o and many many more extensions and bug fixes
+o Added tunneling of callbacks for the XMLRPC protocol
+o New incompatible persistence layer, please read
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
+o Other extensions and bug fixes as noted in xmlBlaster/CHANGES
 
 It  is  leak  checked  in  RAM  and  on  persistence  store for
 Java,C,C++.
 
-Since release 1.1 we are supporting JDK 1.4 or higher only.
+Since release 2.0 we are supporting JDK 1.5 or higher only.
 
 
 The xmlBlaster maintainers
@@ -50,6 +50,23 @@ See:
 ----
 http://www.xmlblaster.org/xmlBlaster/CHANGES
 
+
+Notes for V2.0.0:
+-----------------
+VERY IMPORTANT CHANGE with xmlBlaster persistence layer, PLEASE READ THIS!
+The default configuration now uses the new JdbcQueue database persistence layer with three tables 
+  'xbstore', 'xbref', 'xbmeat'.
+If you have data in the old schema 'xb_entries' they are NOT used.
+In case you need the old data please read
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
+You can configure xmlBlaster.properties to still use the old database
+schema or you need to migrate existing database data (queue entries etc.)
+to the new schema!
+Old:
+  JdbcStorage[XXXXX]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,...
+New:
+  JdbcStorage[XXXXX]=org.xmlBlaster.util.queue.jdbc.JdbcQueue,...
+  
 
 Notes for V1.6.4:
 -----------------

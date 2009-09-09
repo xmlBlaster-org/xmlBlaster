@@ -1,13 +1,13 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "r99999" numbers are Subversion revision numbers.
 
-Changes for current svn (JDK >= 1.5 only)
-=======================
+Changes for 2.0.0 [2009-09-09] r17766 (JDK >= 1.5 only)
+=======================================================
 
  o r17755 Incompatible java client API change: Added I_ConnectionStatusListener#toAliveSync
           which tells the listener as soon as all queued back client side messages are delivered to the server
-	  and further server calls are synchronous (the returned data is from the real server).
-	  The compiler will tell the places to add this method to your code.
+          and further server calls are synchronous (the returned data is from the real server).
+          The compiler will tell the places to add this method to your code.
 
  o r17744 fixed XmlBuffer also for the QueryKeyData
 
@@ -39,9 +39,7 @@ Changes for current svn (JDK >= 1.5 only)
 
  o r17685 Update to quartz scheduler v1.6.5
 
- o r17685 Update to quartz scheduler v1.6.5
-
- o r17681 Added tunnelling of callbacks on the xmlrpc protocol. This allows to pass requests through a
+  o r17681 Added tunnelling of callbacks on the xmlrpc protocol. This allows to pass requests through a
           proxy, using https either all the way between client/server or to use an intermediate reverse
           proxy which converts the https protocol to http. Compression can also be used.
 
@@ -55,8 +53,8 @@ Changes for current svn (JDK >= 1.5 only)
 
  o r17641 fixed subscriptionId which was wrong if XmlBuffer modified its content to make it xml compliant.
           Aware for XPATH subscribes which are escaped: If old client is updated to new client:
-	   Server side queued messages could be wrong dispatched in client code
-	   if subscribe with client side dispatcher is used
+          Server side queued messages could be wrong dispatched in client code
+          if subscribe with client side dispatcher is used
 
  o r17633 Removed org.apache.commons.codec.binary.Base64 dependency
 
@@ -65,19 +63,19 @@ Changes for current svn (JDK >= 1.5 only)
  o r17619 Bugfix: 2008-12-10
           Bug introduced with r16911 ConnectQosData.java 2008-05-03 17:35:04
           Native clients (protocl=LOCAL) without callback server configured (xmlBlasterAccess.connect(qos, null))
-	  can't login to xmlBlaster anymore, this is for example the FilePollerPlugin
+          can't login to xmlBlaster anymore, this is for example the FilePollerPlugin
 
  o r17598 VERY IMPORTANT CHANGE with xmlBlaster persistence layer, PLEASE READ THIS!
           The default configuration now uses the new JdbcQueue database persistence layer with three tables 
-	    'xbstore', 'xbref', 'xbmeat'.
-	  If you have data in the old schema 'xb_entries' they are NOT used.
-	  In case you need the old data please read
-	    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
+	       'xbstore', 'xbref', 'xbmeat'.
+          If you have data in the old schema 'xb_entries' they are NOT used.
+          In case you need the old data please read
+            http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
 
  o r17581 C-client library: 
           Introduced Timestamp.c for thread safe requestId counter
-	  CallbackServer responseListener handling is now mutex protected
-	  cb->removeResponseListener added as MsgRequestInfoP is on stack (still race condition is possible!!!)
+          CallbackServer responseListener handling is now mutex protected
+          cb->removeResponseListener added as MsgRequestInfoP is on stack (still race condition is possible!!!)
 
  o r17576 Changed I_Queue interface to use List<I_Entry> instead of ArrayList
 
@@ -112,7 +110,7 @@ Changes for 1.6.4 [2008-11-18] r17524 'JDK14-GoodBye'
           e.g. com.microsoft.sqlserver.jdbc.SQLServerException: Connection reset by peer: socket write error
 
  o r17347 Deadlock fix in SessionInfo.java
-          Removed synchronized to prevent dead lock, see discussion with Balázs Póka 2008-10-28
+          Removed synchronized to prevent dead lock, see discussion with Balï¿½zs Pï¿½ka 2008-10-28
 
  o r17340 C-client library: Supports now fail safe reconnect polling and client side ping
 
