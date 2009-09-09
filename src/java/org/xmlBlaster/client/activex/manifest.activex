@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: org.xmlBlaster.client.activex.XmlScriptAccess
-
-Name: org.xmlBlaster.client.activex.XmlScriptAccess.class
-Java-Bean: True

@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 
-<requirement id='client.activex' type='NEW' prio='MEDIUM' status='CLOSED'>
+<requirement id='client.activex' type='NEW' prio='MEDIUM' status='DEPRECATED'>
    <topic>
       XmlBlaster provides access from C# and VisualBasic with ActiveX.
    </topic>
