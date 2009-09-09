@@ -107,6 +107,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
         "-CbProtocolPlugin[XMLRPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver",
         "-dispatch/connection/protocol", "XMLRPC",
         "-dispatch/callback/protocol", "XMLRPC",
+        "-plugin/xmlrpc/singleChannel", "false",
         "-plugin/xmlrpc/port", ""+(serverPort+1),
         "-dispatch/callback/plugin/xmlrpc/port", ""+(serverPort+1),
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin",
