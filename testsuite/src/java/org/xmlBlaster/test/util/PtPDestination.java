@@ -71,7 +71,7 @@ public class PtPDestination {
             ex.printStackTrace();
             TestCase.assertTrue("An interrupted exception occured", false);
          }
-         Client.shutdownCb(global.getXmlBlasterAccess(), Client.Shutdown.KEEP_LOGGED_IN);
+         Client.shutdownCb(global.getXmlBlasterAccess(), Client.Shutdown.LEAVE_SERVER);
       }
    }
 
