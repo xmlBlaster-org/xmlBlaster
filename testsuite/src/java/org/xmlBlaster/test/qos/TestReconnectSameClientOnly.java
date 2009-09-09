@@ -25,6 +25,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.util.Client;
 
 
 /**
@@ -128,23 +129,15 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
          log.info("SUCCESS, reconnect is not possible: " + e.getMessage());
       }
 
-      boolean isSocket = (this.con.getCbServer() instanceof SocketCallbackImpl);
-      boolean isRpc = (this.con.getCbServer() instanceof XmlRpcCallbackImpl);
+      // boolean isSocket = Client
+      // boolean isRpc = (this.con.getCbServer() instanceof XmlRpcCallbackImpl);
 
-      if (isSocket || isRpc) {
-         // xmlBlaster destroys our first session:
-         this.con.leaveServer(null);
+      try {
+         Client.shutdownCb(con, Client.Shutdown.LEAVE_SERVER);
       }
-      else { // "IOR"
-         // Now shutdown callback server so that xmlBlaster destroys our first session:
-         try {
-            this.con.getCbServer().shutdown();
-         }
-         catch (XmlBlasterException e) {
-            fail("Can't setup test: " + e.getMessage());
-         }
+      catch (XmlBlasterException e) {
+         fail("Can't setup test: " + e.getMessage());
       }
-
       try { Thread.sleep(2000); } catch( InterruptedException i) {} // Wait
 
       try {

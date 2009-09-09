@@ -16,7 +16,6 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -189,23 +188,11 @@ public class TestSubLostClient extends TestCase implements I_Callback
 
       log.info(numClients + " subscriber clients are ready.");
       log.info("Time " + (long)(numClients/timeForLogins) + " logins/sec");
-
-      boolean isSocket = (manyClients[0].connection.getCbServer() instanceof SocketCallbackImpl);
-
-      if (isSocket) {
-         // xmlBlaster destroys our first session:
-         manyClients[0].connection.leaveServer(null);
-         log.info("Leave server of first client.");
+      try {
+         org.xmlBlaster.test.util.Client.shutdownCb(manyClients[0].connection, org.xmlBlaster.test.util.Client.Shutdown.LOGOUT);
       }
-      else { // "IOR"
-         try {
-            manyClients[0].connection.getCbServer().shutdown(); // Kill the callback server, without doing a logout
-         }
-         catch (Throwable e) {
-            e.printStackTrace();
-            assertTrue("Problems with connection,shutdownCb()", false);
-         }
-         log.info("Killed callback server of first client.");
+      catch (XmlBlasterException ex) {
+         assertTrue("An exception should not occur " + ex.getMessage(), false);
       }
    }
 

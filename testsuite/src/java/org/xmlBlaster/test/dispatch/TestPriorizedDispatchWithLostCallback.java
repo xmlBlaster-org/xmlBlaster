@@ -28,6 +28,8 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
+import org.xmlBlaster.test.util.Client;
+//import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer;
 
 import junit.framework.*;
@@ -230,10 +232,11 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       // Now kill our callback server
       log.info("Shutdown callback, expecting messages to be queued or destroyed depending on the priority");
       try {
-         con.getCbServer().shutdown();
+         Client.shutdownCb(con, Client.Shutdown.KEEP_LOGGED_IN);
       }
-      catch (XmlBlasterException e) {
-         fail("ShutdownCB: " + e.getMessage());
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+         assertTrue("Exception " + ex.getMessage() + " should not occur", false);
       }
       this.updateInterceptor.clear();
 

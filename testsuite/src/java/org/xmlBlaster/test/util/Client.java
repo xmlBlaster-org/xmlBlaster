@@ -16,6 +16,7 @@ import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -30,6 +31,13 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.TopicProperty;
 
 public class Client implements I_Callback {
+   
+   public enum Shutdown {
+      LEAVE_SERVER,
+      LOGOUT,
+      KEEP_LOGGED_IN
+   }
+   
    private String ME = "Client-";
    private Global global;
    private static Logger log = Logger.getLogger(Client.class.getName());
@@ -169,5 +177,34 @@ public class Client implements I_Callback {
 
       return "OK";
    }
+   
+   /**
+    * Returns true if it shot down, false if it did a leave Server.
+    * @param conn
+    * @return
+    */
+   public static boolean shutdownCb(I_XmlBlasterAccess conn, Shutdown whatToDo) throws XmlBlasterException {
+      boolean isSocket = (conn.getCbServer() instanceof SocketCallbackImpl);
+      if (isSocket) {
+         conn.getCbServer().shutdown();
+         // xmlBlaster destroys our first session:
+         if (whatToDo.equals(Shutdown.LEAVE_SERVER))
+            conn.leaveServer(null);
+         else if (whatToDo.equals(Shutdown.LOGOUT))
+            conn.disconnect(null);
+         else if (whatToDo.equals(Shutdown.KEEP_LOGGED_IN)) {
+            log.info("Leave server of first client by keeping logged in.");
+         }
+         log.info("Leave server of first client.");
+         return false;
+      }
+      else { // "IOR"
+         conn.getCbServer().shutdown();
+         return true;
+      }
+
+      
+   }
+   
 }
 

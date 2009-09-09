@@ -16,12 +16,11 @@ import junit.framework.TestSuite;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -93,15 +92,9 @@ public class TestCallback extends TestCase implements I_Callback
          conAdmin = globAdmin.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(globAdmin, "admin", passwd);
          conAdmin.connect(qos, this);
-         I_CallbackServer cbs = conAdmin.getCbServer();
-         if (cbs instanceof SocketCallbackImpl) {
-            isSocket = true;
-         }
-         if (isSocket) {
-            log.warning("callback test ignored for driverType=" + cbs.getCbProtocol() + " as callback server uses same socket as invoke channel");
-            conAdmin.disconnect(null);
+         isSocket = !Client.shutdownCb(conAdmin, Client.Shutdown.KEEP_LOGGED_IN);
+         if (isSocket)
             return;
-         }
 
          subscribeDeadMessageOid = conAdmin.subscribe("<key oid='__sys__deadMessage'/>", null).getSubscriptionId();
          log.info("Success: Subscribe on " + subscribeDeadMessageOid + " done");
@@ -149,7 +142,7 @@ public class TestCallback extends TestCase implements I_Callback
          con.connect(qos, this); // Login to xmlBlaster
 
          try {
-            con.getCbServer().shutdown(); // Destroy the callback server
+            Client.shutdownCb(con, Client.Shutdown.KEEP_LOGGED_IN);
          }
          catch (Throwable e) {
             log.severe("testCallbackFailure: " + e.toString());

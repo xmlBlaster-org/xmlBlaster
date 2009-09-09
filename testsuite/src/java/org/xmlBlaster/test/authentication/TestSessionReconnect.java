@@ -26,6 +26,7 @@ import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.MsgInterceptor;
+import org.xmlBlaster.test.util.Client;
 
 import junit.framework.*;
 
@@ -150,7 +151,8 @@ public class TestSessionReconnect extends TestCase
 
          log.info("============ STEP 3: Stop subscriber callback");
          try {
-            conSub.getCbServer().shutdown();
+            Client.shutdownCb(conSub, Client.Shutdown.KEEP_LOGGED_IN);
+            // conSub.getCbServer().shutdown();
          }
          catch (XmlBlasterException e) {
             fail("ShutdownCB: " + e.getMessage());

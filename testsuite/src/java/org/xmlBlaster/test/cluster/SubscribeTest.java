@@ -1,6 +1,8 @@
 package org.xmlBlaster.test.cluster;
 
 import java.util.logging.Logger;
+
+import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -300,7 +302,7 @@ public class SubscribeTest extends TestCase {
             updateCounterBilbo2 = 0;
 
             // We stay logged in but kill over callback server ...
-            bilboCons[ii].getCbServer().shutdown();
+            Client.shutdownCb(bilboCons[ii], Client.Shutdown.KEEP_LOGGED_IN);
          }
 
          System.err.println("->testSubscribe done, SUCCESS.");

@@ -17,13 +17,14 @@ import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.util.Client;
+//import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -126,16 +127,7 @@ public class TestSessionCb extends TestCase
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
 
-         boolean isSocket = (con1.getCbServer() instanceof SocketCallbackImpl);
-         if (isSocket) {
-            // xmlBlaster destroys our first session:
-            con1.leaveServer(null);
-            log.info("Leave server of first client.");
-         }
-         else { // "IOR"
-            con1.getCbServer().shutdown();
-         }
-
+         isSocket = !Client.shutdownCb(con1, Client.Shutdown.LEAVE_SERVER);
          log.info("############ Con1 is down");
 
          assertInUpdate = null;
