@@ -5,7 +5,7 @@ Changes for current svn (JDK >= 1.5 only)
 =======================
 
  o r17755 Incompatible java client API change: Added I_ConnectionStatusListener#toAliveSync
-          which tells the listener as soon as all client side messages are delivered to the server
+          which tells the listener as soon as all queued back client side messages are delivered to the server
 	  and further server calls are synchronous (the returned data is from the real server).
 	  The compiler will tell the places to add this method to your code.
 
