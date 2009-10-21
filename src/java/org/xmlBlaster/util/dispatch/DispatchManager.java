@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jacorb.security.sas.ISASContext;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
@@ -22,7 +21,6 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -943,12 +941,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void lostClientConnection() {
       log.warning(ME+": Lost client connection");
       // If SOCKET: the cb connection is lost as well and we can go to polling mode
-      pingCallbackServer(false);
+      pingCallbackServer(false, true);
    }
 
-   public boolean pingCallbackServer(boolean sync) {
+   public boolean pingCallbackServer(boolean sync, boolean connectionIsDown) {
       DispatchConnection dispatchConnection = this.dispatchConnectionsHandler.getCurrentDispatchConnection();
       if (dispatchConnection != null) {
+         dispatchConnection.setConnectionWasDown(connectionIsDown);
          if (sync) {
             dispatchConnection.timeout(null); // force a ping
          }

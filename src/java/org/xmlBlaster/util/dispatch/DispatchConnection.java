@@ -5,17 +5,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.StatusQosData;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
@@ -68,6 +68,10 @@ abstract public class DispatchConnection implements I_Timeout
    protected int retryCounter = 0;
    private final long logEveryMillis; // Every hour (60000: every minute a log)
    private int logInterval = 10;
+
+   // Flag to indicate a lost connection to avoid race condition if already
+   // ALIVE again and don't miss toPolling()
+   private boolean connectionWasDown;
 
    /**
     * Flag if the remote server is reachable but is not willing to process our requests (standby mode).
@@ -398,6 +402,14 @@ abstract public class DispatchConnection implements I_Timeout
       return false;
    }
 
+   public boolean isConnectionWasDown() {
+      return connectionWasDown;
+   }
+
+   public void setConnectionWasDown(boolean connectionWasDown) {
+      this.connectionWasDown = connectionWasDown;
+   }
+
    /**
     *
     * @param e the original Communication Exception
@@ -509,7 +521,7 @@ abstract public class DispatchConnection implements I_Timeout
     * @param The problem, is expected to be not null for toReconnected==false
     * @exception XmlBlasterException If delivery failed
     */
-   protected final void handleTransition(boolean byDispatchConnectionsHandler,
+   public final void handleTransition(boolean byDispatchConnectionsHandler,
                                        Throwable throwable) throws XmlBlasterException {
 
       boolean toReconnected = (throwable == null) ? true : false;
@@ -538,6 +550,21 @@ abstract public class DispatchConnection implements I_Timeout
          }
          else {
             toReconnected = true;
+         }
+      }
+
+      if (this.connectionWasDown) {
+         this.connectionWasDown = false;
+         if (this.state == ConnectionStateEnum.ALIVE) {
+            // ConnectionStateEnum old = this.state;
+            if (this.address.getRetries() == -1 || retryCounter < this.address.getRetries()) {
+               this.state = ConnectionStateEnum.POLLING;
+               connectionsHandler.toPolling(this);
+            } else {
+               this.state = ConnectionStateEnum.DEAD;
+               connectionsHandler.toDead(this, ex);
+            }
+            // this.state = old;
          }
       }
 

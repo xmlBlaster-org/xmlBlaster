@@ -60,6 +60,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
@@ -315,8 +316,24 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return this.contextNode;
    }
 
+   public boolean forcePollingForTesting() {
+      if (!isAlive())
+         return false;
+      DispatchConnection dcon = this.dispatchManager.getDispatchConnectionsHandler().getAliveDispatchConnection();
+      if (dcon == null)
+         return false;
+      XmlBlasterException e = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION,
+            "forcePollingForTesting", "Forcing POLLING");
+      try {
+         dcon.handleTransition(true, e);
+      } catch (XmlBlasterException e1) {
+         e1.printStackTrace();
+         return false;
+      }
+      return true;
+   }
 
-
+   
    public ConnectReturnQos connect(ConnectQos qos, I_StreamingCallback streamingUpdateListener, boolean withQueue) throws XmlBlasterException {
       if (streamingUpdateListener == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, "connect", "the streamingUpdateListener is null, you must provide one");
@@ -1245,7 +1262,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public void lostConnection(XmlBlasterException xmlBlasterException) {
       if (log.isLoggable(Level.FINE)) log.fine("Communication layer lost connection: " + ((xmlBlasterException==null)?"":xmlBlasterException.toString()));
-      this.dispatchManager.pingCallbackServer(false);
+      this.dispatchManager.pingCallbackServer(false, true);
    }
 
    /**
@@ -1253,7 +1270,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * got asynchronously via registerConnectionListener()
     */
    public void ping() {
-      this.dispatchManager.pingCallbackServer(false);
+      this.dispatchManager.pingCallbackServer(false, false);
    }
 
    /**

@@ -429,6 +429,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       long uniqueId = sessionInfo.getPersistenceUniqueId();
       if (log.isLoggable(Level.FINE)) log.fine("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "'");
+      log.info("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' "
+            + sessionInfo.getSessionName().getAbsoluteName());
       // String sessionId = getOriginalSessionId(connectQosData.getSessionQos().getSecretSessionId());
       SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L, null);
       int num = this.sessionStore.remove(entry);

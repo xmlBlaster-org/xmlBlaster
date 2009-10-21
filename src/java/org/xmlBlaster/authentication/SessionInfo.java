@@ -904,7 +904,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    public String pingClientCallbackServer() {
       DispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {
-         boolean isSend = dispatchManager.pingCallbackServer(true);
+         boolean isSend = dispatchManager.pingCallbackServer(true, false);
          if (isSend)
             return "Ping done in " + getPingRoundTripDelay() + " millis, current state is "
                   + dispatchManager.getDispatchConnectionsHandler().getState().toString();

@@ -98,6 +98,8 @@ public interface XmlBlasterAccessMBean {
     */
    public long getRoundTripDelay();
    
+   public boolean forcePollingForTesting();
+
    /**
     * Publish a message. 
     * @param key The publish key (e.g. &lt;key oid="Hello">&lt;South/>&lt;/key>)
