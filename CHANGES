@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17770 HtPasswd Authentication/Authorization: If a loginName matches exactly only this is evaluated
+          before all other matching entries where used to find a valid password
+
  o r17768 Fixing gap that a quickly reconnecting client leads to missing toPolling() toAlive() firing cylce (race condition)
           Had impact for cluster setup with callback tunnel
 
