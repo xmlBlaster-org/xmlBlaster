@@ -194,26 +194,28 @@ public class HtPasswd {
     * Lookup userName in password file
     * @param userName
     * @return A list containing Container instances (matching the userName)
+    * if a exact match is found, only this is returned
     */
    private Vector lookup(String userName) {
       Vector pws = new Vector();
       if (userName == null) return pws;
       //find user in Hashtable htpasswd
       String key;
-      boolean found = false;
-	  if ( useFullUsername == FULL_USERNAME ) {
-	     Container container = (Container)this.htpasswdMap.get(userName);
-	     if (container != null) {
-	        pws.addElement(container);
-	        found = true;
-	     }
+      
+	  // First check for exact match, if found no other matches are returned (since 2009-11-06)
+	  Container container = (Container)this.htpasswdMap.get(userName);
+	  if (container != null) {
+	     pws.addElement(container);
+	     return pws;
 	  }
-	  else { // ALLOW_PARTIAL_USERNAME
+
+      boolean found = false;
+	  if (useFullUsername != FULL_USERNAME ) { // ALLOW_PARTIAL_USERNAME or SWITCH_OFF: Return all matches because of authorization settings
          for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
 		   key = (String)e.nextElement();
 		   if (log.isLoggable(Level.FINE)) log.fine("Checking userName=" + userName + " with key='" + key + "'");
 		      if (userName.startsWith(key) || userName.endsWith(key)) {
-		         Container container = (Container)this.htpasswdMap.get(key);
+		         container = (Container)this.htpasswdMap.get(key);
 		         pws.addElement(container);
 		         found = true;
 		    }
@@ -224,7 +226,7 @@ public class HtPasswd {
 	    for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
 	      key = (String)e.nextElement();
 	      if (key.equals("*")) {
-	         Container container = (Container)this.htpasswdMap.get(key);
+	         container = (Container)this.htpasswdMap.get(key);
 	         pws.addElement(container);
 	      }
 	    }
