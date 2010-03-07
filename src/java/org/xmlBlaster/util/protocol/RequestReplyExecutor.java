@@ -471,12 +471,16 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                cbClientTmp.updateOneway(receiver.getSecretSessionId(), arr);
             }
             catch (XmlBlasterException e) {
-               executeException(receiver, e, udp);
+               log.warning("Invocation of " + receiver.getMethodName() + "() failed, server is not informed as we are in oneway operation: " + e.getMessage());
+               //executeException(receiver, e, udp); // Removed 2010-02-11 oneway should not send exception back to server
                return true;
             }
             catch (Throwable e) {
-               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
-               executeException(receiver, xmlBlasterException, udp);
+               e.printStackTrace();
+               log.severe("Invocation of " + receiver.getMethodName() + "() failed, server is not informed as we are in oneway operation: " + e.toString());
+               // Removed 2010-02-11 oneway should not send exception back to server
+               //XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
+               //executeException(receiver, xmlBlasterException, udp); // Remove?? oneway should not send exception back to server
                return true;
             }
          }
