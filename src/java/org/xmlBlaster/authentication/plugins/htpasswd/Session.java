@@ -209,4 +209,10 @@ public class Session implements I_Session, I_Subject {
       */
       return dataHolder.getMsgUnitRaw();
    }
+
+   @Override
+   public String interceptExeptionByAuthorizer(Throwable throwable,
+		SessionHolder sessionHolder, DataHolder dataHolder) {
+	  return null;
+   }
 }

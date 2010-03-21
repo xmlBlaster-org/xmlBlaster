@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17773 Extended Security plugin interface to be able to intercept exceptions thrown back to clients
+          Added new method I_Session#interceptExeptionByAuthorizer():
+	  Incompatible API change in I_Session!
+	  Add a dummy implementation and return null to have original behaviour (in case you have your own security plugin)
+
  o r17770 HtPasswd Authentication/Authorization: If a loginName matches exactly only this is evaluated
           before all other matching entries where used to find a valid password
 

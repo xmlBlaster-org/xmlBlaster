@@ -133,4 +133,11 @@ public class Session implements I_Session, I_Subject {
    public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
       return dataHolder.getMsgUnitRaw();
    }
+
+@Override
+public String interceptExeptionByAuthorizer(Throwable throwable,
+		SessionHolder sessionHolder, DataHolder dataHolder) {
+	// TODO Auto-generated method stub
+	return null;
+}
 }

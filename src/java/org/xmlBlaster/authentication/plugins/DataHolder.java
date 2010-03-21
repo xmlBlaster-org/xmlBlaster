@@ -24,7 +24,8 @@ public class DataHolder {
    public DataHolder(MethodName action, MsgUnit msgUnit) {
       super();
       if (action == null) throw new IllegalArgumentException("Creating DataHolder expects none null action");
-      if (msgUnit == null) throw new IllegalArgumentException("Creating DataHolder expects none null msgUnit");
+      if (msgUnit == null)
+    	  throw new IllegalArgumentException("Creating DataHolder expects none null msgUnit");
       this.action = action;
       this.msgUnit = msgUnit;
    }

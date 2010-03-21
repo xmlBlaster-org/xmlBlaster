@@ -110,4 +110,31 @@ public interface I_Session extends I_MsgSecurityInterceptor {
     *    publish, subscribe, get, erase, ...
     */
    public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder);
+   
+   /**
+    * If an exception occurrs after successful authorization
+    * the security framework has the chance to suppress the exception
+    * by returning a return QOS
+    * <p>
+    * A dummy implementation should always return null!
+    * <p>
+    * A dead message can be produced like this:
+    * <pre>
+    * SessionInfo sessionInfo = sessionHolder.getSessionInfo();
+	*	try {
+	*		return sessionInfo.getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, sessionInfo.getSessionName(), dataHolder.getMsgUnit(), throwable));
+    *	} catch (XmlBlasterException e) {
+	*		e.printStackTrace();
+	*		return null;
+	*	}
+    * </pre>
+    * @param sessionHolder
+    * @param dataHolder
+    * @param throwable
+    * @return if null, this call has no influence, usually the exception is thrown back to the client. 
+    * if not null the string is returned to the client. Can be useful for dumb clients which don't know what to do with the exception.
+    * In this case the security framework should handle the message itself, e.g. send it as dead message or forward it to another place.
+    */
+   public String interceptExeptionByAuthorizer(Throwable throwable, SessionHolder sessionHolder, DataHolder dataHolder);
+
 }

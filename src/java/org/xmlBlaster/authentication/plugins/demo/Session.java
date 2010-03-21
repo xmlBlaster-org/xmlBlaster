@@ -5,16 +5,13 @@ import java.util.Map;
 import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Manager;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.SessionHolder;
-import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
-//import org.xmlBlaster.authentication.plugins.ReversibleCrypt;
-import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * @author Wolfgang Kleinertz
@@ -223,6 +220,12 @@ public class Session implements I_Session {
    private byte[] exportMessage(byte[] byteArr) throws XmlBlasterException {
       if (byteArr==null || byteArr.length == 0) return new byte[0];
       return crypter.crypt(byteArr);
+   }
+
+   @Override
+   public String interceptExeptionByAuthorizer(Throwable throwable,
+		SessionHolder sessionHolder, DataHolder dataHolder) {
+  	 return null;
    }
 }
 

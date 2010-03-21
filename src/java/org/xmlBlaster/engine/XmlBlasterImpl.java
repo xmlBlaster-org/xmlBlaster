@@ -80,12 +80,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
                                  String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(" + sessionId + ", key, qos)");
 
+      SessionInfo sessionInfo = null;
+      MsgUnit msgUnit = null;
       try {
          // authentication security check
-         SessionInfo sessionInfo = authenticate.check(sessionId);
+         sessionInfo = authenticate.check(sessionId);
 
          // import and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
+         msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.SUBSCRIBE);
 
@@ -104,6 +106,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return sessionInfo.getSecuritySession().exportMessage(dataHolder).getQos();
       }
       catch (Throwable e) {
+          String xml = interceptExeptionByAuthorizer(e, sessionInfo, addressServer, msgUnit, MethodName.SUBSCRIBE);
+          if (xml != null)
+         	 return xml;
          throw this.availabilityChecker.checkException(MethodName.SUBSCRIBE, e);
       }
    }
@@ -118,12 +123,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(" + sessionId + ", key, qos)");
 
+      SessionInfo sessionInfo = null;
+      MsgUnit msgUnit = null;
       try {
          // authentication and authorization security checks
-         SessionInfo sessionInfo = authenticate.check(sessionId);
+         sessionInfo = authenticate.check(sessionId);
 
          // import and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
+         msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.UNSUBSCRIBE);
 
@@ -145,6 +152,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       }
       catch (Throwable e) {
+          String xml = interceptExeptionByAuthorizer(e, sessionInfo, addressServer, msgUnit, MethodName.UNSUBSCRIBE);
+          if (xml != null)
+         	 return new String[] {xml};
          throw this.availabilityChecker.checkException(MethodName.UNSUBSCRIBE, e);
       }
    }
@@ -193,6 +203,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return sessionInfo.getSecuritySession().exportMessage(dataHolder).getQos();
       }
       catch (Throwable e) {
+          String xml = interceptExeptionByAuthorizer(e, sessionInfo, addressServer, msgUnit, methodName);
+          if (xml != null)
+         	 return xml;
          if (sessionInfo != null && !sessionInfo.getConnectQos().allowExceptionsThrownToClient()) {
              if (msgUnit == null)
                 msgUnit = new MsgUnit(glob, msgUnitRaw, methodName);
@@ -255,13 +268,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    public final String[] erase(AddressServer addressServer, String sessionId,
                                String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering erase()");
-
+      SessionInfo sessionInfo = null;
+      MsgUnit msgUnit = null;
       try {
          // authentication and authorization security checks
-         SessionInfo sessionInfo = authenticate.check(sessionId);
+         sessionInfo = authenticate.check(sessionId);
 
          // import (decrypt) and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
+         msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.ERASE);
 
@@ -282,6 +296,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return retArr;
       }
       catch (Throwable e) {
+          String xml = interceptExeptionByAuthorizer(e, sessionInfo, addressServer, msgUnit, MethodName.ERASE);
+          if (xml != null) {
+         	 return new String[]{ xml };
+         }
          throw this.availabilityChecker.checkException(MethodName.ERASE, e);
       }
    }
@@ -345,6 +363,36 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String toXml(String extraOffset) throws XmlBlasterException {
       return requestBroker.toXml(extraOffset);
+   }
+   
+   /**
+    * 
+    * @param sessionInfo
+    * @param addressServer
+    * @param msgUnit
+    * @param action
+    * @return if null, not intercepted
+    */
+   private String interceptExeptionByAuthorizer(Throwable e, SessionInfo sessionInfo, AddressServer addressServer,
+           MsgUnit msgUnit, MethodName action) {
+      if (sessionInfo==null) {
+    	  return null;
+      }
+      I_Session sessionSecCtx = sessionInfo.getSecuritySession();
+      if (sessionSecCtx==null) {
+    	  return null;
+      }
+      I_Subject subjSecCtx = sessionSecCtx.getSubject();
+      if (subjSecCtx==null) {
+    	  return null;
+      }
+      if (msgUnit == null) { // if thrown by authorizer or import, don't handle again
+    	  return null;
+      }
+      SessionHolder sessionHolder = new SessionHolder(sessionInfo, addressServer);
+      DataHolder dataHolder = new DataHolder(action, msgUnit);
+      String response = sessionSecCtx.interceptExeptionByAuthorizer(e, sessionHolder, dataHolder);
+      return response;
    }
 
    /**

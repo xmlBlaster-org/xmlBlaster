@@ -1495,6 +1495,22 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    private final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, PublishQosServer publishQos) throws XmlBlasterException
    {
       try {
+    	 final boolean testException = false;
+    	 if (testException) {
+             log.severe("TESTING CODE IS ACTIVE");
+             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "TEST EXCEPTION FROM REQUESTBROKER");
+    	 }
+    	 final boolean testResponse = false;
+    	 if (testResponse) {
+             log.severe("TESTING CODE IS ACTIVE");
+             StatusQosData statRetQos = new StatusQosData(glob, MethodName.PUBLISH);
+             statRetQos.setStateInfo("TEST RESPONSE ONLY!");
+             statRetQos.setKeyOid(msgUnit.getKeyOid());
+             statRetQos.setState(Constants.STATE_OK);
+             statRetQos.setRcvTimestamp(publishQos.getRcvTimestamp());
+             return new PublishReturnQos(glob, statRetQos).toXml();
+    	 }
+    	  
          if (msgUnit == null) {
             log.severe("The arguments of method publish() are invalid (null)");
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The arguments of method publish() are invalid (null)");
