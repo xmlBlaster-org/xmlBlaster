@@ -1,3 +1,18 @@
+To migrate read
+ http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
+
+Migration steps
+1) Important: subjectId ending with a number can't be converted from xb_entries to xbstore.
+
+2) You need to have a xmlBlaster.properties with JdbcQueue configured (see above link)
+
+3) Go to directory with your xmlBlaster.properties and xmlBlasterPlugins.xml and start the data transfer:
+  java -Xms18M -Xmx1064M org.xmlBlaster.contrib.dbupdate.OneToThree
+
+4) The existing table xb_entries was transformed to xbmeat,xbstore,xbref tables
+   Start xmlBlaster and check if all is as you expect and the drop table xb_entries
+
+
               queuename               |    flag
 --------------------------------------+-------------
  session_heronsubPersistence,1_0      | SESSION
