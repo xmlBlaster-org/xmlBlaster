@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17776 htpasswd authorization: Supporting now topic names starting with specific token:
+          WeatherProxy:yZxMiqIKTc:connect,disconnect,publish("startsWith:weather."),subscribe("startsWith:weather."),unSubscribe
+
  o r17773 Extended Security plugin interface to be able to intercept exceptions thrown back to clients
           Added new method I_Session#interceptExeptionByAuthorizer():
 	  Incompatible API change in I_Session!
