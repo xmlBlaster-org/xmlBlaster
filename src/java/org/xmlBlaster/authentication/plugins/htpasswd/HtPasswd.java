@@ -25,6 +25,7 @@ import java.io.* ;
 import java.util.HashSet;
 import java.util.Hashtable ;
 import java.util.Enumeration ;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -97,13 +98,34 @@ public class HtPasswd {
             ret += " allowedMethods=" + MethodName.toString((MethodName[])this.allowedMethodNames.keySet().toArray(new MethodName[this.allowedMethodNames.size()]));
          return ret;
       }
+      /**
+       * 
+       * @param methodName
+       * @param topicOid "exact:weather.pacific"
+       * @return
+       */
       public boolean isAllowed(MethodName methodName, String topicOid) {
          if (this.allowedMethodNames == null) return true;
          Set oidSet = (Set)this.allowedMethodNames.get(methodName);
          if (oidSet == null) return false;
          if (topicOid == null) return true;
          if (oidSet.size() == 0) return true;
-         return oidSet.contains(topicOid.trim());
+         boolean allowed = oidSet.contains(topicOid.trim());
+         if (!allowed) { // && (methodName.equals(MethodName.PUBLISH) || methodName.equals(MethodName.PUBLISH_ONEWAY) || methodName.equals(MethodName.PUBLISH_ARR))) {
+        	 Iterator<String> it = oidSet.iterator();
+        	 while (it.hasNext()) {
+				String token = it.next();
+				if (token.startsWith("startsWith:")) {
+					int len = "startsWith:".length();
+					if (len < token.length()-1) {
+						String oid = token.substring(len);
+						if (topicOid.startsWith("exact:"+oid))
+							return true;
+					}
+				}
+			}
+         }
+         return allowed;
       }
    }
 
