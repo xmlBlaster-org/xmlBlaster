@@ -364,6 +364,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          String type = atts.getValue("type"); // byte[]
          String encoding = atts.getValue("encoding"); // base64
          this.contentUrl = atts.getValue("url"); // file:/tmp/demo.png
+         if (this.contentUrl != null && replaceContentTokens) {
+            this.contentUrl = replaceVariable(this.contentUrl);
+         }
          this.contentData = new EncodableData(CONTENT_TAG, null, type, encoding);
          try {
             if (sizeStr != null) {
