@@ -849,6 +849,24 @@ TODO
    <target name="total" depends="delete,all,c,cpp" description="Compile xmlBlaster server, all Java, C and C++ clients">
    </target>
 
+   <target name="SimpleReader" depends="all" description="Startup simple GUI to show messages">
+            <echo message="CLASSPATH=${build.dir} ${project.classpath}" />
+            <java dir="." fork="true" classname="javaclients.simplereader.SimpleReaderGui" maxmemory="36m">
+                  <classpath path="${cp}" />
+                  <classpath path="${build.dest}" />
+                  <arg value="-session.name" />
+                  <arg value="simpleReaderGUI/1" />
+                  <arg value="-Security.Client.DefaultPlugin" />
+                  <arg value="htpasswd,1.0" />
+                  <arg value="-dispatch/connection/plugin/socket/port" />
+                  <arg value="7607" />
+                  <arg value="-passwd" />
+                  <arg value="secret" />
+                  <arg value="-xpath" />
+                  <arg value="//key" />
+            </java>
+   </target>
+
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster testsuite source directory (JDK >= 1.3)     -->
    <!-- =================================================================== -->
