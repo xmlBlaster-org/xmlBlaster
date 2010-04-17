@@ -1,0 +1,30 @@
+<!--
+   java javaclients.script.XmlScript -requestFile publishFile.xml
+-->
+
+<xmlBlaster>
+
+  <connect/>
+
+  <subscribe><key queryType="XPATH">//airport</key><qos/></subscribe>
+
+  <input message="Press key to publish ASCII data 'file://demoFile.txt'"/>
+
+  <publish>
+     <key oid="aTopic"><airport /></key>
+     <content url="file://demoFile.txt"/>
+  </publish>
+
+  <input message="Press key to publish binary data 'file://demoFile.png'"/>
+
+  <publish>
+     <key oid="aTopic"><airport /></key>
+     <content url="file://demoFile.png"/>
+  </publish>
+  
+  <input message="Press key"/>
+
+  <disconnect />
+
+</xmlBlaster>
+
