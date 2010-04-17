@@ -49,7 +49,7 @@
 <option id="gnu.c.link.option.libs.1488208309" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="z"/>
 <listOptionValue builtIn="false" value="pthread"/>
-<listOptionValue builtIn="false" value="sqlite"/>
+<listOptionValue builtIn="false" value="sqlite3"/>
 </option>
 <option id="gnu.c.link.option.paths.1498660134" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="stringList">
 <listOptionValue builtIn="false" value="${zlib_lib_dir}"/>
@@ -80,9 +80,6 @@
 <option id="gnu.c.compiler.exe.debug.option.debugging.level.1591887581" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1180345865" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
-</fileInfo>
-<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.219208913.923384976" name="SQLiteQueue.c" rcbsApplicability="disable" resourcePath="util/queue/SQLiteQueue.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479.892646156">
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479.892646156" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479"/>
 </fileInfo>
 <sourceEntries>
 <entry excluding="util/queue/SQLiteQueue.c|HelloWorld.c|XmlBlasterConnectionUnparsedMain.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
