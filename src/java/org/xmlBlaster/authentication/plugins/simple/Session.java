@@ -137,7 +137,7 @@ public class Session implements I_Session {
       return dataHolder.getMsgUnitRaw();
    }
 
-   @Override
+   //@Override
    public String interceptExeptionByAuthorizer(Throwable throwable,
 		SessionHolder sessionHolder, DataHolder dataHolder) {
       return null;
