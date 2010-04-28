@@ -72,9 +72,15 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
 	  this.msgUnit = msgUnit;
       this.msgQueueEntries = new MsgQueueEntry[0];
       this.dispatchManager = null;
-	  this.xmlBlasterException = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
+      if (throwable != null) {
+    	  this.xmlBlasterException = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
              new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, 
-                "MsgErrorInfo.INTERNAL", (throwable==null) ? "NO INFO" : throwable.toString());
+                "MsgErrorInfo.INTERNAL", "", throwable);
+      }
+      else {
+          this.xmlBlasterException = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, 
+                  "MsgErrorInfo.INTERNAL", "NO INFO");  
+      }
    }
 
    /**
