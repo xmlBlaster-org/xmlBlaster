@@ -123,6 +123,8 @@ public class HelloWorldPublish
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
          boolean eraseForceDestroy = glob.getProperty().get("erase.forceDestroy", false);
          boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
+         String contentMime = glob.getProperty().get("contentMime", "text/xml");
+         String contentMimeExtended = glob.getProperty().get("contentMimeExtended", "1.0");
 
          Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
          Map connectQosClientPropertyMap = glob.getProperty().get("connect/qos/clientProperty", (Map)null);
@@ -140,6 +142,8 @@ public class HelloWorldPublish
          log.info(" Pub/Sub settings");
          log.info("   -numPublish     " + numPublish);
          log.info("   -oid            " + oid);
+         log.info("   -contentMime    " + contentMime);
+         log.info("   -contentMimeExtended " + contentMimeExtended);
          log.info("   -clientTags     " + clientTags);
          log.info("   -domain         " + ((domain==null)?"":domain));
          if (contentSize >= 0) {
@@ -332,7 +336,7 @@ public class HelloWorldPublish
                log.info("Publish '" + currOid + "' #" + currCounter + "/" + numPublish);
             }
 
-            PublishKey pk = new PublishKey(glob, currOid, "text/xml", "1.0");
+            PublishKey pk = new PublishKey(glob, currOid, contentMime, contentMimeExtended);
             if (domain != null) pk.setDomain(domain);
             pk.setClientTags(org.xmlBlaster.util.ReplaceVariable.replaceAll(clientTags, "%counter", currCounter));
             PublishQos pq = new PublishQos(glob);
