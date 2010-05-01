@@ -240,6 +240,10 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 
 	// ///////// STOMP
 
+	/**
+	 * Callback StompHandlerFactory on new client connection
+	 */
+	@Override
 	public StompHandler createStompHandler(StompHandler outputHandler) {
 		return new XbStompInOutBridge(this.glob, this, outputHandler);
 	}
