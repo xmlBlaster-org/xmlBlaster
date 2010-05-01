@@ -183,6 +183,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    # jmx reference implementation
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar:${XMLBLASTER_HOME}/lib/mx4j-impl.jar:${XMLBLASTER_HOME}/lib/mx4j-tools.jar 
 
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/stompconnect-1.0.jar
+
    # quartz scheduler
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/quartz-all-1.6.5.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/commons-dbcp-1.2.2.jar
