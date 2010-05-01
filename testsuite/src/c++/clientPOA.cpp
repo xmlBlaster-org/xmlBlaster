@@ -1,3 +1,4 @@
+
 #define  SERVER_HEADER 1 // does #include <generated/xmlBlasterS.h> with CompatibleCorba.h, OMNIORB: use -Wbh=.h to force this extension
 #include <client/protocol/corba/CompatibleCorba.h>
 #include COSNAMING

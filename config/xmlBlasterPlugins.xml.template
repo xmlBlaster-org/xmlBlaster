@@ -85,6 +85,15 @@
       <action do='STOP' onShutdownRunlevel='3' sequence='40'/>   
    </plugin>
 
+   <!-- ProtocolPlugin[STOMP][1.0] -->
+   <plugin create='true' id='STOMP' className='org.xmlBlaster.protocol.stomp.XbStompDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='35'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='35'/>
+   </plugin>
+
+
+
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
    <plugin create='true' id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='40'/> 
