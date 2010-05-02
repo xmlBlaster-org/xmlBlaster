@@ -26,8 +26,9 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * XbStomp driver class to invoke the xmlBlaster server over STOMP protocol.
  * <p />
  * 
- * @see <a href="http://stomp.codehaus.org/">Website</a>
- * @see <a href="http://stomp.codehaus.org/Protocol">Protocol describtion</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.stomp.html">XmlBlaster protocol integration</a>
+ * @see <a href="http://stomp.codehaus.org/">Stomp website</a>
+ * @see <a href="http://stomp.codehaus.org/Protocol">Stomp protocol describtion</a>
  * @author Dieter Saken
  */
 
@@ -101,7 +102,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 	 * The command line key prefix
 	 * 
 	 * @return The configured type in xmlBlasterPlugins.xml, defaults to
-	 *         "plugin/socket"
+	 *         "plugin/stomp"
 	 */
 	public String getEnvPrefix() {
 		return (addressServer != null) ? addressServer.getEnvPrefix()
@@ -112,13 +113,9 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 	 * Command line usage.
 	 * <p />
 	 * <ul>
-	 * <li><i>-plugin/socket/port</i> The SOCKET web server port [61613]</li>
-	 * <li><i>-plugin/socket/hostname</i> Specify a hostname where the SOCKET
-	 * web server runs Default is the localhost.</li>
-	 * <li><i>-plugin/socket/backlog</i> Queue size for incoming connection
-	 * request [50]</li>
-	 * <li><i>-dump[socket]</i> true switches on detailed SOCKET debugging
-	 * [false]</li>
+	 * <li><i>-plugin/STOMP/port</i> The STOMP server port [61613]</li>
+	 * <li><i>-plugin/STOMP/hostname</i> Specify a hostname where the STOMP
+	 * server runs. Default is the localhost.</li>
 	 * </ul>
 	 * <p />
 	 * Enforced by interface I_Driver.
@@ -131,13 +128,12 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 		text += "   -" + getEnvPrefix() + "hostname\n";
 		text += "                       Specify a hostname where the stomp server runs.\n";
 		text += "                       Default is the localhost.\n";
-		text += "   -" + getEnvPrefix() + "responseTimeout\n";
+		text += "   -" + getEnvPrefix() + "updateResponseTimeout\n";
 		text += "                       Max wait for the method return value/exception in msec.\n";
-		// text += "                       The default is "
-		// +getDefaultResponseTimeout() + ".\n";
 		text += "                       Defaults to 'forever', the value to pass is milli seconds.\n";
-		text += "   -dump[socket]       true switches on detailed " + getType()
-				+ " debugging [false].\n";
+		text += "   -" + getEnvPrefix() + "pingResponseTimeout\n";
+		text += "                       Max wait for the method return value/exception in msec.\n";
+		text += "                       Defaults to '60000', the value to pass is milli seconds.\n";
 		text += "   "
 				+ Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
 		text += "\n";

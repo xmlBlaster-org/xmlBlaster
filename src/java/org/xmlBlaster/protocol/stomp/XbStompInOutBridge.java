@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.stomp.ProtocolException;
@@ -23,6 +24,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -34,9 +36,11 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
  * XmlBlaster Messages.
  * <p />
  * One instance per client connect
+ * 
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.stomp.html">Protocol integration</a>
  * @see <a href="http://stomp.codehaus.org/">Website</a>
  * @see <a href="http://stomp.codehaus.org/Protocol">Protocol describtion</a>
- * @author Dieter Saken
+ * @author Dieter Saken, Marcel Ruff
  */
 public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	private static Logger log = Logger.getLogger(XbStompInOutBridge.class
@@ -55,6 +59,11 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	private I_Authenticate authenticate;
 	private org.xmlBlaster.protocol.I_XmlBlaster xb;
 	private boolean stompOpened;
+
+	/** How long to block on remote call waiting on ping responses */
+	protected long pingResponseTimeout;
+	/** How long to block on remote call waiting on update responses */
+	protected long updateResponseTimeout;
 
 	public XbStompInOutBridge(Global glob, XbStompDriver driver,
 			StompHandler outputHandler) {
@@ -92,13 +101,14 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			// somebody is trying to close me all the time :-(
 			I_Authenticate auth = this.authenticate;
 			if (auth != null) {
-				// From the point of view of the incoming client connection we are
+				// From the point of view of the incoming client connection we
+				// are
 				// dead
-				// The callback dispatch framework may have another point of view
+				// The callback dispatch framework may have another point of
+				// view
 				// (which is not of interest here)
-				auth
-						.connectionState(this.secretSessionId,
-								ConnectionStateEnum.DEAD);
+				auth.connectionState(this.secretSessionId,
+						ConnectionStateEnum.DEAD);
 			}
 			this.secretSessionId = null;
 			this.authenticate = null;
@@ -176,27 +186,31 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			if (login != null) {
 				ConnectQosServer conQos = new ConnectQosServer(glob, qos);
 				if (conQos.getSecurityQos() == null) {
-					String clientId = (String) headers.get(Stomp.Headers.Connect.CLIENT_ID);
-					String passcode = (String) headers.get(Stomp.Headers.Connect.PASSCODE);
+					String clientId = (String) headers
+							.get(Stomp.Headers.Connect.CLIENT_ID);
+					String passcode = (String) headers
+							.get(Stomp.Headers.Connect.PASSCODE);
 					if (clientId != null || passcode != null) {
 						SecurityQos securityQos = new SecurityQos(glob);
 						securityQos.setUserId(clientId);
 						securityQos.setCredential(passcode);
 						conQos.getData().setSecurityQos(securityQos);
-						if (conQos.getSessionName() == null || conQos.getSessionName().getLoginName() == null) {
-							conQos.setSessionName(new SessionName(engineGlob, clientId));
+						if (conQos.getSessionName() == null
+								|| conQos.getSessionName().getLoginName() == null) {
+							conQos.setSessionName(new SessionName(engineGlob,
+									clientId));
 						}
-					}
-					else {
-						throw new XmlBlasterException(glob,
-							ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT,
-							ME, "connect() without securityQos");
+					} else {
+						throw new XmlBlasterException(
+								glob,
+								ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT,
+								ME, "connect() without securityQos");
 					}
 				}
-				//conQos.getSecurityQos().setClientIp(outputHandler.getIp());
+				// conQos.getSecurityQos().setClientIp(outputHandler.getIp());
 				// conQos.setAddressServer(driver.getTcpServer().getBindLocation());
 				// setLoginName(conQos.getSessionName().getRelativeName());
-	
+
 				CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty()
 						.getCallbackAddresses();
 				for (int ii = 0; cbArr != null && ii < cbArr.length; ii++) {
@@ -204,13 +218,13 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 					try {
 						cbArr[ii].setCallbackDriver(this);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
+						log.severe("Internal error during setCallbackDriver: " + e.toString());
 					}
 				}
 				ConnectReturnQosServer retQos = authenticate.connect(conQos);
 				this.secretSessionId = retQos.getSecretSessionId();
-	
+
 				Map<String, String> responseHeaders = new HashMap<String, String>();
 				responseHeaders.put(Stomp.Headers.Connected.SESSION,
 						this.secretSessionId);
@@ -231,32 +245,36 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				sc.setHeaders((Map) responseHeaders);
 				sendFrameNoWait(sc);
 			}
-		}
-		catch (XmlBlasterException e) {
+		} catch (XmlBlasterException e) {
+			log.warning("Connect failed: " + e.toString());
 			sendExeption(command, e);
 		}
 	}
 
 	protected void onStompDisconnect(StompFrame command) {
 		if (!checkXbConnected()) {
-			sendExeption(command, new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "Please call connect first"));
+			sendExeption(command,
+					new XmlBlasterException(glob,
+							ErrorCode.USER_WRONG_API_USAGE,
+							"Please call connect first"));
 			return;
 		}
 		try {
 			final Map headers = command.getHeaders();
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
 			authenticate.disconnect(null, secretSessionId, qos);
-		}
-		catch (XmlBlasterException e) {
+		} catch (XmlBlasterException e) {
 			sendExeption(command, e);
 		}
 		close();
 	}
-	
+
 	protected void onStompSend(StompFrame command) {
 		try {
 			if (!checkXbConnected()) {
-				sendExeption(command, new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "Please call connect first"));
+				sendExeption(command, new XmlBlasterException(glob,
+						ErrorCode.USER_WRONG_API_USAGE,
+						"Please call connect first"));
 				return;
 			}
 			Map headers = command.getHeaders();
@@ -267,8 +285,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			msgArr[0] = msg;
 			xb.publishArr(null, secretSessionId, msgArr);
 			sendResponse(command);
-		}
-		catch (XmlBlasterException e) {
+		} catch (XmlBlasterException e) {
 			sendExeption(command, e);
 		}
 	}
@@ -276,17 +293,18 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	protected void onStompSubscribe(StompFrame command) throws Exception {
 		try {
 			if (!checkXbConnected()) {
-				sendExeption(command, new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "Please call connect first"));
+				sendExeption(command, new XmlBlasterException(glob,
+						ErrorCode.USER_WRONG_API_USAGE,
+						"Please call connect first"));
 				return;
 			}
 			final Map headers = command.getHeaders();
 			String key = (String) headers.get(XB_SERVER_HEADER_KEY);
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
 			xb.subscribe(null, secretSessionId, key, qos);
-	
+
 			sendResponse(command);
-		}
-		catch (XmlBlasterException e) {
+		} catch (XmlBlasterException e) {
 			sendExeption(command, e);
 		}
 	}
@@ -294,7 +312,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	protected void onStompUnsubscribe(StompFrame command) throws Exception {
 		try {
 			if (!checkXbConnected()) {
-				sendExeption(command, new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "Please call connect first"));
+				sendExeption(command, new XmlBlasterException(glob,
+						ErrorCode.USER_WRONG_API_USAGE,
+						"Please call connect first"));
 				return;
 			}
 			final Map headers = command.getHeaders();
@@ -302,8 +322,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
 			xb.unSubscribe(null, secretSessionId, key, qos);
 			sendResponse(command);
-		}
-		catch (XmlBlasterException e) {
+		} catch (XmlBlasterException e) {
 			sendExeption(command, e);
 		}
 	}
@@ -350,10 +369,90 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		return outputHandler.toString();
 	}
 
+	/**
+	 * How long to block on remote call waiting on a ping response. The default
+	 * is to block for one minute This method can be overwritten by
+	 * implementations like EMAIL
+	 */
+	public long getDefaultPingResponseTimeout() {
+		return Constants.MINUTE_IN_MILLIS;
+	}
+
+	/**
+	 * How long to block on remote call waiting on a update() response. The
+	 * default is to block forever This method can be overwritten by
+	 * implementations like EMAIL
+	 */
+	public long getDefaultUpdateResponseTimeout() {
+		return Integer.MAX_VALUE;
+	}
+
+	/**
+	 * Set the given millis to protect against blocking client for ping
+	 * invocations.
+	 * 
+	 * @param millis
+	 *            If <= 0 it is set to the default (one minute). An argument
+	 *            less than or equal to zero means not to wait at all and is not
+	 *            supported
+	 */
+	public final void setPingResponseTimeout(long millis) {
+		if (millis <= 0L) {
+			log.warning("pingResponseTimeout=" + millis
+					+ " is invalid, setting it to "
+					+ getDefaultPingResponseTimeout() + " millis");
+			this.pingResponseTimeout = getDefaultPingResponseTimeout();
+		} else
+			this.pingResponseTimeout = millis;
+	}
+
+	/**
+	 * Set the given millis to protect against blocking client for update()
+	 * invocations.
+	 * 
+	 * @param millis
+	 *            If <= 0 it is set to the default (one minute). An argument
+	 *            less than or equal to zero means not to wait at all and is not
+	 *            supported
+	 */
+	public final void setUpdateResponseTimeout(long millis) {
+		if (millis <= 0L) {
+			log.warning("updateResponseTimeout=" + millis
+					+ " is invalid, setting it to "
+					+ getDefaultUpdateResponseTimeout() + " millis");
+			this.updateResponseTimeout = getDefaultUpdateResponseTimeout();
+		} else
+			this.updateResponseTimeout = millis;
+	}
+
+	/**
+	 * @return Returns the responseTimeout.
+	 */
+	public long getResponseTimeout(MethodName methodName) {
+		if (MethodName.PING.equals(methodName)) {
+			return this.pingResponseTimeout;
+		} else if (MethodName.UPDATE.equals(methodName)) {
+			return this.updateResponseTimeout;
+		}
+		return this.updateResponseTimeout;
+		// return this.responseTimeout;
+	}
+
 	@Override()
-	public void init(Global glob, CallbackAddress callbackAddress)
+	public void init(Global glob, CallbackAddress addressConfig)
 			throws XmlBlasterException {
 
+		setPingResponseTimeout(addressConfig.getEnv("pingResponseTimeout",
+				getDefaultPingResponseTimeout()).getValue());
+		if (log.isLoggable(Level.FINE))
+			log.fine(addressConfig.getEnvLookupKey("pingResponseTimeout") + "="
+					+ this.pingResponseTimeout);
+
+		setUpdateResponseTimeout(addressConfig.getEnv("updateResponseTimeout",
+				getDefaultUpdateResponseTimeout()).getValue());
+		if (log.isLoggable(Level.FINE))
+			log.fine(addressConfig.getEnvLookupKey("updateResponseTimeout")
+					+ "=" + this.updateResponseTimeout);
 	}
 
 	@Override()
@@ -368,11 +467,13 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		if (qos != null && qos.indexOf("INITIAL") != -1)
 			return "<qos/>";
 		if (!checkStompConnected())
-			throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Stomp callback ping failed");
+			throw new XmlBlasterException(glob,
+					ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+					"Stomp callback ping failed");
 		StompFrame frame = new StompFrame();
 		frame.setAction(XB_SERVER_COMMAND_PING);
 		frame.getHeaders().put(XB_SERVER_HEADER_QOS, qos);
-		String returnValue = sendFrameAndWait(frame);
+		String returnValue = sendFrameAndWait(frame, MethodName.PING);
 		return returnValue;
 	}
 
@@ -393,11 +494,13 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			String topicId = msg.getKeyOid();
 			frame.setAction(Stomp.Responses.MESSAGE);
 			frame.getHeaders().put(Stomp.Headers.Message.DESTINATION, topicId);
+			frame.getHeaders().put("methodName", MethodName.UPDATE);
 			frame.getHeaders().put(XB_SERVER_HEADER_KEY, msgUnit.getKey());
 			frame.getHeaders().put(XB_SERVER_HEADER_QOS, msgUnit.getQos());
-			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, msgUnit.getContent().length);
+			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH,
+					msgUnit.getContent().length);
 			frame.setContent(msgUnit.getContent());
-			ret[i] = sendFrameAndWait(frame);
+			ret[i] = sendFrameAndWait(frame, MethodName.UPDATE);
 			i++;
 		}
 		return ret;
@@ -413,9 +516,11 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				frame.setAction(Stomp.Responses.MESSAGE);
 				frame.getHeaders().put(Stomp.Headers.Message.DESTINATION,
 						topicId);
+				frame.getHeaders().put("methodName", MethodName.UPDATE_ONEWAY);
 				frame.getHeaders().put(XB_SERVER_HEADER_KEY, msgUnit.getKey());
 				frame.getHeaders().put(XB_SERVER_HEADER_QOS, msgUnit.getQos());
-				frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, msgUnit.getContent().length);
+				frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH,
+						msgUnit.getContent().length);
 				frame.setContent(msgUnit.getContent());
 				sendFrameNoWait(frame);
 			} catch (Exception e) {
@@ -446,9 +551,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	}
 
 	private String registerFrame(StompFrame frame) {
-		String messageId = ""+new Timestamp().getTimestamp(); 
-			//frame.getAction() + "-" + secretSessionId + "-"
-			//	+ System.currentTimeMillis();
+		String messageId = "" + new Timestamp().getTimestamp();
+		// frame.getAction() + "-" + secretSessionId + "-"
+		// + System.currentTimeMillis();
 		frame.getHeaders().put(Stomp.Headers.Message.MESSAGE_ID, messageId);
 		framesToAck.put(messageId, frame);
 		return (messageId);
@@ -471,14 +576,14 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		}
 	}
 
-	private String sendFrameAndWait(StompFrame frame)
+	private String sendFrameAndWait(StompFrame frame, MethodName methodName)
 			throws XmlBlasterException {
 		String messageId = registerFrame(frame);
 		try {
 			checkStompConnected();
 			outputHandler.onStompFrame(frame);
 			synchronized (frame) {
-				frame.wait(15000); // TODO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO !!!!!!!!!!!!!
+				frame.wait(getResponseTimeout(methodName));
 			}
 			if (frame == getFrameForMessageId(messageId)) {
 				log.severe(messageId + " No Ack recieved in time");
@@ -492,10 +597,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			if (e instanceof XmlBlasterException)
 				throw (XmlBlasterException) e;
 			else
-				throw new XmlBlasterException(
-						this.glob,
+				throw new XmlBlasterException(this.glob,
 						ErrorCode.COMMUNICATION_NOCONNECTION_DEAD,
-						//ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE,
+						// ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE,
 						ME + ".sendFrameAndWait", e.getMessage());
 		}
 		log.info(messageId + " successfully send and acknowledged");
@@ -514,7 +618,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			sendFrameNoWait(sc);
 		}
 	}
-	
+
 	public static byte[] toUtf8Bytes(String s) {
 		if (s == null || s.length() == 0)
 			return new byte[0];
@@ -535,7 +639,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		sc.setAction(Stomp.Responses.ERROR);
 		sc.setHeaders(new HashMap());
 		sc.getHeaders().put("errorCode", e.getErrorCodeStr()); // xmlBlaster way
-		sc.getHeaders().put(Stomp.Responses.MESSAGE, e.getErrorCodeStr()); // stomp wants it
+		sc.getHeaders().put(Stomp.Responses.MESSAGE, e.getErrorCodeStr()); // stomp
+																			// wants
+																			// it
 		if (receiptId != null) {
 			sc.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID, receiptId);
 		}
