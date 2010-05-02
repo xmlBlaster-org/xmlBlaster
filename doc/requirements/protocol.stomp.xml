@@ -133,6 +133,7 @@
    <see type="API">org.xmlBlaster.protocol.stomp.XbStompDriver</see>
    <see type="API">org.xmlBlaster.protocol.stomp.XbStompInOutBridge</see>
    <see type="API">org.xmlBlaster.protocol.stomp.SocketUrl</see>
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/stomp/XbStompInOutBridge.java.html</see>
    <see type="INTERNET" label="Stomp homepage">http://stomp.codehaus.org/</see>
    <see type="INTERNET" label="xmlBlasterPlugins.xml">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlasterPlugins.xml.template</see>
    <author>Dieter Saken</author>
