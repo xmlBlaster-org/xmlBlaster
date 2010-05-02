@@ -63,6 +63,12 @@
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
    &lt;/plugin>
 
+   &lt;plugin id='STOMP' className='org.xmlBlaster.protocol.stomp.XbStompDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='3' sequence='8' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='2' sequence='8'/>   
+   &lt;/plugin>
+
    &lt;plugin id='RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
       &lt;action do='LOAD' onStartupRunlevel='3' sequence='4' />
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
@@ -111,6 +117,12 @@
          <td>The URL address markup of our proprietary SOCKET protocol.</td>
        </tr>
        <tr>
+         <td>STOMP</td>
+         <td>stomp://<i>host</i>:<i>port</i></td>
+         <td>stomp://127.168.1.1:61613</td>
+         <td>The URL address markup of the STOMP protocol (http://stomp.codehaus.org/).</td>
+       </tr>
+       <tr>
          <td>RMI</td>
          <td>rmi://<i>host</i>:<i>registryPort</i>/I_AuthServer</td>
          <td>rmi://127.168.1.1:1099/I_AuthServer</td>
@@ -138,6 +150,7 @@
    </todo>
    <see type="REQ">engine.runlevel</see>
    <see type="REQ">protocol.socket</see>
+   <see type="REQ">protocol.stomp</see>
    <see type="REQ">protocol.corba.JacORB</see>
    <see type="REQ">protocol.corba.orbacus</see>
    <see type="REQ">protocol.corba.NameService</see>

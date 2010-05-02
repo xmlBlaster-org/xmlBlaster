@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.stomp' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>XmlBlaster supports the bidirectional STOMP communication protocol</topic>
+   <description>
+      <p>
+      RPC (remote procedure call) based frameworks like CORBA (if not BiDirectional GIOP), RMI and XmlRpc (if not tunneled) require the client
+      to set up a callback server for asynchronous callbacks. This causes problems if the client
+      is behind a firewall or if the client may not establish a listen socket.
+      </p>
+      <p>
+      This protocol supports tunneling back messages and supports many programming languages on the client side.
+      </p>
+      <h2>
+      Protocol specification
+      </h2>
+   <p>
+   Please consult http://stomp.codehaus.org/ for more details.
+   </p>
+
+      <h2>
+      Limitations
+      </h2>
+   <p>
+   Currently only basic operation is implemented on server side,
+   please check the code in <code>org.xmlBlaster.protocol.stomp.XbStompInOutBridge</code> for implementation details.
+   To code a client there is no specific support available in xmlBlaster.
+   <br />
+   The server side plugin is available for xmlBlaster > 2.0, please use svn to access it.
+   </p>
+
+      <h2>
+      Details
+      </h2>
+   <p>
+   The stomp message expects the header entries <code>key</code> and <code>qos</code> which are the XML encoded xmlBlaster typical key and qos of a message.
+   The xmlBlaster message content is send as stomp binary content.
+   </p>
+   </description>
+
+   <configuration where="server">
+      <h2>Server side configuration</h2>
+
+      <p>The driver is activated in xmlBlasterPlugins.xml:</p>
+<pre>
+   &lt;!-- ProtocolPlugin[STOMP][1.0] for iPad and iPhone and other programming languages -->
+   &lt;plugin create='true' id='STOMP' className='org.xmlBlaster.protocol.stomp.XbStompDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='4' sequence='35'
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='3' sequence='35'/>
+      &lt;attribute id='port'>61613&lt;/attribute>
+   &lt;/plugin>
+</pre>
+
+      <p>Note: If you configure a property in <tt>xmlBlasterPlugins.xml</tt> the scope is
+      already inside the specific plugin and you need to leave away the prefix <b>plugin/stomp</b> and
+      for example directly write <b>responseTimeout</b>.<br />
+      On command line or in <tt>xmlBlaster.properties</tt> however, the scope is global and you need
+      to write the complete name like <b>plugin/stomp/responseTimeout</b>.</p>
+
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>plugin/stomp/hostname</td>
+            <td>localhost</td>
+            <td>Specify a hostname where the stomp server runs
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/stomp/port</td>
+            <td>61613</td>
+            <td>The stomp server port
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/stomp/updateResponseTimeout</td>
+            <td>forever</td>
+            <td>When the <code>update()</code> callback method is invoked we wait the given time [milli-seconds] on a response, the value must be
+            bigger than zero, use Integer.MAX_VALUE for an unlimited setting.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which leads on server side to a dead message
+            (depending on the installed error handler).
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/stomp/pingResponseTimeout</td>
+            <td>60000</td>
+            <td>When the <code>ping()</code> method is invoked we wait the given time [milli-seconds] on a response, 
+            the value must be bigger than zero, it defaults to one minute.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which leads on server side to a dead message
+            (depending on the installed error handler).
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+   </configuration>
+
+   <todo type="HTML">
+   <ol>
+      <li>
+      Support 'erase' of topics
+      </li>
+      <li>
+      Support SSL
+      </li>
+      <li>
+      Support compression
+      </li>
+      <li>
+      Add client libraries which support automatical reconnect, SSL and compression
+      </li>
+   </ol>
+   </todo>
+
+   <see type="REQ">protocol</see>
+   <see type="API">org.xmlBlaster.protocol.stomp.XbStompDriver</see>
+   <see type="API">org.xmlBlaster.protocol.stomp.SocketUrl</see>
+   <see type="INTERNET" label="Stomp homepage">http://java.sun.com/developer/JDCTechTips/2004/tt0914.html#2</see>
+   <see type="INTERNET" label="xmlBlasterPlugins.xml">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlasterPlugins.xml.template</see>
+   <author>Dieter Saken</author>
+   <date>2010 05 02</date>
+   <revision>$Revision: 1.56 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
