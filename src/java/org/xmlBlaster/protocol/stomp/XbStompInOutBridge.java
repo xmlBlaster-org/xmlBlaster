@@ -361,7 +361,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		@SuppressWarnings("unchecked")
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
-		log.info("ACK: " + messageId);
+		//log.info("ACK: " + messageId);
 		if (messageId == null) {
 			throw new ProtocolException(
 					"ACK received without a message-id to acknowledge!");
@@ -569,15 +569,21 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			String topicId = msg.getKeyOid();
 			frame.setAction(Stomp.Responses.MESSAGE);
 			frame.getHeaders().put(Stomp.Headers.Message.DESTINATION, topicId);
-			frame.getHeaders().put("methodName", MethodName.UPDATE);
-			frame.getHeaders().put("content-type", getContentType(msgUnitRaw)); // "text/xml"
+			frame.getHeaders().put("methodName", MethodName.UPDATE.toString());
+			String contentType = getContentType(msgUnitRaw);
+			frame.getHeaders().put("content-type", contentType); // "text/xml"
 			frame.getHeaders().put(XB_SERVER_HEADER_KEY, cleanNewlines(msgUnitRaw.getKey()));
 			frame.getHeaders().put(XB_SERVER_HEADER_QOS, cleanNewlines(msgUnitRaw.getQos()));
-			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH,
-					msgUnitRaw.getContent().length);
-			frame.setContent(msgUnitRaw.getContent());
+			byte[] content = msgUnitRaw.getContent();
+			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, content.length);
+			frame.setContent(content);
+			log.info("Sending now UPDATE ... " + msgUnitRaw.getKey());
 			ret[i] = sendFrameAndWait(frame, MethodName.UPDATE);
+			log.info("UPDATE returned " + ret[i]);
 			i++;
+			//ret[i] = "<qos/>";
+			//log.info("UPDATE returned " + ret[i]);
+			//i++;
 		}
 		return ret;
 	}
@@ -663,7 +669,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			long timeout = getResponseTimeout(methodName);
 			synchronized (frame) {
 				outputHandler.onStompFrame(frame);
-				frame.wait(timeout);
+				frame.wait(timeout); // TODO: Port to CountDownLatch cdl = new CountDownLatch(1);
 			}
 			if (frame == getFrameForMessageId(messageId)) {
 				String text = "methodName=" + methodName.toString() + " messageId=" + messageId + ": No Ack recieved in timeoutMillis=" + timeout;
