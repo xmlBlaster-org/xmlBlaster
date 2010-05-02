@@ -56,7 +56,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	private final XbStompDriver driver;
 	private final Global glob;
 
-	private final ConcurrentHashMap<String, StompFrame> framesToAck = new ConcurrentHashMap<String, StompFrame>();
+	private final ConcurrentHashMap<String, RequestHolder> framesToAck = new ConcurrentHashMap<String, RequestHolder>();
 	private String secretSessionId;
 	private I_Authenticate authenticate;
 	private org.xmlBlaster.protocol.I_XmlBlaster xb;
@@ -130,16 +130,16 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			}
 		}
 		
-		StompFrame[] arr = getFramesToAck();
+		RequestHolder[] arr = getFramesToAck();
 		this.framesToAck.clear();
-		for (StompFrame stompFrame : arr) {
-			notifyFrameAck(stompFrame);
+		for (RequestHolder requestHolder : arr) {
+			notifyFrameAck(requestHolder);
 		}
 	}
 
-	private StompFrame[] getFramesToAck() {
+	private RequestHolder[] getFramesToAck() {
 		synchronized (this.framesToAck) {
-			return (StompFrame[])this.framesToAck.values().toArray(new StompFrame[this.framesToAck.size()]);
+			return (RequestHolder[])this.framesToAck.values().toArray(new RequestHolder[this.framesToAck.size()]);
 		}
 	}
 
@@ -181,6 +181,8 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			onStompSend(frame);
 		} else if (action.startsWith(Stomp.Commands.ACK)) {
 			onStompAck(frame);
+		} else if (action.startsWith(Stomp.Commands.ABORT)) {
+			onStompNak(frame);
 		} else {
 			throw new ProtocolException("STOMP action: " + action
 					+ "not supported or unknown");
@@ -361,22 +363,48 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		@SuppressWarnings("unchecked")
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
-		//log.info("ACK: " + messageId);
 		if (messageId == null) {
 			throw new ProtocolException(
 					"ACK received without a message-id to acknowledge!");
 		}
-		StompFrame frameToAck = framesToAck.get(messageId);
-		log.info("ACK release and notify: " + messageId);
+
+		RequestHolder requestHolder = framesToAck.get(messageId);
+		requestHolder.returnQos = (String) headers.get(XB_SERVER_HEADER_QOS);
+		log.info("ACK release and notify: " + messageId + " " + requestHolder.returnQos);
+		
 		removeFrameForMessageId(messageId);
-		notifyFrameAck(frameToAck);
+		notifyFrameAck(requestHolder);
 	}
 
-	private boolean notifyFrameAck(StompFrame frameToAck) {
-		if (frameToAck != null) {
-			synchronized (frameToAck) {
+	protected void onStompNak(StompFrame command) throws Exception {
+		if (!checkStompConnected())
+			return;
+		@SuppressWarnings("unchecked")
+		Map headers = command.getHeaders();
+		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
+		if (messageId == null) {
+			throw new ProtocolException(
+					"NAK received without a message-id to acknowledge!");
+		}
+		String errorCode = (String) headers.get("errorCode");
+		ErrorCode errorCodeEnum = ErrorCode.toErrorCode(errorCode, ErrorCode.USER_CLIENTCODE);
+		String message = (String) headers.get(Stomp.Headers.Error.MESSAGE);
+		if (message == null)
+			message = "UPDATE failed, client has rejected message";
+
+		RequestHolder requestHolder = framesToAck.get(messageId);
+		requestHolder.xmlBlasterException = new XmlBlasterException(glob, errorCodeEnum, message);
+		
+		log.info("NAK release and notify: " + errorCode);
+		removeFrameForMessageId(messageId);
+		notifyFrameAck(requestHolder);
+	}
+
+	private boolean notifyFrameAck(RequestHolder requestHolder) {
+		if (requestHolder != null && requestHolder.stompFrame != null) {
+			synchronized (requestHolder.stompFrame) {
 				try {
-					frameToAck.notify();
+					requestHolder.stompFrame.notify();
 					return true;
 				}
 				catch (Throwable e) {
@@ -629,17 +657,18 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	 * private internal stuff
 	 */
 
-	private StompFrame getFrameForMessageId(String messageId) {
+	private RequestHolder getFrameForMessageId(String messageId) {
 		return (framesToAck.get(messageId));
 	}
 
-	private String registerFrame(StompFrame frame) {
+	private RequestHolder registerFrame(StompFrame frame) {
 		String messageId = "" + new Timestamp().getTimestamp();
 		// frame.getAction() + "-" + secretSessionId + "-"
 		// + System.currentTimeMillis();
 		frame.getHeaders().put(Stomp.Headers.Message.MESSAGE_ID, messageId);
-		framesToAck.put(messageId, frame);
-		return (messageId);
+		RequestHolder requestHolder = new RequestHolder(messageId, frame);
+		framesToAck.put(messageId, requestHolder);
+		return requestHolder;
 	}
 
 	private void removeFrameForMessageId(String messageId) {
@@ -663,7 +692,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 
 	private String sendFrameAndWait(StompFrame frame, MethodName methodName)
 			throws XmlBlasterException {
-		String messageId = registerFrame(frame);
+		final RequestHolder requestHolder = registerFrame(frame);
 		try {
 			checkStompConnected();
 			long timeout = getResponseTimeout(methodName);
@@ -671,10 +700,11 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				outputHandler.onStompFrame(frame);
 				frame.wait(timeout); // TODO: Port to CountDownLatch cdl = new CountDownLatch(1);
 			}
-			if (frame == getFrameForMessageId(messageId)) {
-				String text = "methodName=" + methodName.toString() + " messageId=" + messageId + ": No Ack recieved in timeoutMillis=" + timeout;
+			// Timeout occurred if requestHolder was not removed by ACK or NAK:
+			if (requestHolder == getFrameForMessageId(requestHolder.messageId)) {
+				String text = "methodName=" + methodName.toString() + " messageId=" + requestHolder.messageId + ": No Ack recieved in timeoutMillis=" + timeout;
 				log.warning(text);
-				removeFrameForMessageId(messageId);
+				removeFrameForMessageId(requestHolder.messageId);
 				throw new XmlBlasterException(this.glob,
 						ErrorCode.COMMUNICATION_TIMEOUT, ME
 								+ ".sendFrameAndWait",
@@ -689,8 +719,15 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						// ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE,
 						ME + ".sendFrameAndWait", e.getMessage());
 		}
-		log.info("methodName=" + methodName.toString() + " messageId=" + messageId + ": Successfully send and acknowledged");
-		return "<qos/>";
+		// http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+		if (requestHolder.xmlBlasterException == null) { // requestHolder.returnQos should filled
+			log.info("methodName=" + methodName.toString() + " messageId=" + requestHolder.messageId + ": Successfully send and acknowledged " + requestHolder.returnQos);
+			return (requestHolder.returnQos == null) ?  "<qos/>" : requestHolder.returnQos;
+		}
+		else {
+			log.warning("methodName=" + methodName.toString() + " messageId=" + requestHolder.messageId + ": Exception from client: " + requestHolder.xmlBlasterException.getMessage());
+			throw requestHolder.xmlBlasterException;
+		}
 	}
 
 	@SuppressWarnings("unchecked")

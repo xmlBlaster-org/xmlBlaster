@@ -365,20 +365,20 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 
 	@Override
 	public boolean isActive() {
-		// TODO Auto-generated method stub
-		return false;
+		try {
+			return getTcpServer().isStarted();
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
 	public String getUsageUrl() {
-		// TODO Auto-generated method stub
-		return null;
+		return "http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.stomp.html";
 	}
 
 	@Override
 	public void setUsageUrl(String url) {
-		// TODO Auto-generated method stub
-		
 	}
-
 }
