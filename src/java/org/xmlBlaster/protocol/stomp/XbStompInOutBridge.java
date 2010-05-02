@@ -40,7 +40,7 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.stomp.html">Protocol integration</a>
  * @see <a href="http://stomp.codehaus.org/">Website</a>
  * @see <a href="http://stomp.codehaus.org/Protocol">Protocol describtion</a>
- * @author Dieter Saken, Marcel Ruff
+ * @author Dieter Saken (Marcel Ruff)
  */
 public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	private static Logger log = Logger.getLogger(XbStompInOutBridge.class
