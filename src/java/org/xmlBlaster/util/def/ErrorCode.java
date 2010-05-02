@@ -802,7 +802,23 @@ public final class ErrorCode implements java.io.Serializable
          throw new IllegalArgumentException("ErrorCode: The given errorCode=" + errorCode + " is unknown");
       return (ErrorCode)entry;
    }
-   
+
+   /**
+    * Returns the ErrorCode object for the given String error code. 
+    * @param errorCode The String code to lookup
+    * @param the code to use if errorCode is not known
+    * @return The enumeration object for this errorCode
+    */
+   public static final ErrorCode toErrorCode(String errorCode, ErrorCode fallback) {
+      if (errorCode == null) {
+         return fallback;
+      }
+      Object entry = errorCodeMap.get(errorCode);
+      if (entry == null)
+         return fallback;
+      return (ErrorCode)entry;
+   }
+
    public final boolean equals(ErrorCode other) {
       return this.errorCode.equals(other.getErrorCode());
    }
