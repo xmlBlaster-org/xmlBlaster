@@ -17,10 +17,9 @@ import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.address.AddressBase;
 
 /**
- * This knows how to parse the URL notation of our SOCKET protocol. 
+ * This knows how to parse the URL notation of the STOMP protocol. 
  * It holds the hostname and the port.
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
- * @see org.xmlBlaster.test.classtest.SocketUrlTest
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.stomp.html">The protocol.stomp requirement</a>
  */
 public class SocketUrl
 {
@@ -36,10 +35,6 @@ public class SocketUrl
    private int port = SocketUrl.DEFAULT_SERVER_PORT;
    private PropInt portProp;
    private boolean isLocal = false;
-   /** Flag to use TCP/IP */
-   public static final boolean SOCKET_TCP = false;
-   /** Flag to use UDP */
-   public static final boolean SOCKET_UDP = true;
    // Default port of xmlBlaster socket local side is 0 (choosen by OS) */
    //public static final int DEFAULT_SERVER_CBPORT = 0;
    /** Default port of xmlBlaster stomp server is 61613 */
@@ -63,7 +58,7 @@ public class SocketUrl
 
    /**
     * Parse the given url. 
-    * @param url e.g. "socket://127.168.1.1:61613" or only "127.168.1.1:61613" or "" (choose default settings)
+    * @param url e.g. "stomp://127.168.1.1:61613" or only "127.168.1.1:61613" or "" (choose default settings)
     * @exception XmlBlasterException if url is null or invalid
     */
    public SocketUrl(Global glob, String url) throws XmlBlasterException {
@@ -134,7 +129,7 @@ public class SocketUrl
    }
 
    /**
-    * @return for example "socket://myServer.com:61613"
+    * @return for example "stomp://myServer.com:61613"
     */
    public String getUrl() {
       return "stomp://" + this.hostname + ":" + this.port;
@@ -203,10 +198,8 @@ public class SocketUrl
 
    public boolean equals(SocketUrl other) {
       if (this.port == other.getPort() && getInetAddress().equals(other.getInetAddress())) {
-         //log.error(ME, "DEBUG ONLY: EQUAL: " + getUrl() + " - " + other.getUrl());
          return true;
       }
-      //log.error(ME, "DEBUG ONLY: NOT EQUAL: " + getUrl() + " - " + other.getUrl());
       return false;
    }
 
