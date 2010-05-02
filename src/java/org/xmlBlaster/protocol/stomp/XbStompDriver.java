@@ -3,6 +3,8 @@ package org.xmlBlaster.protocol.stomp;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,12 +34,11 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @author Dieter Saken
  */
 
-public class XbStompDriver implements I_Driver, StompHandlerFactory {
+public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriverMBean {
 	private static Logger log = Logger.getLogger(XbStompDriver.class.getName());
 	private String ME = "XbStompDriver";
 	/** The global handle */
 	private Global glob;
-	public static final int DEFAULT_SERVER_PORT = 61613;
 	/**
 	 * The socket address info object holding hostname (useful for multi homed
 	 * hosts) and port
@@ -54,10 +55,14 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 	/** My JMX registration */
 	protected Object mbeanHandle;
 	protected ContextNode contextNode;
-	protected boolean isShutdown;
-
+	private boolean isShutdown;
+	
+	/** Remember all client connections */
+	private Set<XbStompInOutBridge> clientSet = new HashSet<XbStompInOutBridge>();
+	private int connectCounter;
+	
 	public void activate() throws XmlBlasterException {
-		log.info("activate");
+		log.info("activate, starting stomp socket listener");
 		try {
 			doStart();
 		} catch (Exception e) {
@@ -67,16 +72,25 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 
 	}
 
-	public void deActivate() throws XmlBlasterException {
+	public void deActivate() { // throws XmlBlasterException {
 		try {
-			log.info("deActivate");
+			log.info("deActivate, stopping stomp socket listener");
 			doStop();
 		} catch (Throwable ex) {
-			throw new XmlBlasterException(this.glob,
-					ErrorCode.INTERNAL_UNKNOWN, ME + ".init",
-					"init. Could'nt shutdown the driver.", ex);
+			ex.printStackTrace();
+			//throw new XmlBlasterException(this.glob,
+			//		ErrorCode.INTERNAL_UNKNOWN, ME + ".init",
+			//		"init. Could'nt shutdown the driver.", ex);
 		}
 
+		XbStompInOutBridge[] arr = getClients();
+		log.info("deActivate, throwing out " + arr.length + " clients");
+		// shutdown all clients connected
+		for (XbStompInOutBridge client: arr) {
+			client.shutdownNoThrow();
+			removeClient(client);
+		}
+		clearClients();
 	}
 
 	public String getName() {
@@ -234,6 +248,38 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 		return this.isShutdown;
 	}
 
+	public XbStompInOutBridge[] getClients() {
+		synchronized (clientSet) {
+			return clientSet.toArray(new XbStompInOutBridge[clientSet.size()]);
+		}
+	}
+
+	public boolean addClient(XbStompInOutBridge client) {
+		synchronized (clientSet) {
+			return clientSet.add(client);
+		}
+	}
+
+	public boolean removeClient(XbStompInOutBridge client) {
+		synchronized (clientSet) {
+			return clientSet.remove(client);
+		}
+	}
+
+	public int clearClients() {
+		synchronized (clientSet) {
+			int num = clientSet.size();
+			clientSet.clear();
+			return num;
+		}
+	}
+
+	public int countClients() {
+		synchronized (clientSet) {
+			return clientSet.size();
+		}
+	}
+
 	// ///////// STOMP
 
 	/**
@@ -241,7 +287,11 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 	 */
 	@Override
 	public StompHandler createStompHandler(StompHandler outputHandler) {
-		return new XbStompInOutBridge(this.glob, this, outputHandler);
+		XbStompInOutBridge client = new XbStompInOutBridge(this.glob, this, outputHandler);
+		addClient(client);
+		connectCounter++;
+		log.info("New stomp client arrives, current number of clients=" + countClients() + ", overall connects=" + connectCounter);
+		return client;
 	}
 
 	/**
@@ -252,6 +302,11 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 		getTcpServer().join();
 	}
 
+	/**
+	 * Stomp specific url syntax
+	 * @return "tcp://localhost:61613"
+	 * @throws URISyntaxException
+	 */
 	public URI getLocation() throws URISyntaxException {
 		if (location == null) {
 			// "tcp://localhost:11111";
@@ -260,14 +315,6 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 			location = new URI(uri);
 		}
 		return location;
-	}
-
-	/**
-	 * Sets the URI for the hostname/IP address and port to listen on for STOMP
-	 * frames
-	 */
-	public void setLocation(URI location) {
-		this.location = location;
 	}
 
 	public ServerSocketFactory getServerSocketFactory() {
@@ -284,7 +331,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 		this.serverSocketFactory = serverSocketFactory;
 	}
 
-	public TcpTransportServer getTcpServer() throws IOException,
+	public synchronized TcpTransportServer getTcpServer() throws IOException,
 			URISyntaxException {
 		if (tcpServer == null) {
 			tcpServer = createTcpServer();
@@ -310,8 +357,28 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory {
 
 	protected TcpTransportServer createTcpServer() throws IOException,
 			URISyntaxException {
-		return new TcpTransportServer(this, getLocation(),
+		TcpTransportServer server = new TcpTransportServer(this, getLocation(),
 				getServerSocketFactory());
+		server.setDaemon(true);
+		return server;
+	}
+
+	@Override
+	public boolean isActive() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String getUsageUrl() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setUsageUrl(String url) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

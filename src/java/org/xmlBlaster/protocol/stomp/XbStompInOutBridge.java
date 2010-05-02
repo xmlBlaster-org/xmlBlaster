@@ -19,6 +19,7 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -26,6 +27,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
@@ -73,21 +75,25 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		this.stompOpened = true;
 	}
 
-	/*
-	 * This Code Area handles the incoming Stomp messages by implementing the
-	 * StompHandler Interface
-	 */
-
 	public void shutdown() throws XmlBlasterException {
 		if (!checkXbConnected())
 			return;
 		log.info(ME + " will shutdown");
+        driver.removeClient(this);
 		try {
 			close();
 		} catch (Throwable e) {
 			throw new XmlBlasterException(this.glob,
 					ErrorCode.COMMUNICATION_NOCONNECTION_DEAD,
 					ME + ".shutdown", e.getMessage());
+		}
+	}
+
+	public void shutdownNoThrow() {
+		try {
+			shutdown();
+		} catch (Throwable e) {
+			log.warning("shutdownNoThrow: " + e.toString());
 		}
 	}
 
@@ -123,7 +129,24 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				}
 			}
 		}
+		
+		StompFrame[] arr = getFramesToAck();
+		this.framesToAck.clear();
+		for (StompFrame stompFrame : arr) {
+			notifyFrameAck(stompFrame);
+		}
 	}
+
+	private StompFrame[] getFramesToAck() {
+		synchronized (this.framesToAck) {
+			return (StompFrame[])this.framesToAck.values().toArray(new StompFrame[this.framesToAck.size()]);
+		}
+	}
+
+	/*
+	 * This Code Area handles the incoming Stomp messages by implementing the
+	 * StompHandler Interface
+	 */
 
 	private boolean checkStompConnected() {
 		return this.stompOpened;
@@ -165,6 +188,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void onStompConnect(StompFrame command) {
 		try {
 			final Map headers = command.getHeaders();
@@ -242,7 +266,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				}
 				StompFrame sc = new StompFrame();
 				sc.setAction(Stomp.Responses.CONNECTED);
-				sc.setHeaders((Map) responseHeaders);
+				sc.setHeaders((Map)responseHeaders);
 				sendFrameNoWait(sc);
 			}
 		} catch (XmlBlasterException e) {
@@ -260,6 +284,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			return;
 		}
 		try {
+			@SuppressWarnings("unchecked")
 			final Map headers = command.getHeaders();
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
 			authenticate.disconnect(null, secretSessionId, qos);
@@ -277,6 +302,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						"Please call connect first"));
 				return;
 			}
+			@SuppressWarnings("unchecked")
 			Map headers = command.getHeaders();
 			String key = (String) headers.get(XB_SERVER_HEADER_KEY);
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
@@ -298,6 +324,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						"Please call connect first"));
 				return;
 			}
+			@SuppressWarnings("unchecked")
 			final Map headers = command.getHeaders();
 			String key = (String) headers.get(XB_SERVER_HEADER_KEY);
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
@@ -317,6 +344,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						"Please call connect first"));
 				return;
 			}
+			@SuppressWarnings("unchecked")
 			final Map headers = command.getHeaders();
 			String key = (String) headers.get(XB_SERVER_HEADER_KEY);
 			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
@@ -330,6 +358,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	protected void onStompAck(StompFrame command) throws Exception {
 		if (!checkStompConnected())
 			return;
+		@SuppressWarnings("unchecked")
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		log.info("ACK: " + messageId);
@@ -338,13 +367,25 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 					"ACK received without a message-id to acknowledge!");
 		}
 		StompFrame frameToAck = framesToAck.get(messageId);
+		log.info("ACK release and notify: " + messageId);
+		removeFrameForMessageId(messageId);
+		notifyFrameAck(frameToAck);
+	}
+
+	private boolean notifyFrameAck(StompFrame frameToAck) {
 		if (frameToAck != null) {
-			log.info("ACK release and notify: " + messageId);
-			removeFrameForMessageId(messageId);
 			synchronized (frameToAck) {
-				frameToAck.notify();
+				try {
+					frameToAck.notify();
+					return true;
+				}
+				catch (Throwable e) {
+					e.printStackTrace();
+					return false;
+				}
 			}
 		}
+		return false;
 	}
 
 	// ===================== I_CallbackDriver ==========================
@@ -481,25 +522,60 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			I_ProgressListener listener) {
 		return null;
 	}
+	
+	/**
+	 * HTTP header key/value should not contain new line. 
+	 * @param str
+	 * @return
+	 */
+	private String cleanNewlines(String str) {
+		return ReplaceVariable.replaceAll(str, "\n", " ");
+	}
+	
+	private KeyData getKeyData(MsgUnitRaw msgUnitRaw) {
+		try {
+			if (msgUnitRaw == null)
+				return null;
+			MsgUnit msgUnit = (MsgUnit)msgUnitRaw.getMsgUnit();
+			if (msgUnit == null)
+				return null;
+			return msgUnit.getKeyData();
+		}
+		catch(Throwable e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private String getContentType(MsgUnitRaw msgUnitRaw) {
+		KeyData keyData = getKeyData(msgUnitRaw);
+		if (keyData != null) {
+			String contentType = keyData.getContentMime();
+			if (contentType != null && contentType.length() > 0)
+				return contentType;
+		}
+		return "text/xml";
+	}
 
 	public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
 		String[] ret = new String[msgArr.length];
 		int i = 0;
-		for (MsgUnitRaw msgUnit : msgArr) {
+		for (MsgUnitRaw msgUnitRaw : msgArr) {
 			StompFrame frame = new StompFrame();
 			// MsgUnit msg = (MsgUnit) msgUnit.getMsgUnit();
 			// String senderLoginName =
 			// msg.getQosData().getSender().getAbsoluteName();
-			MsgUnit msg = (MsgUnit) msgUnit.getMsgUnit();
+			MsgUnit msg = (MsgUnit) msgUnitRaw.getMsgUnit();
 			String topicId = msg.getKeyOid();
 			frame.setAction(Stomp.Responses.MESSAGE);
 			frame.getHeaders().put(Stomp.Headers.Message.DESTINATION, topicId);
 			frame.getHeaders().put("methodName", MethodName.UPDATE);
-			frame.getHeaders().put(XB_SERVER_HEADER_KEY, msgUnit.getKey());
-			frame.getHeaders().put(XB_SERVER_HEADER_QOS, msgUnit.getQos());
+			frame.getHeaders().put("content-type", getContentType(msgUnitRaw)); // "text/xml"
+			frame.getHeaders().put(XB_SERVER_HEADER_KEY, cleanNewlines(msgUnitRaw.getKey()));
+			frame.getHeaders().put(XB_SERVER_HEADER_QOS, cleanNewlines(msgUnitRaw.getQos()));
 			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH,
-					msgUnit.getContent().length);
-			frame.setContent(msgUnit.getContent());
+					msgUnitRaw.getContent().length);
+			frame.setContent(msgUnitRaw.getContent());
 			ret[i] = sendFrameAndWait(frame, MethodName.UPDATE);
 			i++;
 		}
@@ -508,20 +584,21 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 
 	public void sendUpdateOneway(MsgUnitRaw[] msgArr)
 			throws XmlBlasterException {
-		for (MsgUnitRaw msgUnit : msgArr) {
+		for (MsgUnitRaw msgUnitRaw : msgArr) {
 			try {
 				StompFrame frame = new StompFrame();
-				MsgUnit msg = (MsgUnit) msgUnit.getMsgUnit();
+				MsgUnit msg = (MsgUnit) msgUnitRaw.getMsgUnit();
 				String topicId = msg.getKeyOid();
 				frame.setAction(Stomp.Responses.MESSAGE);
 				frame.getHeaders().put(Stomp.Headers.Message.DESTINATION,
 						topicId);
 				frame.getHeaders().put("methodName", MethodName.UPDATE_ONEWAY);
-				frame.getHeaders().put(XB_SERVER_HEADER_KEY, msgUnit.getKey());
-				frame.getHeaders().put(XB_SERVER_HEADER_QOS, msgUnit.getQos());
+				frame.getHeaders().put("content-type", getContentType(msgUnitRaw)); // "text/xml"
+				frame.getHeaders().put(XB_SERVER_HEADER_KEY, cleanNewlines(msgUnitRaw.getKey()));
+				frame.getHeaders().put(XB_SERVER_HEADER_QOS, cleanNewlines(msgUnitRaw.getQos()));
 				frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH,
-						msgUnit.getContent().length);
-				frame.setContent(msgUnit.getContent());
+						msgUnitRaw.getContent().length);
+				frame.setContent(msgUnitRaw.getContent());
 				sendFrameNoWait(frame);
 			} catch (Exception e) {
 				log.severe(e.getMessage());
@@ -560,6 +637,8 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	}
 
 	private void removeFrameForMessageId(String messageId) {
+		if (messageId == null)
+			return;
 		if (framesToAck.get(messageId) != null)
 			framesToAck.remove(messageId);
 	}
@@ -581,17 +660,19 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		String messageId = registerFrame(frame);
 		try {
 			checkStompConnected();
-			outputHandler.onStompFrame(frame);
+			long timeout = getResponseTimeout(methodName);
 			synchronized (frame) {
-				frame.wait(getResponseTimeout(methodName));
+				outputHandler.onStompFrame(frame);
+				frame.wait(timeout);
 			}
 			if (frame == getFrameForMessageId(messageId)) {
-				log.severe(messageId + " No Ack recieved in time");
+				String text = "methodName=" + methodName.toString() + " messageId=" + messageId + ": No Ack recieved in timeoutMillis=" + timeout;
+				log.warning(text);
 				removeFrameForMessageId(messageId);
 				throw new XmlBlasterException(this.glob,
 						ErrorCode.COMMUNICATION_TIMEOUT, ME
 								+ ".sendFrameAndWait",
-						"No Ack recieved in time");
+						text);
 			}
 		} catch (Exception e) {
 			if (e instanceof XmlBlasterException)
@@ -602,10 +683,11 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						// ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE,
 						ME + ".sendFrameAndWait", e.getMessage());
 		}
-		log.info(messageId + " successfully send and acknowledged");
+		log.info("methodName=" + methodName.toString() + " messageId=" + messageId + ": Successfully send and acknowledged");
 		return "<qos/>";
 	}
 
+	@SuppressWarnings("unchecked")
 	private void sendResponse(StompFrame command) throws XmlBlasterException {
 		final String receiptId = (String) command.getHeaders().get(
 				Stomp.Headers.RECEIPT_REQUESTED);
@@ -613,7 +695,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		if (receiptId != null) {
 			StompFrame sc = new StompFrame();
 			sc.setAction(Stomp.Responses.RECEIPT);
-			sc.setHeaders(new HashMap(1));
+			sc.setHeaders(new HashMap());
 			sc.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID, receiptId);
 			sendFrameNoWait(sc);
 		}
@@ -632,6 +714,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void sendExeption(StompFrame command, XmlBlasterException e) {
 		final String receiptId = (String) command.getHeaders().get(
 				Stomp.Headers.RECEIPT_REQUESTED);
