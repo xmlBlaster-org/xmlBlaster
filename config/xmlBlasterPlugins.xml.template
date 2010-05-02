@@ -90,6 +90,7 @@
       <action do='LOAD' onStartupRunlevel='4' sequence='35'
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='35'/>
+      <attribute id='port'>61613</attribute>
    </plugin>
 
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
