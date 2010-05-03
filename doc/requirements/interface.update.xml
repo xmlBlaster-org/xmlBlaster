@@ -98,6 +98,11 @@
       redeliver the queued messages.<br />This is done manually over the <code>jconsole</code> or by sending a key oid <tt>__cmd:client/receiver/1/?dispatcherActive=true</tt>,
       for more details please see <a href="admin.commands.html#dispatcherActive" target="others">requirement admin.commands</a>.
       </p>
+      <p>If your client throws a <code>USER_UPDATE_DEADMESSAGE="user.update.deadMessage"</code>
+      exception the behavior is different, the server removes the message from its callback queue and forwards the message as a 'dead message'.
+      Like this a client can reject a poison message and continue processing the next one.
+      It is now up to an administrator to analyze the dead message at a later point.
+      </p>
       <p>
       Please note that in the Java client library all other exception types thrown in your
       <code>update()</code> method are
@@ -150,13 +155,19 @@
             <td><a href="admin.errorHandling.html" target="others">dead message</a></td>
             <td>If any user exception is thrown the dispatcher callback state goes to DEAD and
             all arriving messages will be redirected as <a href="admin.errorHandling.html" target="others">dead messages</a>.
-            (See "user.update.holdback" for different behavior).
+            (See "user.update.holdback" and "user.update.deadMessage" for different behavior).
             </td>
          </tr>
          <tr>
            <td>user.update.holdback</td>
            <td><a href="engine.callback.html" target="others">queued in callback queue</a></td>
            <td>The dispatcher will change to inactive and all arriving messages are queued (<a href="admin.commands.html" target="others">dispatcherActive=false</a>).
+           </td>
+         </tr>
+         <tr>
+           <td>user.update.deadMessage</td>
+           <td><a href="admin.errorHandling.html" target="others">dead message</a></td>
+           <td>Since xmlBlaster > v2.0: The message is removed from the callback queue and the client can continue processing the follow up messages.
            </td>
          </tr>
          <tr>
