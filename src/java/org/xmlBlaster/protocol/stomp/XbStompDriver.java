@@ -285,7 +285,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 	/**
 	 * Callback StompHandlerFactory on new client connection
 	 */
-	@Override
+	//@Override
 	public StompHandler createStompHandler(StompHandler outputHandler) {
 		XbStompInOutBridge client = new XbStompInOutBridge(this.glob, this, outputHandler);
 		addClient(client);
@@ -363,7 +363,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		return server;
 	}
 
-	@Override
+	//@Override
 	public boolean isActive() {
 		try {
 			return getTcpServer().isStarted();
@@ -373,12 +373,12 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		}
 	}
 
-	@Override
+	//@Override
 	public String getUsageUrl() {
 		return "http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.stomp.html";
 	}
 
-	@Override
+	//@Override
 	public void setUsageUrl(String url) {
 	}
 }

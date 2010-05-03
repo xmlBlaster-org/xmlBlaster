@@ -100,7 +100,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	/**
 	 * Callback from #StompHandler
 	 */
-	@Override
+	//@Overrideide
 	public void close() {
 		if (this.stompOpened) {
 			this.stompOpened = false;
@@ -441,17 +441,17 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	 * the I_CallbackDRiver Interface
 	 */
 
-	@Override()
+	//@Override()
 	public String getName() {
 		return ME;
 	}
 
-	@Override()
+	//@Override()
 	public String getProtocolId() {
 		return PROTOCOL_NAME;
 	}
 
-	@Override()
+	//@Override()
 	public String getRawAddress() {
 		return outputHandler.toString();
 	}
@@ -525,7 +525,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		// return this.responseTimeout;
 	}
 
-	@Override()
+	//@Override()
 	public void init(Global glob, CallbackAddress addressConfig)
 			throws XmlBlasterException {
 
@@ -542,12 +542,12 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 					+ "=" + this.updateResponseTimeout);
 	}
 
-	@Override()
+	//@Override()
 	public boolean isAlive() {
 		return this.stompOpened;
 	}
 
-	@Override()
+	//@Override()
 	public String ping(String qos) throws XmlBlasterException {
 		// never ping client without session
 		// <qos><state info='INITIAL'/></qos>
