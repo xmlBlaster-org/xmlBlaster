@@ -418,6 +418,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_UPDATE_DEADMESSAGE = new ErrorCode("user.update.deadMessage",
+	         "You can throw this on client side in your update() method: Like this the server publishes the message as dead letter and removes it from the callback queue. Since xmlBlaster > v2.0.",
+	         new ResourceInfo[] {
+	         }
+	      );
+
    public static final ErrorCode USER_WRONG_API_USAGE = new ErrorCode("user.wrongApiUsage",
          "Please check your client code.",
          new ResourceInfo[] {
