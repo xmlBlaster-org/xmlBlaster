@@ -8,6 +8,7 @@ public class RequestHolder {
 	public StompFrame stompFrame;
 	public XmlBlasterException xmlBlasterException;
 	public String returnQos;
+	public boolean shutdown;
 	public RequestHolder(String messageId, StompFrame stompFrame) {
 		super();
 		if (messageId == null)
@@ -16,5 +17,8 @@ public class RequestHolder {
 			throw new IllegalArgumentException("org.xmlBlaster.protocol.stomp.RequestHolder: stompFrame is null");
 		this.messageId = messageId;
 		this.stompFrame = stompFrame;
+	}
+	public String toString() {
+		return "messageId=" + messageId + " stompFrame=" + stompFrame;
 	}
 }

@@ -119,7 +119,6 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			this.secretSessionId = null;
 			this.authenticate = null;
 			this.xb = null;
-			this.framesToAck.clear();
 			log.info(ME + " gets closed");
 			if (checkStompConnected()) {
 				try {
@@ -128,12 +127,14 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 					e.printStackTrace();
 				}
 			}
-		}
-		
-		RequestHolder[] arr = getFramesToAck();
-		this.framesToAck.clear();
-		for (RequestHolder requestHolder : arr) {
-			notifyFrameAck(requestHolder);
+
+			RequestHolder[] arr = getFramesToAck();
+			log.info(ME + ". Close called with " + arr.length + " waiting frames, notify them now");
+			this.framesToAck.clear();
+			for (RequestHolder requestHolder : arr) {
+				requestHolder.shutdown = true;
+				notifyFrameAck(requestHolder);
+			}
 		}
 	}
 
@@ -169,6 +170,11 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 
 	public void onStompFrame(StompFrame frame) throws Exception {
 		String action = frame.getAction();
+		if (action == null) {
+			log.severe("Ignoring null stomp action: " + frame.toString());
+			return;
+		}
+		action = action.trim();
 		if (action.startsWith(Stomp.Commands.CONNECT)) {
 			onStompConnect(frame);
 		} else if (action.startsWith(Stomp.Commands.SUBSCRIBE)) {
@@ -181,7 +187,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			onStompSend(frame);
 		} else if (action.startsWith(Stomp.Commands.ACK)) {
 			onStompAck(frame);
-		} else if (action.startsWith(Stomp.Commands.ABORT)) {
+		} else if (action.startsWith(Stomp.Commands.ABORT) || action.startsWith("NAK")) {
 			onStompNak(frame);
 		} else {
 			throw new ProtocolException("STOMP action: " + action
@@ -364,11 +370,17 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		if (messageId == null) {
+			log.severe("ACK API error: missing messageId");
 			throw new ProtocolException(
 					"ACK received without a message-id to acknowledge!");
 		}
 
 		RequestHolder requestHolder = framesToAck.get(messageId);
+		if (requestHolder == null) {
+			// Happens on multiple Ack or on wrong messageId
+			log.severe("Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable");
+		}
+		
 		requestHolder.returnQos = (String) headers.get(XB_SERVER_HEADER_QOS);
 		log.info("ACK release and notify: " + messageId + " " + requestHolder.returnQos);
 		
@@ -383,6 +395,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		if (messageId == null) {
+			log.severe("NAK API error: missing messageId");
 			throw new ProtocolException(
 					"NAK received without a message-id to acknowledge!");
 		}
@@ -393,6 +406,10 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			message = "UPDATE failed, client has rejected message";
 
 		RequestHolder requestHolder = framesToAck.get(messageId);
+		if (requestHolder == null) {
+			// Happens on multiple Ack or on wrong messageId
+			log.severe("Internal NAK API error: messageId=" + messageId + " not found in framesToAck hashtable");
+		}
 		requestHolder.xmlBlasterException = new XmlBlasterException(glob, errorCodeEnum, message);
 		
 		log.info("NAK release and notify: " + errorCode);
@@ -662,9 +679,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	}
 
 	private RequestHolder registerFrame(StompFrame frame) {
-		String messageId = "" + new Timestamp().getTimestamp();
-		// frame.getAction() + "-" + secretSessionId + "-"
-		// + System.currentTimeMillis();
+		//String messageId = "" + new Timestamp().getTimestamp();
+		//String messageId = frame.getAction() + "-" + secretSessionId + "-" + System.currentTimeMillis();
+		String messageId = frame.getAction() + "-" + new Timestamp().getTimestamp();
 		frame.getHeaders().put(Stomp.Headers.Message.MESSAGE_ID, messageId);
 		RequestHolder requestHolder = new RequestHolder(messageId, frame);
 		framesToAck.put(messageId, requestHolder);
@@ -720,13 +737,24 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						ME + ".sendFrameAndWait", e.getMessage());
 		}
 		// http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
-		if (requestHolder.xmlBlasterException == null) { // requestHolder.returnQos should filled
-			log.info("methodName=" + methodName.toString() + " messageId=" + requestHolder.messageId + ": Successfully send and acknowledged " + requestHolder.returnQos);
-			return (requestHolder.returnQos == null) ?  "<qos/>" : requestHolder.returnQos;
+		if (requestHolder.shutdown) {
+			// connection was lost
+			log.warning("Shutdown during update delivery: " + requestHolder.toString());
+			throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, "Shutdown during update delivery");
+			//return "<qos><state id='FAIL'/>";
 		}
-		else {
-			log.warning("methodName=" + methodName.toString() + " messageId=" + requestHolder.messageId + ": Exception from client: " + requestHolder.xmlBlasterException.getMessage());
+		else if (requestHolder.xmlBlasterException != null) { // on XmlBlasterException
+			if (ErrorCode.USER_UPDATE_DEADMESSAGE.equals(requestHolder.xmlBlasterException.getErrorCode())) {
+				// TODO: SEND DEAD LETTER , solve it in core xmlBlaster!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				log.severe(requestHolder.toString() + " methodName=" + methodName.toString() + " Got exception from client, TODO: Send dead letter, removing it from callback queue as if delivered: " + requestHolder.xmlBlasterException.getMessage());
+				return "<qos><state id='REJECTED'/></qos>";
+			}
+			log.warning(requestHolder.toString() + " methodName=" + methodName.toString() + ": Exception from client: " + requestHolder.xmlBlasterException.getMessage());
 			throw requestHolder.xmlBlasterException;
+		}
+		else { // requestHolder.returnQos should filled
+			log.info(requestHolder.toString() + " methodName=" + methodName.toString() + ": Successfully send and acknowledged " + requestHolder.returnQos);
+			return (requestHolder.returnQos == null) ?  "<qos/>" : requestHolder.returnQos;
 		}
 	}
 
