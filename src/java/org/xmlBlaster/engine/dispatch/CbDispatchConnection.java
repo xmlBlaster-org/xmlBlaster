@@ -34,6 +34,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
@@ -313,11 +314,20 @@ public final class CbDispatchConnection extends DispatchConnection
             // http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html#exception
             XmlBlasterException ex = (t instanceof XmlBlasterException) ? (XmlBlasterException)t :
                new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Callback failed", t);
-            if (!ex.isServerSide()) { // Transform remote exceptions must be of type user.* or communication.*
-               if (!ex.isUser() && !ex.isCommunication())
-                  ex = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Callback failed", ex);
+            
+            if (ErrorCode.USER_UPDATE_DEADMESSAGE.equals(ex.getErrorCode()) && glob instanceof ServerScope) {
+               log.warning(ME + " Got exception " + ex.getErrorCode() + " from client, sending dead letter, removing it from callback queue as if delivered: " + ex.toString());
+               ServerScope serverScope = (ServerScope)glob;
+               serverScope.getRequestBroker().deadMessage(msgArr_, (I_Queue)null, ex.getMessage());
+               rawReturnVal = new String[] { "<qos><state id='REJECTED'/></qos>" }; // should remove msg from queue as if delivered
             }
-            throw ex;
+            else {
+               if (!ex.isServerSide()) { // Transform remote exceptions must be of type user.* or communication.*
+                  if (!ex.isUser() && !ex.isCommunication())
+                     ex = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Callback failed", ex);
+               }
+               throw ex;
+            }
          }
          connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
