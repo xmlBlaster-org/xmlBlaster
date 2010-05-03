@@ -19,6 +19,18 @@ public class RequestHolder {
 		this.stompFrame = stompFrame;
 	}
 	public String toString() {
-		return "messageId=" + messageId + " stompFrame=" + stompFrame;
+		String stomp = "";
+		if (stompFrame != null) {
+			stomp = " stomp=" + stompFrame.getAction();
+		}
+		String down = shutdown ? " shutdown=true" : ""; 
+		String ex = "";
+		if (xmlBlasterException != null) {
+			ex = ": " + xmlBlasterException.toString();
+		}
+		String qos = "";
+		if (returnQos != null)
+			qos = returnQos;
+		return "messageId=" + messageId + down + stomp + qos + ex;
 	}
 }
