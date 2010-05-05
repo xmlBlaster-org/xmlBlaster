@@ -63,6 +63,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 	
 	public void activate() throws XmlBlasterException {
 		log.info("activate, starting stomp socket listener");
+		this.isShutdown = false;
 		try {
 			doStart();
 		} catch (Exception e) {
@@ -91,6 +92,23 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 			removeClient(client);
 		}
 		clearClients();
+	}
+
+	//@Override //JMX
+	public String freeBlockingCallbackThread(String loginName) {
+		try {
+			log.info("freeBlockingCallbackThread for " + loginName);
+			XbStompInOutBridge bridge = findClient(loginName);
+			if (bridge != null) {
+				int count = bridge.notifyAllFrameAcks();
+				return "Notified " + count + " waiting callback threads";
+			}
+			return "Your given loginName '" + loginName + "' is not known";
+		} catch (Throwable e) {
+			e.printStackTrace();
+			log.severe("freeBlockingCallbackThread for " + loginName + ": " + e.toString());
+			return "freeBlockingCallbackThread for " + loginName + " failed: " + e.toString();
+		}
 	}
 
 	public String getName() {
@@ -232,7 +250,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 
 		try {
 			deActivate();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			log.severe(e.toString());
 		}
 
@@ -252,6 +270,17 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		synchronized (clientSet) {
 			return clientSet.toArray(new XbStompInOutBridge[clientSet.size()]);
 		}
+	}
+
+	public XbStompInOutBridge findClient(String loginName) {
+		if (loginName == null)
+			return null;
+		XbStompInOutBridge[] arr = getClients();
+		for (XbStompInOutBridge bridge : arr) {
+			if (loginName.equals(bridge.getLoginName()))
+				return bridge;
+		}
+		return null;
 	}
 
 	public boolean addClient(XbStompInOutBridge client) {
@@ -339,8 +368,12 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		return tcpServer;
 	}
 
-	public void setTcpServer(TcpTransportServer tcpServer) {
-		this.tcpServer = tcpServer;
+	protected TcpTransportServer createTcpServer() throws IOException,
+	URISyntaxException {
+		TcpTransportServer server = new TcpTransportServer(this, getLocation(),
+				getServerSocketFactory());
+		server.setDaemon(true);
+		return server;
 	}
 
 	// Implementation methods
@@ -353,14 +386,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 	protected void doStop() throws Exception {
 		log.info("stop tcpserver");
 		getTcpServer().stop();
-	}
-
-	protected TcpTransportServer createTcpServer() throws IOException,
-			URISyntaxException {
-		TcpTransportServer server = new TcpTransportServer(this, getLocation(),
-				getServerSocketFactory());
-		server.setDaemon(true);
-		return server;
+		tcpServer = null;
 	}
 
 	//@Override

@@ -66,6 +66,8 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	protected long pingResponseTimeout;
 	/** How long to block on remote call waiting on update responses */
 	protected long updateResponseTimeout;
+	
+	private ConnectQosServer connectQos;
 
 	public XbStompInOutBridge(Global glob, XbStompDriver driver,
 			StompHandler outputHandler) {
@@ -127,15 +129,20 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 					e.printStackTrace();
 				}
 			}
-
-			RequestHolder[] arr = getFramesToAck();
-			log.info(ME + ". Close called with " + arr.length + " waiting frames, notify them now");
-			this.framesToAck.clear();
-			for (RequestHolder requestHolder : arr) {
-				requestHolder.shutdown = true;
-				notifyFrameAck(requestHolder);
-			}
+			
+			notifyAllFrameAcks();
 		}
+	}
+	
+	public int notifyAllFrameAcks() {
+		RequestHolder[] arr = getFramesToAck();
+		log.info(ME + ". Close called with " + arr.length + " waiting frames, notify them now");
+		this.framesToAck.clear();
+		for (RequestHolder requestHolder : arr) {
+			requestHolder.shutdown = true;
+			notifyFrameAck(requestHolder);
+		}
+		return arr.length;
 	}
 
 	private RequestHolder[] getFramesToAck() {
@@ -255,6 +262,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 					}
 				}
 				ConnectReturnQosServer retQos = authenticate.connect(conQos);
+				this.connectQos = conQos;
 				this.secretSessionId = retQos.getSecretSessionId();
 				ME = retQos.getSessionName().getRelativeName();
 
@@ -279,9 +287,18 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				sendFrameNoWait(sc);
 			}
 		} catch (XmlBlasterException e) {
+			this.connectQos = null;
 			log.warning(ME + " Connect failed: " + e.toString());
 			sendExeption(command, e);
 		}
+	}
+	
+	public String getLoginName() {
+		ConnectQosServer cs = this.connectQos;
+		if (cs != null) {
+			return cs.getSessionName().getLoginName();
+		}
+		return null;
 	}
 
 	protected void onStompDisconnect(StompFrame command) {
