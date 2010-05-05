@@ -165,20 +165,14 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	}
 
 	public void onException(Exception e) {
-		log.severe(ME + " This should not happen");
-		e.printStackTrace();
-
-		/*
-		 * try { if(checkConnected()); outputHandler.close(); } catch
-		 * (XmlBlasterException e1) { e1.printStackTrace(); } catch (Exception
-		 * e1) { e1.printStackTrace(); }
-		 */
+		log.warning(ME + "onException from Stomp: " + e.toString());
+		shutdownNoThrow();
 	}
 
 	public void onStompFrame(StompFrame frame) throws Exception {
 		String action = frame.getAction();
 		if (action == null) {
-			log.severe(ME + " Ignoring null stomp action: " + frame.toString());
+			log.warning(ME + " Ignoring null stomp action: " + frame.toString());
 			return;
 		}
 		action = action.trim();
@@ -388,7 +382,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		if (messageId == null) {
-			log.severe(ME + " ACK API error: missing messageId");
+			log.warning(ME + " ACK API error: missing messageId");
 			throw new ProtocolException(
 					ME + " ACK received without a message-id to acknowledge!");
 		}
@@ -396,7 +390,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		RequestHolder requestHolder = framesToAck.get(messageId);
 		if (requestHolder == null) {
 			// Happens on multiple Ack or on wrong messageId
-			log.severe(ME + " Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable");
+			log.warning(ME + " Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable");
 		}
 		
 		requestHolder.returnQos = (String) headers.get(XB_SERVER_HEADER_QOS);
@@ -413,7 +407,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		if (messageId == null) {
-			log.severe(ME + " NAK API error: missing messageId");
+			log.warning(ME + " NAK API error: missing messageId");
 			throw new ProtocolException(
 					ME + " NAK received without a message-id to acknowledge!");
 		}
@@ -426,7 +420,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		RequestHolder requestHolder = framesToAck.get(messageId);
 		if (requestHolder == null) {
 			// Happens on multiple Ack or on wrong messageId
-			log.severe(ME + " Internal NAK API error: messageId=" + messageId + " not found in framesToAck hashtable");
+			log.warning(ME + " Internal NAK API error: messageId=" + messageId + " not found in framesToAck hashtable");
 		}
 		requestHolder.xmlBlasterException = new XmlBlasterException(glob, errorCodeEnum, message);
 		
@@ -759,11 +753,6 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			//return "<qos><state id='FAIL'/>";
 		}
 		else if (requestHolder.xmlBlasterException != null) { // on XmlBlasterException
-			if (ErrorCode.USER_UPDATE_DEADMESSAGE.equals(requestHolder.xmlBlasterException.getErrorCode())) {
-				// TODO: SEND DEAD LETTER , solve it in core xmlBlaster!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				log.severe(ME + " " + requestHolder.toString() + " Got exception from client, TODO: Send dead letter, removing it from callback queue as if delivered: " + requestHolder.xmlBlasterException.getMessage());
-				return "<qos><state id='REJECTED'/></qos>";
-			}
 			log.warning(ME + " " + requestHolder.toString() + ": Exception from client: " + requestHolder.xmlBlasterException.getMessage());
 			throw requestHolder.xmlBlasterException;
 		}
