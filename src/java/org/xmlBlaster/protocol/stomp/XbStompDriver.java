@@ -110,6 +110,31 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 			return "freeBlockingCallbackThread for " + loginName + " failed: " + e.toString();
 		}
 	}
+	
+	//@Override //JMX
+	public String[] showBlockingCallbackTreads(String loginName) {
+		try {
+			log.info("showBlockingCallbackTreads for " + loginName);
+			XbStompInOutBridge bridge = findClient(loginName);
+			if (bridge != null) {
+				RequestHolder[] holders = bridge.getFramesToAck();
+				if (holders.length == 0) {
+					return new String[] {"No waiting threads for " + loginName};
+				}
+				String[] ret = new String[holders.length];
+				for (int i=0; i<holders.length; i++) {
+					log.info("showBlockingCallbackTreads for " + loginName + " found " + holders[i].toString());
+					ret[i] = holders[i].toString();
+				}
+				return ret;
+			}
+			return new String[] {"Your given loginName '" + loginName + "' is not known"};
+		} catch (Throwable e) {
+			e.printStackTrace();
+			log.severe("showBlockingCallbackTreads for " + loginName + ": " + e.toString());
+			return new String[] {"showBlockingCallbackTreads for " + loginName + " failed: " + e.toString()};
+		}
+	}
 
 	public String getName() {
 		return XbStompDriver.class.getName();

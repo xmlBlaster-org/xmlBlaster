@@ -145,7 +145,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		return arr.length;
 	}
 
-	private RequestHolder[] getFramesToAck() {
+	public RequestHolder[] getFramesToAck() {
 		synchronized (this.framesToAck) {
 			return (RequestHolder[])this.framesToAck.values().toArray(new RequestHolder[this.framesToAck.size()]);
 		}
@@ -634,9 +634,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			byte[] content = msgUnitRaw.getContent();
 			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, content.length);
 			frame.setContent(content);
-			log.info(ME + " UPDATE Sending now ... " + msgUnitRaw.getKey());
+			log.info(ME + " UPDATE Sending now ... " + msgUnitRaw.getKey().trim());
 			ret[i] = sendFrameAndWait(frame, MethodName.UPDATE);
-			log.info(ME + " UPDATE " + msgUnitRaw.getKey() + " returned " + ret[i]);
+			log.info(ME + " UPDATE Done " + msgUnitRaw.getKey().trim() + ": " + ret[i]);
 			i++;
 		}
 		return ret;
@@ -722,6 +722,8 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		try {
 			checkStompConnected();
 			long timeout = getResponseTimeout(methodName);
+			if (log.isLoggable(Level.FINE))
+				log.fine(ME + " " + requestHolder.toString() + ": Sending now " + methodName.toString() + "...");
 			synchronized (frame) {
 				outputHandler.onStompFrame(frame);
 				frame.wait(timeout); // TODO: Port to CountDownLatch cdl = new CountDownLatch(1);
@@ -748,7 +750,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		// http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
 		if (requestHolder.shutdown) {
 			// connection was lost
-			log.warning(ME + " " + requestHolder.toString() + ": Shutdown during update delivery");
+			log.warning(ME + " " + requestHolder.toString() + ": Shutdown during callback delivery");
 			throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME + " Shutdown during update delivery");
 			//return "<qos><state id='FAIL'/>";
 		}
@@ -757,7 +759,8 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			throw requestHolder.xmlBlasterException;
 		}
 		else { // requestHolder.returnQos should filled
-			log.info(ME + " " + requestHolder.toString() + ": Successfully send and acknowledged " + requestHolder.returnQos);
+			if (log.isLoggable(Level.FINE))
+				log.fine(ME + " " + requestHolder.toString() + ": Successfully send and acknowledged " + requestHolder.returnQos);
 			return (requestHolder.returnQos == null) ?  "<qos/>" : requestHolder.returnQos;
 		}
 	}
