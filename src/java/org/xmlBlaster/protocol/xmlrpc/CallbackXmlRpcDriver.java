@@ -22,6 +22,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -213,6 +214,10 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          
          // org.apache.xmlrpc.XmlRpcException: java.lang.Exception: RPC handler object not found for "update": no default handler registered.
          boolean isServerSide = ex.toString().indexOf("no default handler registered") != -1;
+         
+         if (ex.linkedException != null && ex.linkedException instanceof ConnectException)
+            isServerSide = true;
+         
          if (isServerSide) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, ex.toString());
          }
