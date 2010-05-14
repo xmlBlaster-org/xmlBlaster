@@ -83,7 +83,16 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       // login name: As default use the JVM System.property ${user.name} which is usually the login name of the OS
       String defaultLoginName = glob.getProperty().get("user.name", "guest");
 
-      String sessionNameStr = glob.getProperty().get("session.name", defaultLoginName);
+      String sessionNameStr = glob.getProperty().get("session.name", (String)null);
+      if (sessionNameStr == null) {
+          String loginName = glob.getProperty().get("loginName", (String)null);
+          if (loginName != null) {
+        	  sessionNameStr = loginName;
+          }
+          else {
+        	  sessionNameStr = defaultLoginName;
+          }
+      }
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
       setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
@@ -104,7 +113,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       {
          // user warning for the old style loginName
          String loginName = glob.getProperty().get("loginName", (String)null);
-         if (loginName != null)
+         if (loginName != null && !loginName.equals(sessionNameStr))
             log.warning("session.name=" + this.sessionName + " is stronger than loginName=" + loginName + ", we proceed with " + this.sessionName);
       }
 
