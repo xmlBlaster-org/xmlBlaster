@@ -153,6 +153,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
       try {
          int backlog = glob.getProperty().get("http.backlog", 50); // queue for max 50 incoming connection request
          this.listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
+         log.info("Opened http server -bootstrapHostname " + ip_addr + " -bootstrapPort=" + HTTP_PORT);
          while (running) {
             Socket accept = this.listen.accept();
             log.fine("New incoming request on bootstrapPort=" + HTTP_PORT + " ...");
