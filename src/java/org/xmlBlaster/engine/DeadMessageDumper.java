@@ -109,9 +109,11 @@ public class DeadMessageDumper implements I_Plugin {
       
       log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
 
-      this.loginName = this.global.get("loginName", ME, null, this.pluginInfo);
+      this.loginName = this.global.get("loginName", "_DeadMessageDumper", null, this.pluginInfo);
       this.password = this.global.get("password", this.password, null, this.pluginInfo);
       this.forceBase64 = this.global.get("forceBase64", this.forceBase64, null, this.pluginInfo);
+      
+      this.global.init(pluginInfo.getParameters());
 
       subscribeToDeadMessages();
    }
