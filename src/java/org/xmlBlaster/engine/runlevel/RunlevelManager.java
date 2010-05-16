@@ -383,7 +383,13 @@ public final class RunlevelManager implements RunlevelManagerMBean
             ErrorCode code = pluginConfig.getUpAction().getOnFail();
             if (code == null) {
                log.warning("Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
-               ex.printStackTrace();
+               Throwable cause = ex.getCause();
+               if (ex instanceof XmlBlasterException)
+            	   cause = ((XmlBlasterException)ex).getEmbeddedException();
+               if (cause != null)
+            	   cause.printStackTrace();
+               else
+            	   ex.printStackTrace();
             }
             else {
                throw new XmlBlasterException(this.glob, code, ME + ".startupPlugins",  "Can't load plugin '" + pluginConfig.getId() + "'", ex);
