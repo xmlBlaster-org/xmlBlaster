@@ -485,7 +485,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          String key = (msgUnit.getKeyData()==null) ? msgUnit.getKey() : msgUnit.getKeyData().getUrl();
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED, ME,
                        "Subject '" + subjSecCtx.getName() + "' is not permitted to perform action '" + action +
-                       "' on key '" + key + "'" +
+                       "' on key '" + key + "' security plugin='" + sessionSecCtx.getManager().getType() + "' " +
                        ((dataHolder.getNotAuthorizedInfo()==null)?"":": "+dataHolder.getNotAuthorizedInfo()));
       }
 
