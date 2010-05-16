@@ -442,7 +442,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);
       if (this.cause != null) {
-         cause.printStackTrace(pw);
+         this.cause.printStackTrace(pw);
       }
       printStackTrace(pw);  // prints: toString() and in next lines the stack trace
       return sw.toString().trim();
