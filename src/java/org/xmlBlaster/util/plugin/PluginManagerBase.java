@@ -295,6 +295,7 @@ public class PluginManagerBase implements I_PluginManager {
          //log.info(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
       } catch (XmlBlasterException e) {
          //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
+         e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
       }
       return plugin;
