@@ -80,6 +80,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       I_MapEntry[] entries = this.sessionStore.getAll(null);
       HashMap sessionIds = new HashMap();
       for (int i=0; i < entries.length; i++) {
+         String absoluteName = null;
     	 try {
 	         if (entries[i] instanceof SessionEntry) {
 	            // do connect
@@ -94,6 +95,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	            qos.setAddressServer(this.addressServer);
 
 	            SessionName sessionName = data.getSessionName();
+	            absoluteName = sessionName.getAbsoluteName();
 	            String sessionId = data.getSessionQos().getSecretSessionId();
 	            sessionIds.put(sessionName.getAbsoluteName(), sessionId);
 	            if (log.isLoggable(Level.FINE))
@@ -108,7 +110,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	         }
     	  }
 	      catch (XmlBlasterException e) { // authenticate password changed? TODO
-	    	  log.warning("Loading session from persistency failed: " + e.toString());
+	    	  log.warning("Loading session '" + absoluteName + "' from persistency failed: " + e.toString());
 	      }
       }
       return sessionIds;
@@ -208,9 +210,15 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                continue;
                //throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
             }
-            // TODO remove the setting of client properties and invoke directly requestBroker.subscribe with subscribeQosServer.inhibitInitialUpdates(true);
-            // also get the sessionInfo object from authenticate => eliminate sessionIds
-            this.global.getAuthenticate().getXmlBlaster().subscribe(this.addressServer, sessionId, entry.getKey(), qosData.toXml());
+            try {
+	            // TODO remove the setting of client properties and invoke directly requestBroker.subscribe with subscribeQosServer.inhibitInitialUpdates(true);
+	            // also get the sessionInfo object from authenticate => eliminate sessionIds
+	            this.global.getAuthenticate().getXmlBlaster().subscribe(this.addressServer, sessionId, entry.getKey(), qosData.toXml());
+            }
+            catch (XmlBlasterException e) {
+            	//e.printStackTrace();
+            	log.severe("Recover subscription " + entry.getKey() + " of " + sessionName.getAbsoluteName() + " failed: " + e.toString());
+            }
          }
          else {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSubscriptions: the entry in the storage should be of type 'SubscribeEntry'but is of type'" + entries[i].getClass().getName() + "'");
