@@ -21,6 +21,7 @@ Comment:   Default handling of Sax callbacks
 #include <xercesc/sax2/SAX2XMLReader.hpp>
 #include <xercesc/sax2/XMLReaderFactory.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/util/XercesVersion.hpp>
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
@@ -359,13 +360,21 @@ XMLUTF8Transcoder::transcodeTo( const   XMLCh* const    srcData
       char resultXMLString_Encoded[ENCODERBUFFERSIZE+4];
       *resultXMLString_Encoded = 0;
       charsEatenFromSource = 0;
+	  #if XERCES_VERSION_MAJOR >= 3
+      int charsPutToTarget = xmlBlasterTranscoder_->transcodeTo(value+counter,
+                                    XMLString::stringLen(value)-counter,
+                                    (XMLByte*) resultXMLString_Encoded,
+                                    (XMLSize_t) ENCODERBUFFERSIZE,
+                                    (XMLSize_t&) charsEatenFromSource,
+                                    XMLTranscoder::UnRep_Throw );
+	  #else
       int charsPutToTarget = xmlBlasterTranscoder_->transcodeTo(value+counter,
                                     XMLString::stringLen(value)-counter,
                                     (XMLByte*) resultXMLString_Encoded,
                                     ENCODERBUFFERSIZE,
                                     charsEatenFromSource,
-                                    XMLTranscoder::UnRep_Throw );
-
+                                    XMLTranscoder::UnRep_Throw );	  
+	  #endif
       /*
       log_.info(ME,"TRANSCODE TMP: got '" + result +
                    "' charsToRead= " + lexical_cast<string>(charsToRead) +
