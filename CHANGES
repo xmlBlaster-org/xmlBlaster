@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17831 fixed C++ for xerces 3.x by Adrian
+
  o r17820 fixed exception handling when sending update after connection lost on XMLRPC
 
  o r17813 Introduced ErrorCode.USER_UPDATE_DEADMESSAGE, see
