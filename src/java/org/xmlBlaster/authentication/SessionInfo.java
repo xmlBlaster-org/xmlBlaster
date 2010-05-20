@@ -7,6 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -139,6 +140,13 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    private volatile QueueQueryPlugin queueQueryPlugin;
 
    private boolean initialized;
+   
+   /**
+    * Map to store arbitrary info for this client, is cleaned up automatically when session dies
+    * Useful for example for plugins
+    */
+   private Map<String, Object> userMap = Collections.synchronizedMap(new HashMap<String, Object>());
+
 
    /**
     * Create this instance when a client did a login.
@@ -1321,5 +1329,37 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       String text = "Client " + getId() + " is disconnected";
       log.info(text);
       return text;
+   }
+   
+   /**
+    * Map to store arbitrary info for this client, is cleaned up automatically when session dies
+    * Useful for example for plugins
+    */
+   public Object getUserObject(String key, Object defaultValue) {
+      Object obj = this.userMap.get(key);
+      if (obj == null) {
+         return defaultValue;
+      }
+      return obj;
+   }
+   public boolean hasUserObject(String key) {
+      return this.userMap.containsKey(key);
+   }
+   /**
+    * The key should use a prefix to not collide with other users / plugins. 
+    * @param key
+    * @param value
+    * @return the previous or null
+    */
+   public Object setUserObject(String key, Object value) {
+      Object obj = this.userMap.put(key, value);
+      return obj;
+   }
+   /**
+    * Use carefully to not harm other plugins. 
+    * @return of type Collections.synchronizedMap(new HashMap<String, Object>()
+    */
+   public Map<String, Object> getUserObjectMap() {
+      return this.userMap;
    }
 }
