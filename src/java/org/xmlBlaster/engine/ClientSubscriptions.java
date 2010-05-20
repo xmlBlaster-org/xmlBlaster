@@ -271,7 +271,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     *         is > 1 if this session has subscribed multiple times on the
     *         same message, or null if this session has not subscribed it
     */
-   public Vector getSubscriptionByOid(SessionInfo sessionInfo, String keyOid, boolean exactOnly) throws XmlBlasterException {
+   public Vector<SubscriptionInfo> getSubscriptionByOid(SessionInfo sessionInfo, String keyOid, boolean exactOnly) throws XmlBlasterException {
       if (keyOid == null || sessionInfo==null) return null;
       Object obj;
       Map subMap;

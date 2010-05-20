@@ -28,6 +28,8 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -63,6 +65,13 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    private SubscriptionInfo querySub;
    /** It it is a query subscription, we remember all subscriptions which resulted from this query */
    private ArrayList childrenList;
+   
+   /**
+    * Map to store arbitrary info about the topic to client relation, is cleaned up automatically when unSubscribe happens
+    * Useful for example for plugins
+    */
+   private Map<String, Object> userMap = Collections.synchronizedMap(new HashMap<String, Object>());
+
 
    /** If duplicateUpdates=false is set we can check here how often this message is
        subscribed from the same client */
@@ -691,4 +700,36 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}
+
+   /**
+    * Map to store arbitrary info about the topic to client relation, is cleaned up automatically when unSubscribe happens
+    * Useful for example for plugins
+    */
+   public Object getUserObject(String key, Object defaultValue) {
+      Object obj = this.userMap.get(key);
+      if (obj == null) {
+         return defaultValue;
+      }
+      return obj;
+   }
+   public boolean hasUserObject(String key) {
+      return this.userMap.containsKey(key);
+   }
+   /**
+    * The key should use a prefix to not collide with other users / plugins. 
+    * @param key
+    * @param value
+    * @return the previous or null
+    */
+   public Object setUserObject(String key, Object value) {
+      Object obj = this.userMap.put(key, value);
+      return obj;
+   }
+   /**
+    * Use carefully to not harm other plugins. 
+    * @return of type Collections.synchronizedMap(new HashMap<String, Object>()
+    */
+   public Map<String, Object> getUserObjectMap() {
+      return this.userMap;
+   }
 }
