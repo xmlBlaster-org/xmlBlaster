@@ -1,19 +1,16 @@
 /*------------------------------------------------------------------------------
-Name:      DropIfNotDeliverable.java
+Name:      DropIfNotDeliverableUniqueOnly.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.mime;
 
 import java.util.Properties;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.ClientSubscriptions;
 import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;

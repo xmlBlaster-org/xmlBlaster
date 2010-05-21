@@ -3,7 +3,12 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
- o r17831 fixed C++ for xerces 3.x by Adrian
+ o r17836 Introduced subscribe mime plugin 'DropIfNotDeliverableUniqueOnly', the details are in DropIfNotDeliverableUniqueOnly.java javadoc
+          Activate in xmlBlaster.properties:
+            MimeAccessPlugin[DropIfNotDeliverableUniqueOnly][1.0]=org.xmlBlaster.contrib.mime.DropIfNotDeliverableUniqueOnly
+
+ o r17831 fixed C++ compile error for xerces 3.x by Adrian, but xerces 3.x not supported (buggy in our integration)
+          Please use xerces 2.x
 
  o r17820 fixed exception handling when sending update after connection lost on XMLRPC
 
