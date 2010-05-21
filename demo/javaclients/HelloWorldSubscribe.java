@@ -250,7 +250,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info("   -dumpToFile        " + dumpToFile);
          log.info("   -fileExtension     " + fileExtension);
          log.info("   -unSubscribe       " + unSubscribe);
-         log.info("   -disconnect        " + disconnect);
+         log.info("   -disconnect        " + disconnect); // false: leaveServer
          log.info("   -filter.type       " + filterType);
          log.info("   -filter.version    " + filterVersion);
          log.info("   -filter.query      " + filterQuery);
@@ -384,10 +384,16 @@ public class HelloWorldSubscribe implements I_Callback
          log.severe(e.toString());
       }
       finally {
-         if (con != null && disconnect) {
-            DisconnectQos dq = new DisconnectQos(glob);
-            con.disconnect(dq);
-            log.info("Disconnected");
+         if (con != null) {
+            if (disconnect) {
+               DisconnectQos dq = new DisconnectQos(glob);
+               con.disconnect(dq);
+               log.info("Disconnected, the server session is destroyed, bye");
+            }
+            else {
+               con.leaveServer(null);
+               log.info("Left server, our server side session remains, bye");
+            }
          }
       }
    }
