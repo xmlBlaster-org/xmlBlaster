@@ -93,8 +93,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *    build SimpleReader
  *    
  *  Start the subscriber which wants the newest and unique message only:
- *    java javaclients.HelloWorldSubscribe -session.name subscriber/session/1 -multiSubscribe false -initialUpdate true -unSubscribe false -dispatch/callback/retries -1 -filter.type DropIfNotDeliverableUniqueOnly -filter.query _
- *    (Use Ctl-C to stop, avoid disconnect as it cleans up the session)
+ *    java javaclients.HelloWorldSubscribe -session.name subscriber/session/1 -disconnect false -multiSubscribe false -initialUpdate true -unSubscribe false -dispatch/callback/retries -1 -filter.type DropIfNotDeliverableUniqueOnly -filter.query _
+ *    (Avoid disconnect as it cleans up the session)
  *    (example to get first ten of history: -historyNumUpdates 10 -historyNewestFirst false)
  *  
  *  Start the publisher for two groupIds:
