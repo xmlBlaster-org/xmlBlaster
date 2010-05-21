@@ -212,7 +212,7 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
             Long timestampPrevious = (Long)receiver.getUserObject(key, null);
             if (timestampPrevious != null) {
                if (timestampMillisCurr <= timestampPrevious) {
-                  log.info("Message topicId=" + topicId + " " + this.uniqueGroupIdKeyName+ "=" + groupId + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
+                  log.info("Message topicId=" + topicId + " received=" + msgUnit.getQosData().getRcvTimestamp().toString() + " " + this.uniqueGroupIdKeyName+ "=" + groupId + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
                   return false;
                }
             }
