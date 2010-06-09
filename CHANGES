@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o r17841 Bugfix SubjectInfo.getNumSessionsFix() NullPointerException was rare synchronized gap
+
  o r17836 Introduced subscribe mime plugin 'DropIfNotDeliverableUniqueOnly', the details are in DropIfNotDeliverableUniqueOnly.java javadoc
           Activate in xmlBlaster.properties:
             MimeAccessPlugin[DropIfNotDeliverableUniqueOnly][1.0]=org.xmlBlaster.contrib.mime.DropIfNotDeliverableUniqueOnly
