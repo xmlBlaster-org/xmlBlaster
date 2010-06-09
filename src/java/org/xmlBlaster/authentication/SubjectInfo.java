@@ -764,16 +764,20 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    /**
     * Access the collection containing all SessionInfo objects of this user.
+    * @return never null
     */
    public final SessionInfo[] getSessions() {
-      if (this.sessionArrCache == null) {
-         synchronized (this.sessionMap) {
-            if (this.sessionArrCache == null) {
-               this.sessionArrCache = (SessionInfo[])this.sessionMap.values().toArray(new SessionInfo[this.sessionMap.size()]);
-            }
-         }
+      final SessionInfo[] cache = this.sessionArrCache;
+      if (cache != null) {
+    	  return cache;
       }
-      return this.sessionArrCache;
+      synchronized (this.sessionMap) {
+         if (this.sessionArrCache != null) {
+          	return this.sessionArrCache;
+         }
+         this.sessionArrCache = (SessionInfo[])this.sessionMap.values().toArray(new SessionInfo[this.sessionMap.size()]);
+         return this.sessionArrCache;
+      }
    }
    
    /** @return true it publicSessionId is given by xmlBlaster server (if < 0) */
