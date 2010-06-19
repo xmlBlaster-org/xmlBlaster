@@ -477,8 +477,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          return null;
       ClusterNode clusterNode = nodeMasterInfo.getClusterNode();
       I_XmlBlasterAccess con =  clusterNode.getXmlBlasterAccess();
-      if (con == null)
+      if (con == null) {
+         log.warning("ClusterNode " + clusterNode.getId() + " has no xmlBlaster connection");
          return null;
+      }
       
       if (!this.allowDirectLoopback && clusterNode.getId().equals(msgUnit.getQosData().getSender().getNodeIdStr())) {
     	  // avoid direct loop back: send dead message or throw exception?
