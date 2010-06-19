@@ -508,7 +508,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             }
          }
          else if (MethodName.GET == receiver.getMethodName()) {
-            if (!glob.isServerSide()) {
+            if (!glob.isServerSide() && this.xmlBlasterImpl==null) { // Fixed again 2010-06-19: As for acceptRemoteLoginAsTunnel=true it is allowed
                log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
                break top;
             }
@@ -536,7 +536,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             }
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
-            if (!glob.isServerSide()) {
+            if (!glob.isServerSide() && this.xmlBlasterImpl==null) { // Fixed again 2010-06-19: As for acceptRemoteLoginAsTunnel=true it is allowed
                log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
                break top;
             }
@@ -547,7 +547,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
-            if (!glob.isServerSide()) {
+            if (!glob.isServerSide() && this.xmlBlasterImpl==null) { // Fixed again 2010-06-19: As for acceptRemoteLoginAsTunnel=true it is allowed
                log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
                break top;
             }
@@ -558,7 +558,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
-            if (!glob.isServerSide()) {
+            if (!glob.isServerSide() && this.xmlBlasterImpl==null) { // Fixed again 2010-06-19: As for acceptRemoteLoginAsTunnel=true it is allowed
                log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
                break top;
             }
