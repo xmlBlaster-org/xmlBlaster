@@ -149,12 +149,12 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       obj = glob.getObjectEntry("ClusterManager[cluster]/I_Authenticate");
       if (obj != null) {
          setAuthenticateCore((I_Authenticate)obj);
-         log.info("Setting I_Authenticate for useRemoteLoginAsTunnel");
+         log.info("Setting I_Authenticate for acceptRemoteLoginAsTunnel=" + this.acceptRemoteLoginAsTunnel);
       }
       obj = glob.getObjectEntry("ClusterManager[cluster]/I_XmlBlaster");
       if (obj != null) {
          super.setXmlBlasterCore((I_XmlBlaster)obj);
-         log.info("Setting I_XmlBlaster for useRemoteLoginAsTunnel");
+         log.info("Setting I_XmlBlaster for acceptRemoteLoginAsTunnel=" + this.acceptRemoteLoginAsTunnel);
       }
       
       // Lookup SocketConnection instance in the NameService
