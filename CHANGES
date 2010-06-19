@@ -3,6 +3,11 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17847 Bugfix for cluster callback tunnel (bug introduced in r17746 RequestReplyExecutor.java)
+          A tunneled publish was not accepted anymore by client
+
+ o r17845 Bugfix for cluster callback tunnel (bug introduced in r17676 ClusterNode.java)
+          Intruced Global clone again for dummy connect to own server
 
  o r17841 Bugfix SubjectInfo.getNumSessionsFix() NullPointerException was rare synchronized gap
 
