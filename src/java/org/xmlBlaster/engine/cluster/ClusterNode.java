@@ -209,7 +209,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             if (myRemotePartnerLogin == null) {
                // Create the temporary SessionInfo until the real client arrives
                String[] args = new String[0]; //{ "-queue/connection/defaultPlugin", "RAM,1.0" };
-               Global glob = this.remoteGlob; // Why?? .getClone(args);
+               Global glob = this.remoteGlob.getClone(args); // 2010-06-19: This is a local client which simulates remote login and needs own Global (as leaveServer below invalidates xmlBlasterAccess)
                String type = "SOCKET";
                String version = "1.0";
                String rawAddress = "socket://:7607";
@@ -271,6 +271,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                   public String update(String cbSessionId, UpdateKey updateKey,
                         byte[] content, UpdateQos updateQos)
                         throws XmlBlasterException {
+                     log.severe("Ignoring unexpected message in cluster temporary connection " + sessionName.getAbsoluteName() + ": " + updateKey.getOid());
                      return null;
                   }
                });
@@ -294,7 +295,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                          Object obj = myRemotePartnerLogin.getAddressServer().getCallbackDriver();
                          if (obj != null && obj instanceof CallbackSocketDriver) {
                             // cbDriver.callbackAddress: socket://192.168.1.20:8920
-                            CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+                            CallbackSocketDriver cbDriver = (CallbackSocketDriver)obj;
                             log.info("toAlive(" + sessionName.getAbsoluteName() + ")... found existing session to back-tunnel '" + getId() + "' on address '" + myRemotePartnerLogin.getAddressServer().getRawAddress() + "' protocol=" + myRemotePartnerLogin.getAddressServer().getType() + " cbDriver-Handler " + ((cbDriver.getHandler()==null)?"null":cbDriver.getHandler().getAddressServer().getRawAddress()));
                             //log.severe("Register toAlive: CallbackSocketDriver.handler=" + cbDriver.getHandler());
                             remoteGlob.addObjectEntry(globalKey, cbDriver.getHandler());
@@ -328,6 +329,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                         ping(); // Force our client connection to POLLING
                    }
                    public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                      log.severe("toAliveSync no handled for cluster callback tunnel");
                    }
                    
                 }, fireInitial);
