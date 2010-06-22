@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17853 Extended check if shutdown on SQLException (Main.java)
+
  o r17847 Bugfix for cluster callback tunnel (bug introduced in r17746 RequestReplyExecutor.java)
           A tunneled publish was not accepted anymore by client
 
