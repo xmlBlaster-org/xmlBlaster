@@ -56,6 +56,8 @@ import org.xmlBlaster.util.def.Constants;
  * <pre>
  * java -Dorg.xmlBlaster.util.I_XmlBlasterExceptionHandler=MyHandler org.xmlBlaster.Main
  * </pre>
+ * this must be a class implementing I_XmlBlasterExceptionHandler,
+ * as a default Main.java registers itself and does an immediate shutdown on RESOURCE_DB_UNAVAILABLE
  * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @since 0.8+ with extended attributes
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
@@ -102,7 +104,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       String cname = null;
       try {
          cname = System.getProperty("org.xmlBlaster.util.I_XmlBlasterExceptionHandler");
-         if (cname != null) {
+         if (cname != null) { // Must be a class implementing I_XmlBlasterExceptionHandler
                try {
                   Class clz = ClassLoader.getSystemClassLoader().loadClass(cname);
                   exceptionHandler = (I_XmlBlasterExceptionHandler) clz.newInstance();
@@ -111,6 +113,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                   exceptionHandler = (I_XmlBlasterExceptionHandler) clz.newInstance();
                }
          }
+         //else {
+            // Main.java does as default: XmlBlasterException.setExceptionHandler(this);
+         //}
       } catch (Exception ex) {
          System.err.println("Could not load I_XmlBlasterExceptionHandler \"" + cname + "\"");
          ex.printStackTrace();
