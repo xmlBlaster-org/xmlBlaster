@@ -539,7 +539,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    }
 
    public void newException(XmlBlasterException e) {
-      if (!e.isServerSide())
+      boolean serverScope = (e.getGlobal() != null && e.getGlobal().getObjectEntry("org.xmlBlaster.engine.Global") != null);
+      if (!e.isServerSide() && !serverScope) // isServerSide checks if we are ServerScope implementation, serverScope checks if we are a util.Global in the context of a server
          return;
       // Typically if the DB is lost: ErrorCode.RESOURCE_DB_UNKNOWN
       if (this.panicErrorCodes.indexOf(e.getErrorCodeStr()) != -1) {
