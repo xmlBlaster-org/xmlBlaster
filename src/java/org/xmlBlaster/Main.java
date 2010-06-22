@@ -207,6 +207,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
           log.severe("You can not use 'xmlBlaster/panicErrorCodes' " +
                           ErrorCode.RESOURCE_DB_UNKNOWN.toString() +
                           " with xmlBlaster/useJdbcManagerDelegate=true. This could result in DB-less operation with persistent entries handled as transient entries which are lost on restart");
+      // Add us as an I_XmlBlasterExceptionHandler ... (done again in changeRunlevel() below, but this is too late as first JDBC access can be in RL0
+      if (XmlBlasterException.getExceptionHandler() == null)
+         XmlBlasterException.setExceptionHandler(this); // see public void newException(XmlBlasterException e);
 
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
@@ -483,6 +486,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
             log.info(Global.getMemoryStatistic());
             String duration = Timestamp.millisToNice(System.currentTimeMillis() - this.startupTime);
+            // TEST
+            //new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getXBStore", "", null); 
             if (controlPanel == null) {
                if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.BLACK_GREEN);
                final String bound = "|";
