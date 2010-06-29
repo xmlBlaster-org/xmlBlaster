@@ -270,6 +270,11 @@ public class HandleClient extends SocketExecutor implements Runnable
       catch (XmlBlasterException e) {
          /*if (log.isLoggable(Level.FINE)) log.fine*/log.info("Can't handle message, throwing exception back to client: " + e.toString());
          try {
+            if (log.isLoggable(Level.FINE)) log.fine(receiver.toLiteral());
+         } catch (Throwable e1) {
+            e1.printStackTrace();
+         }
+         try {
             if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
                executeException(receiver, e, false);
             else
