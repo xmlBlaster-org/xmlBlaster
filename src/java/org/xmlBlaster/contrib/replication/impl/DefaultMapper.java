@@ -34,11 +34,13 @@ public class DefaultMapper implements I_Mapper {
    protected Map columnMap;
    protected Map tableMap;
    protected Map schemaMap;
+   protected Map<String, String> excludeColumns;
    
    public DefaultMapper() {
       this.schemaMap = new HashMap();
       this.tableMap = new HashMap();
       this.columnMap = new HashMap();
+      this.excludeColumns = new HashMap<String, String>();
    }
    
    public String getMappedCatalog(String catalog, String schema, String table, String column, String def) {
@@ -95,6 +97,20 @@ public class DefaultMapper implements I_Mapper {
    public String getMappedColumn(String catalog, String schema, String table, String column, String def) {
       if (table == null)
          return null;
+      // check first if it is one of the excluded ones
+      StringBuffer buf = new StringBuffer(512);
+      if (catalog != null)
+         buf.append(catalog).append(".");
+      if (schema != null)
+         buf.append(schema).append(".");
+      if (table != null)
+         buf.append(table).append(".");
+      if (column != null)
+         buf.append(column);
+      
+      if (excludeColumns.containsKey(buf.toString()))
+         return null;
+
       // catalog.schema.table.column
       // schema.table.column
       // table.column
@@ -159,6 +175,7 @@ public class DefaultMapper implements I_Mapper {
       this.schemaMap = InfoHelper.getPropertiesStartingWith("replication.mapper.schema.", info, dbHelper);
       this.tableMap = InfoHelper.getPropertiesStartingWith("replication.mapper.table.", info, dbHelper);
       this.columnMap = InfoHelper.getPropertiesStartingWith("replication.mapper.column.", info, dbHelper);
+      this.excludeColumns = InfoHelper.getPropertiesStartingWith("replication.mapper.excludeColumn.", info, dbHelper);
    }
    
    public void shutdown() throws Exception {

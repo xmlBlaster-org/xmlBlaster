@@ -1,22 +1,22 @@
 
    function connect(sessionName, password) {
-	   doStopUpdates = false;
+      doStopUpdates = false;
       var req = "<xmlBlaster>\n" +
-       "  <connect>\n" +
-       "    <qos>\n" +
-       "      <securityService type='htpasswd' version='1.0'><![CDATA[\n" +
-       "        <user>michele</user>\n" +
-       "        <passwd>secret</passwd>\n" +
-       "      ]]></securityService>\n" +
-       "      <session name='michele/1' />\n" +
-       "      <queue relating='connection'><address pingInterval='0' retries='-1' delay='2000' /></queue>\n" +
-       "      <queue relating='callback' maxEntries='1000' maxEntriesCache='2000'><callback pingInterval='0' retries='-1' delay='1000' /></queue>\n" +
-       "   </qos>\n" +
-       "  </connect>\n" +
-       "</xmlBlaster>\n";
-	
-     var parameters = "ActionType=xmlScript";
-	  parameters += "&xmlScriptPlain=" + encodeURIComponent(req);
+        "  <connect>\n" +
+        "    <qos>\n" +
+        "      <securityService type='htpasswd' version='1.0'><![CDATA[\n" +
+        "        <user>michele</user>\n" +
+        "        <passwd>secret</passwd>\n" +
+        "      ]]></securityService>\n" +
+        "      <session name='michele/1' />\n" +
+        "      <queue relating='connection'><address pingInterval='0' retries='-1' delay='2000' /></queue>\n" +
+        "      <queue relating='callback' maxEntries='1000' maxEntriesCache='2000'><callback pingInterval='0' retries='-1' delay='1000' /></queue>\n" +
+        "   </qos>\n" +
+        "  </connect>\n" +
+        "</xmlBlaster>\n";
+
+      var parameters = "ActionType=xmlScript";
+      parameters += "&xmlScriptPlain=" + encodeURIComponent(req);
      processUpdates(url, parameters, false);
    }
 
@@ -24,9 +24,9 @@
      req = "<xmlBlaster>\n" +
        "  <subscribe><key oid='" + topic + "'></key><qos><persistent>false</persistent></qos></subscribe>\n" +
        "</xmlBlaster>\n";
-	
+
      parameters = "ActionType=xmlScript";
-	  parameters += "&xmlScriptPlain=" + encodeURIComponent(req);
+     parameters += "&xmlScriptPlain=" + encodeURIComponent(req);
      processUpdates(url, parameters, false);
 
      parameters = "ActionType=updatePollBlocking&onlyContent=true";
@@ -38,9 +38,9 @@
        "  <unSubscribe><key oid='" + topic + "'></key></unSubscribe>\n" +
        "  <wait delay='200' />\n" +
        "</xmlBlaster>\n";
-	
+
       var parameters = "ActionType=xmlScript";
-	   parameters += "&xmlScriptPlain=" + encodeURIComponent(req);
+      parameters += "&xmlScriptPlain=" + encodeURIComponent(req);
       processUpdates(url, parameters, false);
       doStopUpdates = true;
   }
@@ -104,41 +104,42 @@
          otherWindow.status = "Operation '" + name + "' not known";
       }
    }
-	
-	function updateText(responseText, status, statusTxt) {
-		alert("Response is not xml: " + responseText);
-		// updateXML(null, responseText, status, statusTxt);
-	}
 
-	function updateXML(responseXML, responseText, status, statusTxt) {
-	   if (responseText == "<void/>")
-	      return;
-		var data = responseXML.getElementsByTagName('xmlBlasterResponse');
-		if (data != null && data.length > 0) {
-		   data = data[0].getElementsByTagName('update');
-		   if (data != null && data.length > 0) {
-		      for (var j=0; j < data.length; j++) {
-		         if (data[j].nodeType == 1) {
-      		      var childs = data[j].childNodes;
-      		      if (childs != null) {
-    	      	      for (var i=0; i < childs.length; i++) {
-      	      	      var content = childs.item(i);
-   	   	            if (content.nodeType == 1)
+   function updateText(responseText, status, statusTxt) {
+      alert("Response is not xml: " + responseText);
+      // updateXML(null, responseText, status, statusTxt);
+
+
+   function updateXML(responseXML, responseText, status, statusTxt) {
+      if (responseText == "<void/>")
+         return;
+      var data = responseXML.getElementsByTagName('xmlBlasterResponse');
+      if (data != null && data.length > 0) {
+         data = data[0].getElementsByTagName('update');
+         if (data != null && data.length > 0) {
+            for (var j=0; j < data.length; j++) {
+               if (data[j].nodeType == 1) {
+                  var childs = data[j].childNodes;
+                  if (childs != null) {
+                     for (var i=0; i < childs.length; i++) {
+                        var content = childs.item(i);
+                        if (content.nodeType == 1)
                            processContent(content);
-		               }
-      		      }
-		         }
-		      }
-		   }
-		}
-		else
-		   alert("response '" + responseText + "' does not start with tag 'xmlBlasterResponse'");
-	}
-	
-	function updateError(status, statusTxt) {
-	   alert("updateError: statusTxt='" + statusTxt + "'");
-	}
-	
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+         alert("response '" + responseText + "' does not start with tag 'xmlBlasterResponse'");
+   }
+
+
+   function updateError(status, statusTxt) {
+      alert("updateError: statusTxt='" + statusTxt + "'");
+   }
+
    
    // These should not be changed by the user
    var base = "../ajax";
@@ -173,10 +174,10 @@
    }
   
    function processUpdates(url, parameters, doPoll) {
-	   if (doStopUpdates) {
-	      document.getElementById('request').value = "The updates are stopped";
-	      return;
-	   }
+      if (doStopUpdates) {
+         document.getElementById('request').value = "The updates are stopped";
+         return;
+      }
 
       var async = doPoll;
       var xmlHttpC = GetXmlHttpObject();
@@ -210,8 +211,8 @@
    }
 
 
- 	/*
- 	const unsigned short      ELEMENT_NODE                = 1
+
+   const unsigned short      ELEMENT_NODE                = 1
    const unsigned short      ATTRIBUTE_NODE              = 2
    const unsigned short      TEXT_NODE                   = 3
    const unsigned short      CDATA_SECTION_NODE          = 4
@@ -224,65 +225,66 @@
    const unsigned short      DOCUMENT_FRAGMENT_NODE      = 11
    const unsigned short      NOTATION_NODE               = 12
    */
-	function addRecursiveChilds(doc, father, node, replace, contentAsText) {
-	   if (node == null || father == null || doc == null)
-	      return contentAsText;
-	   // make a copy of the node
-	   var child = null;
-		if (node.nodeType == 1) { // element
-			child = doc.createElement(node.tagName);
-			if (contentAsText != null)
-     	      contentAsText += "<" + child.tagName + " ";
-		   // add the attributes since they are not detected as attribute nodes
-		   var attributes = node.attributes;
-		   for (var i=0; i < attributes.length; i++) {
-		       var attr = attributes.item(i);
-		       child.setAttribute(attr.name, attr.value);
-		       if (contentAsText != null)
+
+   function addRecursiveChilds(doc, father, node, replace, contentAsText) {
+      if (node == null || father == null || doc == null)
+         return contentAsText;
+      // make a copy of the node
+      var child = null;
+      if (node.nodeType == 1) { // element
+         child = doc.createElement(node.tagName);
+         if (contentAsText != null)
+            contentAsText += "<" + child.tagName + " ";
+         // add the attributes since they are not detected as attribute nodes
+         var attributes = node.attributes;
+         for (var i=0; i < attributes.length; i++) {
+            var attr = attributes.item(i);
+            child.setAttribute(attr.name, attr.value);
+             if (contentAsText != null)
                 contentAsText += attr.name + "='" + attr.value + "' ";
-		   }
-		   if (contentAsText != null)
-		      contentAsText += ">\n";
-		}
-		else if (node.nodeType == 2) { // attribute
-		   child = doc.createAttribute(node.nodeName);
-		   child.value = node.nodeValue;
-		   alert(node.nodeName + "='" + child.value + "'");
-		}
-		else if (node.nodeType == 3) {
-		   child = doc.createTextNode(node.data);
-		   if (contentAsText != null)
-		      contentAsText += node.data;
-		}
-		else { // not implemented (do not add it)
-		   if (contentAsText != null)
-		      contentAsText = contentAsText + "</" + child.tagName + ">\n";
-		   return contentAsText;   
-		}
-		if (node.hasChildNodes()) {
-		   // add all childs recursively
-		   var allChilds = node.childNodes;
-		   var tmp = "";
-		   for (var i=0; i < allChilds.length; i++) {
-		       tmp += addRecursiveChilds(doc, child, allChilds.item(i), false, contentAsText);
-		   }
-		   if (contentAsText != null)
-		      contentAsText += tmp;
-		}
-		if (!replace)
-		   father.appendChild(child);
-		else {
-		   var grandParent = father.parentNode;
-		   if (grandParent != null) {
-		      dump("The father and the child " + father + " "  + child);
-		      grandParent.replaceChild(child, father);
-		   }
-		   else
-		      alert("The grandparent is null");
-		}
-		if (contentAsText != null)
+         }
+         if (contentAsText != null)
+            contentAsText += ">\n";
+      }
+      else if (node.nodeType == 2) { // attribute
+         child = doc.createAttribute(node.nodeName);
+         child.value = node.nodeValue;
+         alert(node.nodeName + "='" + child.value + "'");
+      }
+      else if (node.nodeType == 3) {
+         child = doc.createTextNode(node.data);
+         if (contentAsText != null)
+            contentAsText += node.data;
+      }
+      else { // not implemented (do not add it)
+         if (contentAsText != null)
+            contentAsText = contentAsText + "</" + child.tagName + ">\n";
+         return contentAsText;   
+      }
+      if (node.hasChildNodes()) {
+         // add all childs recursively
+         var allChilds = node.childNodes;
+         var tmp = "";
+         for (var i=0; i < allChilds.length; i++) {
+             tmp += addRecursiveChilds(doc, child, allChilds.item(i), false, contentAsText);
+         }
+         if (contentAsText != null)
+            contentAsText += tmp;
+      }
+      if (!replace)
+         father.appendChild(child);
+      else {
+         var grandParent = father.parentNode;
+         if (grandParent != null) {
+            dump("The father and the child " + father + " "  + child);
+            grandParent.replaceChild(child, father);
+         }
+         else
+            alert("The grandparent is null");
+      }
+      if (contentAsText != null)
          contentAsText = contentAsText + "</" + child.tagName + ">\n";
-		return contentAsText;
-	}
+      return contentAsText;
+   }
 
 
