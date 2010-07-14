@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
@@ -108,8 +109,11 @@ public class DefaultMapper implements I_Mapper {
       if (column != null)
          buf.append(column);
       
-      if (excludeColumns.containsKey(buf.toString()))
+      if (excludeColumns.containsKey(buf.toString())) {
+         if (log.isLoggable(Level.FINE))
+            log.fine("Excluding Column " + buf.toString());
          return null;
+      }
 
       // catalog.schema.table.column
       // schema.table.column
@@ -176,6 +180,7 @@ public class DefaultMapper implements I_Mapper {
       this.tableMap = InfoHelper.getPropertiesStartingWith("replication.mapper.table.", info, dbHelper);
       this.columnMap = InfoHelper.getPropertiesStartingWith("replication.mapper.column.", info, dbHelper);
       this.excludeColumns = InfoHelper.getPropertiesStartingWith("replication.mapper.excludeColumn.", info, dbHelper);
+      log.info("number of entries to exclude: " + this.excludeColumns.size());
    }
    
    public void shutdown() throws Exception {
