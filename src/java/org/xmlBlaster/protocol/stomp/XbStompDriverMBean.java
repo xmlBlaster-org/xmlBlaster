@@ -6,4 +6,6 @@ public interface XbStompDriverMBean extends I_AdminService {
 	String getRawAddress();
 	String[] showBlockingCallbackTreads(String loginName);
 	String freeBlockingCallbackThread(String loginName);
+	int countClients();
+	String[] getClientDump();
 }

@@ -11,6 +11,7 @@ import org.codehaus.stomp.ProtocolException;
 import org.codehaus.stomp.Stomp;
 import org.codehaus.stomp.StompFrame;
 import org.codehaus.stomp.StompHandler;
+import org.hsqldb.lib.Iterator;
 import org.xmlBlaster.authentication.plugins.demo.SecurityQos;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
@@ -50,7 +51,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	public static final String XB_SERVER_COMMAND_PING = "PING";
 	public static final String XB_SERVER_HEADER_KEY = "key";
 	public static final String XB_SERVER_HEADER_QOS = "qos";
-	public static String ME = "XbStompInOutBridge";
+	public String ME = "XbStompInOutBridge";
 	public static final String PROTOCOL_NAME = "STOMP";
 	private final StompHandler outputHandler;
 	private final XbStompDriver driver;
@@ -68,72 +69,89 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	protected long updateResponseTimeout;
 	
 	private ConnectQosServer connectQos;
+	private String remoteAddress = "";
 
 	public XbStompInOutBridge(Global glob, XbStompDriver driver,
 			StompHandler outputHandler) {
 		this.glob = glob;
 		this.driver = driver;
-		this.outputHandler = outputHandler;
+		this.outputHandler = outputHandler; // is  instanceof TcpTransport
 		this.stompOpened = true;
-	}
-
-	public void shutdown() throws XmlBlasterException {
-		if (!checkXbConnected())
-			return;
-		log.info(ME + " will shutdown");
-        driver.removeClient(this);
 		try {
-			close();
-		} catch (Throwable e) {
-			throw new XmlBlasterException(this.glob,
-					ErrorCode.COMMUNICATION_NOCONNECTION_DEAD,
-					ME + ".shutdown", e.getMessage());
+			// "tcp://" + socket.getInetAddress() + ":" + socket.getPort();
+			this.remoteAddress = outputHandler.toString();
+		}
+		catch (Throwable e) {
+			e.printStackTrace();
 		}
 	}
 
-	public void shutdownNoThrow() {
-		try {
-			shutdown();
-		} catch (Throwable e) {
-			log.warning(ME + " shutdownNoThrow: " + e.toString());
-		}
+	/**
+	 * All stomp threads contain the remote address alreay, but not our internal threads
+	 */
+	public String getExtendedLogId() {
+		return ME + " " + this.remoteAddress;
+	}
+
+	/**
+	 * Called from xmlBlaster core on disconnect
+	 * Called on exception or driver deactivate
+	 */
+	public void shutdown() {
+		log.info(getExtendedLogId() + " will shutdown");
+        _destroy();
 	}
 
 	/**
 	 * Callback from #StompHandler
 	 */
-	//@Overrideide
 	public void close() {
-		if (this.stompOpened) {
-			this.stompOpened = false;
-			// somebody is trying to close me all the time :-(
-			I_Authenticate auth = this.authenticate;
-			if (auth != null) {
-				// From the point of view of the incoming client connection we
-				// are
-				// dead
-				// The callback dispatch framework may have another point of
-				// view
-				// (which is not of interest here)
-				auth.connectionState(this.secretSessionId,
-						ConnectionStateEnum.DEAD);
-			}
-			this.secretSessionId = null;
-			this.authenticate = null;
-			this.xb = null;
-			log.info(ME + " gets closed");
-			if (checkStompConnected()) {
-				try {
-					outputHandler.close();
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
-			}
-			
-			notifyAllFrameAcks();
-		}
+		// The stomp tread name contains the remote IP
+		log.info(ME + " close from StompHandler");
+		_destroy();
 	}
 	
+	private void _destroy() {
+        driver.removeClient(this);
+		try {
+			synchronized (this) {
+				if (this.stompOpened) {
+					this.stompOpened = false;
+					// somebody is trying to close me all the time :-(
+					I_Authenticate auth = this.authenticate;
+					if (auth != null) {
+						// From the point of view of the incoming client connection we
+						// are
+						// dead
+						// The callback dispatch framework may have another point of
+						// view
+						// (which is not of interest here)
+						try {
+							auth.connectionState(this.secretSessionId,
+									ConnectionStateEnum.DEAD);
+						}
+						catch (Throwable e) {
+							e.printStackTrace();
+						}
+					}
+					this.secretSessionId = null;
+					this.authenticate = null;
+					this.xb = null;
+					log.info(getExtendedLogId() + " gets closed");
+					try {
+						outputHandler.close();
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+					notifyAllFrameAcks();
+				}
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+			log.severe(e.toString());
+		}
+	}
+
 	public int notifyAllFrameAcks() {
 		RequestHolder[] arr = getFramesToAck();
 		log.info(ME + ". Close called with " + arr.length + " waiting frames, notify them now");
@@ -166,7 +184,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 
 	public void onException(Exception e) {
 		log.warning(ME + "onException from Stomp: " + e.toString());
-		shutdownNoThrow();
+		shutdown();
 	}
 
 	public void onStompFrame(StompFrame frame) throws Exception {
@@ -218,6 +236,21 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			}
 			if (login != null) {
 				ConnectQosServer conQos = new ConnectQosServer(glob, qos);
+				
+				if (conQos.getData().getClientProperty("deviceGuid", (String)null) != null) {
+					StringBuffer buf = new StringBuffer();
+					buf.append("loginName=").append(conQos.getUserId()).append(",");
+					buf.append("version=").append(conQos.getData().getClientProperty("version", "")).append(",");
+					buf.append("deviceName=").append(conQos.getData().getClientProperty("deviceName", "")).append(",");
+					buf.append("platform.model=").append(conQos.getData().getClientProperty("platform.model", "")).append(",");
+					buf.append("platform.name=").append(conQos.getData().getClientProperty("platform.name", "")).append(",");
+					buf.append("batterylevel=").append(conQos.getData().getClientProperty("batterylevel", "")).append(",");
+					buf.append("version=").append(conQos.getData().getClientProperty("version", "")).append(",");
+					buf.append("version.OS=").append(conQos.getData().getClientProperty("version.OS", "")).append(",");
+					buf.append("deviceGuid=").append(conQos.getData().getClientProperty("deviceGuid", ""));
+					log.info(ME + "Connecting device: " + buf.toString());
+				}
+				
 				if (conQos.getSecurityQos() == null) {
 					String clientId = (String) headers
 							.get(Stomp.Headers.Connect.CLIENT_ID);
@@ -247,7 +280,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty()
 						.getCallbackAddresses();
 				for (int ii = 0; cbArr != null && ii < cbArr.length; ii++) {
-					cbArr[ii].setRawAddress(driver.getRawAddress());
+					cbArr[ii].setRawAddress(this.remoteAddress);//driver.getRawAddress());
 					try {
 						cbArr[ii].setCallbackDriver(this);
 					} catch (Exception e) {
@@ -785,7 +818,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		try {
 			return s.getBytes(Constants.UTF8_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			log.severe(ME + " PANIC in WatcheeConstants.toUtf8Bytes(" + s
+			log.severe("PANIC in WatcheeConstants.toUtf8Bytes(" + s
 					+ ", " + Constants.UTF8_ENCODING + "): " + e.toString());
 			e.printStackTrace();
 			return s.getBytes();

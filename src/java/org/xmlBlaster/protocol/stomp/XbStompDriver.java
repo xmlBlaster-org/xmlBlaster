@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,7 +89,7 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		log.info("deActivate, throwing out " + arr.length + " clients");
 		// shutdown all clients connected
 		for (XbStompInOutBridge client: arr) {
-			client.shutdownNoThrow();
+			client.shutdown();
 			removeClient(client);
 		}
 		clearClients();
@@ -328,10 +329,21 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		}
 	}
 
+	//@Override
 	public int countClients() {
 		synchronized (clientSet) {
 			return clientSet.size();
 		}
+	}
+
+	//@Override
+	public String[] getClientDump() {
+		XbStompInOutBridge[] arr = getClients();
+		Set<String>set = new TreeSet<String>();
+		for (XbStompInOutBridge bridge : arr) {
+			set.add(bridge.getExtendedLogId());
+		}
+		return set.toArray(new String[set.size()]);
 	}
 
 	// ///////// STOMP
@@ -344,7 +356,8 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 		XbStompInOutBridge client = new XbStompInOutBridge(this.glob, this, outputHandler);
 		addClient(client);
 		connectCounter++;
-		log.info("New stomp client arrives, current number of clients=" + countClients() + ", overall connects=" + connectCounter);
+		// The server listener thread
+		log.info("New stomp client " + outputHandler.toString() + " arrives, current number of clients=" + countClients() + ", overall connects=" + connectCounter);
 		return client;
 	}
 
@@ -432,4 +445,5 @@ public class XbStompDriver implements I_Driver, StompHandlerFactory, XbStompDriv
 	//@Override
 	public void setUsageUrl(String url) {
 	}
+	
 }
