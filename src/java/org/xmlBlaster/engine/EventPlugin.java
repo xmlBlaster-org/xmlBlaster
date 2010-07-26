@@ -301,6 +301,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected int instanceCounter;
 
    private String uniqueInstanceName;
+   private String[] addClientProperties;
    
    /**
     * Helper class to send emails
@@ -564,6 +565,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return;
       }
       this.eventTypes = this.eventTypes.trim();
+      
+      String add = this.glob.get("addClientProperties", "", null, this.pluginConfig);
+      this.addClientProperties = ReplaceVariable.toArray(add.trim(), ",");
 
       StringBuffer destLogStr = new StringBuffer(1024);
 
@@ -2373,14 +2377,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             if (newState == ConnectionStateEnum.ALIVE) {
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
                if (sessionInfo != null) {
+                  // If ConnectQos sends __remoteProperties=true to forward those
                   clientProperties = sessionInfo.getRemotePropertyArr();
                   ArrayList list = new ArrayList();
-                  for (int i=0; i<clientProperties.length; i++)
+                  for (int i=0; i<clientProperties.length; i++) {
                 	  list.add(clientProperties[i]);
+                  }
                   list.add(new ClientProperty("_DispatchStatistic", 
                 		  Constants.TYPE_STRING,
                 		  Constants.ENCODING_NONE,
                 		  dispatchManager.getDispatchStatistic().toXml("")));
+                  
+                  // You can configure in xmlBlasterPlugins.xml to add specific ConnectQos clientProperties
+                  // <attribute id='addClientProperties'>version,deviceName,platform.model,platform.name,batterylevel,version,version.OS,deviceGuid</attribute>
+                  ConnectQosData data = sessionInfo.getConnectQos().getData();
+                  if (data != null && this.addClientProperties != null) {
+                     for (int i=0; i<this.addClientProperties.length; i++) {
+                        String key=this.addClientProperties[i];
+                        ClientProperty cp = data.getClientProperty(key);
+                        if (cp != null) {
+                        	list.add(cp);
+                        }
+                     }
+                  }
+                  
                   clientProperties = (ClientProperty[])list.toArray(new ClientProperty[list.size()]);
                }
             }
