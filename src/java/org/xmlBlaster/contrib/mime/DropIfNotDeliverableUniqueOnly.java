@@ -206,6 +206,7 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
          // Check if message instance was delivered already to callback queue
          String topicId = msgUnit.getKeyOid();
          long timestampMillisCurr = msgUnit.getQosData().getRcvTimestamp().getMillis();
+         // groupId is only check for newest, use &lt;history numEntries='10' newestFirst='false'/> to scan old messages as well
          String groupId = msgUnit.getQosData().getClientProperty(this.uniqueGroupIdKeyName, topicId);
          String key = getType() + ":" + groupId;// "DropIfNotDeliverableUniqueOnly:myTopic"
          synchronized (receiver.getUserObjectMap()) {
