@@ -11,7 +11,6 @@ import org.codehaus.stomp.ProtocolException;
 import org.codehaus.stomp.Stomp;
 import org.codehaus.stomp.StompFrame;
 import org.codehaus.stomp.StompHandler;
-import org.hsqldb.lib.Iterator;
 import org.xmlBlaster.authentication.plugins.demo.SecurityQos;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
@@ -188,31 +187,47 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	}
 
 	public void onStompFrame(StompFrame frame) throws Exception {
-		String action = frame.getAction();
-		if (action == null) {
-			log.warning(ME + " Ignoring null stomp action: " + frame.toString());
-			return;
+		try {
+			String action = frame.getAction();
+			if (action == null) {
+				log.warning(ME + " Ignoring null stomp action: " + frame.toString());
+				return;
+			}
+			action = action.trim();
+			if (action.startsWith(Stomp.Commands.CONNECT)) {
+				onStompConnect(frame);
+			} else if (action.startsWith(Stomp.Commands.SUBSCRIBE)) {
+				onStompSubscribe(frame);
+			} else if (action.startsWith(Stomp.Commands.UNSUBSCRIBE)) {
+				onStompUnsubscribe(frame);
+			} else if (action.startsWith(Stomp.Commands.DISCONNECT)) {
+				onStompDisconnect(frame);
+			} else if (action.startsWith(Stomp.Commands.SEND)) {
+				onStompSend(frame);
+			} else if (action.startsWith(Stomp.Commands.ACK)) {
+				onStompAck(frame);
+			} else if (action.startsWith(Stomp.Commands.ABORT) || action.startsWith("NAK")) {
+				onStompNak(frame);
+			} else {
+				log.severe(getExtendedLogId() + "STOMP action: " + action
+						+ "not supported or unknown");
+				throw new ProtocolException("STOMP action: " + action
+						+ "not supported or unknown");
+			}
 		}
-		action = action.trim();
-		if (action.startsWith(Stomp.Commands.CONNECT)) {
-			onStompConnect(frame);
-		} else if (action.startsWith(Stomp.Commands.SUBSCRIBE)) {
-			onStompSubscribe(frame);
-		} else if (action.startsWith(Stomp.Commands.UNSUBSCRIBE)) {
-			onStompUnsubscribe(frame);
-		} else if (action.startsWith(Stomp.Commands.DISCONNECT)) {
-			onStompDisconnect(frame);
-		} else if (action.startsWith(Stomp.Commands.SEND)) {
-			onStompSend(frame);
-		} else if (action.startsWith(Stomp.Commands.ACK)) {
-			onStompAck(frame);
-		} else if (action.startsWith(Stomp.Commands.ABORT) || action.startsWith("NAK")) {
-			onStompNak(frame);
-		} else {
-			throw new ProtocolException("STOMP action: " + action
-					+ "not supported or unknown");
+		catch (ProtocolException e) {
+			throw e;
 		}
-
+		catch (Exception e) {
+			e.printStackTrace();
+			log.warning(getExtendedLogId() + " onStompFrame failed: " + e.toString());
+			throw e;
+		}
+		catch (Throwable e) {
+			e.printStackTrace();
+			log.severe(getExtendedLogId() + " onStompFrame failed: " + e.toString());
+			_destroy();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
