@@ -122,6 +122,7 @@ public class HelloWorldPublish
          final boolean eraseTailback = glob.getProperty().get("eraseTailback", false);
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
          boolean eraseForceDestroy = glob.getProperty().get("erase.forceDestroy", false);
+         final String updateDumpToFile = glob.getProperty().get("update.dumpToFile", (String)null);
          boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
          String contentMime = glob.getProperty().get("contentMime", "text/xml");
          String contentMimeExtended = glob.getProperty().get("contentMimeExtended", "1.0");
@@ -186,6 +187,8 @@ public class HelloWorldPublish
          log.info(" Erase settings");
          log.info("   -erase.forceDestroy " + eraseForceDestroy);
          log.info("   -erase.domain   " + ((domain==null)?"":domain));
+         log.info(" Update settings");
+         log.info("   -update.dumpToFile " + updateDumpToFile);
          log.info(" ConnectQos settings");
          log.info("   -connect/qos/persistent " + connectPersistent);
          if (connectQosClientPropertyMap != null) {
@@ -296,7 +299,13 @@ public class HelloWorldPublish
          ConnectReturnQos crq = con.connect(qos, new I_Callback() {
 			public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
 				try {
-					log.info("Received '" + updateKey.getOid() + "':" + new String(content, "UTF-8"));
+					if (updateDumpToFile == null) {
+						log.info("Received '" + updateKey.getOid() + "':" + new String(content, "UTF-8"));
+					}
+					else {
+						FileLocator.writeFile(updateDumpToFile, content);
+						log.info("Received '" + updateKey.getOid() + "' size = " + content.length + " dumped to file " + updateDumpToFile);
+					}
 				} catch (UnsupportedEncodingException e) {
 					log.severe("Update failed: " + e.toString());
 				}
