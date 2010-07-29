@@ -181,18 +181,50 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		return this.stompOpened && this.xb != null;
 	}
 
+	/**
+	 * Callback from Stomp
+	 */
 	public void onException(Exception e) {
-		log.warning(ME + "onException from Stomp: " + e.toString());
-		shutdown();
+		log.warning(ME + " onException from Stomp: " + e.toString());
+		_destroy();
+	}
+	
+	//@SuppressWarnings("unknown")
+	private String dump(StompFrame frame) {
+		StringBuffer buf = new StringBuffer();
+		try {
+			if (frame == null) {
+				log.severe("Can't dump null frame");
+				return "Can't dump null frame";
+			}
+			buf.append("action=").append(frame.getAction()).append(",");
+			Map<String, Object> map = frame.getHeaders();
+			java.util.Iterator<String> it = map.keySet().iterator();
+			while (it.hasNext()) {
+				String key = it.next();
+				buf.append(key).append("=").append(map.get(key)).append(",");
+			}
+			buf.append("content=").append(new String(frame.getContent(), "UTF-8"));
+		}
+		catch (Throwable e) {
+			buf.append("Can't dump frame: " + e.toString());
+			log.severe("Can't dump frame: " + e.toString());
+		}
+		return buf.toString();
 	}
 
+	/**
+	 * Callback from stomp layer. 
+	 */
 	public void onStompFrame(StompFrame frame) throws Exception {
 		try {
 			String action = frame.getAction();
 			if (action == null) {
-				log.warning(ME + " Ignoring null stomp action: " + frame.toString());
+				log.warning(ME + " Ignoring null stomp action: " + dump(frame));
 				return;
 			}
+			if (log.isLoggable(Level.FINE))
+				log.fine(getExtendedLogId() + " onStompFrame " + dump(frame));
 			action = action.trim();
 			if (action.startsWith(Stomp.Commands.CONNECT)) {
 				onStompConnect(frame);
@@ -209,23 +241,22 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			} else if (action.startsWith(Stomp.Commands.ABORT) || action.startsWith("NAK")) {
 				onStompNak(frame);
 			} else {
-				log.severe(getExtendedLogId() + "STOMP action: " + action
-						+ "not supported or unknown");
 				throw new ProtocolException("STOMP action: " + action
-						+ "not supported or unknown");
+						+ "not supported or unknown: ");
 			}
 		}
 		catch (ProtocolException e) {
-			throw e;
+			log.severe(getExtendedLogId() + e.toString() + ": " + dump(frame));
+			throw e; // re-throw
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			log.warning(getExtendedLogId() + " onStompFrame failed: " + e.toString());
+			log.warning(getExtendedLogId() + " onStompFrame failed: " + e.toString() + ": " + dump(frame));
 			throw e;
 		}
 		catch (Throwable e) {
 			e.printStackTrace();
-			log.severe(getExtendedLogId() + " onStompFrame failed: " + e.toString());
+			log.severe(getExtendedLogId() + " onStompFrame failed: " + e.toString() + ": " + dump(frame));
 			_destroy();
 		}
 	}
@@ -300,7 +331,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 						cbArr[ii].setCallbackDriver(this);
 					} catch (Exception e) {
 						e.printStackTrace();
-						log.severe(ME + " Internal error during setCallbackDriver: " + e.toString());
+						log.severe(ME + " Internal error during setCallbackDriver: " + e.toString() + ": " + dump(command));
 					}
 				}
 				ConnectReturnQosServer retQos = authenticate.connect(conQos);
@@ -327,10 +358,11 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				sc.setAction(Stomp.Responses.CONNECTED);
 				sc.setHeaders((Map)responseHeaders);
 				sendFrameNoWait(sc);
+				log.info(ME + " ConnectReturn Qos is send");
 			}
 		} catch (XmlBlasterException e) {
 			this.connectQos = null;
-			log.warning(ME + " Connect failed: " + e.toString());
+			log.warning(ME + " Connect failed: " + e.toString() + ": " + dump(command));
 			sendExeption(command, e);
 		}
 	}
@@ -348,7 +380,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			sendExeption(command,
 					new XmlBlasterException(glob,
 							ErrorCode.USER_WRONG_API_USAGE,
-							"Please call connect first"));
+							"onStompDisconnect: Please call connect first: " + dump(command)));
 			return;
 		}
 		try {
@@ -359,7 +391,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		} catch (XmlBlasterException e) {
 			sendExeption(command, e);
 		}
-		close();
+		_destroy();
 	}
 
 	protected void onStompSend(StompFrame command) {
@@ -367,7 +399,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			if (!checkXbConnected()) {
 				sendExeption(command, new XmlBlasterException(glob,
 						ErrorCode.USER_WRONG_API_USAGE,
-						"Please call connect first"));
+						"onStompSend: Please call connect first: " + dump(command)));
 				return;
 			}
 			@SuppressWarnings("unchecked")
@@ -389,7 +421,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			if (!checkXbConnected()) {
 				sendExeption(command, new XmlBlasterException(glob,
 						ErrorCode.USER_WRONG_API_USAGE,
-						"Please call connect first"));
+						"onStompSubscribe: Please call connect first: " + dump(command)));
 				return;
 			}
 			@SuppressWarnings("unchecked")
@@ -409,7 +441,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			if (!checkXbConnected()) {
 				sendExeption(command, new XmlBlasterException(glob,
 						ErrorCode.USER_WRONG_API_USAGE,
-						"Please call connect first"));
+						"onStompUnsubscribe: Please call connect first: " + dump(command)));
 				return;
 			}
 			@SuppressWarnings("unchecked")
@@ -430,7 +462,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		if (messageId == null) {
-			log.warning(ME + " ACK API error: missing messageId");
+			log.warning(ME + " ACK API error: missing messageId: " + dump(command));
 			throw new ProtocolException(
 					ME + " ACK received without a message-id to acknowledge!");
 		}
@@ -438,7 +470,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		RequestHolder requestHolder = framesToAck.get(messageId);
 		if (requestHolder == null) {
 			// Happens on multiple Ack or on wrong messageId
-			log.warning(ME + " Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable");
+			log.warning(getExtendedLogId() + " Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable: " + dump(command));
 		}
 		
 		requestHolder.returnQos = (String) headers.get(XB_SERVER_HEADER_QOS);
@@ -455,7 +487,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		Map headers = command.getHeaders();
 		String messageId = (String) headers.get(Stomp.Headers.Ack.MESSAGE_ID);
 		if (messageId == null) {
-			log.warning(ME + " NAK API error: missing messageId");
+			log.warning(ME + " NAK API error: missing messageId: " + dump(command));
 			throw new ProtocolException(
 					ME + " NAK received without a message-id to acknowledge!");
 		}
@@ -468,7 +500,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		RequestHolder requestHolder = framesToAck.get(messageId);
 		if (requestHolder == null) {
 			// Happens on multiple Ack or on wrong messageId
-			log.warning(ME + " Internal NAK API error: messageId=" + messageId + " not found in framesToAck hashtable");
+			log.warning(getExtendedLogId() + " Internal NAK API error: messageId=" + messageId + " not found in framesToAck hashtable: " + dump(command));
 		}
 		requestHolder.xmlBlasterException = new XmlBlasterException(glob, errorCodeEnum, message);
 		
@@ -779,7 +811,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			// Timeout occurred if requestHolder was not removed by ACK or NAK:
 			if (requestHolder == getFrameForMessageId(requestHolder.messageId)) {
 				String text = "methodName=" + methodName.toString() + " messageId=" + requestHolder.messageId + ": No Ack recieved in timeoutMillis=" + timeout;
-				log.warning(text);
+				log.warning(text + ": " + dump(frame));
 				removeFrameForMessageId(requestHolder.messageId);
 				throw new XmlBlasterException(this.glob,
 						ErrorCode.COMMUNICATION_TIMEOUT, ME
@@ -798,12 +830,12 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		// http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
 		if (requestHolder.shutdown) {
 			// connection was lost
-			log.warning(ME + " " + requestHolder.toString() + ": Shutdown during callback delivery");
+			log.warning(getExtendedLogId() + requestHolder.toString() + ": Shutdown during callback delivery: " + dump(frame));
 			throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME + " Shutdown during update delivery");
 			//return "<qos><state id='FAIL'/>";
 		}
 		else if (requestHolder.xmlBlasterException != null) { // on XmlBlasterException
-			log.warning(ME + " " + requestHolder.toString() + ": Exception from client: " + requestHolder.xmlBlasterException.getMessage());
+			log.warning(ME + " " + requestHolder.toString() + ": Exception from client: " + requestHolder.xmlBlasterException.getMessage() + ": " + dump(frame));
 			throw requestHolder.xmlBlasterException;
 		}
 		else { // requestHolder.returnQos should filled
@@ -842,26 +874,32 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 
 	@SuppressWarnings("unchecked")
 	private void sendExeption(StompFrame command, XmlBlasterException e) {
-		final String receiptId = (String) command.getHeaders().get(
-				Stomp.Headers.RECEIPT_REQUESTED);
-		StompFrame sc = new StompFrame();
-		sc.setAction(Stomp.Responses.ERROR);
-		sc.setHeaders(new HashMap());
-		sc.getHeaders().put("errorCode", e.getErrorCodeStr()); // xmlBlaster way
-		sc.getHeaders().put(Stomp.Responses.MESSAGE, e.getErrorCodeStr()); // stomp
-																			// wants
-																			// it
-		if (receiptId != null) {
-			sc.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID, receiptId);
-		}
-		String text = e.getMessage();
-		sc.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, text.length());
-		sc.setContent(toUtf8Bytes(text));
 		try {
-			sendFrameNoWait(sc);
-		} catch (XmlBlasterException e1) {
-			e1.printStackTrace();
+			final String receiptId = (String) command.getHeaders().get(
+					Stomp.Headers.RECEIPT_REQUESTED);
+			StompFrame sc = new StompFrame();
+			sc.setAction(Stomp.Responses.ERROR);
+			sc.setHeaders(new HashMap());
+			sc.getHeaders().put("errorCode", e.getErrorCodeStr()); // xmlBlaster way
+			sc.getHeaders().put(Stomp.Responses.MESSAGE, e.getErrorCodeStr()); // stomp
+																				// wants
+																				// it
+			if (receiptId != null) {
+				sc.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID, receiptId);
+			}
+			String text = e.getMessage();
+			sc.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, text.length());
+			sc.setContent(toUtf8Bytes(text));
+			try {
+				sendFrameNoWait(sc);
+			} catch (XmlBlasterException e1) {
+				e1.printStackTrace();
+			}
+			log.warning(ME + "sendException" + e.getMessage() + ": " + dump(command));
 		}
-		log.warning(ME + "sendException" + e.getMessage());
+		catch (Throwable e2) {
+			e2.printStackTrace();
+			log.severe("sendExeption failed for " + e.toString() + ": " + e2.toString() + ": " + dump(command));
+		}
 	}
 }
