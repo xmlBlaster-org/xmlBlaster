@@ -52,6 +52,16 @@ public class XmlBuffer {
         }
 
         /**
+         * Sorround string with CDATA
+         * @param str
+         * @return
+         */
+        public XmlBuffer appendCdataEscaped(String str) {
+        	this.buf.append("<![CDATA[").append(str).append("]]>");
+        	return this;
+        }
+
+        /**
          * Aquivalent to a StringBuffer.append().
          */
         public XmlBuffer append(String str) {
