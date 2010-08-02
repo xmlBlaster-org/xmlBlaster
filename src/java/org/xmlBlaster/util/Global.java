@@ -206,7 +206,7 @@ public class Global implements Cloneable
    protected volatile I_QueryQosFactory queryQosFactory;
    protected volatile I_StatusQosFactory statusQosFactory;
 
-   protected volatile Timeout pingTimer;
+   protected volatile I_TimeoutManager pingTimer;
    protected volatile Timeout burstModeTimer;
    protected volatile Timeout messageTimer;
    protected volatile Timeout jdbcConnectionPoolTimer;
@@ -1713,11 +1713,11 @@ public class Global implements Cloneable
     * Access the handle of the ping timer thread to test a client or callback connection.
     * @return The Timeout instance
     */
-   public final Timeout getPingTimer() {
+   public final I_TimeoutManager getPingTimer() {
       if (this.pingTimer == null) {
          synchronized(this) {
             if (this.pingTimer == null)
-               this.pingTimer = new Timeout("XmlBlaster.PingTimer");
+               this.pingTimer = new TimeoutPooled("XmlBlaster.PingTimerPooled"); // Note: thread name is changed to DispatchConnection#PING_THREAD_NAME
          }
       }
       return this.pingTimer;

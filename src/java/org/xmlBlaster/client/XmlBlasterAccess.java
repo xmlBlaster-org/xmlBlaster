@@ -47,6 +47,7 @@ import org.xmlBlaster.util.FileDumper;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.I_TimeoutManager;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timeout;
@@ -556,7 +557,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (sessionTimeout >= MIN) {
          long gap = (sessionTimeout < 60*1000L) ? sessionTimeout/2 : sessionTimeout-30*1000L;
          final long refreshTimeout = sessionTimeout - gap;
-         final Timeout timeout = this.glob.getPingTimer();
+         final I_TimeoutManager timeout = this.glob.getPingTimer();
          this.sessionRefreshTimeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   if (isAlive()) {

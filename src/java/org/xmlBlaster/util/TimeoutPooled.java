@@ -6,9 +6,17 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import java.util.TreeMap;
 import java.util.NoSuchElementException;
+import java.util.TreeMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.def.ErrorCode;
+
+import edu.emory.mathcs.backport.java.util.concurrent.RejectedExecutionException;
+
 
 /**
  * Allows you be called back after a given delay.
@@ -16,12 +24,8 @@ import org.xmlBlaster.util.def.ErrorCode;
  * Note that this class should be called Timer, but with JDK 1.3 there will be a
  * java.util.Timer.
  * <p />
- * There is a single background thread that is used to execute the
- * I_Timeout.timeout() callback. Timer callbacks should complete quickly. If a
- * timeout() takes excessive time to complete, it "hogs" the timer's task
- * execution thread. This can, in turn, delay the execution of subsequent tasks,
- * which may "bunch up" and execute in rapid succession when (and if) the
- * offending task finally completes.
+ * There is pool of threads used to execute the
+ * I_Timeout.timeout() callback. Timer callbacks should complete quickly to not exhaust the pool.
  * <p />
  * This singleton is thread-safe.
  * <p />
@@ -33,14 +37,13 @@ import org.xmlBlaster.util.def.ErrorCode;
  * Feeding of 10000: 10362 adds/sec and all updates came in 942 millis (600MHz
  * Linux PC with Sun JDK 1.3.1) *
  * <p />
- * TODO: Use a thread pool to dispatch the timeout callbacks.
  * <p />
  * Example:<br />
  * 
  * <pre>
  *  public class MyClass implements I_Timeout {
  *    ...
- *    Timeout timeout = new Timeout(&quot;TestTimer&quot;);
+ *    TimeoutPooled timeout = new TimeoutPooled(&quot;TestTimer&quot;);
  *    Timestamp timeoutHandle = timeout.addTimeoutListener(this, 4000L, &quot;myTimeout&quot;);
  *    ...
  *    public void timeout(Object userData) {
@@ -60,7 +63,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  * Or a short form:
  * 
  * <pre>
- * Timeout timeout = new Timeout(&quot;TestTimer&quot;);
+ * TimeoutPooled timeout = new TimeoutPooled(&quot;TestTimer&quot;);
  * 
  * Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
  *    public void timeout(Object userData) {
@@ -75,12 +78,14 @@ import org.xmlBlaster.util.def.ErrorCode;
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.TimeoutTest
  */
-public class Timeout extends Thread implements I_TimeoutManager {
+public class TimeoutPooled extends Thread implements I_TimeoutManager {
+   private static Logger log = Logger.getLogger(TimeoutPooled.class.getName());
+
    /** Name for logging output */
    private static String ME = "Timeout";
 
    /** Sorted map */
-   private TreeMap/*<Timestamp, Container>*/ map = null;
+   private TreeMap<Timestamp, Container> map = null;
 
    /** Start/Stop the Timeout manager thread */
    private boolean running = true;
@@ -96,12 +101,14 @@ public class Timeout extends Thread implements I_TimeoutManager {
 
    /** To avoid sync */
    private boolean mapHasNewEntry;
+   
+   private final ThreadPoolExecutor threadPool;
 
    /**
     * Create a timer thread with a strong reference on the callback objects.
     */
-   public Timeout() {
-      this("Timeout-Thread", false);
+   public TimeoutPooled() {
+      this("TimeoutPooled-Thread", false);
    }
 
    /**
@@ -110,7 +117,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
     * @param name
     *           The name of the thread
     */
-   public Timeout(String name) {
+   public TimeoutPooled(String name) {
       this(name, false);
    }
 
@@ -122,10 +129,34 @@ public class Timeout extends Thread implements I_TimeoutManager {
     *           weak referenced and may be garbage collected even that we hold a
     *           weak reference.
     */
-   public Timeout(String name, boolean useWeakReference) {
+   public TimeoutPooled(String name, boolean useWeakReference) {
+      this(name, useWeakReference, null);
+   }
+   public TimeoutPooled(String name, boolean useWeakReference, ThreadPoolExecutor threadPool) {
       super(name);
+      if (threadPool == null) {
+         int corePoolSize = 1; // On XmlBlasterAccess client side only one needed, on server side it can easily grow
+         int maxPoolSize = 100;
+         long keepAliveTime = 60;
+//         corePoolSize - the number of threads to keep in the pool, even if they are idle.
+//         maximumPoolSize - the maximum number of threads to allow in the pool.
+//         keepAliveTime - when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.
+//         unit - the time unit for the keepAliveTime argument.
+//         workQueue - the queue to use for holding tasks before they are executed. This queue will hold only the Runnable tasks submitted by the execute method. 
+
+         final ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(5);
+         this.threadPool = new ThreadPoolExecutor(corePoolSize, maxPoolSize,
+               keepAliveTime, TimeUnit.SECONDS, queue);
+         //ExecutorService service = Executors.newCachedThreadPool();
+         //service.execute(command)
+         log.info("Created TimeoutPooled corePoolSize=" + this.threadPool.getCorePoolSize() + " maximumPoolSize=" + this.threadPool.getMaximumPoolSize() + " keepAliveSec=" + this.threadPool.getKeepAliveTime(TimeUnit.SECONDS));
+      }
+      else {
+         this.threadPool = threadPool;
+         log.info("Created TimeoutPooled corePoolSize=" + this.threadPool.getCorePoolSize() + " maximumPoolSize=" + this.threadPool.getMaximumPoolSize() + " keepAliveSec=" + this.threadPool.getKeepAliveTime(TimeUnit.SECONDS));
+      }
       this.useWeakReference = useWeakReference;
-      this.map = new TreeMap();
+      this.map = new TreeMap<Timestamp, Container>();
       setDaemon(true);
       start();
       while (!ready) { // We block until our timer thread is ready
@@ -136,10 +167,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * Get number of current used timers.
-    * 
-    * @return The number of active timers
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#getSize()
     */
    public int getSize() {
       synchronized (map) {
@@ -157,14 +186,12 @@ public class Timeout extends Thread implements I_TimeoutManager {
          container = null;
          synchronized (map) {
             try {
-               Timestamp nextWakeup = (Timestamp) map.firstKey(); // throws
-                                                                  // exception
-                                                                  // if empty
+               Timestamp nextWakeup = map.firstKey(); // throws exception if empty
                long next = nextWakeup.getMillis();
                long current = System.currentTimeMillis();
                delay = next - current;
                if (delay <= 0) {
-                  container = (Container) map.remove(nextWakeup);
+                  container = map.remove(nextWakeup);
                   if (debug) {
                      long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.getMillis();
@@ -182,12 +209,22 @@ public class Timeout extends Thread implements I_TimeoutManager {
          }
 
          if (container != null) {
-            I_Timeout callback = container.getCallback();
+            final I_Timeout callback = container.getCallback();
             // System.out.println("useWeakReference=" + useWeakReference + "
             // callback=" + callback);
             if (callback != null) {
                final Object userData = container.getUserData();
-               callback.timeout(userData);
+               try {
+                  threadPool.execute(new Runnable(){
+                     public void run() {
+                        callback.timeout(userData);
+                     };
+                  });
+               }
+               catch (RejectedExecutionException e) {
+                  e.printStackTrace();
+                  log.severe("Thread exhaust activeCount=" + this.threadPool.getActiveCount() + " completedTaskCount=" + this.threadPool.getCompletedTaskCount() + " maximumPoolSize=" + this.threadPool.getMaximumPoolSize() + " callback=" + callback + ": " + e.toString());
+               }
             }
             continue;
          }
@@ -211,24 +248,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * Add a listener which gets informed after 'delay' milliseconds.
-    * <p />
-    * After the timeout happened, you are not registered any more. If you want
-    * to cycle timeouts, you need to register again.
-    * <p />
-    * 
-    * @param listener
-    *           Your callback handle (you need to implement this interface).
-    * @param delay
-    *           The timeout in milliseconds. You can pass 0L and the Timeout
-    *           thread will fire immediately, this can be useful to dispatch a
-    *           task to the timeoutlistener
-    * @param userData
-    *           Some arbitrary data you supply, it will be routed back to you
-    *           when the timeout occurs through method I_Timeout.timeout().
-    * @return A handle which you can use to unregister with
-    *         removeTimeoutListener().
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#addTimeoutListener(org.xmlBlaster.util.I_Timeout, long, java.lang.Object)
     */
    public final Timestamp addTimeoutListener(I_Timeout listener, long delay,
          Object userData) {
@@ -265,30 +286,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       return key;
    }
 
-   /**
-    * Refresh a listener before the timeout happened.
-    * <p />
-    * NOTE: The returned timeout handle is different from the original one.
-    * <p />
-    * 
-    * NOTE: If you are not sure if the key has elapsed already try this:
-    * 
-    * <pre>
-    * timeout.removeTimeoutListener(timeoutHandle);
-    * timeoutHandle = timeout.addTimeoutListener(this, &quot;1000L&quot;, &quot;UserData&quot;);
-    * </pre>
-    * 
-    * @param key
-    *           The timeout handle you received by a previous
-    *           addTimeoutListener() call.<br />
-    *           It is invalid after this call.
-    * @param delay
-    *           The timeout in milliseconds measured from now.
-    * @return A new handle which you can use to unregister with
-    *         removeTimeoutListener()
-    * @exception XmlBlasterException
-    *               if key is null or unknown or invalid because timer elapsed
-    *               already
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#refreshTimeoutListener(org.xmlBlaster.util.Timestamp, long)
     */
    public final Timestamp refreshTimeoutListener(Timestamp key, long delay)
          throws XmlBlasterException {
@@ -326,14 +325,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       return addTimeoutListener(callback, delay, container.getUserData());
    }
 
-   /**
-    * Checks if key is null -> addTimeoutListener else refreshTimeoutListener()
-    * in a thread save way. <br />
-    * Note however that your passed key is different from the returned key and
-    * you need to synchronize this call to avoid having a stale key (two threads
-    * enter this method the same time, the key gets invalid by the first thread
-    * and the second passed a stale key as the first thread has not yet returned
-    * to update 'key')
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#addOrRefreshTimeoutListener(org.xmlBlaster.util.I_Timeout, long, java.lang.Object, org.xmlBlaster.util.Timestamp)
     */
    public final Timestamp addOrRefreshTimeoutListener(I_Timeout listener,
          long delay, Object userData, Timestamp key) throws XmlBlasterException {
@@ -351,19 +344,14 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * Remove a listener before the timeout happened.
-    * <p />
-    * 
-    * @param key
-    *           The timeout handle you received by a previous
-    *           addTimeoutListener() call.
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#removeTimeoutListener(org.xmlBlaster.util.Timestamp)
     */
    public final void removeTimeoutListener(Timestamp key) {
       if (key == null)
          return;
       synchronized (map) {
-         Container container = (Container) map.remove(key);
+         Container container = map.remove(key);
          if (container != null) {
             container.reset();
             container = null;
@@ -371,14 +359,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * Is this handle expired?
-    * <p />
-    * 
-    * @param key
-    *           The timeout handle you received by a previous
-    *           addTimeoutListener() call<br />
-    * @return true/false
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#isExpired(org.xmlBlaster.util.Timestamp)
     */
    public final boolean isExpired(Timestamp key) {
       synchronized (map) {
@@ -386,21 +368,15 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * How long to my timeout.
-    * <p />
-    * 
-    * @param key
-    *           The timeout handle you received by a previous
-    *           addTimeoutListener() call.
-    * @return Milliseconds to timeout, or -1 if not known.
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#spanToTimeout(org.xmlBlaster.util.Timestamp)
     */
    public final long spanToTimeout(Timestamp key) {
       if (key == null) {
          return -1;
       }
       synchronized (map) {
-         Container container = (Container) map.get(key);
+         Container container = map.get(key);
          if (container == null) {
             return -1;
          }
@@ -409,18 +385,12 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * How long am i running.
-    * <p />
-    * 
-    * @param key
-    *           The timeout handle you received by a previous
-    *           addTimeoutListener() call.
-    * @return Milliseconds since creation, or -1 if not known.
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#elapsed(org.xmlBlaster.util.Timestamp)
     */
    public final long elapsed(Timestamp key) {
       synchronized (map) {
-         Container container = (Container) map.get(key);
+         Container container = map.get(key);
          if (container == null) {
             return -1;
          }
@@ -428,15 +398,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * Access the end of life span.
-    * <p />
-    * 
-    * @param key
-    *           The timeout handle you received by a previous
-    *           addTimeoutListener() call.
-    * @return Time in milliseconds since midnight, January 1, 1970 UTC or -1 if
-    *         not known.
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#getTimeout(org.xmlBlaster.util.Timestamp)
     */
    public final long getTimeout(Timestamp key) {
       if (key == null)
@@ -444,8 +407,8 @@ public class Timeout extends Thread implements I_TimeoutManager {
       return key.getMillis();
    }
 
-   /**
-    * Reset all pending timeouts.
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#removeAll()
     */
    public final void removeAll() {
       synchronized (map) {
@@ -453,11 +416,12 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
-   /**
-    * Reset and stop the Timeout manager thread.
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.I_TimeoutManager#shutdown()
     */
    public void shutdown() {
       removeAll();
+      threadPool.shutdown();
       running = false;
       synchronized (this) {
          notify();
@@ -505,7 +469,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
       System.out.println("Timer created and ready.");
 
       {
-         WeakObj weakObj = new WeakObj();
+         WeakObjPooled weakObj = new WeakObjPooled();
          /* Timestamp timeoutHandle = */timeout.addTimeoutListener(weakObj,
                4000L, weakObj);
          weakObj = null;
@@ -524,7 +488,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
 }
 
 /** Test a weak reference */
-final class WeakObj implements I_Timeout {
+final class WeakObjPooled implements I_Timeout {
    public void timeout(Object userData) {
       System.err
             .println("ERROR: Timeout invoked, weak object was not garbage collected.");
@@ -533,6 +497,6 @@ final class WeakObj implements I_Timeout {
 
    //public void finalize() {
    //   super.finalize();
-   //   System.out.println("WeakObj is garbage collected");
+   //   System.out.println("WeakObjPooled is garbage collected");
    //}
 }
