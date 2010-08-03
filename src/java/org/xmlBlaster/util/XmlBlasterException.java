@@ -349,7 +349,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       if (super.getMessage()!=null && super.getMessage().startsWith("#")) {
          return super.getMessage();
       }
-      String revision = "#" + glob.getRevisionNumber();
+      String revision = "#" + (glob==null ? "" : glob.getRevisionNumber());
       return (super.getMessage()==null) ? revision : revision + " " + super.getMessage();
    }
 
