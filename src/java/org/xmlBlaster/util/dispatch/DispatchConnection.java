@@ -444,8 +444,16 @@ abstract public class DispatchConnection implements I_Timeout
       try {
          //this.timerKey = null; Fix marcel 2008-08-18: seems to increase reconnect polling if server is in RL4
    
-         if (isDead())
+         if (isDead()) {
+            log.severe(ME + "Timeout ignored, we are DEAD");
+            try {
+               shutdown();
+               connectionsHandler.getDispatchManager().shutdown();
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
             return;
+         }
    
          boolean isPing = (userData == null);
    
