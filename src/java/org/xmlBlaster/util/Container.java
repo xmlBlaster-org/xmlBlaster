@@ -66,6 +66,10 @@ final class Container {
       }
       this.userData = null;
    }
+   
+   public String toString() {
+      return "callback=" + (callback==null?"null":callback.toString()) + " userData=" + userData;
+   }
 }
 
 
