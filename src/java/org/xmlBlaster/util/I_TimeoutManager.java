@@ -143,4 +143,5 @@ public interface I_TimeoutManager {
     */
    public abstract void shutdown();
 
+   public abstract String dumpStatus();
 }

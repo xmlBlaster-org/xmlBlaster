@@ -33,7 +33,6 @@ import org.xmlBlaster.util.def.ErrorCode;
  * Feeding of 10000: 10362 adds/sec and all updates came in 942 millis (600MHz
  * Linux PC with Sun JDK 1.3.1) *
  * <p />
- * TODO: Use a thread pool to dispatch the timeout callbacks.
  * <p />
  * Example:<br />
  * 
@@ -74,13 +73,14 @@ import org.xmlBlaster.util.def.ErrorCode;
  * 
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.TimeoutTest
+ * @see TimeoutPooled
  */
 public class Timeout extends Thread implements I_TimeoutManager {
    /** Name for logging output */
    private static String ME = "Timeout";
 
    /** Sorted map */
-   private TreeMap/*<Timestamp, Container>*/ map = null;
+   private TreeMap<Timestamp, Container> map = null;
 
    /** Start/Stop the Timeout manager thread */
    private boolean running = true;
@@ -125,7 +125,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
    public Timeout(String name, boolean useWeakReference) {
       super(name);
       this.useWeakReference = useWeakReference;
-      this.map = new TreeMap();
+      this.map = new TreeMap<Timestamp, Container>();
       setDaemon(true);
       start();
       while (!ready) { // We block until our timer thread is ready
@@ -147,6 +147,27 @@ public class Timeout extends Thread implements I_TimeoutManager {
       }
    }
 
+   public String toString() {
+      return "Timeout pending=" + getSize();
+   }
+   
+   public String dumpStatus() {
+      StringBuilder buf = new StringBuilder(256);
+      Container[] arr = getContainers();
+      buf.append("TimeoutPooled pending=").append(getSize());
+      for (Container container: arr) {
+         buf.append("\n");
+         buf.append("callback=").append(container.getCallback().toString()).append(": userData=").append(container.getUserData());
+      }
+      return buf.toString();
+   }
+
+   public Container[] getContainers() {
+      synchronized (map) {
+         return map.values().toArray(new Container[map.size()]);
+      }
+   }
+
    /**
     * Starts the Timeout manager thread.
     */
@@ -157,14 +178,12 @@ public class Timeout extends Thread implements I_TimeoutManager {
          container = null;
          synchronized (map) {
             try {
-               Timestamp nextWakeup = (Timestamp) map.firstKey(); // throws
-                                                                  // exception
-                                                                  // if empty
+               Timestamp nextWakeup = map.firstKey(); // throws exception if empty
                long next = nextWakeup.getMillis();
                long current = System.currentTimeMillis();
                delay = next - current;
                if (delay <= 0) {
-                  container = (Container) map.remove(nextWakeup);
+                  container = map.remove(nextWakeup);
                   if (debug) {
                      long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.getMillis();
@@ -363,7 +382,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
       if (key == null)
          return;
       synchronized (map) {
-         Container container = (Container) map.remove(key);
+         Container container = map.remove(key);
          if (container != null) {
             container.reset();
             container = null;
@@ -400,7 +419,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
          return -1;
       }
       synchronized (map) {
-         Container container = (Container) map.get(key);
+         Container container = map.get(key);
          if (container == null) {
             return -1;
          }
@@ -420,7 +439,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
     */
    public final long elapsed(Timestamp key) {
       synchronized (map) {
-         Container container = (Container) map.get(key);
+         Container container = map.get(key);
          if (container == null) {
             return -1;
          }

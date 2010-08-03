@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.def.ErrorCode;
@@ -74,7 +75,8 @@ import edu.emory.mathcs.backport.java.util.concurrent.RejectedExecutionException
  * </pre>
  * 
  * JDK 1.2 or higher only.
- * 
+ * <p>
+ *  -logging/org.xmlBlaster.util.TimeoutPooled FINER
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.TimeoutTest
  */
@@ -92,9 +94,6 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
 
    /** On creation wait until thread started */
    private boolean ready = false;
-
-   /** Switch on debugging output */
-   private final boolean debug = false;
 
    /** Hold only weak reference on callback object? */
    private final boolean useWeakReference;
@@ -175,12 +174,35 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
          return map.size();
       }
    }
+   
+   public String toString() {
+      return "TimeoutPooled pending=" + getSize();
+   }
+   
+   public String dumpStatus() {
+      StringBuilder buf = new StringBuilder(256);
+      Container[] arr = getContainers();
+      buf.append("TimeoutPooled pending=").append(getSize());
+      for (Container container: arr) {
+         buf.append("\n");
+         buf.append("callback=").append(container.getCallback().toString()).append(": userData=").append(container.getUserData());
+      }
+      return buf.toString();
+   }
+
+   public Container[] getContainers() {
+      synchronized (map) {
+         return map.values().toArray(new Container[map.size()]);
+      }
+   }
 
    /**
     * Starts the Timeout manager thread.
     */
    public void run() {
       Container container;
+      if (log.isLoggable(Level.FINE))
+         log.fine("Timer main thread is ready");
       while (running) {
          long delay = 100000; // sleep veeery long
          container = null;
@@ -192,18 +214,17 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
                delay = next - current;
                if (delay <= 0) {
                   container = map.remove(nextWakeup);
-                  if (debug) {
+                  if (log.isLoggable(Level.FINE)) {
                      long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.getMillis();
-                     System.out
-                           .println("Timeout occurred, calling listener with real time error of "
+                     log.fine("Timeout occurred, calling listener with real time error of "
                                  + diff + " millis");
                   }
                }
             } catch (NoSuchElementException e) {
-               if (debug)
-                  System.out
-                        .println("The listener map is empty, nothing to do.");
+               if (log.isLoggable(Level.FINER)) {
+                  log.finer("The listener map is empty, nothing to do.");
+               }
             }
             this.mapHasNewEntry = false;
          }
@@ -246,6 +267,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
             }
          }
       }
+      if (log.isLoggable(Level.FINE))
+         log.fine("Timer main thread dies");
    }
 
    /* (non-Javadoc)
@@ -267,6 +290,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
             long endNanos = (timeMillis + delay) * Timestamp.MILLION
                   + nanoCounter;
             key = new Timestamp(endNanos);
+            if (log.isLoggable(Level.FINE))
+               log.fine("addTimeoutListener for " + listener.toString() + " delayMillis=" + delay + " key=" + key);
             Object obj = map.get(key);
             if (obj == null) {
                map.put(key, new Container(this.useWeakReference, listener,
@@ -353,8 +378,14 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
       synchronized (map) {
          Container container = map.remove(key);
          if (container != null) {
+            if (log.isLoggable(Level.FINE))
+               log.fine("removeTimeoutListener key=" + key + " container=" + container.toString());
             container.reset();
             container = null;
+         }
+         else {
+            if (log.isLoggable(Level.FINE))
+               log.fine("removeTimeoutListener key=" + key + ", container is not existing");
          }
       }
    }
@@ -420,6 +451,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
     * @see org.xmlBlaster.util.I_TimeoutManager#shutdown()
     */
    public void shutdown() {
+      if (log.isLoggable(Level.FINE))
+         log.fine("shutdown size=" + getSize());
       removeAll();
       threadPool.shutdown();
       running = false;
@@ -432,7 +465,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
    /**
     * Method for testing only.
     * <p />
-    * Invoke: java -Djava.compiler= org.xmlBlaster.util.Timeout
+    * Invoke: java -Djava.compiler= org.xmlBlaster.util.TimeoutPooled
     */
    public static void main(String args[]) throws Exception {
       Timeout t = new Timeout();
@@ -442,6 +475,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
          Thread.sleep(10000);
       } catch (InterruptedException e) {
       }
+      System.out.println(t.dumpStatus());
    }
 
    /** Eample for the standard case */
