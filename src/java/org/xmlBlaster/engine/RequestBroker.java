@@ -2242,6 +2242,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          return 1;
       }
    }
+   public String getPingTimerDump() {
+      return glob.getPingTimer().dumpStatus();
+   }
    public String getNodeList() {
       if (!glob.isClusterManagerReady()) return glob.getId();
       try {

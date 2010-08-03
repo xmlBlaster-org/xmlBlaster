@@ -12,5 +12,6 @@ import org.xmlBlaster.engine.admin.I_AdminNode;
  */
 
 public interface RequestBrokerMBean extends I_AdminNode {
+   String getPingTimerDump();
 }
 

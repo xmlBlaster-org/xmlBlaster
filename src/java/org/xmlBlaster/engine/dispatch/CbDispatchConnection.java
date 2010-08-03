@@ -392,8 +392,9 @@ public final class CbDispatchConnection extends DispatchConnection
          // We are only guest and using the socket from the other cluster node
          return Constants.RET_OK; // fake a return for ping
       }
-
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": doing now callback ping ...");
       String ret = this.cbDriver.ping(data);
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": callback ping done ret:" + ret);
       return (ret==null) ? "" : ret;
    }
 
