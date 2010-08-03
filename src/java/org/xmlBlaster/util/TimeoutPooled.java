@@ -8,16 +8,14 @@ package org.xmlBlaster.util;
 
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.def.ErrorCode;
-
-import edu.emory.mathcs.backport.java.util.concurrent.RejectedExecutionException;
-
 
 /**
  * Allows you be called back after a given delay.
@@ -142,8 +140,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
 //         keepAliveTime - when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.
 //         unit - the time unit for the keepAliveTime argument.
 //         workQueue - the queue to use for holding tasks before they are executed. This queue will hold only the Runnable tasks submitted by the execute method. 
-
-         final ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(5);
+         final SynchronousQueue<Runnable> queue = new SynchronousQueue<Runnable>();
          this.threadPool = new ThreadPoolExecutor(corePoolSize, maxPoolSize,
                keepAliveTime, TimeUnit.SECONDS, queue);
          //ExecutorService service = Executors.newCachedThreadPool();
@@ -187,6 +184,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
          buf.append("\n");
          buf.append("callback=").append(container.getCallback().toString()).append(": userData=").append(container.getUserData());
       }
+      buf.append("\nactiveCount=").append(this.threadPool.getActiveCount()).append(" completedTaskCount=").append(this.threadPool.getCompletedTaskCount()).append(" maximumPoolSize=").append(this.threadPool.getMaximumPoolSize());
+      buf.append("\nshutdown=").append(this.threadPool.isShutdown()).append(" terminated=").append(this.threadPool.isTerminated()).append(" terminating=").append(this.threadPool.isTerminating());
       return buf.toString();
    }
 
@@ -217,7 +216,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
                   if (log.isLoggable(Level.FINE)) {
                      long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.getMillis();
-                     log.fine("Timeout occurred, calling listener with real time error of "
+                     log.fine("Timeout occurred, calling listener " + (container==null?"null":container.toString()) + " with real time error of "
                                  + diff + " millis");
                   }
                }
@@ -227,7 +226,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
                }
             }
             this.mapHasNewEntry = false;
-         }
+         } // sync
 
          if (container != null) {
             final I_Timeout callback = container.getCallback();
@@ -236,15 +235,32 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
             if (callback != null) {
                final Object userData = container.getUserData();
                try {
+                  if (log.isLoggable(Level.FINER))
+                     log.finer("Executing " + callback.toString() + " now via pool: " + dumpStatus());
                   threadPool.execute(new Runnable(){
                      public void run() {
-                        callback.timeout(userData);
+                        try {
+                           if (log.isLoggable(Level.FINER))
+                              log.finer("Timeout occurred, calling listener now in pooled thread");
+                           callback.timeout(userData);
+                           if (log.isLoggable(Level.FINER))
+                              log.finer("Timeout occurred, calling listener in pooled thread done");
+                        }
+                        catch (Throwable e) {
+                           log.severe("Unexpected exception: " + e.toString());
+                           e.printStackTrace();
+                        }
                      };
                   });
+                  if (log.isLoggable(Level.FINER))
+                     log.finer("Poll execute to create new thread has returned");
                }
                catch (RejectedExecutionException e) {
+                  log.severe("Thread exhaust " + dumpStatus() + ": " + e.toString());
+               }
+               catch (Throwable e) {
                   e.printStackTrace();
-                  log.severe("Thread exhaust activeCount=" + this.threadPool.getActiveCount() + " completedTaskCount=" + this.threadPool.getCompletedTaskCount() + " maximumPoolSize=" + this.threadPool.getMaximumPoolSize() + " callback=" + callback + ": " + e.toString());
+                  log.severe("Thread exhaust " + dumpStatus() + ": " + e.toString());
                }
             }
             continue;
