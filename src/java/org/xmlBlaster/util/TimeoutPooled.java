@@ -222,8 +222,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
                   }
                }
             } catch (NoSuchElementException e) {
-               if (log.isLoggable(Level.FINER)) {
-                  log.finer("The listener map is empty, nothing to do.");
+               if (log.isLoggable(Level.FINEST)) {
+                  log.finest("The listener map is empty, nothing to do.");
                }
             }
             this.mapHasNewEntry = false;
@@ -300,7 +300,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
             } else {
                nanoCounter++; // We loop to avoid two similar keys, this should
                               // happen very seldom
-               // System.out.println("Looping nanoCounter=" + nanoCounter);
+               log.info("Looping nanoCounter=" + nanoCounter);
             }
          }
          this.mapHasNewEntry = true;
