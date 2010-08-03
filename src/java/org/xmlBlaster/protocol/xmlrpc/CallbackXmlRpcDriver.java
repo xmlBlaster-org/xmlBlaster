@@ -5,26 +5,24 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.Vector;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.util.protocol.xmlrpc.XmlRpcClientFactory;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.xbformat.I_ProgressListener;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
+import java.util.logging.Logger;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
-
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.Properties;
-import java.util.Vector;
+import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection;
+import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.protocol.xmlrpc.XmlRpcClientFactory;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 /**
  * This object sends a MsgUnitRaw back to a client using XMLRPC interface, in
@@ -122,6 +120,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          }
          else {
             try {
+               if (callbackAddress == null)
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "postInit() failed, callbackAddress is not known");
                xmlRpcClient = XmlRpcClientFactory.getXmlRpcClient(glob, null, callbackAddress, useCDATA);
                if (log.isLoggable(Level.FINE)) 
                   log.fine("Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
@@ -303,8 +303,14 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
       if (singleChannelDriver != null)
          return singleChannelDriver.ping(qos);
       
-      if (xmlRpcClient == null)
-         return "OK"; // make the initial ping happy since it is not completely set up yet
+      if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
+         if (log.isLoggable(Level.FINE)) log.fine("XmlRpc callback ping is suppressed as doing it before connect() and the callback is not functional");
+         return Constants.RET_OK;
+      }
+
+      if (xmlRpcClient == null) {
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Callback client is null");
+      }
       try {
          Vector args = new Vector();
          args.addElement(qos);
@@ -352,7 +358,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          singleChannelDriver.shutdown();
          singleChannelDriver = null;
       }
-      callbackAddress = null;
+      //callbackAddress = null; If the callback driver keeps reconnect polling we need the address
       xmlRpcClient = null;
       if (log.isLoggable(Level.FINE)) log.fine("Shutdown implementation is missing");
    }
