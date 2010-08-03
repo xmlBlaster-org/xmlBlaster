@@ -470,7 +470,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
       if (log.isLoggable(Level.FINE))
          log.fine("shutdown size=" + getSize());
       removeAll();
-      threadPool.shutdown();
+      threadPool.shutdownNow();
+      //threadPool.shutdown();
       running = false;
       synchronized (this) {
          notify();
