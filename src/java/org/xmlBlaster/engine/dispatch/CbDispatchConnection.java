@@ -84,6 +84,10 @@ public final class CbDispatchConnection extends DispatchConnection
    public final String getName() {
       return ME;
    }
+   
+   public String toString() {
+      return getName();
+   }
 
    public void setAddress(AddressBase address) throws XmlBlasterException {
       super.setAddress(address);
