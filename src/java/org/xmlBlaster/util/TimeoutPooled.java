@@ -316,7 +316,8 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
             } else {
                nanoCounter++; // We loop to avoid two similar keys, this should
                               // happen very seldom
-               log.info("Looping nanoCounter=" + nanoCounter);
+               if (log.isLoggable(Level.FINE))
+            	   log.fine("Looping nanoCounter=" + nanoCounter);
             }
          }
          this.mapHasNewEntry = true;
