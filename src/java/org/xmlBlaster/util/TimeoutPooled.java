@@ -173,13 +173,13 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
    }
    
    public String toString() {
-      return "TimeoutPooled pending=" + getSize();
+      return "TimeoutPooled currently registered and pending timers=" + getSize() + " activeCount=" + this.threadPool.getActiveCount() + " shutdown=" + this.threadPool.isShutdown();
    }
    
    public String dumpStatus() {
       StringBuilder buf = new StringBuilder(256);
       Container[] arr = getContainers();
-      buf.append("TimeoutPooled pending=").append(getSize());
+      buf.append("TimeoutPooled currently registered timers=").append(getSize());
       for (Container container: arr) {
          buf.append("\n");
          buf.append("callback=").append(container.getCallback().toString()).append(": userData=").append(container.getUserData());

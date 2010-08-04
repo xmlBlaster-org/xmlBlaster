@@ -148,13 +148,13 @@ public class Timeout extends Thread implements I_TimeoutManager {
    }
 
    public String toString() {
-      return "Timeout pending=" + getSize();
+      return "Timeout currently registered and pending timers=" + getSize() + " useWeakReference=" + useWeakReference;
    }
-   
+	   
    public String dumpStatus() {
       StringBuilder buf = new StringBuilder(256);
       Container[] arr = getContainers();
-      buf.append("TimeoutPooled pending=").append(getSize());
+      buf.append("Timeout currently registered and pending timers=").append(getSize());
       for (Container container: arr) {
          buf.append("\n");
          buf.append("callback=").append(container.getCallback().toString()).append(": userData=").append(container.getUserData());
