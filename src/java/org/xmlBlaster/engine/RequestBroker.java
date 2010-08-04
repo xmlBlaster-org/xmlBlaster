@@ -2242,8 +2242,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          return 1;
       }
    }
-   public String getPingTimerDump() {
-      return glob.getPingTimer().dumpStatus();
+   public String pingTimerInfo() {
+      return glob.getPingTimer().toString();
+   }
+   public String pingTimerDumpToFile(String fn) {
+      if (fn == null || fn.length() < 1)
+          fn = "pingTimerDump.txt";
+      String text = glob.getPingTimer().dumpStatus();
+      try {
+         FileLocator.writeFile(fn, text);
+         return "File " + fn + " dumped";
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         return "File " + fn + " not dumped: " + e.toString();
+      }
    }
    public String getNodeList() {
       if (!glob.isClusterManagerReady()) return glob.getId();
