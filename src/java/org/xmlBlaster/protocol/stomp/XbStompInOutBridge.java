@@ -642,6 +642,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	public String ping(String qos) throws XmlBlasterException {
 		// never ping client without session
 		// <qos><state info='INITIAL'/></qos>
+		if (log.isLoggable(Level.FINE)) log.fine("Ping again");
 		if (qos != null && qos.indexOf("INITIAL") != -1)
 			return "<qos/>";
 		if (!checkStompConnected())
