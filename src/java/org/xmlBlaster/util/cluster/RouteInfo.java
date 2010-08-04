@@ -5,7 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.cluster;
 
+import org.apache.commons.collections.functors.ForClosure;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBuffer;
 
 /**
  * This class holds the information about a route node which the message passed. 
@@ -109,18 +111,29 @@ public final class RouteInfo implements java.io.Serializable {
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer(126);
+	   return toXml(extraOffset, false);
+   }
+   public final String toXml(String extraOffset, boolean forceReadable)
+   {
+      XmlBuffer sb = new XmlBuffer(126);
       String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append(" <node id='").append(getNodeId());
+      sb.append(offset).append(" <node id='").appendAttributeEscaped(getNodeId().getId());
       sb.append("' stratum='").append(getStratum());
       sb.append("' timestamp='").append(getTimestamp().getTimestamp()).append("'");
       //if (dirtyRead != DEFAULT_dirtyRead)
          sb.append(" dirtyRead='").append(dirtyRead).append("'");
-      sb.append("/>");
-
+         
+      if (forceReadable) {
+         sb.append(">");
+         sb.appendEscaped(getTimestamp().toString());
+         sb.append("</node>");
+      }
+      else {
+         sb.append("/>");
+      }
       return sb.toString();
    }
 }

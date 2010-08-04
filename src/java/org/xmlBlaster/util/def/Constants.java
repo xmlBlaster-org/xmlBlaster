@@ -271,6 +271,8 @@ public class Constants {
    public static final String TOXML_NOSECURITY = "noSecurity";
    public static final String TOXML_EXTRAOFFSET = "extraOffset";
    public static final String TOXML_FORCEREADABLE = "forceReadable";
+   public static final String TOXML_FORCEREADABLE_TIMESTAMP = "forceReadableTimestamp";
+   public static final String TOXML_FORCEREADABLE_BASE64 = "forceReadableBase64";
    public static final String TOXML_ENCLOSINGTAG = "enclosingTag";
    public static final String TOXML_MAXCONTENTLEN = "maxContentLen";
 

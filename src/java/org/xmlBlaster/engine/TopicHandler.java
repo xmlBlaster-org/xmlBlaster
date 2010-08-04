@@ -2585,7 +2585,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException {
-      return this.serverScope.peekMessages(this.historyQueue, numOfEntries, "history");
+      return this.serverScope.peekMessages(this.historyQueue, numOfEntries, "history", true, true);
    }
 
    public long clearHistoryQueue() {

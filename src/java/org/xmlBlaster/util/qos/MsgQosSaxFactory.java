@@ -779,7 +779,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
     */
    public final String writeObject(MsgQosData msgQosData, String extraOffset, Properties props) {
       final boolean forceReadable = (props!=null) && props.containsKey(Constants.TOXML_FORCEREADABLE) ?
-            (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false; // "forceReadable"
+            (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false; // "forceReadable" everything
+      final boolean forceReadableTimestamp = (props!=null) && props.containsKey(Constants.TOXML_FORCEREADABLE_TIMESTAMP) ?
+                    (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE_TIMESTAMP)).booleanValue()) : false; // "forceReadableTimestamp"
+      final boolean forceReadableBase64 = (props!=null) && props.containsKey(Constants.TOXML_FORCEREADABLE_BASE64) ?
+                            (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE_BASE64)).booleanValue()) : false; // "forceReadableBase64"
 
       XmlBuffer sb = new XmlBuffer(1024);
       if (extraOffset == null) extraOffset = "";
@@ -849,7 +853,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if (msgQosData.getRcvTimestamp() != null)
-         sb.append(msgQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, forceReadable));
+         sb.append(msgQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, forceReadable || forceReadableTimestamp));
 
       if(msgQosData.getQueueSize() > 0)
          sb.append(offset).append(" <queue index='").append(msgQosData.getQueueIndex()).append("' size='").append(msgQosData.getQueueSize()).append("'/>");
@@ -889,7 +893,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (routeInfoArr.length > 0) {
          sb.append(offset).append(" <route>");
          for (int ii=0; ii<routeInfoArr.length; ii++) {
-            sb.append(routeInfoArr[ii].toXml(extraOffset+Constants.INDENT));
+            sb.append(routeInfoArr[ii].toXml(extraOffset+Constants.INDENT, forceReadableTimestamp));
          }
          sb.append(offset).append(" </route>");
       }
@@ -908,7 +912,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
       }
 
-      sb.append(msgQosData.writePropertiesXml(extraOffset+Constants.INDENT, forceReadable));
+      sb.append(msgQosData.writePropertiesXml(extraOffset+Constants.INDENT, forceReadable || forceReadableBase64));
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)

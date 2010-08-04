@@ -1077,7 +1077,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
-      return this.glob.peekMessages(this.sessionQueue, numOfEntries, "callback");
+      return this.glob.peekMessages(this.sessionQueue, numOfEntries, "callback", true, true);
    }
 
    /**

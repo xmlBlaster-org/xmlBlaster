@@ -814,14 +814,14 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       }
    }
 
-   public String[] peekMessages(I_Queue queue, int numOfEntries, String label) throws XmlBlasterException {
+   public String[] peekMessages(I_Queue queue, int numOfEntries, String label, boolean forceReadableTimestamp, boolean forceReadableBase64) throws XmlBlasterException {
       if (numOfEntries == 0)
          return new String[] { "Please pass number of messages to peak" };
       if (queue == null)
          return new String[] { "There is no " + label + " queue available" };
       if (queue.getNumOfEntries() < 1)
          return new String[] { "The " + label + " queue is empty" };
-
+      
       List<I_Entry> list = queue.peek(numOfEntries, -1);
 
       if (list.size() == 0)
@@ -829,6 +829,10 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
 
       int maxLength = getProperty().get("xmlBlaster/peekMessages/maxLength", 5000);
 
+      Properties props = new Properties();
+      props.put(Constants.TOXML_FORCEREADABLE_TIMESTAMP, ""+forceReadableTimestamp);
+      props.put(Constants.TOXML_FORCEREADABLE_BASE64, ""+forceReadableBase64);
+      
       ArrayList tmpList = new ArrayList();
       for (int i=0; i<list.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)list.get(i);
@@ -844,7 +848,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
                content = content.substring(0, maxLength) + " ...";
             }
             tmpList.add("  <content size='"+wrapper.getMsgUnit().getContent().length+"'>"+content+"</content>");
-            tmpList.add("  "+wrapper.getMsgQosData().toXml());
+            tmpList.add("  "+wrapper.getMsgQosData().toXml((String)null, props));
          }
          tmpList.add("</MsgUnit>");
       }

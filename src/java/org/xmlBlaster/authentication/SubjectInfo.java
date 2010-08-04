@@ -1271,7 +1271,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
-      return this.glob.peekMessages(this.subjectQueue, numOfEntries, "subject");
+      return this.glob.peekMessages(this.subjectQueue, numOfEntries, "subject", true, true);
    }
 
    public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception {
