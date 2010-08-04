@@ -62,6 +62,37 @@ public class XmlBuffer {
         }
 
         /**
+         * Supports only "," -> "&comma;" and ";" -> "%3B" 
+         * @param text "bla,bla"
+         * @param separator ','
+         * @return "bla&comma;bla"
+         */
+        public XmlBuffer appendCsvEscaped(String text, char separator) {
+            if (text == null) return this;
+            int length = text.length();
+            for (int i = 0; i < length; i++) {
+                char c = text.charAt(i);
+                if (c == separator) {
+	                switch (separator) {
+	                    case ';':
+	            			// ';' is escaped as %3B (as in URL) and HTML as &#59; (which unfortunately contains again a ;)
+	                        buf.append("%3B");
+	                        break;
+	                    case ',':
+                            buf.append("&comma;");
+	                        break;
+	                    default:
+                            buf.append(c);
+	                }
+                }
+                else {
+                    buf.append(c);
+                }
+            }
+        	return this;
+        }
+
+        /**
          * Aquivalent to a StringBuffer.append().
          */
         public XmlBuffer append(String str) {
