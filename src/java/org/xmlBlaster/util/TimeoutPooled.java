@@ -173,7 +173,11 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
    }
    
    public String toString() {
-      return "TimeoutPooled currently registered and pending timers=" + getSize() + " activeCount=" + this.threadPool.getActiveCount() + " shutdown=" + this.threadPool.isShutdown();
+      StringBuilder buf = new StringBuilder(256);
+      buf.append("currently registered timers=").append(getSize());
+      buf.append(" activeCount=").append(this.threadPool.getActiveCount()).append(" completedTaskCount=").append(this.threadPool.getCompletedTaskCount()).append(" maximumPoolSize=").append(this.threadPool.getMaximumPoolSize());
+      buf.append(" shutdown=").append(this.threadPool.isShutdown()).append(" terminated=").append(this.threadPool.isTerminated()).append(" terminating=").append(this.threadPool.isTerminating());
+      return buf.toString();
    }
    
    public String dumpStatus() {
@@ -234,34 +238,50 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
             // callback=" + callback);
             if (callback != null) {
                final Object userData = container.getUserData();
-               try {
-                  if (log.isLoggable(Level.FINER))
-                     log.finer("Executing " + callback.toString() + " now via pool: " + dumpStatus());
-                  threadPool.execute(new Runnable(){
-                     public void run() {
-                        try {
-                           if (log.isLoggable(Level.FINER))
-                              log.finer("Timeout occurred, calling listener now in pooled thread");
-                           callback.timeout(userData);
-                           if (log.isLoggable(Level.FINER))
-                              log.finer("Timeout occurred, calling listener in pooled thread done");
-                        }
-                        catch (Throwable e) {
-                           log.severe("Unexpected exception: " + e.toString());
-                           e.printStackTrace();
-                        }
-                     };
-                  });
-                  if (log.isLoggable(Level.FINER))
-                     log.finer("Poll execute to create new thread has returned");
-               }
-               catch (RejectedExecutionException e) {
-                  log.severe("Thread exhaust " + dumpStatus() + ": " + e.toString());
-               }
-               catch (Throwable e) {
-                  e.printStackTrace();
-                  log.severe("Thread exhaust " + dumpStatus() + ": " + e.toString());
-               }
+               int retryAgain = 0;
+               while (true) {
+	               try {
+	                  if (log.isLoggable(Level.FINER))
+	                     log.finer("Executing " + callback.toString() + " now via pool: " + dumpStatus());
+	                  threadPool.execute(new Runnable(){
+	                     public void run() {
+	                        try {
+	                           if (log.isLoggable(Level.FINER))
+	                              log.finer("Timeout occurred, calling listener now in pooled thread");
+	                           callback.timeout(userData);
+	                           if (log.isLoggable(Level.FINER))
+	                              log.finer("Timeout occurred, calling listener in pooled thread done");
+	                        }
+	                        catch (Throwable e) {
+	                           log.severe("Unexpected exception: " + e.toString());
+	                           e.printStackTrace();
+	                        }
+	                     };
+	                  });
+	                  if (log.isLoggable(Level.FINER))
+	                     log.finer("Poll execute to create new thread has returned");
+	                  break;
+	               }
+	               catch (RejectedExecutionException e) {
+                      if (retryAgain > 5000) {
+                         log.severe("Thread exhaust " + toString() + ": " + e.toString() + ": we give up, timeout listener " +  callback.toString() + " is not called!");
+                         break;
+                      }
+                      retryAgain++;
+                      long retryMillis = 100;
+	                  log.warning("Thread exhaust " + toString() + ": " + e.toString() + ": we block now the timer thread for " + retryMillis + "  millis ...");
+                      try {
+                         Thread.sleep(retryMillis);
+                      } catch (InterruptedException e1) {
+                         e1.printStackTrace();
+                      }
+	               }
+	               catch (Throwable e) {
+	                  e.printStackTrace();
+	                  log.severe("Thread exhaust " + dumpStatus() + ": " + e.toString());
+	                  break;
+	               }
+            	}
             }
             continue;
          }
