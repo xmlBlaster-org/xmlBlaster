@@ -278,7 +278,7 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
 	               }
 	               catch (Throwable e) {
 	                  e.printStackTrace();
-	                  log.severe("Thread exhaust " + dumpStatus() + ": " + e.toString());
+	                  log.severe("Thread exhaust: " + e.toString() + ": " + dumpStatus());
 	                  break;
 	               }
             	}
