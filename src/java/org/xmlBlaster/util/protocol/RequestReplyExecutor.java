@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,8 +34,6 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * Request/reply simulates a local method invocation.
@@ -655,13 +655,13 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       // Register the return value / Exception listener ...
       if (expectingResponse) {
          //startSignal = new Latch(); // defaults to false
-         startSignal = addLatch(new Latch()); //synchronized (this.latchSet) { this.latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
+         startSignal = addLatch(new CountDownLatch(1)); //synchronized (this.latchSet) { this.latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
          if (!hasConnection()) return null;
          addResponseListener(requestId, new I_ResponseListener() {
             public void incomingMessage(String reqId, Object responseObj) {
                if (log.isLoggable(Level.FINE)) log.fine("RequestId=" + reqId + ": return value arrived ...");
                response[0] = responseObj;
-               startSignal.latch.release(); // wake up
+               startSignal.latch.countDown(); // wake up
             }
          });
       }
@@ -705,7 +705,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          while (true) {
             try {
                //  An argument less than or equal to zero means not to wait at all
-               awakened = startSignal.latch.attempt(getResponseTimeout(msgInfo.getMethodName())); // block max. milliseconds
+               awakened = startSignal.latch.await(getResponseTimeout(msgInfo.getMethodName()), TimeUnit.MILLISECONDS); // block max. milliseconds
                if (startSignal.latchIsInterrupted) {
                   awakened = false; // Simulates a responseTimeout
                   startSignal.latchIsInterrupted = false;
@@ -742,10 +742,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    private class LatchHolder {
-      public LatchHolder(Latch latch) {
+      public LatchHolder(CountDownLatch latch) {
          this.latch = latch;
       }
-      Latch latch;
+      CountDownLatch latch;
       boolean latchIsInterrupted;
    }
    
@@ -763,13 +763,13 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       LatchHolder[] latches = getLatches();
       for (int i=0; i<latches.length; i++) {
          latches[i].latchIsInterrupted = true;
-         latches[i].latch.release(); // wake up
+         latches[i].latch.countDown(); // wake up
          //log.warning("DEBUG ONLY: Forced release of latch");
       }
       return latches.length;
    }
 
-   private LatchHolder addLatch(Latch latch) {
+   private LatchHolder addLatch(CountDownLatch latch) {
       LatchHolder latchHolder = new LatchHolder(latch);
       synchronized (this.latchSet) {
          boolean added = this.latchSet.add(latchHolder);
@@ -800,7 +800,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       LatchHolder[] latches = getLatches();
       for (int i=0; i<latches.length; i++) {
          latches[i].latchIsInterrupted = true;
-         latches[i].latch.release(); // wake up
+         latches[i].latch.countDown(); // wake up
       }
       synchronized (this.latchSet) { latchSet.clear(); }
    }

@@ -144,6 +144,7 @@ TODO
    <property name="dist.dir" value="./dist/xmlBlaster"/>
    <property name="dist-classes.dir" value="./dist-classes"/>
    <property name="dist-client.dir" value="./dist-client"/>
+   <property name="dist-clientMini.dir" value="./dist-clientMini"/>
 
    <property name="test.class" value="org.xmlBlaster.test.AllTests"/>
    <property name="report.dir" value="./doc/test/report"/> <!-- junit HTML report -->
@@ -1936,6 +1937,87 @@ TODO
 
    </target>
 
+   <!-- The JAR of this class file belongs to container 'Google APIs [Android 2.0]' which does not allow modifications to source attachments on its entries. -->
+   <target name="dist-client-mini" depends="xmlBlaster,demo,dist-client-mini-jar" description="Create a java client distribution for Android: 'build -DJVM.source=1.6 -DJVM.target=1.6 dist-client-mini'"/>
+   <target name="dist-client-mini-jar" description="Create a java client distribution for Android">
+      <delete includeEmptyDirs="true" failonerror="false"><fileset dir="${dist-clientMini.dir}"/></delete>
+      <echo>Creating ${dist-clientMini.dir}</echo>
+      <mkdir dir="${dist-clientMini.dir}"/>
+
+      <jar destfile="${dist-clientMini.dir}/xmlBlasterClient.jar" manifest="config/manifest.xmlBlaster">
+         <fileset dir="${build.dest}">
+            <include name="org/xmlBlaster/client/*.class"/>
+            <include name="org/xmlBlaster/client/dispatch/*.class"/>
+            <include name="org/xmlBlaster/client/key/*"/>
+            <include name="org/xmlBlaster/client/qos/*"/>
+            <include name="org/xmlBlaster/client/protocol/*.class"/>
+            <include name="org/xmlBlaster/client/protocol/socket/*"/>
+            <include name="org/xmlBlaster/client/queuemsg/*"/>
+         	
+            <exclude name="org/xmlBlaster/client/Javascript*"/>
+            <exclude name="org/xmlBlaster/client/script/*.class"/>
+            <exclude name="org/xmlBlaster/client/XmlDbMessageWrapper.*"/>
+
+            <include name="org/xmlBlaster/authentication/plugins/I_ClientPlugin*"/>
+            <include name="org/xmlBlaster/authentication/plugins/I_MsgSecurityInterceptor*"/>
+            <include name="org/xmlBlaster/authentication/plugins/I_SecurityQos*"/>
+            <include name="org/xmlBlaster/authentication/plugins/htpasswd/ClientPlugin*"/>
+            <include name="org/xmlBlaster/authentication/plugins/htpasswd/SecurityQos*"/>
+            <include name="org/xmlBlaster/authentication/plugins/CryptDataHolder*"/>
+
+         	<!-- Does not import other engine stuff -->
+            <include name="org/xmlBlaster/engine/qos/AddressServer*"/>
+
+            <include name="org/xmlBlaster/contrib/ClientPropertiesInfo*"/>
+            <include name="org/xmlBlaster/contrib/I_Info*"/>
+            <include name="org/xmlBlaster/contrib/GlobalInfo*"/>
+            <include name="org/xmlBlaster/contrib/InfoHelper*"/>
+            <include name="org/xmlBlaster/contrib/PropertiesInfo*"/>
+
+            <!-- org.xmlBlaster.util.queue.jdbc.JdbcQueue wants -->
+            <include name="org/xmlBlaster/engine/msgstore/I_Map*"/>
+
+            <include name="org/xmlBlaster/util/*.class"/>
+            <include name="org/xmlBlaster/util/admin/*.class"/>
+            <include name="org/xmlBlaster/util/admin/extern/*.class"/>
+            <include name="org/xmlBlaster/util/classloader/*.class"/>
+            <include name="org/xmlBlaster/util/cluster/*.class"/>
+            <include name="org/xmlBlaster/util/context/*.class"/>
+            <include name="org/xmlBlaster/util/def/*.class"/>
+            <include name="org/xmlBlaster/util/dispatch/*.class"/>
+            <include name="org/xmlBlaster/util/dispatch/plugins/*.class"/>
+            <include name="org/xmlBlaster/util/error/*.class"/>
+            <include name="org/xmlBlaster/util/key/*.class"/>
+            <include name="org/xmlBlaster/util/log/*.class"/>
+            <include name="org/xmlBlaster/util/plugin/*.class"/>
+            <include name="org/xmlBlaster/util/property/*.class"/>
+            <include name="org/xmlBlaster/util/protocol/*.class"/>
+            <include name="org/xmlBlaster/util/protocol/socket/*.class"/>
+            <include name="org/xmlBlaster/util/qos/*.class"/>
+            <include name="org/xmlBlaster/util/qos/address/*.class"/>
+            <include name="org/xmlBlaster/util/qos/storage/*.class"/>
+            <include name="org/xmlBlaster/util/queue/*.class"/>
+            <include name="org/xmlBlaster/util/queue/jdbc/*.class"/>
+            <include name="org/xmlBlaster/util/queue/ram/*.class"/>
+            <include name="org/xmlBlaster/util/queuemsg/*.class"/>
+            <include name="org/xmlBlaster/util/xbformat/*.class"/>
+         	
+            <exclude name="org/xmlBlaster/util/checkpoint/**"/>
+            <exclude name="org/xmlBlaster/util/http/**"/>
+            <exclude name="org/xmlBlaster/util/lexical/**"/>
+            <exclude name="org/xmlBlaster/util/servlet/**"/>
+
+            <include name="HelloWorld3*"/>
+         </fileset>
+      </jar>
+
+      <echo message="--------------------------------------------"/>
+      <echo message="Created ${dist-clientMini.dir}/xmlBlasterClient.jar"/>
+      <echo message="It supports xmlBlaster java clients with SOCKET protocol"/>
+      <echo message="Test: java -cp dist-clientMini/xmlBlasterClient.jar HelloWorld3 -queue/connection/defaultPlugin RAM,1.0"/>
+      <echo message="--------------------------------------------"/>
+   </target>
+
    <!-- =================================================================== -->
    <!-- Creates the distribution for java clients                           -->
    <!-- =================================================================== -->
@@ -1957,6 +2039,7 @@ TODO
       <property name="ADD_MANIFEST" value="false"/> <!-- e.g. -DADD_MANIFEST=myclient/manifest.xmlBlaster -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
       <property name="ADD_EMAIL" value="false"/>
+      <property name="ADD_APPLET" value="false"/>
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/concurrent.jar" dest="${dist-client.dir}/classes" />

@@ -7,7 +7,9 @@ package org.xmlBlaster.util.xbformat;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -23,6 +25,7 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
  *      protocol.socket requirement</a>
  */
 public class MsgInfoParserFactory {
+   private static Logger log = Logger.getLogger(MsgInfoParserFactory.class.getName());
    private static MsgInfoParserFactory instance;
    private Map pluginNames;
 
@@ -46,8 +49,25 @@ public class MsgInfoParserFactory {
    private void init() {
       // TODO: We force register() of plugins here:
       // This needs to be changed to be dynamically
-      new XbfParser();
-      new XmlScriptParser();
+	  int count = 0;
+      try {
+         Class.forName("org.xmlBlaster.util.xbformat.XbfParser");
+         new XbfParser();
+         count++;
+       } catch (Throwable e) { // ClassNotFoundException NoClassDefFoundError
+         //e.printStackTrace();
+         log.fine("No org.xmlBlaster.util.xbformat.XbfParser in CLASSPATH found");
+      }
+      try {
+         Class.forName("org.xmlBlaster.util.xbformat.XmlScriptParser");
+         new XmlScriptParser();
+         count++;
+      } catch (Throwable e) { // ClassNotFoundException NoClassDefFoundError
+         //e.printStackTrace();
+         log.fine("No org.xmlBlaster.util.xbformat.XmlScriptParser in CLASSPATH found");
+      }
+      if (count == 0)
+    	  log.severe("No I_MsgInfoParser implementation found in CLASSPATH (expected XbfParser or XmlScriptParser)");
    }
    
    public synchronized void register(String key, String className) {

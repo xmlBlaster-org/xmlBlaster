@@ -46,6 +46,7 @@ import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 
 
 /**
@@ -449,6 +450,12 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       return this.cbProtocolManager;
    }
 
+   // Overrides Global method
+   public final void doStorageCleanup(JdbcQueue jdbcQueue) {
+	   super.doStorageCleanup(jdbcQueue);
+       getStoragePluginManager().cleanup(jdbcQueue);
+   }
+
    public final StoragePluginManager getStoragePluginManager() {
       if (topicStorePluginManager == null) {
          synchronized (StoragePluginManager.class) {
@@ -833,7 +840,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       props.put(Constants.TOXML_FORCEREADABLE_TIMESTAMP, ""+forceReadableTimestamp);
       props.put(Constants.TOXML_FORCEREADABLE_BASE64, ""+forceReadableBase64);
       
-      ArrayList tmpList = new ArrayList();
+      ArrayList<String> tmpList = new ArrayList<String>();
       for (int i=0; i<list.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)list.get(i);
          MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
@@ -882,7 +889,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
          path = "";
       dumper.init(this, path);
 
-      ArrayList tmpList = new ArrayList();
+      ArrayList<String> tmpList = new ArrayList<String>();
       for (int i=0; i<list.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)list.get(i);
          MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();

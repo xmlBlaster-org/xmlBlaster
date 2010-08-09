@@ -8,39 +8,37 @@ package org.xmlBlaster.client.dispatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.IsoDateParser;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.checkpoint.I_Checkpoint;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
-import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
+import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
+import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
-import org.xmlBlaster.client.protocol.ProtocolPluginManager;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.xbformat.I_ProgressListener;
+import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.authentication.plugins.CryptDataHolder;
-import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 
 /**
@@ -59,7 +57,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    private ConnectReturnQos connectReturnQos;
    private String[] checkPointContext;
    private MsgQueueEntry connectEntry;
-   private SessionName sessionName;
+   //private SessionName sessionName;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -477,7 +475,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
-      this.sessionName = connectEntry.getConnectQosData().getSessionName();
+      //this.sessionName = connectEntry.getConnectQosData().getSessionName();
 
       String encryptedConnectQos = getEncryptedConnectQos(connectEntry.getConnectQosData());
 
@@ -507,7 +505,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          //ConnectQos connectQos = new ConnectQos(this.glob, this.connectReturnQos.getData());
          ConnectQosData connectQos = connectEntry.getConnectQosData();
          connectQos.setSessionName(this.connectReturnQos.getSessionName());
-         this.sessionName = this.connectReturnQos.getSessionName();
+         //this.sessionName = this.connectReturnQos.getSessionName();
          connectQos.getSessionQos().setSecretSessionId(this.connectReturnQos.getSecretSessionId());
          this.connectQosData = connectQos;
       }

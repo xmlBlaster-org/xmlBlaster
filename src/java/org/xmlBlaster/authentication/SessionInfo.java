@@ -23,6 +23,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
+import org.xmlBlaster.engine.IsoDateJoda;
 import org.xmlBlaster.engine.MsgErrorHandler;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionInfo;
@@ -34,7 +35,6 @@ import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReentrantLock;
 import org.xmlBlaster.util.SessionName;
@@ -1219,7 +1219,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
             try {
                 ClientProperty cpClientUtc = (ClientProperty)map.get(key);
                 if (cpClientUtc != null) {
-                   String timeOffset = IsoDateParser.getDifferenceToNow(cpClientUtc.getStringValue());
+                   String timeOffset = IsoDateJoda.getDifferenceToNow(cpClientUtc.getStringValue());
                    this.remoteProperties.put("__timeOffset", timeOffset);
                 }
              }

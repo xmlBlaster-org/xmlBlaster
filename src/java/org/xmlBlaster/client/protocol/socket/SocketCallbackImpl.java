@@ -372,6 +372,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   log.warning("Closing connection to server: " + e.toString());
                }
                else {
+                  e.printStackTrace();
                   log.severe("Closing connection to server: " + e.toString());
                }
                try {

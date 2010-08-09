@@ -95,6 +95,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
@@ -798,6 +799,10 @@ public class Global implements Cloneable
    }
    public void setScopeContextNode(ContextNode contextNode) {
       this.scopeContextNode = contextNode;
+   }
+
+   // see ServerScope for implementationOverrides Global method
+   public void doStorageCleanup(JdbcQueue jdbcQueue) {
    }
 
    /**
@@ -2223,7 +2228,7 @@ public class Global implements Cloneable
 
       if (path != null && path.equalsIgnoreCase("String")) path = null;
 
-      ArrayList tmpList = new ArrayList();
+      ArrayList<String> tmpList = new ArrayList<String>();
       for (int i=0; i<list.size(); i++) {
          MsgQueueEntry entry = (MsgQueueEntry)list.get(i);
          if (entry.isExpired() || entry.isDestroyed()) continue;

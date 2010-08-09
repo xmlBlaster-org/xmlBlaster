@@ -13,7 +13,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
@@ -1131,9 +1130,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       
       glob.getQueuePluginManager().cleanup(this);
 
-      if (glob instanceof ServerScope) {
-         ((ServerScope) glob).getStoragePluginManager().cleanup(this);
-      }
+      glob.doStorageCleanup(this);
    }
 
    public boolean isShutdown() {
