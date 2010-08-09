@@ -3,6 +3,10 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17887 Creating small Java client jar xmlBlasterClient.jar
+          'build -DJVM.source=1.6 -DJVM.target=1.6 dist-client-mini'
+          Refactored to have smaller java client library with SOCKET support without concurrent.jar or joda-time.jar dependency
+
  o r17866 - r17877 Connection pings: Using now a ThreadPool to ping remote side
           Avoid delayed pings for others if one callback client is blocking  
 
