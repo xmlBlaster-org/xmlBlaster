@@ -29,15 +29,15 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import javax.management.AttributeChangeNotification;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
+//import javax.management.AttributeChangeNotification;
+//import javax.management.Notification;
+//import javax.management.NotificationBroadcasterSupport;
+//import javax.management.ObjectName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
+//import javax.xml.transform.TransformerFactory;
+//import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.PluginLoader;
@@ -56,8 +56,8 @@ import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-import org.xmlBlaster.util.admin.extern.JmxWrapper;
+//import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+//import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
@@ -194,7 +194,7 @@ public class Global implements Cloneable
 
    protected SAXParserFactory saxFactory;
    protected DocumentBuilderFactory docBuilderFactory;
-   protected TransformerFactory transformerFactory;
+   //protected TransformerFactory transformerFactory;
 
    /** Must be loaded in runlevel 0 or 1 before any access as not synchronized */
    protected I_Checkpoint checkpointPlugin;
@@ -315,14 +315,20 @@ public class Global implements Cloneable
          System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
       }
    }
+   
+   public boolean supportJmx() {
+	   boolean supportJmx = getProperty().get("xmlBlaster/jmx/support", true);
+	   return supportJmx;
+   }
 
    public static int getCounter() { return counter; }
 
    /**
     * @return the JmxWrapper used to manage the MBean resources
     */
-    public final JmxWrapper getJmxWrapper() throws XmlBlasterException {
-      return JmxWrapper.getInstance(this);
+    public final org.xmlBlaster.util.admin.extern.JmxWrapper getJmxWrapper() throws XmlBlasterException {
+      if (!supportJmx()) return null;
+      return org.xmlBlaster.util.admin.extern.JmxWrapper.getInstance(this);
    }
 
    /**
@@ -330,6 +336,7 @@ public class Global implements Cloneable
     * @return true if JMX is in use
     */
    public boolean isJmxActivated() {
+     if (!supportJmx()) return false;
       try {
          return getJmxWrapper().isActivated();
       }
@@ -341,12 +348,12 @@ public class Global implements Cloneable
    /**
     * Send an administrative notification.
     */
-   public void sendNotification(NotificationBroadcasterSupport source,
+   public void sendNotification(javax.management.NotificationBroadcasterSupport source,
           String msg, String attributeName,
           String attributeType, Object oldValue, Object newValue) {
       // Avoid any log.warning or log.severe to prevent looping alert events
       if (isJmxActivated()) {
-         Notification n = new AttributeChangeNotification(source,
+    	  javax.management.Notification n = new javax.management.AttributeChangeNotification(source,
             sequenceNumber++,
             System.currentTimeMillis(),
             msg,
@@ -369,7 +376,8 @@ public class Global implements Cloneable
     * @since 1.0.5
     * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
     */
-   public JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean) throws XmlBlasterException {
+   public org.xmlBlaster.util.admin.extern.JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean) throws XmlBlasterException {
+      if (!supportJmx()) return null;
       return getJmxWrapper().registerMBean(contextNode, mbean);
    }
 
@@ -380,12 +388,13 @@ public class Global implements Cloneable
     *                   if null nothing happens
     */
    public void unregisterMBean(Object objectName) {
+      if (!supportJmx()) return;
       if (objectName == null) return;
       try {
-         if (objectName instanceof JmxMBeanHandle)
-            getJmxWrapper().unregisterMBean((JmxMBeanHandle)objectName);
+         if (objectName instanceof org.xmlBlaster.util.admin.extern.JmxMBeanHandle)
+            getJmxWrapper().unregisterMBean((org.xmlBlaster.util.admin.extern.JmxMBeanHandle)objectName);
          else
-            getJmxWrapper().unregisterMBean((ObjectName)objectName);
+            getJmxWrapper().unregisterMBean((javax.management.ObjectName)objectName);
       }
       catch (XmlBlasterException e) {
          log.warning("unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
@@ -876,7 +885,8 @@ public class Global implements Cloneable
     * @see org.xmlBlaster.util.admin.extern.JmxWrapper#validateJmxValue(String)
     */
    public final String validateJmxValue(String value) {
-      return JmxWrapper.validateJmxValue(value);
+      if (!supportJmx()) return value;
+      return org.xmlBlaster.util.admin.extern.JmxWrapper.validateJmxValue(value);
    }
 
    /**
@@ -1598,36 +1608,36 @@ public class Global implements Cloneable
     *
     * @see #getDocumentBuilderFactory()
     */
-   public TransformerFactory getTransformerFactory() throws XmlBlasterException {
-      if ( transformerFactory == null) {
-         try {
-            String fac = getProperty().get(
-                  "javax.xml.transform.TransformerFactory", (String)null);
-            if (fac == null) {
-               transformerFactory =JAXPFactory.newTransformerFactory();
-            }
-            else {
-               transformerFactory =JAXPFactory.newTransformerFactory(fac);
-            }
-/*
-            String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ?
-               "org.apache.xalan.processor.TransformerFactoryImpl" :
-               "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
-            if (isIbmVM()) {
-               defaultFac =
-               "org.apache.xalan.processor.TransformerFactoryImpl";
-            }
-
-            transformerFactory =JAXPFactory.newTransformerFactory(
-               getProperty().get(
-                  "javax.xml.transform.TransformerFactory", defaultFac));
-*/
-         } catch (TransformerFactoryConfigurationError e) {
-            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_XML, ME, "TransformerFactoryError", e);
-         } // end of try-catch
-      } // end of if ()
-      return transformerFactory;
-   }
+//   public TransformerFactory getTransformerFactory() throws XmlBlasterException {
+//      if ( transformerFactory == null) {
+//         try {
+//            String fac = getProperty().get(
+//                  "javax.xml.transform.TransformerFactory", (String)null);
+//            if (fac == null) {
+//               transformerFactory =JAXPFactory.newTransformerFactory();
+//            }
+//            else {
+//               transformerFactory =JAXPFactory.newTransformerFactory(fac);
+//            }
+///*
+//            String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ?
+//               "org.apache.xalan.processor.TransformerFactoryImpl" :
+//               "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
+//            if (isIbmVM()) {
+//               defaultFac =
+//               "org.apache.xalan.processor.TransformerFactoryImpl";
+//            }
+//
+//            transformerFactory =JAXPFactory.newTransformerFactory(
+//               getProperty().get(
+//                  "javax.xml.transform.TransformerFactory", defaultFac));
+//*/
+//         } catch (javax.xml.transform.TransformerFactoryConfigurationError e) {
+//            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_XML, ME, "TransformerFactoryError", e);
+//         } // end of try-catch
+//      } // end of if ()
+//      return transformerFactory;
+//   }
 
    /**
     * The factory creating queue or msgUnitStore entries from persistent store.
@@ -1844,11 +1854,13 @@ public class Global implements Cloneable
       shutdownHttpServer();
 
       /*
+      if (supportJmx()) {
       try {
          unregisterJmx();
       }
       catch (XmlBlasterException e) {
          log.warn(ME, "Ignoring exception during JMX unregister: " + e.getMessage());
+      }
       }
       */
       synchronized (Global.class) {

@@ -1,6 +1,6 @@
 package org.xmlBlaster.util.property;
 
-import java.applet.Applet;
+//import java.applet.Applet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -198,7 +198,7 @@ public class Property implements Cloneable {
    private boolean wantsHelp = false;
 
    /** Applet handle or null */
-   private Applet applet = null;
+   private Object /*Applet*/ applet = null;
 
    /** Map containing as key a property key and as value a
     *  Set of listeners (I_PropertyChangeListener) which wants to be notified on changes
@@ -463,7 +463,7 @@ public class Property implements Cloneable {
    * @param applet Not yet supported. How to access all applet parameters???
    * @param replaceVariables true: replace occurrences of ${key} with the value of key
    */
-   public Property(String propertyFileUrl, boolean scanSystemProperties, Applet applet, boolean replaceVariables) throws XmlBlasterException {
+   public Property(String propertyFileUrl, boolean scanSystemProperties, Object/*Applet*/ applet, boolean replaceVariables) throws XmlBlasterException {
       System.out.println("Property for Applet: propertyFileUrl=" + propertyFileUrl + ", scanSystemProperties=" + scanSystemProperties + ", replaceVariables=" + replaceVariables);
       this.scanSystemProperties = scanSystemProperties;
       this.replaceVariables = replaceVariables;
@@ -572,10 +572,11 @@ public class Property implements Cloneable {
       return properties;
    }
 
-   public void setApplet(Applet applet)
+   public void setApplet(Object/* java.applet.Applet*/ applet)
    {
       this.applet = applet;
-      if (applet.getParameter("--help")!=null || applet.getParameter("-?")!=null || applet.getParameter("-h")!=null || applet.getParameter("-help")!=null)
+      java.applet.Applet ap = (java.applet.Applet)this.applet;
+      if (ap.getParameter("--help")!=null || ap.getParameter("-?")!=null || ap.getParameter("-h")!=null || ap.getParameter("-help")!=null)
          wantsHelp = true;
    }
 
@@ -583,7 +584,8 @@ public class Property implements Cloneable {
    {
       if (key == null) return null;
       if (applet != null) {
-        String a = applet.getParameter(key);
+        java.applet.Applet ap = (java.applet.Applet)this.applet;
+        String a = ap.getParameter(key);
         if (a != null) return a;
       }
       return (String)properties.get(key);
@@ -1625,14 +1627,14 @@ public static void main(String args[]) {
      if (urlVariant) {
        {
          System.out.println("*** Test 1");
-         Property props = new Property(null, true, (Applet) null, true); // initialize
+         Property props = new Property(null, true, (java.applet.Applet)null, true); // initialize
          System.out.println("TestVariable=" + props.get("TestVariable", "ERROR"));
          System.out.println("java.home=" + props.get("java.home", "ERROR"));
        }
        {
          System.out.println("*** Test 2");
          String url = Args.getArg(args, "-url", "http://localhost/xy.properties");
-         Property props = new Property(url, true, (Applet) null, true); // initialize
+         Property props = new Property(url, true, (java.applet.Applet)null, true); // initialize
          System.out.println("TestVariable=" + props.get("TestVariable", "ERROR"));
          System.out.println("java.home=" + props.get("java.home", "ERROR"));
        }

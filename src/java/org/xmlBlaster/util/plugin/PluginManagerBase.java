@@ -9,8 +9,8 @@ package org.xmlBlaster.util.plugin;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.runlevel.PluginConfig;
+//import org.xmlBlaster.engine.ServerScope;
+//import org.xmlBlaster.engine.runlevel.PluginConfig;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -262,10 +262,10 @@ public class PluginManagerBase implements I_PluginManager {
     * @return
     */
    private PluginInfo checkPluginInfoInRunLevelInfos(PluginInfo pluginInfo) throws XmlBlasterException {
-      if (this.glob.isServerSide() && this.glob instanceof ServerScope) {
-         PluginConfig config = ((ServerScope)this.glob).getPluginHolder().getPluginConfig(this.glob.getStrippedId(), pluginInfo.getId());
+      if (this.glob.isServerSide()) {// && this.glob instanceof ServerScope) {
+    	  org.xmlBlaster.engine.runlevel.PluginConfig config = ((org.xmlBlaster.engine.ServerScope)this.glob).getPluginHolder().getPluginConfig(this.glob.getStrippedId(), pluginInfo.getId());
          if (config == null) // normally it is stored as Type without the version information.
-            config = ((ServerScope)this.glob).getPluginHolder().getPluginConfig(this.glob.getStrippedId(), pluginInfo.getType());
+            config = ((org.xmlBlaster.engine.ServerScope)this.glob).getPluginHolder().getPluginConfig(this.glob.getStrippedId(), pluginInfo.getType());
          if (config == null)
             return pluginInfo;
          PluginInfo runLevelPluginInfo = config.getPluginInfo();

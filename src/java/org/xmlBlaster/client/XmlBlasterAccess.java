@@ -50,7 +50,6 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.I_TimeoutManager;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
@@ -956,21 +955,26 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       // Verify the publicSessionId ...
-      try {
-         if (this.mbeanHandle != null && this.jmxPublicSessionId != getPublicSessionId()) {
+      if (this.glob.supportJmx()) {
+         try {
+            if (this.mbeanHandle != null && this.jmxPublicSessionId != getPublicSessionId()) {
             /*int count = */this.glob.getJmxWrapper().renameMBean(this.mbeanHandle.getObjectInstance().getObjectName().toString(),
                            ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId());
-            this.mbeanHandle.getContextNode().setInstanceName(""+getPublicSessionId());
-            this.jmxPublicSessionId = getPublicSessionId();
+               this.mbeanHandle.getContextNode().setInstanceName(""+getPublicSessionId());
+               this.jmxPublicSessionId = getPublicSessionId();
+            }
+            if (this.mbeanHandle == null &&
+                this.contextNode != null &&
+                !this.contextNode.getInstanceName().equals(""+getPublicSessionId())) {
+               this.contextNode.setInstanceName(""+getPublicSessionId());
+            }
          }
-         if (this.mbeanHandle == null &&
-             this.contextNode != null &&
-             !this.contextNode.getInstanceName().equals(""+getPublicSessionId())) {
-            this.contextNode.setInstanceName(""+getPublicSessionId());
+         catch (XmlBlasterException e) {
+            log.warning(getLogId()+"Ignoring problem during JMX session registration: " + e.toString());
          }
       }
-      catch (XmlBlasterException e) {
-         log.warning(getLogId()+"Ignoring problem during JMX session registration: " + e.toString());
+      else {
+          this.jmxPublicSessionId = getPublicSessionId();
       }
 
       // parse new cluster node name ...
@@ -1002,20 +1006,22 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       this.glob.setScopeContextNode(this.contextNode);
 
-      try {
-         // Query all "org.xmlBlaster:nodeClass=node,node=clientSUB1" + ",*" sub-nodes and replace the name by "heron"
-         // For example our connectionQueue or our plugins like Pop3Driver
-         if (oldClusterObjectName.length() > 0) {
-            int num = this.glob.getJmxWrapper().renameMBean(oldClusterObjectName, ContextNode.CLUSTER_MARKER_TAG, this.contextNode);
-            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Renamed " + num + " jmx nodes to new '" + nodeId + "'");
-         }
+      if (this.glob.supportJmx()) {
+         try {
+            // Query all "org.xmlBlaster:nodeClass=node,node=clientSUB1" + ",*" sub-nodes and replace the name by "heron"
+            // For example our connectionQueue or our plugins like Pop3Driver
+            if (oldClusterObjectName.length() > 0) {
+               int num = this.glob.getJmxWrapper().renameMBean(oldClusterObjectName, ContextNode.CLUSTER_MARKER_TAG, this.contextNode);
+               if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Renamed " + num + " jmx nodes to new '" + nodeId + "'");
+            }
 
-         if (this.mbeanHandle == null && this.contextNode != null) {   // "org.xmlBlaster:nodeClass=node,node=heron"
-            this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+            if (this.mbeanHandle == null && this.contextNode != null) {   // "org.xmlBlaster:nodeClass=node,node=heron"
+               this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+            }
          }
-      }
-      catch (XmlBlasterException e) {
-          log.warning(getLogId()+"Ignoring problem during JMX registration: " + e.toString());
+         catch (XmlBlasterException e) {
+             log.warning(getLogId()+"Ignoring problem during JMX registration: " + e.toString());
+         }
       }
 
       setCheckpointContext(getLogId());

@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.management.ObjectName;
+//import javax.management.ObjectName;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -434,6 +434,17 @@ public final class ContextNode
       return abs;
    }
    
+   private String quote(String value) {
+      if (value == null)
+         return value;
+      try {
+         return javax.management.ObjectName.quote(value);
+      }
+      catch(Throwable e) {
+    	  return value;
+      }
+   }
+   
    /**
     * Access the absolute name in standard notation
     * @param schema Currently only "xpath"
@@ -446,7 +457,7 @@ public final class ContextNode
          // like this jconsole creates a nice tree (see JmxWrapper.java for a discussion)
          if (this.parent == ROOT_NODE) {
             sb.append(SCHEMA_JMX_DOMAIN).append(":").append("nodeClass=node,node=");
-            sb.append((this.instanceName==null)?"null":ObjectName.quote(this.instanceName));
+            sb.append((this.instanceName==null)?"null":quote(this.instanceName));
             return sb.toString();
          }
          sb.append(this.parent.getAbsoluteName(schema));
@@ -454,7 +465,7 @@ public final class ContextNode
          // JMX ',' make problems with or without quotes
          //     ':' is only OK if quoted
          if (this.instanceName != null) {
-            sb.append(",").append(this.className).append("=").append(ObjectName.quote(this.instanceName));
+            sb.append(",").append(this.className).append("=").append(quote(this.instanceName));
          }
          return sb.toString();
       }
@@ -507,7 +518,7 @@ public final class ContextNode
          sb.append(SCHEMA_JMX_DOMAIN).append(":");
          sb.append(this.className).append("Class=").append(this.className);
          if (this.instanceName != null) {
-            sb.append(",").append(this.className).append("=").append(ObjectName.quote(this.instanceName));
+            sb.append(",").append(this.className).append("=").append(quote(this.instanceName));
          }
          return sb.toString();
       }

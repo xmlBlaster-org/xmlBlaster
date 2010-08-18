@@ -272,12 +272,14 @@ public class FileLocator
       }
 
       // classpath
-      try {
-         URL url = this.glob.getClassLoaderFactory().getXmlBlasterClassLoader().getResource(filename);
-         if (url != null) return url;
-      }
-      catch (XmlBlasterException ex) {
-         log.warning("findFileInXmlBlasterSearchPath: " + ex.getMessage());
+      if (this.glob.getClassLoaderFactory() != null) {
+         try {
+            URL url = this.glob.getClassLoaderFactory().getXmlBlasterClassLoader().getResource(filename);
+            if (url != null) return url;
+         }
+         catch (XmlBlasterException ex) {
+            log.warning("findFileInXmlBlasterSearchPath: " + ex.getMessage());
+         }
       }
 
       // java.ext.dirs
