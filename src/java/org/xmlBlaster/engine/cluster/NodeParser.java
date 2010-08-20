@@ -346,7 +346,39 @@ public class NodeParser extends SaxHandlerBase
 
       try {
          m.init(glob, null);
+         {
+             String xml =
+            	 "  <clusternode id='heron'>" +
+            	 "     <connect><qos>" +
+            	 "        <securityService type='htpasswd' version='1.0'>" +
+            	 "             <![CDATA[" +
+            	 "                <user>testuser</user>" +
+            	 "                <passwd>XXXXX</passwd>" +
+            	 "             ]]>" +
+            	 "        </securityService>" +
+            	 "        <persistent/>" +
+            	 "           <address type='socket_mobile'>" +
+            	 "             socket://avalon:3412" +
+            	 "              <compress type='zlib:stream'/>" +
+            	 "              <attribute name='doSomething'>true</attribute>" +
+            	 "           </address>" +
+            	 "           <queue relating='callback' maxEntries='1000' maxBytes='4000000' onOverflow='deadMessage'>" +
+                 "              <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='10000' retries='-1' delay='10000' oneway='false' dispatcherActive='true' dispatchPlugin='undef'>" +
+                 "                 IOR:10000010033200000099000010...." +
+                 "                 <burstMode collectTime='400' maxEntries='20' maxBytes='-1' />" +
+                 "                 <compress type='gzip' minSize='3000'/>" +
+                 "                 <ptp>true</ptp>" +
+                 "                 <attribute name='key1' type='int'>2005</attribute>" +
+                 "              </callback>" +
+                 "           </queue>" +
+            	 "     </qos></connect>" +
+            	 "  </clusternode>";
+                System.out.println("\nmaster message from client ...");
+                NodeParser nodeParser = new NodeParser(glob, new ClusterNode(glob, new NodeId("heron"), null), xml);
+                System.out.println(nodeParser.getClusterNode().toXml());
+             }
 
+         {
          String xml =
             "<clusternode id='heron.mycomp.com'>" +
             "   <master type='DomainToMaster' version='0.9'>\n" +
@@ -365,13 +397,13 @@ public class NodeParser extends SaxHandlerBase
             "   </master>\n" +
             "</clusternode>\n";
 
-         {
             System.out.println("\nmaster message from client ...");
             NodeParser nodeParser = new NodeParser(glob, new ClusterNode(glob, new NodeId("heron.mycomp.com"), null), xml);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
 
-         xml =
+         {
+         String xml =
             "<clusternode id='heron.mycomp.com'>\n" +
             "   <master stratum='1' refid='frodo' type='DomainPlugin' version='2.0' acceptDefault='false' acceptOtherDefault='true'>\n" +
             "     My own rule\n" +
@@ -382,9 +414,6 @@ public class NodeParser extends SaxHandlerBase
             "     <ram free='10657'/>\n" +
             "   </state>\n" +
             "</clusternode>\n";
-
-
-         {
             System.out.println("\nFull Message from client ...");
             NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
             System.out.println(nodeParser.getClusterNode().toXml());

@@ -245,17 +245,22 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
-      if (name.equalsIgnoreCase("address")) {
+      if (inAddress || name.equalsIgnoreCase("address")) {
          inAddress = true;
-         boolean accepted=true;
-         if (!inQueue) {
-            tmpProp = new ClientQueueProperty(glob, null); // Use default queue properties for this connection address
-            accepted = this.connectQosData.addClientQueueProperty(tmpProp);
+         if (tmpAddr == null) {
+	         boolean accepted=true;
+	         if (!inQueue) {
+	            tmpProp = new ClientQueueProperty(glob, null); // Use default queue properties for this connection address
+	            accepted = this.connectQosData.addClientQueueProperty(tmpProp);
+	         }
+	         tmpAddr = new Address(glob);
+	         tmpAddr.startElement(uri, localName, name, character, attrs);
+	         if (accepted) {
+	            tmpProp.setAddress(tmpAddr);
+	         }
          }
-         tmpAddr = new Address(glob);
-         tmpAddr.startElement(uri, localName, name, character, attrs);
-         if (accepted) {
-            tmpProp.setAddress(tmpAddr);
+         else {
+	         tmpAddr.startElement(uri, localName, name, character, attrs);
          }
          return;
       }
@@ -458,10 +463,11 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
-      if (inAddress) {
+      if (inAddress) { // e.g. <compress> is a subtag of address
          if (name.equalsIgnoreCase("address")) inAddress = false;
          tmpAddr.endElement(uri, localName, name, character);
          character.setLength(0);
+         if (name.equalsIgnoreCase("address")) tmpAddr = null;
          return;
       }
 
