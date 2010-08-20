@@ -50,7 +50,13 @@ public final class MethodName implements java.io.Serializable, Comparable
    public static final MethodName DUMMY = new MethodName("dummy", ARG_QOS, RETURN_STRING);
    public static final MethodName UNKNOWN = new MethodName("unknown", ARG_QOS, RETURN_STRING);
    public static final MethodName EXCEPTION = new MethodName("exception", ARG_QOS, RETURN_VOID);
-   // for testsuite only
+
+   /** for convenience only: not used by xmlBlaster itself */
+   public static final MethodName PUBLISH_PTP = new MethodName("publishPtp", ARG_MSGARR, RETURN_STRINGARR);
+   /** for convenience only: not used by xmlBlaster itself */
+   public static final MethodName PUBLISH_PTP_ARR = new MethodName("publishPtpArr", ARG_MSGARR, RETURN_STRINGARR);
+   /** for convenience only: not used by xmlBlaster itself */
+   public static final MethodName PUBLISH_PTP_ONEWAY = new MethodName("publishPtpOneway", ARG_MSGARR, RETURN_VOID);
 
    /**
     * @exception IllegalArgumentException if the given methodName is null
