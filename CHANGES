@@ -12,6 +12,8 @@ Changes for current svn
 					 EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue -> java.util.concurrent.LinkedBlockingQueue
 					 EDU.oswego.cs.dl.util.concurrent.Mutex -> java.util.concurrent.locks.ReentrantLock (Caution: Mutex was NOT reentrant)
 					Removed backport-util-concurrent.jar
+					 edu.emory.mathcs.backport.java.util.concurrent.ThreadPoolExecutor -> java.util.concurrent.ThreadPoolExecutor
+					 etc.
 
  o r17891 ConnectQosSaxFactory.java fixed to handle <address> subtags like <compress>
 
