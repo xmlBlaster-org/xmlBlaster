@@ -4,6 +4,15 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17893 Removed concurrent.jar dependendy to EDU.oswego.cs.dl.util.concurrent.*
+           and replaced by java.util.concurrent.* 
+					 org.xmlBlaster.util.ReentrantLock.java (EDU.oswego.cs.dl.util.concurrent.ReentrantLock) -> java.util.concurrent.locks.ReentrantLock
+		       EDU.oswego.cs.dl.util.concurrent.LinkedQueue -> java.util.concurrent.LinkedBlockingQueue
+					 EDU.oswego.cs.dl.util.concurrent.PooledExecutor -> java.util.concurrent.ThreadPoolExecutor
+					 EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue -> java.util.concurrent.LinkedBlockingQueue
+					 EDU.oswego.cs.dl.util.concurrent.Mutex -> java.util.concurrent.locks.ReentrantLock (Caution: Mutex was NOT reentrant)
+					Removed backport-util-concurrent.jar
+
  o r17891 ConnectQosSaxFactory.java fixed to handle <address> subtags like <compress>
 
  o r17887 Creating small Java client jar xmlBlasterClient.jar

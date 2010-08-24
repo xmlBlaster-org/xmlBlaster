@@ -1937,9 +1937,8 @@ TODO
 
    </target>
 
-   <!-- The JAR of this class file belongs to container 'Google APIs [Android 2.0]' which does not allow modifications to source attachments on its entries. -->
-   <target name="dist-client-mini" depends="xmlBlaster,demo,dist-client-mini-jar" description="Create a java client distribution for Android: 'build -DJVM.source=1.6 -DJVM.target=1.6 dist-client-mini'"/>
-   <target name="dist-client-mini-jar" description="Create a java client distribution for Android">
+   <target name="dist-client-mini" depends="xmlBlaster,demo,dist-client-mini-jar" description="Create a minimalistic java client distribution: 'build -DJVM.source=1.6 -DJVM.target=1.6 dist-client-mini'"/>
+   <target name="dist-client-mini-jar" description="Create a minimalistic java client distribution (SOCKET only)">
       <delete includeEmptyDirs="true" failonerror="false"><fileset dir="${dist-clientMini.dir}"/></delete>
       <echo>Creating ${dist-clientMini.dir}</echo>
       <mkdir dir="${dist-clientMini.dir}"/>
@@ -1953,7 +1952,7 @@ TODO
             <include name="org/xmlBlaster/client/protocol/*.class"/>
             <include name="org/xmlBlaster/client/protocol/socket/*"/>
             <include name="org/xmlBlaster/client/queuemsg/*"/>
-         	
+                
             <exclude name="org/xmlBlaster/client/Javascript*"/>
             <exclude name="org/xmlBlaster/client/script/*.class"/>
             <exclude name="org/xmlBlaster/client/XmlDbMessageWrapper.*"/>
@@ -1965,8 +1964,12 @@ TODO
             <include name="org/xmlBlaster/authentication/plugins/htpasswd/SecurityQos*"/>
             <include name="org/xmlBlaster/authentication/plugins/CryptDataHolder*"/>
 
-         	<!-- Does not import other engine stuff -->
+            <!-- Does not import other engine stuff -->
             <include name="org/xmlBlaster/engine/qos/AddressServer*"/>
+
+            <!-- Global.getNativeCallbackDriver -->
+            <include name="org/xmlBlaster/protocol/I_CallbackDriver.class"/>
+
 
             <include name="org/xmlBlaster/contrib/ClientPropertiesInfo*"/>
             <include name="org/xmlBlaster/contrib/I_Info*"/>
@@ -2001,9 +2004,9 @@ TODO
             <include name="org/xmlBlaster/util/queue/ram/*.class"/>
             <include name="org/xmlBlaster/util/queuemsg/*.class"/>
             <include name="org/xmlBlaster/util/xbformat/*.class"/>
-         	
+            <include name="org/xmlBlaster/util/http/*.class"/>
+                
             <exclude name="org/xmlBlaster/util/checkpoint/**"/>
-            <exclude name="org/xmlBlaster/util/http/**"/>
             <exclude name="org/xmlBlaster/util/lexical/**"/>
             <exclude name="org/xmlBlaster/util/servlet/**"/>
 

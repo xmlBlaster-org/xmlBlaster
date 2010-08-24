@@ -9,28 +9,26 @@ package org.xmlBlaster.protocol.xmlrpc;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import java.util.logging.Logger;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-import org.xmlBlaster.util.xbformat.MsgInfoParserFactory;
 import org.xmlBlaster.util.xbformat.XmlScriptParser;
-import org.xmlBlaster.engine.qos.AddressServer;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 
 /**
@@ -374,10 +372,10 @@ public class XmlBlasterImpl {
             cb.respan("XmlBlasterImpl.updateRequest-before.blocking");
             try {
                while (true) {
-                  LinkedQueue updQueue = cb.getUpdateQueue();
+                  LinkedBlockingQueue<UpdateEvent> updQueue = cb.getUpdateQueue();
                   if (updQueue == null)
                      throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The callback is shutdown");
-                  UpdateEvent ue = (UpdateEvent)updQueue.poll(this.waitTime);
+                  UpdateEvent ue = (UpdateEvent)updQueue.poll(this.waitTime, TimeUnit.MILLISECONDS);
                   if (ue != null) {
                      String methodName = ue.getMethod();
                      long refId = ue.getUniqueId();
@@ -472,7 +470,7 @@ public class XmlBlasterImpl {
                   ackTxt[i] = (String)ack[i];
                ue = new UpdateEvent("ack", null, null, ackTxt, Long.parseLong(reqId));
             }
-            cb.getAckQueue().offer(ue, waitTime);
+            cb.getAckQueue().offer(ue, waitTime, TimeUnit.MILLISECONDS);
          }
          catch (InterruptedException e) {
             e.printStackTrace();

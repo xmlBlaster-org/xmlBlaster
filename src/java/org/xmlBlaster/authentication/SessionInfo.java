@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +37,6 @@ import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.ReentrantLock;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
@@ -332,16 +332,18 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
     * @return number of holds released
     */
    public long releaseLockAssertOne(String errorInfo) {
-      long holds = this.lock.holds();
+      int holds = this.lock.getHoldCount();
       if (holds != 1) {
          log.severe("Topic=" + getId() + " receiverSession=" + getId() +". Not expected lock holds=" + holds + "\n" + Global.getStackTraceAsString(null));
       }
       if (holds > 0) {
-         try {
-            this.lock.release(holds);
-         }
-         catch (Throwable e) {
-            log.severe("Free lock failed: " + e.toString() + " " + errorInfo + " receiverSession=" + getId() +". Not expected lock holds=" + holds + "\n" + Global.getStackTraceAsString(null));
+         for (int i = 0; i < holds; ++i) {
+            try {
+              this.lock.unlock();
+            }
+            catch (Throwable e) {
+               log.severe("Free lock failed: " + e.toString() + " " + errorInfo + " receiverSession=" + getId() +". Not expected lock holds=" + holds + "\n" + Global.getStackTraceAsString(null));
+            }
          }
       }
       return holds;
@@ -393,7 +395,12 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
          return this.isShutdown; // sync'd because of TimeoutListener?
       }
       finally {
-         this.lock.release();
+         try {
+            this.lock.unlock();
+         }
+         catch (Throwable e) {
+        	 e.printStackTrace();
+         }
       }
    }
 
@@ -415,7 +422,12 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
          this.isShutdown = true;
       }
       finally {
-         this.lock.release();
+    	 try {
+            this.lock.unlock();
+    	 }
+    	 catch (Throwable e) {
+    		 e.printStackTrace();
+    	 }
       }
       this.glob.unregisterMBean(this.mbeanHandle);
       removeExpiryTimer();

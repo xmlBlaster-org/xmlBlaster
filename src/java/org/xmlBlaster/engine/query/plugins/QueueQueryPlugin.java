@@ -31,8 +31,8 @@ import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
-import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Each TopicHandler/SessionInfo or SubjectInfo instance creates its own instance of this plugin. 

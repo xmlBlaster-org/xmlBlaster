@@ -14,9 +14,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 
-// import java.util.concurrent.ArrayBlockingQueue;
-// import java.util.concurrent.TimeUnit;
-import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
+//import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -95,7 +95,7 @@ public class AppTerm extends JFrame implements KeyListener {
       private JTextPane pane;
       MutableAttributeSet attr;
       boolean inStyle;
-      Map styles = new HashMap();
+      Map<String, MutableAttributeSet> styles = new HashMap<String, MutableAttributeSet>();
       int maxSize;
       int sizeToFlush;
       
@@ -198,13 +198,13 @@ public class AppTerm extends JFrame implements KeyListener {
 
    public class PanelInputStream extends InputStream {
       
-      private BoundedBuffer queue;
-      // private ArrayBlockingQueue queue;
+      //private BoundedBuffer queue;
+      private ArrayBlockingQueue<Integer> queue;
 
       public PanelInputStream(int maxSize) {
-         // boolean orderedFIFO = true;
-         // this.queue = new ArrayBlockingQueue(maxSize, orderedFIFO);
-         this.queue = new BoundedBuffer(maxSize);
+         boolean orderedFIFO = true;
+         this.queue = new ArrayBlockingQueue<Integer>(maxSize, orderedFIFO);
+         //this.queue = new BoundedBuffer(maxSize);
       }
       
       public void write(int val) {
@@ -221,17 +221,18 @@ public class AppTerm extends JFrame implements KeyListener {
       }
       
       public int read() throws IOException {
-         Object obj = null;
+         Integer obj = null;
          try {
             while (obj == null) {
-               obj = this.queue.poll(5L /*, TimeUnit.SECONDS*/);
+               obj = this.queue.poll(5L, TimeUnit.SECONDS);
             }
          }
          catch (InterruptedException ex) {
             throw new IOException("Interrupted Exception occured: " + ex.getMessage());
          }
-         int val = ((Integer)obj).intValue();
-         return val;
+         return obj.intValue();
+//         int val = ((Integer)obj).intValue();
+//         return val;
       }
       
       /**

@@ -868,7 +868,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                continue;
             }
             finally {
-               destinationClient.getLock().release();
+               destinationClient.getLock().unlock();
             }
          }
 

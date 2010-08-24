@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.protocol.xmlrpc;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
@@ -20,7 +22,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.MsgUnitRaw;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+//import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
  * This object sends a MsgUnitRaw back to a client using XMLRPC interface, in
@@ -39,8 +41,8 @@ public class CallbackXmlRpcDriverSingleChannel implements I_CallbackDriver, I_Ti
    private static Logger log = Logger.getLogger(CallbackXmlRpcDriverSingleChannel.class.getName());
    private CallbackAddress callbackAddress = null;
    private String sessionId;
-   private LinkedQueue updateQueue;
-   private LinkedQueue ackQueue;
+   private LinkedBlockingQueue<UpdateEvent> updateQueue;
+   private LinkedBlockingQueue<UpdateEvent> ackQueue;
    
    private long updateAckTimeout = 30000L;
    private long updateTimeout = 30000L;
@@ -114,8 +116,8 @@ public class CallbackXmlRpcDriverSingleChannel implements I_CallbackDriver, I_Ti
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
 
       this.callbackAddress = cbAddress;
-      updateQueue = new LinkedQueue();
-      ackQueue = new LinkedQueue();
+      updateQueue = new LinkedBlockingQueue<UpdateEvent>();
+      ackQueue = new LinkedBlockingQueue<UpdateEvent>();
       
       PropLong tmp = callbackAddress.getEnv("updateTimeout", 30000L);
       updateTimeout = tmp.getValue();
@@ -150,12 +152,12 @@ public class CallbackXmlRpcDriverSingleChannel implements I_CallbackDriver, I_Ti
       }
       try {
          UpdateEvent event = new UpdateEvent("update", msgArr, null, null, counter++);
-         boolean worked = updateQueue.offer(event, updateTimeout);
+         boolean worked = updateQueue.offer(event, updateTimeout, TimeUnit.MILLISECONDS);
          if (!worked)
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed since nobody picks up updates");
 
          // wait for acknolwedge from server
-         UpdateEvent ret = (UpdateEvent)ackQueue.poll(updateAckTimeout);
+         UpdateEvent ret = (UpdateEvent)ackQueue.poll(updateAckTimeout, TimeUnit.MILLISECONDS);
          if (ret == null)
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed since no response from client");
          
@@ -195,7 +197,7 @@ public class CallbackXmlRpcDriverSingleChannel implements I_CallbackDriver, I_Ti
 
       try {
          UpdateEvent event = new UpdateEvent("updateOneway", msgArr, null, null, counter++);
-         boolean worked = updateQueue.offer(event, updateTimeout);
+         boolean worked = updateQueue.offer(event, updateTimeout, TimeUnit.MILLISECONDS);
          if (!worked)
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed since nobody picks up updates");
          respan("CallbackXmlRpcDriverSingleChannel.sendUpdateOneway");
@@ -280,11 +282,11 @@ public class CallbackXmlRpcDriverSingleChannel implements I_CallbackDriver, I_Ti
       return true;
    }
 
-   public LinkedQueue getUpdateQueue() {
+   public LinkedBlockingQueue<UpdateEvent> getUpdateQueue() {
       return updateQueue;
    }
 
-   public LinkedQueue getAckQueue() {
+   public LinkedBlockingQueue<UpdateEvent> getAckQueue() {
       return ackQueue;
    }
 

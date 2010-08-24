@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,8 +39,8 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
+//import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+//import EDU.oswego.cs.dl.util.concurrent.Mutex;
 
 /**
  * StreamingCallback
@@ -58,8 +60,9 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
     */
    class Writer extends Thread {
 
-      class WriterData extends Mutex {
-         private OutputStream outStrm;
+      class WriterData extends ReentrantLock {
+		private static final long serialVersionUID = -8014185442026247255L;
+		private OutputStream outStrm;
          private byte[] data;
          private Throwable exception;
          
@@ -70,18 +73,18 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
          }
       }
 
-      private LinkedQueue channel;
+      private LinkedBlockingQueue<WriterData> channel;
       
       public Writer(String name) {
          super(name);
-         this.channel = new LinkedQueue();
+         this.channel = new LinkedBlockingQueue<WriterData>();
          setDaemon(true);
          start();
       }
 
       public Writer() {
          super();
-         this.channel = new LinkedQueue();
+         this.channel = new LinkedBlockingQueue<WriterData>();
          setDaemon(true);
          start();
       }
@@ -89,28 +92,28 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
       public synchronized void write(OutputStream outStream, byte[] buf) throws InterruptedException, XmlBlasterException {
          WriterData data = new WriterData(outStream, buf);
          try {
-            data.acquire();
+            data.lockInterruptibly();
             this.channel.put(data);
-            data.acquire(); // waits until the other thread is finished
+            data.lockInterruptibly(); // waits until the other thread is finished
             if (data.exception != null)
                throw new XmlBlasterException(global, ErrorCode.USER_UPDATE_HOLDBACK, "write: a throwable occured", "", data.exception);
          }
          finally {
-            data.release();
+            data.unlock();
          }
       }
 
       public synchronized void close(OutputStream outStream) throws InterruptedException, XmlBlasterException {
          WriterData data = new WriterData(outStream, null);
          try {
-            data.acquire();
+            data.lockInterruptibly();
             this.channel.put(data);
-            data.acquire(); // waits until the other thread is finished
+            data.lockInterruptibly(); // waits until the other thread is finished
             if (data.exception != null)
                throw new XmlBlasterException(global, ErrorCode.USER_UPDATE_HOLDBACK, "close: a throwable occured", "", data.exception);
          }
          finally {
-            data.release();
+            data.unlock();
          }
       }
 
@@ -150,7 +153,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                   writerData.exception = e;
                }
                finally {
-                  writerData.release();
+                  writerData.unlock();
                }
             }
             catch (Throwable e) {
@@ -200,7 +203,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
             catch (IOException e) {
                e.printStackTrace();
             }
-            mutex.release();
+            mutex.unlock();
          }
       }
    };
@@ -226,7 +229,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    private boolean useQueue;
    private boolean initialized;
    private boolean lastMessageCompleted = true;
-   private final Mutex mutex;
+   private final ReentrantLock mutex;
    
    private void reset() throws XmlBlasterException {
       this.out = null;
@@ -247,7 +250,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
       throws XmlBlasterException {
       this.callback = callback;
       this.global = global;
-      this.mutex = new Mutex();
+      this.mutex = new ReentrantLock();
       String writerName = StreamingCallback.class.getName() + "-writer";
       synchronized(this.global) {
          this.writer = (Writer)this.global.getObjectEntry(writerName);
@@ -405,13 +408,13 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                this.writer.close(this.out);
                // wait until the client has returned his method.
                try {
-                  mutex.acquire();
+                  mutex.lockInterruptibly();
                   consumeExceptionIfNotNull();
                   clearQueue();
                   return this.ret;
                }
                finally {
-                  mutex.release();
+                  mutex.unlock();
                }
             }
             catch (InterruptedException e) {
@@ -426,7 +429,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                this.timestamp = this.timer.addTimeoutListener(this, this.waitForChunksTimeout, null);
             try {
                if (isFirstChunk(updQos)) {
-                  this.mutex.acquire();
+                  this.mutex.lockInterruptibly();
                   this.cbSessionId = cbSessId;
                   this.out = new PipedOutputStream();
                   this.in = new PipedInputStream(this.out);
@@ -437,11 +440,11 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                   /*
                   if (this.oldGroupId == null) {
                      try {
-                        mutex.acquire();
+                        mutex.lockInterruptibly();
                         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update: The message is not the first of a group but the previous one was already completed.");
                      }
                      finally {
-                        mutex.release();
+                        mutex.unlock();
                      }
                   }
                   */

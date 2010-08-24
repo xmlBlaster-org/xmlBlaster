@@ -39,8 +39,8 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ArrayBlockingQueue;
-import edu.emory.mathcs.backport.java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * This class sends outgoing emails.
@@ -135,7 +135,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    private AsyncSender asyncSender;
    private int asyncSendQueueSizeMax = 100;
    private boolean asyncSendQueueBlockOnOverflow = false;
-   private BlockingQueue asyncSendQueue;
+   private BlockingQueue<EmailData> asyncSendQueue;
    
    /**
     * Consumer pattern.
@@ -145,10 +145,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     */
    class AsyncSender implements Runnable {
       private final SmtpClient smtpClient;
-      private final BlockingQueue queue;
+      private final BlockingQueue<EmailData> queue;
       private String messageIdFileName;
       
-      AsyncSender(SmtpClient smtpClient, BlockingQueue q, String messageIdFileName) {
+      AsyncSender(SmtpClient smtpClient, BlockingQueue<EmailData> q, String messageIdFileName) {
          this.messageIdFileName = messageIdFileName;
          this.smtpClient = smtpClient;
          this.queue = q;
@@ -409,7 +409,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          this.asyncSendQueueBlockOnOverflow = glob.get("asyncSendQueueBlockOnOverflow",
                this.asyncSendQueueBlockOnOverflow, null,
                pluginConfig);
-         this.asyncSendQueue = new ArrayBlockingQueue(this.asyncSendQueueSizeMax);
+         this.asyncSendQueue = new ArrayBlockingQueue<EmailData>(this.asyncSendQueueSizeMax);
          this.asyncSender = new AsyncSender(this, this.asyncSendQueue, msgIdFileName);
          Thread t = new Thread(this.asyncSender, getType() + "-AsyncSender");
          t.start();
@@ -429,7 +429,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    public void sendEmailAsync(EmailData emailData) throws XmlBlasterException {
       if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmailAsync(): Missing argument emailData");
       AsyncSender as = this.asyncSender;
-      BlockingQueue queue = this.asyncSendQueue;
+      BlockingQueue<EmailData> queue = this.asyncSendQueue;
       if (as == null || queue == null) {
          throw new XmlBlasterException(glob,
                ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",

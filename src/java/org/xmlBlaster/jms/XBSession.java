@@ -31,6 +31,7 @@ import javax.jms.Topic;
 import javax.jms.Session;
 import javax.jms.TopicSubscriber;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
@@ -45,8 +46,8 @@ import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 
-import EDU.oswego.cs.dl.util.concurrent.Channel;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+//import EDU.oswego.cs.dl.util.concurrent.Channel;
+//import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 
 /**
@@ -91,7 +92,7 @@ public class XBSession extends Thread implements Session, I_Callback {
    private I_StatusChangeListener statusChangeListener;
    protected ExceptionListener exceptionListener;
    protected boolean connectionActivated;
-   protected Channel channel;
+   protected LinkedBlockingQueue<XBMsgEvent> channel;
    private boolean started;
    
    /**
@@ -115,7 +116,7 @@ public class XBSession extends Thread implements Session, I_Callback {
       this.open = true;
       this.transacted = transacted;
       this.controlThread = Thread.currentThread();
-      this.channel = new LinkedQueue();
+      this.channel = new LinkedBlockingQueue<XBMsgEvent>();
       this.consumerMap = new HashMap();
    }
    

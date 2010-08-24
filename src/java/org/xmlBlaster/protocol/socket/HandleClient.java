@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,13 +25,9 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 
 
 /**
@@ -229,7 +227,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                      this.addressServer.setRemoteAddress(remoteUrl);
                   }
                   if (log.isLoggable(Level.FINE)) log.fine(ME+": remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
-                  if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
+//                  if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
                      if (log.isLoggable(Level.FINE)) log.fine(ME+": Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                      
                      // Set client ConnectQos wishes like
@@ -242,13 +240,13 @@ public class HandleClient extends SocketExecutor implements Runnable
                      if (this.addressServer != null) { // pass for "useRemoteLoginAsTunnel"
                     	this.addressServer.setCallbackDriver(this.callback);
                      }
-                  }
-                  else {
-                     log.severe(ME+": Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
-                     this.callback = new CallbackSocketDriver(this.loginName);
-                     // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
-                     // will later call callback.initialize(loginName, callbackAddress)
-                  }
+//                  }
+//                  else {
+//                     log.severe(ME+": Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
+//                     this.callback = new CallbackSocketDriver(this.loginName);
+//                     // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
+//                     // will later call callback.initialize(loginName, callbackAddress)
+//                  }
                }
 
                ConnectReturnQosServer retQos = authenticate.connect(conQos);

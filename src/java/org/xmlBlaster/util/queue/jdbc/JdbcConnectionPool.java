@@ -9,6 +9,9 @@ Author:    michele@laghi.eu
 package org.xmlBlaster.util.queue.jdbc;
 
 import org.apache.commons.lang.text.StrTokenizer;
+
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -30,7 +33,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
-import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
+//import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
 
 /**
  * A Pool of connections to the database to be used for a persistent queue. To
@@ -41,14 +44,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private static String ME = "JdbcConnectionPool";
    private static Logger log = Logger.getLogger(JdbcConnectionPool.class.getName());
    private Global glob = null;
-   private BoundedLinkedQueue connections;
+   private LinkedBlockingQueue<Connection> connections;
    
    /** the initial capacity of this pool. */
    private int capacity;
    private int waitingCalls = 0;
    private long connectionBusyTimeout = 20*60*1000L; /* On high load we wait up to 20 min until xmlBlaster shuts down */
    private int   maxWaitingThreads = 200;
-   private Hashtable mapping = null;
+   private Hashtable<String, String> mapping = null;
    private boolean initialized = false;
 
    private String tableNamePrefix = "XB"; // stands for "XMLBLASTER", it is chosen short for Postgres max. eval length = 26 chars (timestamp has already 19 chars)
@@ -162,7 +165,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    
       if (log.isLoggable(Level.FINE)) log.fine("going to retreive a connection");
       try  {
-         conn = (Connection)this.connections.poll(delay); // Return and remove an item from channel only if one is available within msecs milliseconds.
+         conn = (Connection)this.connections.poll(delay, TimeUnit.MILLISECONDS); // Return and remove an item from channel only if one is available within msecs milliseconds.
          if (conn != null) { // assert code
             setInPool(conn, false);
             /*
@@ -225,7 +228,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       */
       try {
          setInPool(conn, true);
-         boolean tmp = this.connections.offer(conn, 5L);
+         boolean tmp = this.connections.offer(conn, 5L, TimeUnit.MILLISECONDS);
          return tmp;
       }
       catch (InterruptedException ex) {
@@ -235,7 +238,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          // and thereby cause the loss of one entry in the connection pool.
          for (int i=0; i < 3; i++) {
             try {
-               ret = this.connections.offer(conn, 5L);
+               ret = this.connections.offer(conn, 5L, TimeUnit.MILLISECONDS);
                setInPool(conn, true);
                break;
             }
@@ -377,9 +380,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
    private synchronized void addConnectionToPool(boolean doLog) throws SQLException {
       try {
-         if (this.connections.size() == this.connections.capacity()) {
+         if (this.connections.size() == this.capacity) {
             log.severe("Can't add more JDBC connections to pool, capacity="
-                  + this.connections.capacity() + " is reached");
+                  + this.capacity + " is reached");
             return;
          }
          // Connection conn = DriverManager.getConnection(url, user, password);
@@ -643,8 +646,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
       // could block quite a long time if the number of connections is big
       // or if the connection to the DB is slow.
-      this.connections = new BoundedLinkedQueue();
-      this.connections.setCapacity(this.capacity);
+      this.connections = new LinkedBlockingQueue<Connection>(this.capacity);
+      //this.connections.setCapacity(this.capacity);
       try {
          // initializing and establishing of connections to DB (but first disconnect if already connected)
          final boolean disconnectFirst = true;
@@ -713,7 +716,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
 
    /** This method is used in the init method */
-   private Hashtable parseMapping(org.xmlBlaster.util.property.Property prop)
+   private Hashtable<String, String> parseMapping(org.xmlBlaster.util.property.Property prop)
          throws XmlBlasterException, SQLException {
       if (log.isLoggable(Level.FINER)) log.finer("parseMapping");
       if (this.isShutdown) connect(false, false);
@@ -751,7 +754,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if (log.isLoggable(Level.FINE)) 
          log.fine("parseMapping: the string to be mapped is '" + mappingText + "'");
       
-      this.mapping = new Hashtable();
+      this.mapping = new Hashtable<String, String>();
       // StringTokenizer tokenizer = new StringTokenizer(mappingText, ",");
       StrTokenizer tokenizer = new StrTokenizer(mappingText, ',', '"');
       XmlBlasterException ex = null;
@@ -781,7 +784,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * Hashtable where the keys are the logical names used for a type in the
     * JdbcQueuePlugin and the values are the real names to be used in the database used (which may be vendor specific).
     */
-   public Hashtable getMapping() {
+   public Hashtable<String, String> getMapping() {
       return this.mapping;
    }
 

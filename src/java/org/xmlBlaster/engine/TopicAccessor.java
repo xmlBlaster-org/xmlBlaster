@@ -17,9 +17,9 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 
-import edu.emory.mathcs.backport.java.util.concurrent.BlockingQueue;
-import edu.emory.mathcs.backport.java.util.concurrent.LinkedBlockingQueue;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Singleton in ServerScope to access a TopicHandler instance.

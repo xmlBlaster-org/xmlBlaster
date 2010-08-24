@@ -39,7 +39,6 @@ import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 
 /**
  * Queueing messages in RAM only, sorted after priority and timestamp
- * @see <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">The concurrent library</a>
  * @author xmlBlaster@marcelruff.info
  */
 public final class RamQueuePlugin implements I_Queue, I_StoragePlugin

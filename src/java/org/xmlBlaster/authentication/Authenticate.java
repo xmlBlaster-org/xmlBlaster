@@ -464,7 +464,7 @@ final public class Authenticate implements I_RunlevelListener
             fireClientEvent(sessionInfo, true);
          }
          finally {
-            if (subjectInfo != null) subjectInfo.getLock().release();
+            if (subjectInfo != null) subjectInfo.getLock().unlock();
          }
 
          // --- compose an answer -----------------------------------------------
@@ -650,7 +650,7 @@ final public class Authenticate implements I_RunlevelListener
             synchronized(this.loginNameSubjectInfoMap) {
                this.loginNameSubjectInfoMap.remove(subjectInfo.getLoginName());
             }
-            if (returnLocked) subjectInfo.getLock().release();
+            if (returnLocked) subjectInfo.getLock().unlock();
             throw XmlBlasterException.convert(getGlobal(), ErrorCode.INTERNAL_UNKNOWN, ME, e.toString(), e);
          }
       }

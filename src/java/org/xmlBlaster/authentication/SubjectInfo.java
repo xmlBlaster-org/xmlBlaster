@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +33,7 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.ReentrantLock;
+//import org.xmlBlaster.util.ReentrantLock;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
@@ -87,7 +88,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * The absoluteSessionName == sessionInfo.getId() is the key,
     * the SessionInfo object the value
     */
-   private Map sessionMap = new HashMap();
+   private Map<String, SessionInfo> sessionMap = new HashMap<String, SessionInfo>();
    private volatile SessionInfo[] sessionArrCache;
    public CallbackAddress[] callbackAddressCache = null;
 
@@ -206,7 +207,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
       if (returnLocked) this.lock.lock();
       if (this.state != ALIVE) {
-         if (returnLocked) this.lock.release();
+         if (returnLocked) this.lock.unlock();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".waitUntilAlive()", "ALIVE not reached, state=" + this.state);
       }
 
@@ -266,7 +267,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Transition from UNDEF to ALIVE done");
       }
       finally {
-         this.lock.release();
+         this.lock.unlock();
       }
    }
 
@@ -355,7 +356,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          //this.securityCtx = null;
       }
       finally {
-         this.lock.release();
+         this.lock.unlock();
       }
    }
 
@@ -550,7 +551,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          }
       } // synchronized
       finally {
-         this.lock.release();
+         this.lock.unlock();
       }
 
       log.severe(ME+": Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
@@ -744,7 +745,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             }
          }
          finally {
-            this.lock.release();
+            this.lock.unlock();
          }
       }
       return this.msgErrorHandler;
@@ -836,7 +837,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    public final CallbackAddress[] getCallbackAddresses() {
       if (this.callbackAddressCache == null) {
          SessionInfo[] sessions = getSessions();
-         Set set = new HashSet();
+         Set<CallbackAddress> set = new HashSet<CallbackAddress>();
          for (int i=0; i<sessions.length; i++) {
             SessionInfo ses = sessions[i];
             if (ses.hasCallback()) {
@@ -897,7 +898,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          if (q.isSessionLimitsPubSessionIdSpecific()) {
             // Special case: only destroy pubSessionId<0 if we are also <0 and vice versa
             boolean isInternal = q.getSessionQos().getSessionName().isPubSessionIdInternal();
-            ArrayList list = new ArrayList(arr.length);
+            ArrayList<SessionInfo> list = new ArrayList<SessionInfo>(arr.length);
             for (int i=0; i<arr.length; i++) {
                     if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
                    list.add(arr[i]);
@@ -1253,10 +1254,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       while (true) {
          SessionInfo sessionInfo = null;
          synchronized (sessionMap) {
-            Iterator iterator = sessionMap.values().iterator();
+            Iterator<SessionInfo> iterator = sessionMap.values().iterator();
             if (!iterator.hasNext())
                break;
-            sessionInfo = (SessionInfo)iterator.next();
+            sessionInfo = iterator.next();
          }
          sessionInfo.killSession();
       }

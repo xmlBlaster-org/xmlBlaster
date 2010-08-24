@@ -43,7 +43,7 @@ public class ProtoConverter {
     *                             correspond to the MsgUnitRaw equivalent.
     *
     */
-   public static MsgUnitRaw vector2MsgUnitRaw(Vector vec)
+   public static MsgUnitRaw vector2MsgUnitRaw(Vector<Object> vec)
       throws XmlBlasterException
    {
       MsgUnitRaw ret = null;
@@ -53,7 +53,7 @@ public class ProtoConverter {
       }
 
       try {
-         Enumeration enumeration = vec.elements();
+         Enumeration<Object> enumeration = vec.elements();
          String xmlKey = (String)enumeration.nextElement();
          Object obj = enumeration.nextElement();
          byte[] content = null;
@@ -251,13 +251,13 @@ public class ProtoConverter {
     * @throws XmlBlasterException if the elements in the Vector where not valid
     *             String objects.
     */
-   public static String[] vector2StringArray(Vector vec) throws XmlBlasterException
+   public static String[] vector2StringArray(Vector<String> vec) throws XmlBlasterException
    {
       int size = vec.size();
       String[] ret = new String[size];
 
       try {
-         Enumeration enumeration = vec.elements();
+         Enumeration<String> enumeration = vec.elements();
          for (int i=0; i < size; i++) {
             ret[i] = (String)enumeration.nextElement();
          }
@@ -278,7 +278,7 @@ public class ProtoConverter {
     * @throws XmlBlasterException if the element in the Vector is not a valid
     *             String object.
     */
-   public static String vector2String(Vector vec) throws XmlBlasterException
+   public static String vector2String(Vector<String> vec) throws XmlBlasterException
    {
       int size = vec.size();
       if (size == 0)
@@ -300,10 +300,10 @@ public class ProtoConverter {
     * @param strings array of String objects to convert to a Vector.
     * @return a Vector object containing all the elements of the input array.
     */
-   public static Vector stringArray2Vector(String[] strings)
+   public static Vector<String> stringArray2Vector(String[] strings)
    {
       int size = strings.length;
-      Vector ret = new Vector();
+      Vector<String> ret = new Vector<String>();
 
       for (int i=0; i< size; i++) {
          ret.addElement(strings[i]);
@@ -334,8 +334,8 @@ public class ProtoConverter {
          }
 
 
-         Vector vec = ProtoConverter.messageUnitArray2Vector(false, msgs);
-         Vector strVector = ProtoConverter.stringArray2Vector(strings);
+         Vector<Object> vec = ProtoConverter.messageUnitArray2Vector(false, msgs);
+         Vector<String> strVector = ProtoConverter.stringArray2Vector(strings);
 
          MsgUnitRaw[] msgs2 = ProtoConverter.vector2MsgUnitRawArray(vec);
          String[] strings2 = ProtoConverter.vector2StringArray(strVector);
