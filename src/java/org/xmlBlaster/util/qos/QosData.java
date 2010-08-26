@@ -30,6 +30,7 @@ import java.util.Properties;
  */
 public abstract class QosData implements java.io.Serializable, Cloneable
 {
+   private static final long serialVersionUID = -8909581788281969020L;
    protected transient Global glob;
    private static Logger log = Logger.getLogger(QosData.class.getName());
    protected transient final String serialData; // can be null - in this case use toXml()
@@ -64,14 +65,14 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * ArrayList containing RouteInfo objects
     */
-   protected ArrayList routeNodeList;
+   protected ArrayList<RouteInfo> routeNodeList;
    /** Cache for RouteInfo in an array */
    protected transient RouteInfo[] routeNodes;
    private static RouteInfo[] ROUTE_INFO_ARR_DUMMY = new RouteInfo[0];
 
    private MethodName methodName;
 
-   private Map clientProperties;
+   private Map<String, ClientProperty> clientProperties;
 
    /**
     * Constructor, it does not parse the data, use a factory for this. 
@@ -80,7 +81,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       this.methodName = methodName;
       setGlobal(glob);
       this.serialData = serialData;
-      this.clientProperties = new HashMap();
+      this.clientProperties = new HashMap<String, ClientProperty>();
    }
 
    /**
@@ -287,7 +288,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       this.routeNodes = null; // clear cache
 
       if (routeNodeList == null)
-         routeNodeList = new ArrayList();
+         routeNodeList = new ArrayList<RouteInfo>();
       routeNodeList.add(routeInfo);
 
       // Set stratum to new values
@@ -295,7 +296,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       if (offset < 0) offset = 0;
 
       for (int ii=routeNodeList.size()-1; ii>=0; ii--) {
-         RouteInfo ri = (RouteInfo)routeNodeList.get(ii);
+         RouteInfo ri = routeNodeList.get(ii);
          ri.setStratum(offset++);
       }
    }
@@ -460,11 +461,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
             //}
             
             if (this.routeNodeList != null/* && this.routeNodeList.size() > 0*/) {
-               newOne.routeNodeList = (ArrayList)this.routeNodeList.clone();
+               newOne.routeNodeList = (ArrayList<RouteInfo>)this.routeNodeList.clone();
             }
             
             if (this.clientProperties != null/* && this.clientProperties.size() > 0*/) {
-               newOne.clientProperties = (HashMap)((HashMap)this.clientProperties).clone();
+               newOne.clientProperties = (HashMap<String, ClientProperty>)((HashMap<String, ClientProperty>)this.clientProperties).clone();
             }
          }
       }
@@ -699,7 +700,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @return a map The return is unordered and the map values are of type ClientProperty. 
     * @see org.xmlBlaster.util.qos.ClientProperty
     */
-   public final Map getClientProperties() {
+   public final Map<String, ClientProperty> getClientProperties() {
       return this.clientProperties;
    }
    
@@ -720,7 +721,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
          Object[] arr = this.clientProperties.keySet().toArray();
          StringBuffer sb = new StringBuffer(arr.length*256);
          for (int i=0; i < arr.length; i++) {
-            ClientProperty p = (ClientProperty)this.clientProperties.get(arr[i]);
+        	ClientProperty p = this.clientProperties.get(arr[i]);
             sb.append(p.toXml(offset, null, forceReadable));
          }
          return sb.toString();
