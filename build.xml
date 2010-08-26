@@ -1979,6 +1979,8 @@ TODO
 
             <!-- org.xmlBlaster.util.queue.jdbc.JdbcQueue wants -->
             <include name="org/xmlBlaster/engine/msgstore/I_Map*"/>
+            <!-- org.xmlBlaster.util.qos.AccessFilterQos and QueryRefinementQos wants, Query has no engine dependency and should be moved to util.qos -->
+            <include name="org/xmlBlaster/engine/mime/Query.class"/>
 
             <include name="org/xmlBlaster/util/*.class"/>
             <include name="org/xmlBlaster/util/admin/*.class"/>
@@ -2011,6 +2013,7 @@ TODO
             <exclude name="org/xmlBlaster/util/servlet/**"/>
 
             <include name="HelloWorld3*"/>
+            <include name="HelloWorld4*"/>
          </fileset>
       </jar>
 
