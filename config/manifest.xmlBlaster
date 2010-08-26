@@ -9,8 +9,6 @@ Class-Path: xmlrpc3/commons-logging-1.1.jar
  jacorb/jacorb.jar jacorb/idl.jar jacorb/logkit-1.2.jar 
  jacorb/avalon-framework-4.1.5.jar 
  xtdash.jar servlet.jar connector.jar 
- concurrent.jar 
- backport-util-concurrent.jar 
  gnu-regexp.jar jzlib.jar 
  remotecons.jar 
  demo.jar testsuite.jar xmlunit.jar 
