@@ -154,7 +154,6 @@ public class Client implements I_Callback {
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
       throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("update '" + cbSessionId + "' content='" + new String(content) + "'");
-      String clientProp = (String)updateQos.getData().getClientProperties().get("MsgDistributorPlugin");
 
       if (this.responses != null) {
          synchronized(responses) {
