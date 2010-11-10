@@ -59,7 +59,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
 
    /** The address configuration */
    //private AddressServer addressServer;
-
+   private boolean stripSecurityQosCDATA;
+   
    private PluginInfo pluginInfo;
 
    /**
@@ -117,6 +118,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
       
       engineGlob.getRequestBroker().getAuthenticate(null).addClientListener(this);
+
+      stripSecurityQosCDATA = glob.get("stripSecurityQosCDATA", false, null, pluginInfo);
 
       try {
          this.authenticate = engineGlob.getAuthenticate();
@@ -239,7 +242,19 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
                ConnectReturnQosServer retQos = this.authenticate.connect(conQos);
                //As we are a singleton there is no need to remember the secretSessionId of this client
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-               executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+               
+               String literal = retQos.toXml();
+               if (stripSecurityQosCDATA) {
+                  String qosOrig = literal;
+                  String qosStripped = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosOrig, "<![CDATA[", "");
+                  literal = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosStripped, "]]>", "");
+                  if (!literal.equals(qosOrig)) {
+                     log.fine("Stripped CDATA tags surrounding security credentials, some EMAIL Client do not like it (Helma does not escape ']]>'). " +
+                                    "This shouldn't be a problem as long as your credentials doesn't contain '<'");
+                  }
+               }
+               
+               executeResponse(receiver, literal, SocketUrl.SOCKET_TCP);
              }
             else if (MethodName.DISCONNECT == receiver.getMethodName()) {
                executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
