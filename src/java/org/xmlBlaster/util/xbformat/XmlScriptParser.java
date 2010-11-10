@@ -78,6 +78,8 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    
    private boolean sendResponseSessionId;
    private boolean sendResponseRequestId;
+   private boolean sendRequestSessionId;
+   private boolean sendRequestRequestId;
 
    /**
     *  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
@@ -111,6 +113,8 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.schemaDecl = glob.get("schemaDeclaration", (String)null, null, pluginConfig);
       this.sendResponseSessionId = glob.get("sendResponseSessionId", true, null, pluginConfig);
       this.sendResponseRequestId = glob.get("sendResponseRequestId", true, null, pluginConfig);
+      this.sendRequestSessionId = glob.get("sendRequestSessionId", true, null, pluginConfig);
+      this.sendRequestRequestId = glob.get("sendRequestRequestId", true, null, pluginConfig);
       this.isNullTerminated = glob.get("isNullTerminated", false, null, pluginConfig);
       super.sendSimpleExceptionFormat = glob.get("sendSimpleExceptionFormat", false, null, pluginConfig);
       super.forceReadable = glob.get("forceReadable", false, null, pluginConfig);
@@ -253,11 +257,11 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
               msgInfo.getType() == MsgInfo.EXCEPTION_BYTE;
          
          String sessionId = msgInfo.getSecretSessionId();
-         if (isResponseOrException && !this.sendResponseSessionId)
+         if ((isResponseOrException && !this.sendResponseSessionId) || !sendRequestSessionId)
             sessionId = null;
-         
+
          String requestId = msgInfo.getRequestId();
-         if (isResponseOrException && !this.sendResponseRequestId)
+         if ((isResponseOrException && !this.sendResponseRequestId) || !sendRequestRequestId)
             requestId = null;
          
          super.serialize(msgInfo.getMethodName(),
