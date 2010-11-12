@@ -422,6 +422,36 @@ public class StringPairTokenizer {
    }
       
    /**
+    * Counterpart to #mapToCSV(Map)
+    * Fails if key contains token "&#061;"
+    * and fails if value contains token "&#034;" 
+    * @param csv
+    * @param sep Defaults to ","
+    * @param apos Only '"' or "'" is supported, defaults to '"'
+    * @param innerSeparator '='
+    * @return never null
+    */
+   public static Map<String, String> CSVToMap(String csv, char sep, char apos, char innerSeparator) {
+      if (csv == null || csv.length() < 1)
+         return new HashMap<String, String>();
+      Map<String, String> map = parseLine(new String[] { csv }, sep, apos,  innerSeparator, false, false, true);
+      String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
+      for (int i=0; i<keys.length; i++) {
+         String key = keys[i];
+         String value = (String)map.get(key);
+         boolean containsAssign = key.indexOf("&#061;") != -1;
+         if (containsAssign) {
+            map.remove(key);
+            key = ReplaceVariable.replaceAll(key, "&#061;", "=");
+         }
+         value = ReplaceVariable.replaceAll(value, "&#034;", "\"");
+         //value = ReplaceVariable.replaceAll(value, "&#039;", "'");
+         map.put(key, value);
+      }
+      return map;
+   }
+
+   /**
     * Counterpart to #CSVToMap(String)
     * @param map
     * @return
@@ -451,7 +481,7 @@ public class StringPairTokenizer {
          Map.Entry entry = (Map.Entry)it.next();
          if (entry == null) continue;
          if (buf.length() > 0)
-            buf.append(',');
+            buf.append(sep); //','
          String key = (String)entry.getKey();
          key = ReplaceVariable.replaceAll(key, "=", "&#061;");
          buf.append(key);
