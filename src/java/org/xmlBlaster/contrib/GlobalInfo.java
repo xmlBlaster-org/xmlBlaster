@@ -109,7 +109,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       }
       else {
          System.setProperty("stripped.host.name", strippedHostName);
-         log.info("Set system property 'stripped.host.name' to '" + strippedHostName + "'");
+         log.fine("Set system property 'stripped.host.name' to '" + strippedHostName + "'");
       }
       if (info != null) {
          oldStrippedHostName = info.get("stripped.host.name", null);
@@ -119,7 +119,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
          }
          else {
             info.put("stripped.host.name", strippedHostName);
-            log.info("Set info property 'stripped.host.name' to '" + strippedHostName + "'");
+            log.fine("Set info property 'stripped.host.name' to '" + strippedHostName + "'");
          }
       }
       return strippedHostName;
