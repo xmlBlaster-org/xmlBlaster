@@ -291,7 +291,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          if (maxStatementLength < 1) {
             maxStatementLength = info.getInt("queue.persistent.maxStatementLength", 2048);
             if (first) {
-               log.info("The maximum SQL statement length is not defined in JDBC meta data, we set it to " + this.maxStatementLength);
+            	boolean isGiven = info.get("queue.persistent.maxStatementLength", null) != null;
+            	if (!isGiven)
+            		log.info("The maximum SQL statement length is not defined in JDBC meta data, we set it to " + this.maxStatementLength);
                first = false;
             }
          }
@@ -316,7 +318,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          }
          // -queue.persistent.maxNumStatements 50
          maxNumStatements = info.getInt("maxNumStatements", defaultMaxNumStatements);
-         log.info("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
+         log.fine("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
          if (logWarn && info.getInt("maxNumStatements",-1)==-1)
             log.warning("The maxStatements returned fromt the database metadata is '0', will set the default to 50 unless you explicitly set '-maxNumStatements <num>'");
 
@@ -1856,6 +1858,34 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
       }
 
    }
+   
+   public List<XBStore> getAllOfType(String node, String type) throws XmlBlasterException {
+	      if (!this.isConnected) {
+	         if (log.isLoggable(Level.FINE)) 
+	            log.fine("Currently not possible. No connection to the DB");
+	         return null;
+	      }
+
+	      Connection conn = null;
+	      boolean success = true;
+	      try {
+	         conn = pool.reserve();
+	         conn.setAutoCommit(true);
+	         List<XBStore> list = storeFactory.getAllOfType(node, type, conn, timeout);
+	         return list;
+	      }
+	      catch (Throwable ex) {
+	         ex.printStackTrace();
+	         success = false;
+	        if (checkIfDBLoss(conn, getLogId(node + ":" + type, "getAllOfType"), ex))
+	           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getAllOfType", "", ex); 
+	        else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getAllOfType", "", ex); 
+	      }
+	      finally {
+	         releaseConnection(conn, success, null);
+	      }
+   }
+
 
    public long clearQueue(XBStore store) throws XmlBlasterException {
       if (!isConnected) {
@@ -1895,5 +1925,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          releaseConnection(conn, success, null);
       }
 
+   }
+
+   public XBStoreFactory getXBStoreFactory() {
+	 return storeFactory;
    }
 }

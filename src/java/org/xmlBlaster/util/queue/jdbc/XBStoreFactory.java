@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -29,6 +31,7 @@ public class XBStoreFactory extends XBFactory {
    private final static int REF_COUNTED = 5;
    private final static int FLAG1 = 6;
    private String getByNameSt;
+   private String getAllOfTypeSt;
    protected String pingSt = "select 1";
    
    static String getName() {
@@ -41,6 +44,7 @@ public class XBStoreFactory extends XBFactory {
       deleteSt = "delete from ${table} where xbstoreid=?";
       getSt = "select * from ${table} where xbstoreid=?";
       getByNameSt = "select * from ${table} where xbnode=? and xbtype=? and xbpostfix=?";
+      getAllOfTypeSt = "select * from ${table} where xbnode=? and xbtype=?";
    }
 
 
@@ -131,6 +135,7 @@ public class XBStoreFactory extends XBFactory {
    
    protected void doInit(I_Info info) {
       getByNameSt = info.get(prefix + ".getByNameStatement", getByNameSt);
+      getAllOfTypeSt = info.get(prefix + ".getAllOfTypeStatement", getAllOfTypeSt);
       pingSt = info.get(prefix + ".pingStatement", pingSt);
    }
    
@@ -215,6 +220,44 @@ public class XBStoreFactory extends XBFactory {
    
    /**
     * 
+    * @param sql The select statement to use to fill the objects.
+    * @param conn
+    * @return null if the object has not been found or the object if it has been found on the backend.
+    * @throws SQLException
+    */
+   public List<XBStore> getAllOfType(String node, String type, Connection conn, int timeout) throws SQLException, IOException {
+	  List<XBStore> list = new ArrayList<XBStore>();
+      if (conn == null)
+         return list;
+      PreparedStatement preStatement = conn.prepareStatement(getAllOfTypeSt);
+      ResultSet rs = null;
+      try {
+         if (timeout > 0)
+            preStatement.setQueryTimeout(timeout);
+         preStatement.setString(1, node);
+	     preStatement.setString(2, type);
+	     rs = preStatement.executeQuery();
+         while (rs.next()) {
+             XBStore xbStore = new XBStore();
+	         xbStore.setId(rs.getLong(ID));
+	         xbStore.setNode(getDbCol(rs, NODE));
+	         xbStore.setType(getDbCol(rs, TYPE));
+	         xbStore.setPostfix(getDbCol(rs, POSTFIX));
+	         String tmp = rs.getString(REF_COUNTED);
+	         xbStore.setRefCounted(isTrue(tmp));
+	         xbStore.setFlag1(getDbCol(rs, FLAG1));
+	         list.add(xbStore);
+         }
+      }
+      finally {
+         if (preStatement != null)
+            preStatement.close();
+      }
+      
+      return list;
+   }
+   
+   /**
     * @param sql The select statement to use to fill the objects.
     * @param conn
     * @return null if the object has not been found or the object if it has been found on the backend.
