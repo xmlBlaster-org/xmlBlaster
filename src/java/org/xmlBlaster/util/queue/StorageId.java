@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queue.jdbc.XBStore;
@@ -29,6 +30,8 @@ public class StorageId implements java.io.Serializable
                                            // string
    private String strippedId; // deprecated: only for xb_entries
    private final String id; // deprecated: only for xb_entires
+   
+   private ContextNode parentContextNode;
 
    // these are used for the 2008 queues
    private transient XBStore xbStore;
@@ -379,4 +382,13 @@ public class StorageId implements java.io.Serializable
    public String getPostfix2() {
       return (postfix2 == null) ? "" : postfix2;
    }
+
+public ContextNode getParentContextNode() {
+	return parentContextNode;
+}
+
+public void setParentContextNode(ContextNode parentContextNode) {
+	this.parentContextNode = parentContextNode;
+}
+
 }
