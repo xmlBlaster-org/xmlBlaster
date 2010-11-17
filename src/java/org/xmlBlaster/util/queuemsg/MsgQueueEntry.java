@@ -142,6 +142,13 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       return this.persistent;
    }
 
+   /**
+    * Note: Setting here is probably buggy as on reload from DB it seems to be handled as transient
+    * if embedded MsgUnit is not persistent.
+    * Workaround: Always set this flag on MsgUnit directly until a test case is implemented
+    * 2010-11-16 Marcel, Michele
+    * @param persistent
+    */
    public void setPersistent(boolean persistent) {
       this.persistent = persistent;
    }
