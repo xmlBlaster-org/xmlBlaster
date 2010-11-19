@@ -1196,6 +1196,8 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       this.glob = glob;
       this.pluginInfo = pluginInfo;
+      // Example to switch off via xmlBlaster.properties:
+      // QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM,xmlBlaster/warnNewJdbcQueue=false
       if (this.pluginInfo.getParameters().getProperty("xmlBlaster/warnNewJdbcQueue", "true").equals("true")) {
          if (!isWarned) {
             isWarned = true;
