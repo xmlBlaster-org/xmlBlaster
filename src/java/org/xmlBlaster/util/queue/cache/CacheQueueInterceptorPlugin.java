@@ -1464,6 +1464,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
 
    /**
+    * Currently ONLY PERSISTENT entries are dumped (TODO add transients)
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
     */
    public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception {
@@ -1476,6 +1477,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
    
    /**
+    * Currently ONLY PERSISTENT entries are dumped (TODO add transients)
     * @see I_AdminQueue#dumpEmbeddedObjectsToFile(String)
     */
    public String dumpEmbeddedObjectsToFile(String fileName) throws Exception {
