@@ -207,15 +207,16 @@ public class ClientEntryFactory implements I_EntryFactory
    
    
    public I_Entry createEntry(XBStore store, XBMeat meat, XBRef ref) throws XmlBlasterException {
-      String type = ref.getMethodName();
+      String type = (ref != null) ? ref.getMethodName() : meat.getDataType();
       StorageId storageId = getStorageId(store);
       MethodName methodName = MethodName.toMethodName(type);
       String key = meat.getKey();
       String qos = meat.getQos();
       byte[] content = meat.getContent();
-      long timestamp = ref.getId();
-      int priority = ref.getPrio();
+      long timestamp = (ref != null) ? ref.getId() : meat.getId();
+      int priority = (ref != null) ? ref.getPrio() : PriorityEnum.NORM_PRIORITY.getInt();
       long sizeInBytes = meat.getByteSize();
+      boolean durable = (ref != null) ? ref.isDurable() : meat.isDurable();
       try {
          // MethodName.PING
          // MethodName.UPDATE
@@ -267,9 +268,9 @@ public class ClientEntryFactory implements I_EntryFactory
             DummyEntry entry = null;
             if (content != null)
                entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId,
-                     sizeInBytes, content, ref.isDurable());
+                     sizeInBytes, content, durable);
             else
-               entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, ref.isDurable());
+               entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, durable);
             return entry;
          }
 
