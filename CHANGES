@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17914 Fixed NPE in dumpEmbeddedObjectsToFile() call via JMX
+
+ o r17913 LowMemoryDetector now without reflection
+
  o r17893 Removed concurrent.jar dependendy to EDU.oswego.cs.dl.util.concurrent.*
            and replaced by java.util.concurrent.* 
 					 org.xmlBlaster.util.ReentrantLock.java (EDU.oswego.cs.dl.util.concurrent.ReentrantLock) -> java.util.concurrent.locks.ReentrantLock
