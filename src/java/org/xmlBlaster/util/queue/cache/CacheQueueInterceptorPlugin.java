@@ -1465,6 +1465,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
    /**
     * Currently ONLY PERSISTENT entries are dumped (TODO add transients)
+    * Currently PRIORITY is always set to 5 (see {@link ClientEntryFactory#createEntry} as ref is null and guessed
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
     */
    public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception {
@@ -1478,6 +1479,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    
    /**
     * Currently ONLY PERSISTENT entries are dumped (TODO add transients)
+    * Currently PRIORITY is always set to 5 (see {@link ClientEntryFactory#createEntry} as ref is null and guessed
     * @see I_AdminQueue#dumpEmbeddedObjectsToFile(String)
     */
    public String dumpEmbeddedObjectsToFile(String fileName) throws Exception {
@@ -1501,6 +1503,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    //JMX
+   /**
+   * Currently ONLY PERSISTENT entries are dumped (TODO add transients)
+   * Currently PRIORITY is always set to 5 (see {@link ClientEntryFactory#createEntry} as ref is null and guessed
+   */
    public String dumpEmbeddedObjects() {
 	   try {
 	      ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
