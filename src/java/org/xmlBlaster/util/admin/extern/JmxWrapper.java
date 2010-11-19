@@ -167,11 +167,11 @@ public class JmxWrapper
       if (useJmx > 0) {
          // Export Global.getProperty() to JMX
          this.jmxProperties = new JmxProperties(this.glob);
-         ContextNode propNode = new ContextNode(ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
+         ContextNode propNode = new ContextNode(ContextNode.SYSPROP_MARKER_TAG, "sysprop", this.glob.getContextNode());
          this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
 
          this.jmxLogLevel = new JmxLogLevel(this.glob);
-         ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
+         ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, "logging", this.glob.getContextNode());
          this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
 
