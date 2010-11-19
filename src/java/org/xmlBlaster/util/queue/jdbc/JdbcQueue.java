@@ -1409,7 +1409,13 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
       return storageSizeListenerHelper.getStorageSizeListeners();
    }
 
+   public long embeddedQueueObjectsToXml(OutputStream out, Properties props) throws Exception {
+      return embeddedObjectsToXml(out, props); // Hack, use Map implementation as accessor (which looses priority info)
+   }
+   
    /**
+    * Note: Is currently implemented assuming I_MapEntry and NOT I_QueueEntry (but I_Queue offers this method which is wrong)
+    * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
     * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
     */
    public long embeddedObjectsToXml(final OutputStream out, final Properties props) throws Exception {

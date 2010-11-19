@@ -1462,7 +1462,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       return storageSizeListenerHelper.getStorageSizeListeners();
    }
 
-
+   public long embeddedQueueObjectsToXml(OutputStream out, Properties props) throws Exception {
+      return embeddedObjectsToXml(out, props); // Hack, use Map implementation as accessor (which looses priority info)
+   }
+   
    /**
     * Currently ONLY PERSISTENT entries are dumped (TODO add transients)
     * Currently PRIORITY is always set to 5 (see {@link ClientEntryFactory#createEntry} as ref is null and guessed
@@ -1471,7 +1474,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception {
       I_Queue queue = this.persistentQueue;
       if (queue != null) {
-         return queue.embeddedObjectsToXml(out, null);
+         return queue.embeddedQueueObjectsToXml(out, null);
       }
       log.warning(ME+"Sorry, dumping transient entries to '" + out + "' is not implemented");
       return 0;

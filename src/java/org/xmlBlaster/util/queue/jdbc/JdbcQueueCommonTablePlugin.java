@@ -1425,6 +1425,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       return storageSizeListenerHelper.getStorageSizeListeners();
    }
 
+   public long embeddedQueueObjectsToXml(OutputStream out, Properties props) throws Exception {
+      return embeddedObjectsToXml(out, props); // Hack, use Map implementation as accessor (which looses priority info)
+   }
+   
    /**
     * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
     */

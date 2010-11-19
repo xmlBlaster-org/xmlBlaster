@@ -443,12 +443,13 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
    public String toXml(String extraOffset);
 
    /**
+    * NOTE: rename from embeddedObjectsToXml to embeddedQueueObjectsToXml as it used the map lookup and lost priority info
     * Dump all entries of this queue to the given output stream. 
     * The messages are XML formatted.
     * @param out The output stream to dump the entries
     * @param props Configuration properties, not yet specified, just pass null
     * @return Number of entries dumped
     */
-   public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception;
+   public long embeddedQueueObjectsToXml(OutputStream out, Properties props) throws Exception;
    
 }

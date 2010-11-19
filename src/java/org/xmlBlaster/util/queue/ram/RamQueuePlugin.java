@@ -956,6 +956,11 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       return storageSizeListenerHelper.getStorageSizeListeners();
    }
 
+   public long embeddedQueueObjectsToXml(OutputStream out, Properties props) throws Exception {
+      log.warning("Sorry, dumping transient entries is not implemented");
+      return 0;
+   }
+   
    /**
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
     */
