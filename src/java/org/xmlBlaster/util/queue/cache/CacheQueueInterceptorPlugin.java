@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.cache;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -1495,5 +1496,25 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       out.write(("\n</"+this.queueId.getRelatingType()+">").getBytes());
       out.close();
       return "Dumped " + count + " entries to '" + to_file.toString() + "'";
+   }
+
+   //JMX
+   public String dumpEmbeddedObjects() {
+	   try {
+	      ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+	      out.write(("\n<"+this.queueId.getRelatingType()+">").getBytes());
+	      Properties props = new Properties();
+	      props.put(Constants.TOXML_FORCEREADABLE, ""+true);  // to be human readable (minimize base64)
+	      props.put(Constants.TOXML_ENCLOSINGTAG, "publish"); // to look similar to XmlScript
+	      long count = embeddedObjectsToXml(out, props);
+	      out.write(("\n</"+this.queueId.getRelatingType()+">").getBytes());
+	      out.close();
+	      byte[] bytes=out.toByteArray();
+	      String str = new String(bytes, "UTF-8");
+	      return str;
+	   }
+	   catch (Throwable e) {
+		   return "Dump failed: " + e.toString();
+	   }
    }
 }

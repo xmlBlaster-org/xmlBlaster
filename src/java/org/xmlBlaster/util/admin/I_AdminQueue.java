@@ -208,4 +208,11 @@ public interface I_AdminQueue extends I_AdminPlugin {
     * @return Status string
     */
    public String dumpEmbeddedObjectsToFile(String fileName) throws Exception;
+
+   /**
+    * Dump all entries of this queue, for JMX 
+    * The messages are XML formatted.
+    * @return messages
+    */
+   public String dumpEmbeddedObjects();
 }
