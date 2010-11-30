@@ -469,6 +469,9 @@ public class StringPairTokenizer {
     * @return aKey="a value with &#034; apost, and semicolon",otherKey=2300,third&#061;Key=a key with assignment,key4="Hello, == world"
     */
    public static String mapToCSV(Map/*<String, String|ClientProperty>*/ map, char sep, char apos) {
+	   return mapToCSV(map, sep, apos, '=');
+   }
+   public static String mapToCSV(Map/*<String, String|ClientProperty>*/ map, char sep, char apos, char innerSeparator) {
       if (map == null || map.size() < 1)
          return "";
       if (sep == 0) sep = ',';
@@ -487,7 +490,7 @@ public class StringPairTokenizer {
          buf.append(key);
          String value = (String)entry.getValue();
          if (value != null/* && value.length() > 0*/) {
-            buf.append('=');
+            buf.append(innerSeparator);
             boolean containsSep = value.indexOf(sep) != -1;
             boolean containsApos = value.indexOf(apos) != -1;
             if (containsSep)
