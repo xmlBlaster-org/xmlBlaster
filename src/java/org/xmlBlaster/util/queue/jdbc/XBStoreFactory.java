@@ -73,7 +73,7 @@ public class XBStoreFactory extends XBFactory {
     */
    protected void prepareDefaultStatements() {
       StringBuffer buf = new StringBuffer(512);
-      
+
       if (getDbVendor().equals(POSTGRES)) {
          buf.append("create table ${table} (\n");
          buf.append("      xbstoreid int8 primary key unique not null,\n");
@@ -105,10 +105,18 @@ public class XBStoreFactory extends XBFactory {
          buf.append("      xbflag1 varchar(32) default '');\n");
          buf.append("create unique index xbstoreidx on xbstore (xbnode, xbtype, xbpostfix);\n");
       }
-      /*
       else if (getDbVendor().equals(DB2)) {
-         
+         pingSt = "select 1 from ${table}"; // HSQLDB needs from in stmt
+         buf.append("create table ${table} (\n");
+         buf.append("      xbstoreid bigint primary key not null,\n");
+         buf.append("      xbnode varchar(256) not null,\n");
+         buf.append("      xbtype varchar(32) not null,\n");
+         buf.append("      xbpostfix varchar(256) not null,\n");
+         buf.append("      xbrefcounted char(1) default 'F' not null,\n");
+         buf.append("      xbflag1 varchar(32) default '');\n");
+         buf.append("create unique index xbstoreidx on ${table} (xbnode, xbtype, xbpostfix);\n");
       }
+      /*
       else if (getDbVendor().equals(FIREBIRD)) {
          
       }
@@ -226,7 +234,7 @@ public class XBStoreFactory extends XBFactory {
     * @throws SQLException
     */
    public List<XBStore> getAllOfType(String node, String type, Connection conn, int timeout) throws SQLException, IOException {
-	  List<XBStore> list = new ArrayList<XBStore>();
+          List<XBStore> list = new ArrayList<XBStore>();
       if (conn == null)
          return list;
       PreparedStatement preStatement = conn.prepareStatement(getAllOfTypeSt);
@@ -235,18 +243,18 @@ public class XBStoreFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          preStatement.setString(1, node);
-	     preStatement.setString(2, type);
-	     rs = preStatement.executeQuery();
+             preStatement.setString(2, type);
+             rs = preStatement.executeQuery();
          while (rs.next()) {
              XBStore xbStore = new XBStore();
-	         xbStore.setId(rs.getLong(ID));
-	         xbStore.setNode(getDbCol(rs, NODE));
-	         xbStore.setType(getDbCol(rs, TYPE));
-	         xbStore.setPostfix(getDbCol(rs, POSTFIX));
-	         String tmp = rs.getString(REF_COUNTED);
-	         xbStore.setRefCounted(isTrue(tmp));
-	         xbStore.setFlag1(getDbCol(rs, FLAG1));
-	         list.add(xbStore);
+                 xbStore.setId(rs.getLong(ID));
+                 xbStore.setNode(getDbCol(rs, NODE));
+                 xbStore.setType(getDbCol(rs, TYPE));
+                 xbStore.setPostfix(getDbCol(rs, POSTFIX));
+                 String tmp = rs.getString(REF_COUNTED);
+                 xbStore.setRefCounted(isTrue(tmp));
+                 xbStore.setFlag1(getDbCol(rs, FLAG1));
+                 list.add(xbStore);
          }
       }
       finally {
