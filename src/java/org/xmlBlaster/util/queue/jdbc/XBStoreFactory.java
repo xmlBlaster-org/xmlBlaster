@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -22,8 +24,7 @@ import org.xmlBlaster.contrib.I_Info;
  */
 
 public class XBStoreFactory extends XBFactory {
-   // private static Logger log =
-   // Logger.getLogger(XBStoreFactory.class.getName());
+   private static Logger log = Logger.getLogger(XBStoreFactory.class.getName());
    private final static int ID = 1;
    private final static int NODE = 2;
    private final static int TYPE = 3;
@@ -205,6 +206,8 @@ public class XBStoreFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(1, id);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getSt);
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
@@ -243,8 +246,10 @@ public class XBStoreFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          preStatement.setString(1, node);
-             preStatement.setString(2, type);
-             rs = preStatement.executeQuery();
+         preStatement.setString(2, type);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getAllOfTypeSt);
+         rs = preStatement.executeQuery();
          while (rs.next()) {
              XBStore xbStore = new XBStore();
                  xbStore.setId(rs.getLong(ID));
@@ -283,6 +288,8 @@ public class XBStoreFactory extends XBFactory {
          preStatement.setString(1, node);
          preStatement.setString(2, type);
          preStatement.setString(3, postfix);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getByNameSt);
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
@@ -310,6 +317,8 @@ public class XBStoreFactory extends XBFactory {
       try {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(pingSt);
           preStatement.executeQuery();
       }
       finally {

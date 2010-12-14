@@ -1478,6 +1478,7 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
          }
       }
       catch (Throwable ex) {
+         //ex.printStackTrace();
          success = false;
         if (checkIfDBLoss(conn, getLogId(store.toString(), "getEntries"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 

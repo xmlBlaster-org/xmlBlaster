@@ -174,7 +174,7 @@ public class XBRefFactory extends XBFactory {
       }
       */
       else if (getDbVendor().equals(DB2)) {
-         getCompleteSt = "select * from ${table} join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid(+))";
+         getCompleteSt = "select * from ${table} left outer join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid)";
 
          buf.append("create table ${table} (\n");
          buf.append("      xbrefid bigint not null,\n");
@@ -314,6 +314,8 @@ public class XBRefFactory extends XBFactory {
 
          fillDbCol(preStatement, METHOD_NAME, xbRef.getMethodName());
 
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(insertSt);
          preStatement.execute();
       }
       finally {
@@ -356,6 +358,8 @@ public class XBRefFactory extends XBFactory {
          if (storeMustBeSet)
             ps.setLong(1, store.getId());
 
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getFirstEntriesSt);
          ResultSet rs = ps.executeQuery();
          long countEntries = 0L;
          long countBytes = 0L;
@@ -395,6 +399,8 @@ public class XBRefFactory extends XBFactory {
          ps.setLong(2, firstEntryExlusive.getRef().getPrio());
          ps.setLong(3, firstEntryExlusive.getRef().getId());
          // select xbrefid from xbref where xbref.xbstoreid=1226799982562000000 and xbprio<=5 and xbrefid>1205160650462000000 order by xbprio desc, xbrefid asc
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(stmt);
          ResultSet rs = ps.executeQuery();
          long countEntries = 0L;
          long countBytes = 0L;
@@ -434,6 +440,8 @@ public class XBRefFactory extends XBFactory {
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(1, store.getId());
          preStatement.setLong(2, id);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getSt);
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
@@ -482,6 +490,8 @@ public class XBRefFactory extends XBFactory {
          st = conn.prepareStatement(getAndDeleteSt);
          // String req = "select * from ${table} where xbstoreid=? order by xbprio asc, xbmeatid desc";
          st.setLong(1, store.getId());
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getAndDeleteSt);
          ResultSet rs = st.executeQuery();
          boolean doContinue = true;
          boolean stillEntriesInQueue = false;
@@ -593,6 +603,8 @@ public class XBRefFactory extends XBFactory {
          pos++;
          st.setInt(pos, maxPrio);
          pos++;
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getByPrioSt);
          ResultSet rs = st.executeQuery();
 
          return rs2List(store, rs, numOfEntries, numOfBytes, onlyId);
@@ -613,6 +625,8 @@ public class XBRefFactory extends XBFactory {
          st.setInt(2, limitRef.getPrio());
          st.setInt(3, limitRef.getPrio());
          st.setLong(4, limitRef.getId());
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getWithLimitSt);
          ResultSet rs = st.executeQuery();
          final long numEntries = -1L;
          final long numBytes = -1L;
@@ -644,6 +658,8 @@ public class XBRefFactory extends XBFactory {
          st.setLong(pos, store.getId());
          pos++;
 
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getBySamePrioSt);
          ResultSet rs = st.executeQuery();
          final boolean onlyId = false;
          return rs2List(store, rs, numOfEntries, numOfBytes, onlyId);
@@ -674,6 +690,8 @@ public class XBRefFactory extends XBFactory {
          st.setInt(2, limitPrio);
          st.setInt(3, limitPrio);
          st.setLong(4, limitId);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(inclusive?deleteWithLimitInclSt:deleteWithLimitExclSt);
          return st.executeUpdate();
       }
       finally {
@@ -691,6 +709,8 @@ public class XBRefFactory extends XBFactory {
          preStatement.setQueryTimeout(timeout);
       try {
          preStatement.setLong(1, store.getId());
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(deleteAllSt);
          return preStatement.executeUpdate();
       }
       finally {

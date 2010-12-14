@@ -18,6 +18,8 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -29,8 +31,7 @@ import org.xmlBlaster.contrib.I_Info;
  */
 
 public class XBMeatFactory extends XBFactory {
-   // private final static Logger log =
-   // Logger.getLogger(XBMeatFactory.class.getName());
+   private final static Logger log = Logger.getLogger(XBMeatFactory.class.getName());
 
    private final static int ID = 1;
    private final static int DURABLE = 2;
@@ -297,6 +298,8 @@ public class XBMeatFactory extends XBFactory {
          Statement st = null;
          try {
             st = conn.createStatement();
+            if (log.isLoggable(Level.FINEST)) 
+               log.finest(incRefCounterFunction);
             st.executeUpdate(incRefCounterFunction);
          } finally {
             if (st != null)
@@ -363,6 +366,8 @@ public class XBMeatFactory extends XBFactory {
          if (timeout > 0)
             preStatement.setQueryTimeout(timeout);
          fillStatement(preStatement, xbMeat);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(insertSt);
          preStatement.execute();
       } finally {
          if (preStatement != null)
@@ -405,6 +410,8 @@ public class XBMeatFactory extends XBFactory {
          preStatement.setLong(2, xbMeat.getRefCount2());
          preStatement.setLong(3, xbMeat.getId());
          preStatement.setLong(4, xbMeat.getStoreId());
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(updateRefCounterSt);
          preStatement.executeUpdate();
       } finally {
          if (preStatement != null)
@@ -431,6 +438,8 @@ public class XBMeatFactory extends XBFactory {
          fillStatement(preStatement, xbMeat);
          preStatement.setLong(LAST_ROW + 1, xbMeat.getId());
          preStatement.setLong(LAST_ROW + 2, xbMeat.getStoreId());
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(updateSt);
          preStatement.executeUpdate();
       } finally {
          if (preStatement != null)
@@ -450,6 +459,8 @@ public class XBMeatFactory extends XBFactory {
             st.setLong(1, meat.getId());
             st.setLong(2, store.getId());
             st.setLong(3, increment);
+            if (log.isLoggable(Level.FINEST)) 
+               log.finest(incRefCounterInvoke);
             st.executeUpdate();
          } finally {
             if (st != null)
@@ -516,6 +527,8 @@ public class XBMeatFactory extends XBFactory {
             preStatement.setQueryTimeout(timeout);
          preStatement.setLong(1, store.getId());
          preStatement.setLong(2, id);
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getSt);
          rs = preStatement.executeQuery();
          if (!rs.next())
             return null;
@@ -548,6 +561,8 @@ public class XBMeatFactory extends XBFactory {
          if (storeMustBeSet)
             ps.setLong(1, store.getId());
 
+         if (log.isLoggable(Level.FINEST)) 
+            log.finest(getFirstEntriesSt);
          ResultSet rs = ps.executeQuery();
          long countEntries = 0L;
          long countBytes = 0L;
