@@ -4,7 +4,7 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o r17922 Added DB2 v9.7 DDL statements
+ o r17924 Added DB2 v9.7 DDL statements and support (not well tested)
 
  o r17918 Renamed embeddedObjectsToXml to I_Queue.embeddedQueueObjectsToXml, but implementation still uses map like acces and looses priority
 
