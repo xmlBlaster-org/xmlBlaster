@@ -162,9 +162,6 @@ public class XBRefFactory extends XBFactory {
          buf.append(" create index IX_REF_PRIO ON XBREF (xbprio);\n");
       }
       /*
-      else if (getDbVendor().equals(DB2)) {
-         // create statements
-      }
       else if (getDbVendor().equals(FIREBIRD)) {
          // create statements
          // "select first ? * from ${table}";
@@ -176,6 +173,34 @@ public class XBRefFactory extends XBFactory {
          // "select * from ${table} limit ?";
       }
       */
+      else if (getDbVendor().equals(DB2)) {
+         getCompleteSt = "select * from ${table} join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid(+))";
+
+         buf.append("create table ${table} (\n");
+         buf.append("      xbrefid bigint not null,\n");
+         buf.append("      xbstoreid bigint not null,\n");
+         buf.append("      xbmeatid bigint,\n");
+         buf.append("      xbdurable char(1) default 'F' not null ,\n");
+         buf.append("      xbbytesize bigint,\n");
+         buf.append("      xbmetainfo clob default '',\n");
+         buf.append("      xbflag1 varchar(32) default '',\n");
+         buf.append("      xbprio integer,\n");
+         buf.append("      xbmethodname varchar(32) default '',\n");
+         buf.append("      constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
+        
+         buf.append("    alter table ${table} \n");
+         buf.append("            add constraint fkxbstoreref\n");
+         buf.append("            foreign key (xbstoreid) \n");
+         buf.append("            references ${xbstore} on delete cascade;\n");
+         
+         /*
+         buf.append("    alter table ${table} \n");
+         buf.append("            add constraint fkxbmeat\n");
+         buf.append("            foreign key (xbmeatid) \n");
+         buf.append("            references ${xbmeat};\n");
+         */
+         // "select * from (select * from ${table}) where rownum <= ?";
+      }
       else { // if (getDbVendor().equals(HSQLDB))
          getCompleteSt = "select * from ${table} left outer join ${xbmeat} on (${table}.xbmeatid=${xbmeat}.xbmeatid)";
 

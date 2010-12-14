@@ -178,8 +178,6 @@ public class XBMeatFactory extends XBFactory {
          buf.append(" create index IX_MEAT_DURABLE ON XBMEAT (xbdurable);\n");
       }
       /*
-       * else if (getDbVendor().equals(DB2)) {
-       * 
        * } else if (getDbVendor().equals(FIREBIRD)) {
        * 
        * } else if (getDbVendor().equals(MYSQL)) {
@@ -188,6 +186,58 @@ public class XBMeatFactory extends XBFactory {
        * 
        * }
        */
+      else if (getDbVendor().equals(DB2)) {
+         // currently disabled since not really performant and since I do not
+         // know how to use fetch with multiparams
+         // incRefCounterInvoke = "{call ${table}incr(?,?,?)}";
+         incRefCounterInvoke = null;
+         StringBuffer buf1 = new StringBuffer(512);
+
+         buf1.append("CREATE OR REPLACE PROCEDURE ${table}incr(id number, storeid number, incr number, incr2 number) AS\n");
+         buf1.append("   oldCounter NUMBER(10);\n");
+         buf1.append("   newCounter NUMBER(10);\n");
+         buf1.append("   oldCounter2 NUMBER(10);\n");
+         buf1.append("   newCounter2 NUMBER(10);\n");
+         buf1.append("   CURSOR c1\n");
+         buf1.append("      IS\n");
+         buf1
+               .append("         SELECT xbrefcount,xbrefcount2 FROM ${table} WHERE xbmeatid=id and xbstoreid=storeid FOR UPDATE of xbrefcount,xbrefcount2;\n");
+         buf1.append("\n");
+         buf1.append("BEGIN\n");
+         buf1.append("   open c1;\n");
+         buf1.append("   fetch c1 into oldCounter;\n");
+         buf1.append("   newCounter := oldCounter + incr;\n");
+         buf1
+               .append("   UPDATE ${table} SET xbrefcount=newCounter WHERE CURRENT OF c1;\n");
+         buf1.append("   COMMIT;\n");
+         buf1.append("   close c1;\n");
+         buf1.append("END;\n");
+         // incRefCounterFunction = buf1.toString();
+         incRefCounterFunction = null;
+
+         // and here the create statement ...
+         buf.append("create table ${table} (\n");
+         buf.append("      xbmeatid bigint not null,\n");
+         buf.append("      xbdurable char default 'F' not null,\n");
+         buf.append("      xbrefcount integer,\n");
+         buf.append("      xbrefcount2 integer,\n");
+         buf.append("      xbbytesize bigint,\n");
+         buf.append("      xbdatatype varchar(32) default '' not null,\n");
+         buf.append("      xbmetainfo clob default '',\n");
+         buf.append("      xbflag1 varchar(32) default '',\n");
+         buf.append("      xbmsgqos clob default '',\n");
+         buf.append("      xbmsgcont blob,\n");
+         buf.append("      xbmsgkey clob default '',\n");
+         buf.append("      xbstoreid bigint not null,\n");
+         buf.append("      constraint xbmeatpk primary key(xbmeatid, xbstoreid));\n");
+
+         buf.append("alter table ${table} \n");
+         buf.append("      add constraint fkxbstoremeat\n");
+         buf.append("      foreign key (xbstoreid) \n");
+         buf.append("      references ${xbstore} on delete cascade;\n");
+         // already in pk
+         // buf.append("create index ${table}stix on ${table}(xbmeatid,xbstoreid);\n");
+      }
       else { // if (getDbVendor().equals(HSQLDB))
          buf.append("create table ${table} (\n");
          buf.append("      xbmeatid bigint not null,\n");
