@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='queue.jdbc.db2' type='NEW' prio='LOW' status='OPEN'>
+<requirement id='queue.jdbc.db2' type='NEW' prio='LOW' status='INWORK'>
    <topic>
         XmlBlaster queuing facility with DB2 backend store.
     </topic>
@@ -9,6 +9,9 @@
        <p>
        DB2 is available on <a href='http://www.ibm.com'>http://www.ibm.com</a> where you can find all
        necessary information and instructions on how to make DB2 run.
+       </p>
+       <p>
+       xmlBlaster works fine with DB2, but extensive tests have not been made.
        </p>
     </description>
 
@@ -18,11 +21,16 @@ db2jcc.jar
 db2jcc_license_cu.jar
 sqlj.zip
 
-# DB2 express C 9.1, using com.ibm.db2.jcc.DB2Driver
+# DB2 express C 9.7, using com.ibm.db2.jcc.DB2Driver
+# db2stop
+# db2start
 # db2 create database xmlblast
 # db2 connect to xmlblast user db2inst1
+# db2 get dbm cfg
+# db2 list applications
+# The Port is typically something like 50001 or 50003
 JdbcStorage[DB2]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-            url=jdbc:db2://linux:50001/xmlblast,\
+            url=jdbc:db2://localhost:50001/xmlblast,\
             user=db2inst1,\
             password=secret,\
             connectionPoolSize=1,\
