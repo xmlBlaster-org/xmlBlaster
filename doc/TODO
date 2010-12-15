@@ -74,6 +74,19 @@ o Client should be able to query which subscriptions he has
 JDBC persistence
 ----------------
 
+o Tune DB ping, currently:
+  DB2 => select 1 from xbstore
+
+	1          
+	-----------
+	          1
+	          1
+	          1
+	          1
+	          1
+	          1
+  It should only return one row, so add limit 1 change to use another ping statement
+
 o Make queue properties manually editable in DB
 
 o Add XB_ATTR_NUM XB_ATTR_STRING to hold for example
