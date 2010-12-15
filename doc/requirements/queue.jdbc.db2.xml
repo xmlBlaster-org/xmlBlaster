@@ -17,9 +17,9 @@
 
     <example lang="Java" type="HTML">
        <pre>
-db2jcc.jar
-db2jcc_license_cu.jar
-sqlj.zip
+#Add to CLASSPATH 
+# /opt/ibm/db2/V9.7/java/db2jcc.jar
+# /opt/ibm/db2/V9.7/java/db2jcc_license_cu.jar
 
 # DB2 express C 9.7, using com.ibm.db2.jcc.DB2Driver
 # db2stop
@@ -28,7 +28,7 @@ sqlj.zip
 # db2 connect to xmlblast user db2inst1
 # db2 get dbm cfg
 # db2 list applications
-# The Port is typically something like 50001 or 50003
+# The Port is typically something like 50000 or 50003
 JdbcStorage[DB2]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
             url=jdbc:db2://localhost:50001/xmlblast,\
             user=db2inst1,\
