@@ -2,6 +2,8 @@ FEATURES
 --------
 o Integrate Brents flash
 
+o HtPasswd Plugin: HtPasswd should be instance of Manager and not Session (Optimize)
+
 o Integrate XmlRpc v3 from Balázs
 
 o build deploy_war-only
