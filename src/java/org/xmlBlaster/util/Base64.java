@@ -130,8 +130,8 @@ public class Base64 {
     	if (s == null)
     		return new byte[0];
         int i = 0;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream ();
         int len = s.length ();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream (len);
         
         while (true) { 
             while (i < len && s.charAt (i) <= ' ') i++;
