@@ -155,10 +155,12 @@ public class Base64 {
     }
 
    /**
+    * java org.xmlBlaster.util.Base64 -file MyFile.jpg
     * java org.xmlBlaster.util.Base64 HelloWorld
     * java org.xmlBlaster.util.Base64 -decode Q2lBOGEyVjVJRzlwWkQwblNHVnNiRzhuSUdOdmJuUmxiblJOYVcxbFBTZDBaWGgwTDNodGJDY2dZMjl1ZEdWdWRFMXBiV1ZGZUhSbGJtUmxaRDBuTVM0d0p6NEtJQ0E4YjNKbkxuaHRiRUpzWVhOMFpYSStQR1JsYlc4dE16NDhMMlJsYlc4dE16NDhMMjl5Wnk1NGJXeENiR0Z6ZEdWeVBnb2dQQzlyWlhrKw==
+ * @throws XmlBlasterException 
     */
-   public static void main(String[] args) {
+   public static void main(String[] args) throws XmlBlasterException {
       if (args.length == 2) {
          if (args[0].equals("-decode")) {
             String base64 = args[1];
@@ -166,6 +168,13 @@ public class Base64 {
             System.out.println("Decoded to '" + new String(back) + "'");
             return;
          }
+         else if (args[0].equals("-file")) {
+             String fileName = args[1];
+             byte[] bytes = FileLocator.readFile(fileName);
+             String base64 = Base64.encode(bytes);
+             System.out.print(base64);
+             return;
+          }
          /* FileLocator is not known in J2ME:
          if (args[0].equals("-fn")) {
             try {
