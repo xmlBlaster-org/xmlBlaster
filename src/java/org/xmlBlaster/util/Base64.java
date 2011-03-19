@@ -29,6 +29,8 @@ import java.io.*;
  * You can now use also javax.mail.internet.MimeUtility
  * and sun.misc.BASE64Encoder.encode.
  * There is a non-public class in Java 1.4+ called java.util.prefs.Base64
+ * 
+ * CAUTION: Fails on ARM BigEndian like Android Phones, works fine for Intels Little Endian
  */
 public class Base64 {
 
@@ -156,7 +158,8 @@ public class Base64 {
 
    /**
     * java org.xmlBlaster.util.Base64 -file MyFile.jpg
-    * java org.xmlBlaster.util.Base64 HelloWorld
+    * java org.xmlBlaster.util.Base64 HelloWorld -> SGVsbG9Xb3JsZA==
+    * java org.xmlBlaster.util.Base64 -decodeFile MyFile.base64
     * java org.xmlBlaster.util.Base64 -decode Q2lBOGEyVjVJRzlwWkQwblNHVnNiRzhuSUdOdmJuUmxiblJOYVcxbFBTZDBaWGgwTDNodGJDY2dZMjl1ZEdWdWRFMXBiV1ZGZUhSbGJtUmxaRDBuTVM0d0p6NEtJQ0E4YjNKbkxuaHRiRUpzWVhOMFpYSStQR1JsYlc4dE16NDhMMlJsYlc4dE16NDhMMjl5Wnk1NGJXeENiR0Z6ZEdWeVBnb2dQQzlyWlhrKw==
  * @throws XmlBlasterException 
     */
@@ -168,6 +171,15 @@ public class Base64 {
             System.out.println("Decoded to '" + new String(back) + "'");
             return;
          }
+         else if (args[0].equals("-decodeFile")) {
+             String fileName = args[1];
+             byte[] base64 = FileLocator.readFile(fileName);
+             byte[] back = Base64.decode(base64);
+             String fn = fileName+".bin";
+             FileLocator.writeFile(fn, back);
+             System.out.println("Decoded to file '" + fn + "'");
+             return;
+          }
          else if (args[0].equals("-file")) {
              String fileName = args[1];
              byte[] bytes = FileLocator.readFile(fileName);
@@ -194,6 +206,11 @@ public class Base64 {
          String base64 = Base64.encode(hello.getBytes());
          byte[] back = Base64.decode(base64);
          System.out.println("Before Base64 '" + hello + "' base64='" + (new String(base64)) + "' after '" + new String(back) + "'");
+      }
+      {
+    	  //javax.mail.internet.MimeUtility.decode(arg0, arg1)
+    	  //sun.misc.BASE64Encoder.encode.
+    	  //java.util.prefs.Base64
       }
    }
 }
