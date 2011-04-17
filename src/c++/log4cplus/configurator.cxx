@@ -84,7 +84,7 @@
 // Changed to support the rename of Category to Logger and Priority to
 // LogLevel.
 //
-
+#include <iterator> // necessary compiling with VC10 for back_inserter()
 #include <log4cplus/configurator.h>
 #include <log4cplus/hierarchylocker.h>
 #include <log4cplus/helpers/loglog.h>
