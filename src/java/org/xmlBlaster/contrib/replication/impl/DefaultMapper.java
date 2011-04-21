@@ -112,7 +112,7 @@ public class DefaultMapper implements I_Mapper {
       if (excludeColumns.containsKey(buf.toString())) {
          if (log.isLoggable(Level.FINE))
             log.fine("Excluding Column " + buf.toString());
-         return null;
+         return COLUMN_TO_IGNORE + column;
       }
 
       // catalog.schema.table.column
