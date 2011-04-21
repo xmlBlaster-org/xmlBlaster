@@ -85,6 +85,7 @@ public class SqlDescription {
    private boolean schemaKnown;
    private String schema; // since this is contained in the col info
    private String charSet = null;
+   private boolean allowDoubleInserts;
    
    /** this is only needed for tables which do not have any PK and on updates */
    private I_Parser parser;
@@ -169,6 +170,9 @@ public class SqlDescription {
       this.attributeKeys = new ArrayList();
       this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
       this.quoteColumnNames = info.getBoolean(DbWriter.QUOTE_COLUMN_NAMES_KEY, false);
+      // default is to ignore primary key constraints on inserts (tollerant behaviour)
+      allowDoubleInserts = info.getBoolean("replication.description.allowDoubleInserts", true);
+
       this.charSet = info.get("charSet", null);
       this.info = info;
       try {
@@ -290,25 +294,27 @@ public class SqlDescription {
       buf.append(" WHERE ");
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
-         ClientProperty colContent = row.getColumn(colNames[i]);
-         SqlColumn sqlCol = getColumn(colNames[i]);
-         if (sqlCol == null) {
-            log.info("column '" + colNames[i] + "' not found, will ignore it");
-            continue;
-         }
-         // if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
-         boolean isNull = colContent.getType() != null && Constants.TYPE_NULL.equals(colContent.getType());
-         if (canAddColToSearch(sqlCol)) {
-            if (firstHit)
-               firstHit = false;
-            else
-               buf.append("AND ");
-            if (isNull) {
-               buf.append(colNames[i]).append(" is NULL ");
+         if (!colNames[i].startsWith(I_Mapper.COLUMN_TO_IGNORE)) {
+            ClientProperty colContent = row.getColumn(colNames[i]);
+            SqlColumn sqlCol = getColumn(colNames[i]);
+            if (sqlCol == null) {
+               log.info("column '" + colNames[i] + "' not found, will ignore it");
+               continue;
             }
-            else {
-               searchEntries.add(colContent);
-               buf.append(colNames[i]).append("=? ");
+            // if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
+            boolean isNull = colContent.getType() != null && Constants.TYPE_NULL.equals(colContent.getType());
+            if (canAddColToSearch(sqlCol)) {
+               if (firstHit)
+                  firstHit = false;
+               else
+                  buf.append("AND ");
+               if (isNull) {
+                  buf.append(colNames[i]).append(" is NULL ");
+               }
+               else {
+                  searchEntries.add(colContent);
+                  buf.append(colNames[i]).append("=? ");
+               }
             }
          }
       }
@@ -378,7 +384,8 @@ public class SqlDescription {
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
          ClientProperty colContent = row.getColumn(colNames[i]);
-         if (true) { // we need all entries
+         if (!colNames[i].startsWith(I_Mapper.COLUMN_TO_IGNORE)) {
+         // if (true) { // we need all entries
             searchEntries.add(colContent);
             if (firstHit)
                firstHit = false;
@@ -427,6 +434,8 @@ public class SqlDescription {
    
    private final void insertIntoStatement(PreparedStatement st, int pos, ClientProperty prop) throws SQLException, IOException, ParseException  {
       String colName = prop.getName();
+      if (colName.startsWith(I_Mapper.COLUMN_TO_IGNORE))
+         return;
       SqlColumn col = getColumn(colName);
       int sqlType = col.getSqlType();
 
@@ -856,7 +865,7 @@ public class SqlDescription {
       }
       catch (SQLException ex) {
          // unique constraint for Oracle: TODO implement also for other DB
-         if (ex.getMessage().indexOf("ORA-00001") > -1) {
+         if (allowDoubleInserts && ex.getMessage().indexOf("ORA-00001") > -1) {
             log.warning("Entry '" + row.toXml("", true, false, true) + "' exists already. Will ignore it and continue");
             return 0;
          }
