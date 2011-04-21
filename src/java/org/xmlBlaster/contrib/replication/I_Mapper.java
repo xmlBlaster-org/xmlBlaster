@@ -10,6 +10,8 @@ import org.xmlBlaster.contrib.I_ContribPlugin;
 
 public interface I_Mapper extends I_ContribPlugin {
 
+   static String COLUMN_TO_IGNORE = "__COLUMN_TO_IGNORE__";
+   
    /**
     * Returns the mapped catalog or null.
     * 
