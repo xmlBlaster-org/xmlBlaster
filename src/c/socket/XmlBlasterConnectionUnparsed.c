@@ -392,17 +392,18 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
               dispatch/connection/useSelect=1
               dispatch/connection/plugin/socket/connectTimeout=3
               Johannes Ahlert:
-                  beides ist so laufzeitabhängig, find ich noch besser
-                  default für useSelect ist 0
+                  beides ist so laufzeitabhï¿½ngig, find ich noch besser
+                  default fï¿½r useSelect ist 0
 			*/
 			int useSelect = 0;
 			useSelect = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/useSelect", useSelect);
 
 			if ( useSelect ) 
 			{
-				/* Die Variante mit select erfordert, daß der Socket nicht-blockierend
+#if defined(_WINDOWS)
+			   /* Die Variante mit select erfordert, dass der Socket nicht-blockierend
 				   gemacht wird. Dies kann (und wird in diesem Beispiel) nach dem Verbinden
-				   wieder rückgängig gemacht, sodaß man wie gewohnt mit dem Socket arbeiten kann.
+				   wieder rueckgaengig gemacht, sodass man wie gewohnt mit dem Socket arbeiten kann.
 				*/
 				int            ret; 
 				fd_set         fds;
@@ -418,10 +419,10 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 				if ( connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr)) == SOCKET_ERROR )
 				{
 					/*
-					   Das schlägt normalerweise fehl, wobei der Fehler WSAEWOULDBLOCK
-					   darauf hinweist, daß der Verbindungsaufbau durchaus noch Erfolgreich
+					   Das schlaegt normalerweise fehl, wobei der Fehler WSAEWOULDBLOCK
+					   darauf hinweist, dass der Verbindungsaufbau durchaus noch Erfolgreich
 					   sein kann, und der Aufruf nur fehlgeschlagen ist, weil er andernfalls
-					   blockieren würde, was ja absichtlich deaktiviert wurde.
+					   blockieren wuerde, was ja absichtlich deaktiviert wurde.
 					*/
 					if ( WSAGetLastError() != WSAEWOULDBLOCK ) 
 					{
@@ -430,17 +431,17 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 					}
 				}
 
-				/* Deskriptor-Set zurücksetzen und mit dem zu verbindenden Socket belegen */
+				/* Deskriptor-Set zuruecksetzen und mit dem zu verbindenden Socket belegen */
 				FD_ZERO( &fds );
 				FD_SET( xb->socketToXmlBlaster, &fds );
 
-				/* Den gewählte timeout-Wert einsetzen */
+				/* Den gewaehlte timeout-Wert einsetzen */
 				connectTimeout  = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/connectTimeout", connectTimeout);
 				timeout.tv_sec  = connectTimeout;
 				timeout.tv_usec = 0;
 
 				/* Nun select aufrufen; dieses kehrt entweder nach Ablauf des Timeouts
-				   zurück, oder wenn der Socket zum Schreiben bereit ist, was genau dann
+				   zurueck, oder wenn der Socket zum Schreiben bereit ist, was genau dann
 				  passiert, wenn er erfolgreich verbunden wurde.
 				*/
 				ret = select( xb->socketToXmlBlaster + 1, 0, &fds, 0, &timeout );
@@ -450,7 +451,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 					return false;
 				}
 
-				/* Falls select zurückgekehrt ist, aber der zu verbindende Socket nicht
+				/* Falls select zurueckgekehrt ist, aber der zu verbindende Socket nicht
 				   im Deskriptor-Set vorhanden ist, war das Verbinden in der gegebenen
 				   Zeit nicht erfolgreich.
 				*/
@@ -465,9 +466,14 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 				*/
 				opt = 0;
 				ioctlsocket( xb->socketToXmlBlaster, FIONBIO, &opt );
+#else
+				printf("dispatch/connection/plugin/socket/useSelect is not supported on Linux, exit! (For Linux porting you could use fcntl)");
+				exit(1);
+#endif
 			}
-			else
+			else {
 				ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
+			}
 		}
 #endif
       if(ret != -1) {
