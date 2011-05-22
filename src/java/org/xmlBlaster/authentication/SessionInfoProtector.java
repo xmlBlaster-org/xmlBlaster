@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.Map;
+
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -185,6 +187,11 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.unSubscribe(url, qos);
    }
 
+   public Map<String, Object> getUserObjectMap() {
+	   return this.sessionInfo.getUserObjectMap();
+   }
+
+
    public final String[] getSubscriptions() throws Exception {
       try {
          return this.sessionInfo.getSubscriptions();
@@ -193,6 +200,15 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
          throw new Exception(e.toString());
       }
    }
+
+   public final String[] getRootSubscriptions() throws Exception {
+	      try {
+	         return this.sessionInfo.getRootSubscriptions();
+	      }
+	      catch (XmlBlasterException e) {
+	         throw new Exception(e.toString());
+	      }
+	   }
 
    public final String getSubscriptionDump() throws XmlBlasterException {
       return this.sessionInfo.getSubscriptionDump();

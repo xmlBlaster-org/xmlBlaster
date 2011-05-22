@@ -6,6 +6,8 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import java.util.Map;
+
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -184,10 +186,17 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @return An array with subscriptionId
     */
    public String[] getSubscriptions() throws Exception;
+   /**
+    * If XPATH, the parent XPATH is returned and not all its children
+    * @return
+    * @throws Exception
+    */
+   public String[] getRootSubscriptions() throws Exception;
    /** An XML dump of all subscriptions of this login session */
    public String getSubscriptionDump() throws XmlBlasterException;
    /** Invoke operation to destroy the session (force logout) */
    public String killSession() throws XmlBlasterException;
+   public Map<String, Object> getUserObjectMap();
    /**
     * Activates/inhibits the dispatch of messages to this session.
     * This is a very helpful operation as you can temporary stop sending

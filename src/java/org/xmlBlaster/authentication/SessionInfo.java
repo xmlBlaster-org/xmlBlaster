@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1030,6 +1032,22 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       return arr;
    }
+
+   public final String[] getRootSubscriptions() throws XmlBlasterException {
+	      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+	      Set<String> set = new TreeSet<String>();//String[subs.length];
+	      for (int i=0; i<subs.length; i++) {
+	    	  String parentSub = subs[i].getParentSubscription(); 
+	    	  if (parentSub != null && parentSub.length() > 0) {
+	    		  set.add(parentSub); // __subId:marcelruff-XPATH1306100581978000000
+	    	  }
+	    	  else {
+	 	         set.add(subs[i].getSubscriptionId()); // __subId:marcelruff-1306100581987000000
+	    	  }
+	      }
+	      String[] arr = set.toArray(new String[set.size()]);
+	      return arr;
+	   }
 
    public final String getSubscriptionDump() throws XmlBlasterException {
       SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
