@@ -25,6 +25,9 @@
 package org.xmlBlaster.contrib.dbwatcher.convert;
 import java.io.*;
 
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.XmlBlasterException;
+
 /**
  * Converter to and from base 64. 
  * @author Stefan Haustein
@@ -151,6 +154,69 @@ public class Base64 {
             i += 4;
         }
         return bos.toByteArray ();
+    }
+    
+    /**
+     * java org.xmlBlaster.contrib.dbwatcher.convert.Base64 -file MyFile.jpg
+     * java org.xmlBlaster.contrib.dbwatcher.convert.Base64 HelloWorld -> SGVsbG9Xb3JsZA==
+     * java org.xmlBlaster.contrib.dbwatcher.convert.Base64 -decode Q2lBOGEyVjVJRzlwWkQwblNHVnNiRzhuSUdOdmJuUmxiblJOYVcxbFBTZDBaWGgwTDNodGJDY2dZMjl1ZEdWdWRFMXBiV1ZGZUhSbGJtUmxaRDBuTVM0d0p6NEtJQ0E4YjNKbkxuaHRiRUpzWVhOMFpYSStQR1JsYlc4dE16NDhMMlJsYlc4dE16NDhMMjl5Wnk1NGJXeENiR0Z6ZEdWeVBnb2dQQzlyWlhrKw==
+  * @throws XmlBlasterException 
+     */
+    public static void main(String[] args) throws Exception {
+       if (args.length == 2) {
+          if (args[0].equals("-decode")) {
+             String base64 = args[1];
+             byte[] back = Base64.decode(base64);
+             System.out.println("Decoded to '" + new String(back) + "'");
+             return;
+          }
+          else if (args[0].equals("-file")) {
+              String fileName = args[1];
+              byte[] bytes = FileLocator.readFile(fileName);
+              String base64 = Base64.encode(bytes);
+              System.out.print(base64);
+              return;
+           }
+          else if (args[0].equals("-compatTestBin")) {
+              String fileName = args[1];
+              byte[] bytes = FileLocator.readFile(fileName);
+              {
+	              // 1. encode with Apache, decode with xmlBlaster
+	              byte[] base64A_ = org.apache.commons.codec.binary.Base64.encodeBase64(bytes);
+	              String base64A = new String(base64A_, "UTF-8");
+	              byte[] back = Base64.decode(base64A);
+	              assertSame(bytes, back);
+              }
+              {
+	              // 2. encode with xmlBlaster, decode with Apache
+	              String base64X_ = Base64.encode(bytes);
+	              byte[] back = org.apache.commons.codec.binary.Base64.decodeBase64(base64X_.getBytes("UTF-8"));
+	              assertSame(bytes, back);
+              }
+              return;
+           }
+       }
+       {
+          String hello = args.length > 0 ? args[0] : "Hello World";
+          String base64 = Base64.encode(hello.getBytes());
+          byte[] back = Base64.decode(base64);
+          System.out.println("Before Base64 '" + hello + "' base64='" + (new String(base64)) + "' after '" + new String(back) + "'");
+       }
+    }
+    
+    private static void assertSame(byte[] a, byte[] b) {
+    	if (a == null && b == null)
+    		return;
+    	if (a == null || b == null)
+    		throw new IllegalArgumentException("on is null");
+    	if (a.length != b.length)
+    		throw new IllegalArgumentException("wrong length");
+    	for (int i=0; i<a.length; i++) {
+			if (a[i] != b[i])
+	    		throw new IllegalArgumentException("different");
+		}
+    	
+    	
     }
 }
 
