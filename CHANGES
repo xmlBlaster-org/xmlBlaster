@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17944 DropIfNotDeliverableUniqueOnly and DropIfNotDeliverable plugin
+          Fixed to work with XPATH properly
+
+ o r17942 JMX added method getRootSubscriptions to get the XPATH handle
+
  o r17940 C client for Windows: Reconnect polling faster
 
  o r17924 Added DB2 v9.7 DDL statements and support (not well tested)
