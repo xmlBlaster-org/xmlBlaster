@@ -196,13 +196,30 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       try {
-         I_AdminSession receiver = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(dispatchManager.getSessionName()).getSessionByPubSessionId(dispatchManager.getSessionName().getPublicSessionId());
-         String[] subIds = receiver.getSubscriptions();
-         if (log.isLoggable(Level.FINE))
-            log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
-         for (int i=0; i<subIds.length; i++) {
-            receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subIds[i], null);
-         }
+          I_AdminSession receiver = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(dispatchManager.getSessionName()).getSessionByPubSessionId(dispatchManager.getSessionName().getPublicSessionId());
+          String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();
+          if (log.isLoggable(Level.FINE))
+             log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
+          for (int i=0; i<subIds.length; i++) {
+         	 String subId = subIds[i];
+         	// __subId:marcelruff-XPATH1306100581978000000 (and its childs like __subId:marcelruff-XPATH1306100866146000000:1306100866148000000')
+             // __subId:marcelruff-1306100582129000000
+         	 if (subId.startsWith("__subId")) {
+                  receiver.unSubscribe(subId, null);
+         	 }
+         	 else {
+         		// SUBSCRIPTIONID_URL_PREFIX=subscriptionId is optional, it is stripped internally
+                 receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subId, null);
+         	 }
+          }
+//
+//          I_AdminSession receiver = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(dispatchManager.getSessionName()).getSessionByPubSessionId(dispatchManager.getSessionName().getPublicSessionId());
+//         String[] subIds = receiver.getSubscriptions();
+//         if (log.isLoggable(Level.FINE))
+//            log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
+//         for (int i=0; i<subIds.length; i++) {
+//            receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subIds[i], null);
+//         }
       } catch (Throwable e) {
          e.printStackTrace();
       }

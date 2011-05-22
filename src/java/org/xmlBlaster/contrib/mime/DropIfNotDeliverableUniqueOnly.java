@@ -28,14 +28,14 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * <p>
- * Sometimes we need to support this subcribe pattern:
+ * Sometimes we need to support this subscribe pattern:
  * A client only wants the newest message with this details:
  * <pre>
  * - Initial connect and subscribe: send current newest (or given history depth)
  * - If it is online it is a normal subscription
  * - If it is offline don't add messages to callback queue
  * - If it comes online again check if current message was delivered,
- *   if not send it initially
+ *   if not send it initially (if redeliverNewestOnReconnect==false which is default; else on reconnect the newest is always send. Note: You can't use both variants simultaneously as it operates on the session Map)
  * </pre>
  * <p>
  * If a client callback goes to polling, this plugin removes all existing subscriptions.
@@ -111,6 +111,7 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    private PluginInfo pluginInfo;
    public static final String MIME_TYPES = "dropper.types";
    private String uniqueGroupIdKeyName = "_uniqueGroupId";
+   private boolean redeliverNewestOnReconnect;
 
    /**
     * This is called after instantiation of the plugin 
@@ -131,7 +132,8 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
       this.mimeTypes = StringPairTokenizer.parseLine(someMimeTypes, ';');
       // the client property key defaults to "_uniqueGroupId"
       this.uniqueGroupIdKeyName = prop.getProperty("uniqueGroupIdKeyName", this.uniqueGroupIdKeyName);
-      log.info("Plugin " + getType() + " " + getVersion() + " loaded for mimeTypes '" + someMimeTypes + "' uniqueGroupIdKeyName=" + this.uniqueGroupIdKeyName);
+      this.redeliverNewestOnReconnect = Boolean.valueOf(prop.getProperty("redeliverNewestOnReconnect", ""+this.redeliverNewestOnReconnect));
+      log.info("Plugin " + getType() + " " + getVersion() + " loaded for mimeTypes '" + someMimeTypes + "' uniqueGroupIdKeyName=" + this.uniqueGroupIdKeyName + " redeliverNewestOnReconnect=" + this.redeliverNewestOnReconnect);
    }
 
    /**
@@ -276,11 +278,23 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       try {
          I_AdminSession receiver = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(dispatchManager.getSessionName()).getSessionByPubSessionId(dispatchManager.getSessionName().getPublicSessionId());
-         String[] subIds = receiver.getSubscriptions();
+         String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();
          if (log.isLoggable(Level.FINE))
             log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
          for (int i=0; i<subIds.length; i++) {
-            receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subIds[i], null);
+        	 String subId = subIds[i];
+        	// __subId:marcelruff-XPATH1306100581978000000 (and its childs like __subId:marcelruff-XPATH1306100866146000000:1306100866148000000')
+            // __subId:marcelruff-1306100582129000000
+        	 if (subId.startsWith("__subId")) {
+                 receiver.unSubscribe(subId, null);
+        	 }
+        	 else {
+        		// SUBSCRIPTIONID_URL_PREFIX=subscriptionId is optional, it is stripped internally
+                receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subId, null);
+        	 }
+         }
+         if (this.redeliverNewestOnReconnect) {
+        	 receiver.getUserObjectMap().clear();
          }
       } catch (Throwable e) {
          e.printStackTrace();
