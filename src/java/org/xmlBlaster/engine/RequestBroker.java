@@ -722,20 +722,21 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          SubscriptionInfo.verifySubscriptionId(sessionInfo.getConnectQos().isClusterNode(), sessionInfo.getSessionName(), xmlKey, subscribeQos);
 
          if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
+
          String returnOid = "";
 
          if (subscribeQos.getMultiSubscribe() == false) {
-            Vector vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey);
+            ArrayList<SubscriptionInfo> vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey);
             if (vec != null && vec.size() > 0) {
                for (int i=0; i<vec.size(); i++) {
-                  SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(i);
+                  SubscriptionInfo sub = vec.get(i);
                   sub.update(subscribeQos);
                }
                log.info("Ignoring duplicate subscription '" +
                        ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
                         "' as you have set multiSubscribe to false");
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
-               SubscriptionInfo i = (SubscriptionInfo)vec.elementAt(0);
+               SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
                return qos.toXml();
@@ -1330,7 +1331,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                log.warning("unSubscribe not forwarded to cluster as ClusterManager is not ready");
          }
 
-         Set subscriptionIdSet = new HashSet();
+         Set<String> subscriptionIdSet = new HashSet<String>();
 
          String id = xmlKey.getOid();
 
@@ -1385,6 +1386,26 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                }
             }
 
+            // Added 2011-05-25 marcel: Now XPath parent is properly removed
+            // Caution: Client will receive UnSubscribeReturn vec with on more entry
+            if (xmlKey.isQuery()) {
+//            	SubscriptionInfo[] arr = clientSubscriptions.getSubscriptions(sessionInfo);
+//            	for (int i=0; i<arr.length; i++) {
+//            		SubscriptionInfo si = arr[i];
+//            		log.info(si.toXml());
+//            		log.info("");
+//            	}
+            	ArrayList<SubscriptionInfo> vec = clientSubscriptions.getSubscription(sessionInfo, xmlKey);
+            	if (vec != null) {
+	            	for (int i=0; i<vec.size(); i++) {
+	            		SubscriptionInfo si = vec.get(i);
+	            		log.info("Removing " + si.toString());
+                        fireUnSubscribeEvent(si); 	//clientSubscriptions.subscriptionRemove(new SubscriptionEvent(si));
+                        subscriptionIdSet.add(si.getSubscriptionId());
+	            	}
+            	}
+            }
+
             if (oids.length < 1) {
                log.warning("Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
                throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
@@ -1395,10 +1416,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          String[] oidArr = new String[subscriptionIdSet.size()];
          StatusQosData qos = new StatusQosData(glob, MethodName.UNSUBSCRIBE);
          qos.setState(Constants.STATE_OK);
-         Iterator it = subscriptionIdSet.iterator();
+         Iterator<String> it = subscriptionIdSet.iterator();
          int ii = 0;
          while (it.hasNext()) {
-            qos.setSubscriptionId((String)it.next());
+            qos.setSubscriptionId(it.next());
             oidArr[ii++] = qos.toXml();
          }
          return oidArr;

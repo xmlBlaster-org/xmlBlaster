@@ -522,12 +522,18 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".subscriptionRemove: invoked when plugin already shut down");
 
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
+      if (subscriptionInfo.getPersistenceId() < 1L) {
+          return;
+      }
       KeyData keyData = subscriptionInfo.getKeyData();
       if (!(keyData instanceof QueryKeyData)) {
-         if (log.isLoggable(Level.FINE)) log.fine("subscriptionRemove keyData wrong instance'");
-         return;
-      }
-      if (subscriptionInfo.getPersistenceId() < 1L) {
+    	 // Can happen for XPath children: Here the keyData is from TopicHandler and a MsgKeyData
+    	 if (subscriptionInfo.isCreatedByQuerySubscription()) {
+    		 if (log.isLoggable(Level.FINE)) log.fine("subscriptionRemove keyData wrong instance: " + keyData.toXml());
+    	 }
+    	 else {
+    		 log.severe("subscriptionRemove keyData wrong instance: " + keyData.toXml());
+    	 }
          return;
       }
       // TODO add a method I_Queue.removeRandom(long uniqueId)

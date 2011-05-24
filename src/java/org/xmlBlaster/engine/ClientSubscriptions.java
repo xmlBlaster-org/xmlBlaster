@@ -226,7 +226,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     *         is > 1 if this session has subscribed multiple times on the
     *         same message, or null if this session has not subscribed it
     */
-   public Vector getSubscription(SessionInfo sessionInfo, QueryKeyData queryKey) throws XmlBlasterException {
+   public ArrayList<SubscriptionInfo> getSubscription(SessionInfo sessionInfo, QueryKeyData queryKey) throws XmlBlasterException {
       if (queryKey == null || sessionInfo==null) return null;
       Object obj;
       Map subMap;
@@ -241,14 +241,19 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
 
       // Slow linear search of all subscribes of a session
       // Don't use for performance critical tasks
-      Vector vec = null;
+      ArrayList<SubscriptionInfo> vec = null;
       synchronized (subMap) {
          Iterator iterator = subMap.values().iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+//            if (queryKey.isXPath()) {
+//            	log.info("getQueryString="+queryKey.getQueryString() + " <-> " + sub.getKeyData().getQueryString());
+//            	log.info("");
+//            	
+//            }
             if (queryKey.equals(sub.getKeyData())) {
-               if (vec == null) vec = new Vector();
-               vec.addElement(sub);
+               if (vec == null) vec = new ArrayList<SubscriptionInfo>();
+               vec.add(sub);
             }
          }
       }
@@ -574,31 +579,34 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     * @param subscriptionInfoUniqueKey ==null: Remove client with all its subscriptions<br>
     *                                  !=null: Remove only the given subscription
     */
-   private void removeFromQuerySubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
+   private int removeFromQuerySubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINE)) log.fine("removing client " + sessionInfo.toString() + " subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
       String uniqueKey = sessionInfo.getSessionName().getRelativeName();
 
-      Vector vec = new Vector(querySubscribeRequestsSet.size());
+      ArrayList<SubscriptionInfo> vec = new ArrayList<SubscriptionInfo>(querySubscribeRequestsSet.size());
 
       // Slow linear search!!!!
       synchronized(querySubscribeRequestsSet) {
          Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (sub.getSessionInfo().getSessionName().getRelativeName().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
-                subscriptionInfoUniqueKey == sub.getSubscriptionId()) {
-               vec.addElement(sub);
-               sub.shutdown();
+            if (sub.getSessionInfo().getSessionName().getRelativeName().equals(uniqueKey)) {
+            	if (subscriptionInfoUniqueKey == null || subscriptionInfoUniqueKey.equals(sub.getSubscriptionId())) {
+            		vec.add(sub);
+            		sub.shutdown();
+            	}
             }
          }
          for (int ii=0; ii<vec.size(); ii++) {
-            if (log.isLoggable(Level.FINE)) log.fine("Removing subscription " + ((SubscriptionInfo)vec.elementAt(ii)).getSubscriptionId() + " from querySubscribeRequestsSet");
-            querySubscribeRequestsSet.remove(vec.elementAt(ii));
+        	SubscriptionInfo si = vec.get(ii);
+            boolean found = querySubscribeRequestsSet.remove(si);
+            if (log.isLoggable(Level.FINE)) log.fine("Removed " + found + " subscription " + ((SubscriptionInfo)vec.get(ii)).getSubscriptionId() + " from querySubscribeRequestsSet");
          }
       }
-
+      int count = vec.size();
       vec = null;
+      return count;
    }
 
 

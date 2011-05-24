@@ -142,6 +142,10 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
 
       if (log.isLoggable(Level.FINE)) log.fine("Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getSessionName().getRelativeName() + "' for topic '" + this.keyData.getOid() + "'");
    }
+   
+   public String toString() {
+	   return "SubscriptionInfo: " + ME;
+   }
 
    /**
     * If same client subscribes multiple times on same topic but wants
