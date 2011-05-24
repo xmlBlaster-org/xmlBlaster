@@ -474,7 +474,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		}
 		
 		requestHolder.returnQos = (String) headers.get(XB_SERVER_HEADER_QOS);
-		log.info(ME + " " + requestHolder.toString() + " ACK release and notify ...");
+		if (log.isLoggable(Level.FINE)) log.fine(ME + " " + requestHolder.toString() + " ACK release and notify ...");
 		
 		removeFrameForMessageId(messageId);
 		notifyFrameAck(requestHolder);
@@ -715,9 +715,9 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 			byte[] content = msgUnitRaw.getContent();
 			frame.getHeaders().put(Stomp.Headers.CONTENT_LENGTH, content.length);
 			frame.setContent(content);
-			log.info(ME + " UPDATE Sending now ... " + msgUnitRaw.getKey().trim());
+			if (log.isLoggable(Level.FINER)) log.finer(ME + " UPDATE Sending now ... " + msgUnitRaw.getKey().trim());
 			ret[i] = sendFrameAndWait(frame, MethodName.UPDATE);
-			log.info(ME + " UPDATE Done " + msgUnitRaw.getKey().trim() + ": " + ret[i]);
+			if (log.isLoggable(Level.FINER)) log.finer(ME + " UPDATE Done " + msgUnitRaw.getKey().trim() + ": " + ret[i]);
 			i++;
 		}
 		return ret;
