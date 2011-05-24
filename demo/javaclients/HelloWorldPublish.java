@@ -23,8 +23,10 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -58,7 +60,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  * java javaclients.HelloWorldPublish -interactive false -sleep 1000 -numPublish 10 -oid Hello -persistent true -erase true
  *
  *Publish automatically 10 different topics with different DOM entries:
- * java javaclients.HelloWorldPublish -interactive false -numPublish 10 -oid Hello-%counter -clientTags "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>"
+ * java javaclients.HelloWorldPublish -interactive false -numPublish 10 -oid Hello-${counter} -clientTags "<org.xmlBlaster><demo-${counter}/></org.xmlBlaster>"
  *
  *Login as joe/5 and send one persistent message:
  * java javaclients.HelloWorldPublish -session.name joe/5 -passwd secret -persistent true -dump[HelloWorldPublish] true
@@ -79,8 +81,8 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  * If erase=false the message is not erase at the end, if disconnect=false we don't logout at the end.
  * </p>
  * <p>
- * You can add '%counter' to the clientTags or the content string, each occurrence will be replaced
- * by the current message number.
+ * You can add '${counter}' or '${timestamp}' to the clientTags or the content string, each occurrence will be replaced
+ * by the current message number and current UTC timestamp.
  * </p>
  * @see javaclients.HelloWorldSubscribe
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
@@ -89,21 +91,24 @@ public class HelloWorldPublish
 {
    private final Global glob;
    private static Logger log = Logger.getLogger(HelloWorldPublish.class.getName());
+   private boolean replacePlaceHolders = true;
 
    public HelloWorldPublish(Global glob) {
       this.glob = glob;
 
       try {
+         replacePlaceHolders = glob.getProperty().get("replacePlaceHolders", replacePlaceHolders);
          boolean interactive = glob.getProperty().get("interactive", true);
          boolean oneway = glob.getProperty().get("oneway", false);
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 2000);
-         String oid = glob.getProperty().get("oid", "Hello");  // "HelloTopic_#%counter"
+         String oid = glob.getProperty().get("oid", "Hello");  // "HelloTopic_#${counter}"
          String domain = glob.getProperty().get("domain", (String)null);
          String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo/></org.xmlBlaster>");
-         //String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
-         String contentStr = glob.getProperty().get("content", "Hi-%counter");
+         //String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-${counter}/></org.xmlBlaster>");
+         String contentStr = glob.getProperty().get("content", "Hi-${counter}-${timestamp}");
          String contentFile = glob.getProperty().get("contentFile", (String)null);
+         String contentFileLines = glob.getProperty().get("contentFileLines", (String)null); // send line by line from given file
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
          long lifeTime = glob.getProperty().get("lifeTime", -1L);
@@ -158,6 +163,7 @@ public class HelloWorldPublish
             log.info("   -content        " + contentStr);
             log.info("   -contentSize    " + contentStr.length());
             log.info("   -contentFile    " + contentFile);
+            log.info("   -contentFileLines" + contentFileLines);
          }
          log.info("   -priority       " + priority.toString());
          log.info("   -persistent     " + persistent);
@@ -314,6 +320,13 @@ public class HelloWorldPublish
          });  // Login to xmlBlaster, register for updates
          log.info("Connect success as " + crq.toXml());
 
+         String[] lines = null;
+         if (contentFileLines != null && contentFileLines.length() > 0) {
+             String fileContent = FileLocator.readAsciiFile(contentFileLines);
+     		 lines = StringPairTokenizer.parseLine(fileContent, '\n');
+     		 log.info("Sending file " + contentFileLines + " " + lines.length + " lines, line by line");
+          }
+
          org.xmlBlaster.util.StopWatch stopWatch = new org.xmlBlaster.util.StopWatch();
          for(int i=0; true; i++) {
             if (numPublish != -1)
@@ -331,7 +344,8 @@ public class HelloWorldPublish
                currCounter += (i+1);
             }
 
-            String currOid = org.xmlBlaster.util.ReplaceVariable.replaceAll(oid, "%counter", currCounter);
+            String ts = IsoDateParser.getCurrentUTCTimestampT();
+            String currOid = replacePlaceHolders(oid, currCounter, ts);
 
             if (interactive) {
                char ret = (char)Global.waitOnKeyboardHit("Hit 'b' to break, hit other key to publish '" + currOid + "' #" + currCounter + "/" + numPublish);
@@ -347,7 +361,7 @@ public class HelloWorldPublish
 
             PublishKey pk = new PublishKey(glob, currOid, contentMime, contentMimeExtended);
             if (domain != null) pk.setDomain(domain);
-            pk.setClientTags(org.xmlBlaster.util.ReplaceVariable.replaceAll(clientTags, "%counter", currCounter));
+            pk.setClientTags(replacePlaceHolders(clientTags, currCounter, ts));
             PublishQos pq = new PublishQos(glob);
             pq.setPriority(priority);
             pq.setPersistent(persistent);
@@ -401,8 +415,19 @@ public class HelloWorldPublish
             else if (contentFile != null && contentFile.length() > 0) {
                content = FileLocator.readFile(contentFile);
             }
+            else if (lines != null) {
+            	if (i < lines.length) {
+            		String line = replacePlaceHolders(lines[i], currCounter, ts);
+            		log.info("Sending line #" + (i+1) + ": " + line);
+            		content = replacePlaceHolders(lines[i], currCounter, ts).getBytes();
+            	}
+            	else {
+            		log.info("File " + contentFileLines + " is read and send completely");
+            		break;
+            	}
+            }
             else {
-               content = org.xmlBlaster.util.ReplaceVariable.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
+               content = replacePlaceHolders(contentStr, currCounter, ts).getBytes();
             }
 
             if (log.isLoggable(Level.FINEST)) log.finest("Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.toXml());
@@ -476,6 +501,23 @@ public class HelloWorldPublish
          e.printStackTrace();
          log.severe(e.toString());
       }
+   }
+
+   public String replacePlaceHolders(String value, String currCounter, String timestamp) {
+	   if (value == null || !this.replacePlaceHolders)
+		   return value;
+	   if (value.indexOf("%") != -1) {
+		   value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "%counter", currCounter); // deprecated
+		   value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "%date", timestamp.substring(0, 10));
+		   value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "%timestamp", timestamp);
+	   }
+	   
+	   if (value.indexOf("${") != -1) {
+		   value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "${timestamp}", timestamp);
+		   value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "${date}", timestamp.substring(0, 10));
+	       value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "${counter}", currCounter);
+	   }
+       return value;
    }
 
    /**
