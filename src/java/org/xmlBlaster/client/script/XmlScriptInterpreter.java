@@ -33,6 +33,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -115,6 +116,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    private boolean replaceQosTokens;
    private boolean replaceKeyTokens;
    private boolean replaceContentTokens;
+   private boolean replaceFileContentTokens;
    /** Replace tokens in wait or echo markup */
    private boolean replaceTokens;
 
@@ -355,6 +357,11 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          this.replaceContentTokens = true;
          return;
       }
+
+      if ("replaceFileContentTokens".equals(qName)) {
+          this.replaceFileContentTokens = true;
+          return;
+       }
 
       if (CONTENT_TAG.equals(qName)) {
          this.inContent++;
@@ -631,6 +638,29 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       }
       else {
     	  currentContent = (this.contentData == null) ? new byte[0] : this.contentData.getBlobValue();
+      }
+      
+      if (this.replaceFileContentTokens) {
+		try {
+		  String currentContentStr = new String(currentContent, "UTF-8");
+    	  ReplaceVariable rv = new ReplaceVariable();
+    	  currentContentStr = rv.replace(currentContentStr, new I_ReplaceVariable() {
+			@Override
+			public String get(String key) {
+				try {
+					String value = glob.get(key, key, null, null);
+					return value;
+				} catch (XmlBlasterException e) {
+					e.printStackTrace();
+					return key;
+				}
+				//return System.getProperty(key);
+			}
+		  });
+    	  currentContent = currentContentStr.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
       }
 
       MsgUnit msgUnit = new MsgUnit(this.key.toString(),
