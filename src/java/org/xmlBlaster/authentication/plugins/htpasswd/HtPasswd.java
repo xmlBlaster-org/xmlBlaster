@@ -123,6 +123,14 @@ public class HtPasswd {
 							return true;
 					}
 				}
+				else if (token.startsWith("endsWith:")) {
+					int len = "endsWith:".length();
+					if (len < token.length()-1) {
+						String oid = token.substring(len);
+						if (topicOid.endsWith(oid))
+							return true;
+					}
+				}
 			}
          }
          return allowed;
