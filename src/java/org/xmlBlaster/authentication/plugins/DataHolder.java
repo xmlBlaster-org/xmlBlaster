@@ -1,7 +1,9 @@
 package org.xmlBlaster.authentication.plugins;
 
+
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
@@ -16,6 +18,7 @@ public class DataHolder {
    private final MethodName action;
    private final MsgUnit msgUnit;
    private transient String notAuthorizedInfo;
+   private transient XmlBlasterException exceptionToThrow;
 
    /**
     * @param action May not be null
@@ -110,5 +113,17 @@ public class DataHolder {
    }
    public void setNotAuthorizedInfo(String notAuthorizedInfo) {
       this.notAuthorizedInfo = notAuthorizedInfo;
+   }
+   
+   public XmlBlasterException getExceptionToThrow() {
+	  return exceptionToThrow;
+   }
+
+   /**
+    * Allows a security plugin to throw another exception instead of ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED
+    * when returning false during isAuthorized() call
+    */
+   public void setExceptionToThrow(XmlBlasterException exceptionToThrow) {
+	  this.exceptionToThrow = exceptionToThrow;
    }
 }
