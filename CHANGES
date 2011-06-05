@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17952 You can now send specific exceptions back in your security plugin Session#isAuthorized method via
+             dataHolder.setExceptionToThrow(myXmlBlasterException);
+	     return false;
+	  instead of the default ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED
+
  o r17947 Fixed XPATH unSubscribe, the parent subInfo was not destroyed" 
 
  o r17944 DropIfNotDeliverableUniqueOnly and DropIfNotDeliverable plugin
