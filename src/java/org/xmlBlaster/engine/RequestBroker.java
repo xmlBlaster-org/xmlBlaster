@@ -1406,7 +1406,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             	}
             }
 
-            if (oids.length < 1) {
+            if (!xmlKey.isQuery() && oids.length < 1) { // 2011-06-05 change by Marcel to not throw exception for XPath without matches!
                log.warning("Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
                throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
             }
