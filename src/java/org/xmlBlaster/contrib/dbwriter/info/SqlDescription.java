@@ -437,6 +437,12 @@ public class SqlDescription {
       if (colName.startsWith(I_Mapper.COLUMN_TO_IGNORE))
          return;
       SqlColumn col = getColumn(colName);
+      
+      if (col == null) {
+         log.info("column '" + colName + "' not found, will ignore it in insert statement");
+         return;
+      }
+      
       int sqlType = col.getSqlType();
 
       boolean isNull = prop != null && Constants.TYPE_NULL.equals(prop.getType());
