@@ -15,6 +15,7 @@ Comment:   Handling one client property of QosData
 #include <vector>
 #include <string>
 #include <iostream> // temporary for cerr
+#include <iterator>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
