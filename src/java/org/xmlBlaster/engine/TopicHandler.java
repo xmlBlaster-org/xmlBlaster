@@ -45,6 +45,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.context.ContextNode;
@@ -2361,18 +2362,18 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @return XML state of TopicHandler
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(4000);
+      XmlBuffer sb = new XmlBuffer(4000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       boolean forceReadable = true;
 
-      sb.append(offset).append("<TopicHandler id='").append(getId()).append("' state='").append(getStateStr()).append("'>");
-      sb.append(offset).append(" <uniqueKey>").append(getUniqueKey()).append("</uniqueKey>");
+      sb.append(offset).append("<TopicHandler id='").appendAttributeEscaped(getId()).append("' state='").appendAttributeEscaped(getStateStr()).append("'>");
+      sb.append(offset).append(" <uniqueKey>").appendEscaped(getUniqueKey()).append("</uniqueKey>");
 
       TopicEntry topicEntry = this.topicEntry;
       if (topicEntry != null) {
-         sb.append(offset).append(" <topicEntry>").append(topicEntry.getLogId()).append("</topicEntry>");
+         sb.append(offset).append(" <topicEntry>").appendEscaped(topicEntry.getLogId()).append("</topicEntry>");
       }
 
       TopicProperty topicProperty = this.topicProperty;
@@ -2404,7 +2405,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (hasSubscribers()) {
          SubscriptionInfo[] subscriptionInfoArr = getSubscriptionInfoArr();
          for(int i=0; i<subscriptionInfoArr.length; i++) {
-            sb.append(offset).append(" <SubscriptionInfo id='").append(subscriptionInfoArr[i].getSubscriptionId()).append("'/>");
+            sb.append(offset).append(" <SubscriptionInfo id='").appendAttributeEscaped(subscriptionInfoArr[i].getSubscriptionId()).append("'/>");
          }
       }
       else {
