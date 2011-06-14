@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17966 Added clientProperty for publishers _user.ptp.unknownDestination.ignoreSilently" to aovid stack trace if PtP destination does not exist and forceQueing is not set
+
  o r17964 cluster routing DomainToMaster: NPE check for empty domain
 
  o r17960 Clustering of duplicate subscribes: Also forward to master as the master could not know about it (changed config)
