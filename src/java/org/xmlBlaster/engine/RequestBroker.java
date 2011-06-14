@@ -739,6 +739,29 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
+               
+               // If the cluster config has changed: we need to check if the master needs to be subscribed even that it is a duplicate subscription
+               // Marcel 2011-06-14
+               if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
+                  try {
+                     subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
+                     SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
+                     if (ret != null)
+                        qos = ret.getData();
+                     //Thread.currentThread().dumpStack();
+                     //if (ret != null) return ret.toXml();
+                  }
+                  catch (XmlBlasterException e) {
+                     if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+                        this.glob.setUseCluster(false);
+                     }
+                     else {
+                        e.printStackTrace();
+                        throw e;
+                     }
+                  }
+               }
+
                return qos.toXml();
             }
          }
