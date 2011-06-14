@@ -852,6 +852,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
             if (!forceQueing && destinationClient==null) {
                String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
+               boolean ignoreSilently = publishQos.getData().getClientProperty("_user.ptp.unknownDestination.ignoreSilently", false);
+               if (ignoreSilently) {
+                   log.warning(tmp);
+            	   return;
+               }
                //log.warning(tmp); is logged by caller already
                throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                    " Client is not logged in and <destination forceQueuing='true'> is not set");
