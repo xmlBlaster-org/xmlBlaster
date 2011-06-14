@@ -145,7 +145,10 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          if (qos.isPtp()) {
             // We check the domain of each MsgUnit entry (PtP messages may use a static topic just for communication channel)
             for (int ii=0; ii<keyMappings.length; ii++) {
-               if (keyMappings[ii].getDomain().equals("*") || keyMappings[ii].getDomain().equals(msgUnit.getKeyData().getDomain())) {
+               String domain = keyMappings[ii].getDomain();
+               if (domain == null)
+            	   continue;
+               if (domain.equals("*") || domain.equals(msgUnit.getKeyData().getDomain())) {
                   if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() +
                            "' stratum=" + nodeMasterInfo.getStratum() + " for PtP message '" + msgUnit.getLogId() +
                            "' domain='" + msgUnit.getKeyData().getDomain() + "'.");
