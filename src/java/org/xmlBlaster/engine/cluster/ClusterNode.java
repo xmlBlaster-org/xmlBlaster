@@ -65,6 +65,18 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    private final org.xmlBlaster.util.Global remoteGlob;
    private static Logger log = Logger.getLogger(ClusterNode.class.getName());
    private final SessionInfo sessionInfo;
+   
+   public String toString() {
+	   StringBuilder sb = new StringBuilder();
+	   sb.append("ClusterNode");
+	   if (sessionInfo != null)
+		   sb.append(",session=").append(sessionInfo.getSessionName().getAbsoluteName());
+		sb.append(",available=").append(available);
+		if (xmlBlasterConnection != null) {
+			   sb.append(",connection=").append(xmlBlasterConnection.getId());
+		}
+		return sb.toString();
+   }
 
    private I_XmlBlasterAccess xmlBlasterConnection;
    private boolean available;

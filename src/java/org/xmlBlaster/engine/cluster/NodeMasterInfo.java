@@ -85,7 +85,6 @@ public final class NodeMasterInfo implements Comparable, NodeMasterInfoMBean
    /** My JMX registration */
    private Object mbeanHandle;
 
-
    /**
     * Create a NodeMasterInfo belonging to the given cluster node. 
     * <p />
@@ -329,6 +328,7 @@ public final class NodeMasterInfo implements Comparable, NodeMasterInfoMBean
                 character.append(" ").append(attrs.getQName(ii)).append("='").append(attrs.getValue(ii)).append("'");
             }
          }
+         //log.info("Parsing " + character.toString());
          character.append(">");
          return true;
       }
@@ -476,5 +476,17 @@ public final class NodeMasterInfo implements Comparable, NodeMasterInfoMBean
          return getStratum() - a.getStratum();
    
       return getCount() - a.getCount(); 
+   }
+
+   public String toString() {
+	   QueryKeyData[] arr = getKeyMappings();
+	   StringBuilder sb = new StringBuilder();
+	   sb.append("NodeMasterInfo");
+	   if (clusterNode.getRemoteSessionName() != null)
+		   sb.append(",").append(clusterNode.getRemoteSessionName().getAbsoluteName());
+	   for (QueryKeyData q: arr) {
+		   sb.append(",queryKeyData=").append(q.toXml());
+	   }
+	   return sb.toString();
    }
 }
