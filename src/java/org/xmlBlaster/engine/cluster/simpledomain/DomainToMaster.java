@@ -205,7 +205,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          
          // TODO: If filter has a prepared query cache switched on,
          // we should go over the TopicHandlerAccessor to force single threaded match() access
-         if (xmlKey.match(keyMapping)) {
+         if (xmlKey.match(keyMapping)) { // Checks EXACT DOMAIN XPATH
             if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() +
                            "' stratum=" + nodeMasterInfo.getStratum() + " for message '" + msgUnit.getLogId() +
                            "' domain='" + xmlKey.getDomain() + "'.");
