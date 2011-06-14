@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17964 cluster routing DomainToMaster: NPE check for empty domain
+
  o r17960 Clustering of duplicate subscribes: Also forward to master as the master could not know about it (changed config)
 
  o r17958 Fixed XML escape for TopicHandler dump
