@@ -211,6 +211,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
+   
+   /**
+    * Added 2011-06-16 Marcel, default behavior has changed
+    * For testing only, probably removed again in future (performance impact needs to be discussed if activated)
+    */
+   private boolean subscribeMultipleClusterForward = true;
 
 
    /**
@@ -232,6 +238,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       XbNotifyHandler.instance().register(Level.WARNING.intValue(), this);
       XbNotifyHandler.instance().register(Level.SEVERE.intValue(), this);
 
+      this.subscribeMultipleClusterForward = glob.getProperty().get("subscribeMultipleClusterForward", this.subscribeMultipleClusterForward);
+      
       this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
       if (this.useOldStylePersistence) {
          log.warning("Old style fielstorage is switched on which is deprecated (-useOldStylePersistence true).");
@@ -740,26 +748,28 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
                
+               if (this.subscribeMultipleClusterForward) {
                // If the cluster config has changed: we need to check if the master needs to be subscribed even that it is a duplicate subscription
                // Marcel 2011-06-14
-               if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
-                  try {
-                     subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
-                     SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
-                     if (ret != null)
-                        qos = ret.getData();
-                     //Thread.currentThread().dumpStack();
-                     //if (ret != null) return ret.toXml();
-                  }
-                  catch (XmlBlasterException e) {
-                     if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
-                        this.glob.setUseCluster(false);
-                     }
-                     else {
-                        e.printStackTrace();
-                        throw e;
-                     }
-                  }
+	               if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
+	                  try {
+	                     subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
+	                     SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
+	                     if (ret != null)
+	                        qos = ret.getData();
+	                     //Thread.currentThread().dumpStack();
+	                     //if (ret != null) return ret.toXml();
+	                  }
+	                  catch (XmlBlasterException e) {
+	                     if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+	                        this.glob.setUseCluster(false);
+	                     }
+	                     else {
+	                        e.printStackTrace();
+	                        throw e;
+	                     }
+	                  }
+	               }
                }
 
                return qos.toXml();
