@@ -13,6 +13,12 @@ import java.util.logging.LogRecord;
  * Note:
  * You may not directly add a Filter to java.util.logging.Logger/Handler as this
  * would destroy our registration.
+ * <p/>
+ * Setup is done in logging.properties:
+ *   handlers= java.util.logging.ConsoleHandler, org.xmlBlaster.util.log.XbNotifyHandler
+ * <p/>
+ * If deploying xmlBlasterClient.jar to tomcat you may edit xmlBlasterClient.jar#logging.properties and remove XbNotifyHandler
+ * to avoid a ClassLoaderException
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.logging.html">The admin.logging requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
