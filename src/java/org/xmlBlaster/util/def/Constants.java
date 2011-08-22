@@ -314,6 +314,8 @@ public class Constants {
 
    public final static String UPDATE_BULK_ACK = "__updateBulkAck";
 
+   public final static String CLIENTPROPERTY_ISINITIALUPDATE = "__isInitialUpdate"; // msgs from history queue directly after subscribe
+
    /** Mimetypes */
    // see @apache/mime.conf or so
 

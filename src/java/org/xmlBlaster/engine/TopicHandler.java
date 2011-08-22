@@ -1108,6 +1108,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             int count = 0, currentCount = 0;
             for (int i=0; i < wrappers.length; i++) {
                if (this.distributor == null || wrappers[i].isInternal()) {
+            	  if (wrappers[i].getMsgQosData() != null)
+                     wrappers[i].getMsgQosData().addClientProperty(Constants.CLIENTPROPERTY_ISINITIALUPDATE, true); // "__isInitialUpdate"
                   currentCount = invokeCallback(null, sub, wrappers[i], true);
                }
                if (currentCount == -1) break;
