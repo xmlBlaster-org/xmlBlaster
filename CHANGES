@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r17970 Added clientProperty for update messages: Constants.CLIENTPROPERTY_ISINITIALUPDATE
+          which is set by server in case the messages are from history queue during subscribe
+
  o r17966 Added clientProperty for publishers _user.ptp.unknownDestination.ignoreSilently" to aovid stack trace if PtP destination does not exist and forceQueing is not set
 
  o r17964 cluster routing DomainToMaster: NPE check for empty domain
