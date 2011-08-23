@@ -274,6 +274,9 @@
   &lt;queue index='0' size='1'/> &lt;!-- If queued messages are flushed on login -->
   
   &lt;redeliver>4&lt;/redeliver> &lt;!-- Only sent if message sending had previous errors -->
+
+  &lt;!-- Only sent if message is from history queue directly after subscribe -->
+  &lt;clientProperty name='__isInitialUpdate'>true&lt;/clientProperty>
   
   &lt;clientProperty name='myTransactionId'>0x23345&lt;/clientProperty>
   &lt;clientProperty name='myDescription' encoding="base64" charset="windows-1252">
