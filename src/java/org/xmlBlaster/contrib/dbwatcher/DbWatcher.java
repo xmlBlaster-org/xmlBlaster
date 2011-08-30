@@ -404,8 +404,9 @@ public class DbWatcher implements I_ChangeListener {
                          else
                             collectedMessages++;
                       }
-    
-                      groupColValue = newGroupColValue;
+                      
+                      if(useGroupCol)
+                         groupColValue = newGroupColValue;
                       
                       if (bout == null && dataConverter != null) {
                          bout = new ByteArrayOutputStream();
