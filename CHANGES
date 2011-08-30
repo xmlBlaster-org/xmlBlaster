@@ -3,7 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
-
+ o r17974 DbWatcher: fixed a bug which resulted in a NPE when publishing on a fixed topic and having more than one row as the result 
+          of the select statement
  o r17970 Added clientProperty for update messages: Constants.CLIENTPROPERTY_ISINITIALUPDATE
           which is set by server in case the messages are from history queue during subscribe
 
