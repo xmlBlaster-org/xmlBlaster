@@ -3,6 +3,15 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+
+ o r17979 Ported DispatchManager to I_DispatchManager and ServerDispatchManager and ClientDispatchManager. On Server side putPost has an
+          check for inAliveTransition. 
+	  Plugin Developers must replace DispatchManager by I_DispatchManager
+
+ o r17976 Changed Behaviour in DomainToMaster: if domain was null then it is assumed to be empty and cluster node could match and chosen
+          before it was ignored (not chosen).
+
  o r17974 DbWatcher: fixed a bug which resulted in a NPE when publishing on a fixed topic and having more than one row as the result 
           of the select statement
  o r17970 Added clientProperty for update messages: Constants.CLIENTPROPERTY_ISINITIALUPDATE
