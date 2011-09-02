@@ -5,29 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.script;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.xbformat.MsgInfo;
-import org.xmlBlaster.util.EncodableData;
-import org.xmlBlaster.util.FileLocator;
-import org.xmlBlaster.util.I_ReplaceVariable;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.ReplaceVariable;
-import org.xmlBlaster.util.SaxHandlerBase;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.StopParseException;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,10 +13,30 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
-import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.EncodableData;
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.StopParseException;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 
 /**
@@ -645,7 +643,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 		  String currentContentStr = new String(currentContent, "UTF-8");
     	  ReplaceVariable rv = new ReplaceVariable();
     	  currentContentStr = rv.replace(currentContentStr, new I_ReplaceVariable() {
-			@Override
+               // @Override
 			public String get(String key) {
 				try {
 					String value = glob.get(key, key, null, null);
