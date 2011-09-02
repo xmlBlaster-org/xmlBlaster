@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
@@ -51,7 +52,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 public final class ServerDispatchManager implements I_DispatchManager
 {
    public final String ME;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(ServerDispatchManager.class.getName());
    private final I_Queue msgQueue;
    private final DispatchConnectionsHandler dispatchConnectionsHandler;
@@ -97,7 +98,7 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */
-   public ServerDispatchManager(Global glob, I_MsgErrorHandler failureListener,
+   public ServerDispatchManager(ServerScope glob, I_MsgErrorHandler failureListener,
                           I_MsgSecurityInterceptor securityInterceptor,
                           I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener,
                           AddressBase[] addrArr, SessionName sessionName) throws XmlBlasterException {
@@ -114,7 +115,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       this.msgQueue = msgQueue;
       this.failureListener = failureListener;
       this.securityInterceptor = securityInterceptor;
-      this.dispatchConnectionsHandler = this.glob.createDispatchConnectionsHandler(this);
+      this.dispatchConnectionsHandler = this.glob.createServerDispatchConnectionsHandler(this);
       this.connectionStatusListeners = new HashSet();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
 

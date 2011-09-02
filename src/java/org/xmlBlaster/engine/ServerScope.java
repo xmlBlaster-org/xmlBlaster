@@ -652,7 +652,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
     * In util.Global we return the client side implementation 'ClientDispatchConnectionsHandler'
     * @return A new instance of CbDispatchConnectionsHandler
     */
-   public DispatchConnectionsHandler createDispatchConnectionsHandler(ServerDispatchManager dispatchManager) throws XmlBlasterException {
+   public DispatchConnectionsHandler createServerDispatchConnectionsHandler(ServerDispatchManager dispatchManager) throws XmlBlasterException {
       return new CbDispatchConnectionsHandler(this, dispatchManager);
    }
 

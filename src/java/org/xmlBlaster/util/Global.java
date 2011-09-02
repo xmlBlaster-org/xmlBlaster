@@ -1791,7 +1791,7 @@ public class Global implements Cloneable
    /**
     * Returns the client access layer implementations 'ClientDispatchConnectionsHandler'
     */
-   public DispatchConnectionsHandler createDispatchConnectionsHandler(I_DispatchManager dispatchManager) throws XmlBlasterException {
+   public DispatchConnectionsHandler createClientDispatchConnectionsHandler(ClientDispatchManager dispatchManager) throws XmlBlasterException {
       return new ClientDispatchConnectionsHandler(this, (ClientDispatchManager)dispatchManager);
    }
 
