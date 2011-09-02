@@ -6,22 +6,23 @@ Comment:   Simple demo implementation for clustering
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster.simpledomain;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.mime.I_AccessFilter;
-import org.xmlBlaster.engine.cluster.ClusterManager;
-import org.xmlBlaster.engine.cluster.NodeMasterInfo;
-import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.cluster.ClusterManager;
+import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
+import org.xmlBlaster.engine.cluster.NodeMasterInfo;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
  * Finds the master of a message depending
@@ -146,8 +147,10 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
             // We check the domain of each MsgUnit entry (PtP messages may use a static topic just for communication channel)
             for (int ii=0; ii<keyMappings.length; ii++) {
                String domain = keyMappings[ii].getDomain();
-               if (domain == null)
-            	   continue;
+               if (domain == null) {
+                  domain = ""; // treat missing domain entry similar to "" Marcel/Michele 2011-09-02
+                  // continue; // or ignore missing domain attribute?
+               }
                if (domain.equals("*") || domain.equals(msgUnit.getKeyData().getDomain())) {
                   if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() +
                            "' stratum=" + nodeMasterInfo.getStratum() + " for PtP message '" + msgUnit.getLogId() +
