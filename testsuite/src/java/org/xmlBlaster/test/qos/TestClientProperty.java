@@ -89,7 +89,11 @@ public class TestClientProperty extends TestCase implements I_Callback
    }
 
    private void checkValues(Map map) {
-      assertEquals("", 3, map.size());
+//      for (Object key: map.keySet().toArray(new Object[map.size()])) {
+//         log.info("Got Update Key = " + key.toString());
+//      }
+      int count = map.containsKey("__isInitialUpdate") ? 4 : 3;
+      assertEquals("", count, map.size());
       assertEquals("", "oneValue", ((ClientProperty)map.get("oneKey")).getStringValue());
       assertEquals("", "twoValue", ((ClientProperty)map.get("twoKey")).getStringValue());
       assertEquals("", 55, ((ClientProperty)map.get("threeKey")).getIntValue());
