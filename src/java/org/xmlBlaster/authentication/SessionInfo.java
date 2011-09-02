@@ -30,6 +30,7 @@ import org.xmlBlaster.engine.IsoDateJoda;
 import org.xmlBlaster.engine.MsgErrorHandler;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionInfo;
+import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
@@ -49,7 +50,6 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
@@ -101,7 +101,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    /** Do error recovery if message can't be delivered and we give it up */
    private MsgErrorHandler msgErrorHandler;
    /** manager for sending callback messages */
-   private DispatchManager dispatchManager;
+   private ServerDispatchManager dispatchManager;
    /** Statistic about send/received messages, can be null if there is a DispatchManager around */
    private volatile DispatchStatistic statistic;
    private boolean isShutdown = false;
@@ -214,7 +214,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
             cba[i].addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
             cba[i].setFromPersistenceRecovery(connectQos.isFromPersistenceRecovery());
          }
-         this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
+         this.dispatchManager = new ServerDispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 cba, this.sessionName);
       }
@@ -443,7 +443,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (this.msgErrorHandler != null)
          this.msgErrorHandler.shutdown();
 
-      DispatchManager dispatchManager = this.dispatchManager;
+      ServerDispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null)
          dispatchManager.shutdown();
 
@@ -456,7 +456,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    /**
     * @return null if no callback is configured, can change to null on reconfiguration
     */
-   public final DispatchManager getDispatchManager() {
+   public final ServerDispatchManager getDispatchManager() {
       return this.dispatchManager;
    }
 
@@ -467,7 +467,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (this.statistic == null) {
          synchronized (this) {
             if (this.statistic == null) {
-               DispatchManager dispatchManager = this.dispatchManager;
+               ServerDispatchManager dispatchManager = this.dispatchManager;
                if (dispatchManager != null)
                   this.statistic = dispatchManager.getDispatchStatistic();
                else
@@ -605,7 +605,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       I_Queue sessionQueue = this.sessionQueue;
       if (sessionQueue != null) sessionQueue.setProperties(cbQueueProperty);
       if (wantsCallbacks && hasCallback()) {
-         DispatchManager dispatchManager = this.dispatchManager;
+         ServerDispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null) {
             dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
             log.info(ME+": Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
@@ -614,16 +614,16 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       else if (wantsCallbacks && !hasCallback()) {
          log.info(ME+": Successfully reconfigured and created dispatch manager with given callback address");
-         DispatchManager tmpDispatchManager = new DispatchManager(glob, this.msgErrorHandler,
+         ServerDispatchManager tmpDispatchManager = new ServerDispatchManager(glob, this.msgErrorHandler,
                               this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                               newConnectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
-         DispatchManager dispatchManager = this.dispatchManager;
+         ServerDispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null)
             tmpDispatchManager.setDispatcherActive(dispatchManager.isDispatcherActive());
          this.dispatchManager = tmpDispatchManager;
       }
       else if (!wantsCallbacks && hasCallback()) {
-         DispatchManager dispatchManager = this.dispatchManager;
+         ServerDispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null) {
             dispatchManager.shutdown();
             log.info(ME+": Successfully shutdown dispatch manager as no callback address is configured");
@@ -758,7 +758,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       props.put(Constants.TOXML_NOSECURITY, ""+true);
       sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT, props));
 
-      DispatchManager dispatchManager = this.dispatchManager;
+      ServerDispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {
          sb.append(dispatchManager.toXml(extraOffset+Constants.INDENT));
       }
@@ -924,7 +924,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    public String pingClientCallbackServer() {
-      DispatchManager dispatchManager = this.dispatchManager;
+      ServerDispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {
          boolean isSend = dispatchManager.pingCallbackServer(true, false);
          if (isSend)
@@ -1292,7 +1292,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
     */
    public void lostClientConnection() {
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Protocol layer is notifying me about a lost connection");
-      DispatchManager dispatchManager = this.dispatchManager;
+      ServerDispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null)
          dispatchManager.lostClientConnection();
    }
