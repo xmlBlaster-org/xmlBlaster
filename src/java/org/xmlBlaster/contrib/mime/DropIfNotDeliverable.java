@@ -21,7 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -149,7 +149,7 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
          Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in match() call");
       }
-      DispatchManager dm = receiver.getDispatchManager();
+      I_DispatchManager dm = receiver.getDispatchManager();
       dm.addConnectionStatusListener(this); // register for toAlive() and toPolling() events (multiple calls don't harm)
       try {
          if (dm.isPolling() || dm.isShutdown()) {
@@ -178,7 +178,7 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
    }
 
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
-   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       try {
          dispatchManager.getQueue().clear();
       } catch (Throwable e) {
@@ -186,15 +186,15 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
       }
    }
 
-   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
    
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+   public void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
-   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       try {
           I_AdminSession receiver = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(dispatchManager.getSessionName()).getSessionByPubSessionId(dispatchManager.getSessionName().getPublicSessionId());
           String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();

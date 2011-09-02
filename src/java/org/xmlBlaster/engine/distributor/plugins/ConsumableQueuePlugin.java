@@ -25,7 +25,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchWorker;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -125,7 +125,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       this.isReady = false;
    }
    
-   private final DispatchManager getDispatchManager(SubscriptionInfo subscriptionInfo) {
+   private final I_DispatchManager getDispatchManager(SubscriptionInfo subscriptionInfo) {
       if (subscriptionInfo == null) {
          log.severe("getDispatchManager the subscriptionInfo object is null");
          Thread.dumpStack();
@@ -137,7 +137,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          Thread.dumpStack();
          return null;
       }
-      DispatchManager dispatchManager = sessionInfo.getDispatchManager();
+      I_DispatchManager dispatchManager = sessionInfo.getDispatchManager();
       if (dispatchManager == null) {
          log.severe("getDispatchManager the dispatcherManager object is null");
          Thread.dumpStack();
@@ -154,7 +154,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       throws XmlBlasterException {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (log.isLoggable(Level.FINER)) log.finer("onAddSubscriber");
-      DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
+      I_DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.addConnectionStatusListener(this);
       this.isReady = true;
       toRunning();
@@ -167,7 +167,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (log.isLoggable(Level.FINER)) log.finer("onRemoveSubscriber");
-      DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
+      I_DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.removeConnectionStatusListener(this);
    }
 
@@ -175,19 +175,19 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * Event arriving from one DispatchManager telling this plugin it can 
     * start distribute again. 
     */
-   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (log.isLoggable(Level.FINER)) log.finer("toAlive");
       this.isReady = true;
       toRunning();
    }
 
-   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
 
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+   public void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
-   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
    
    /**

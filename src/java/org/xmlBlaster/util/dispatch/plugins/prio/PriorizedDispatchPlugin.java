@@ -18,7 +18,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -122,7 +122,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    /**
     * This is called once for each dispatch manager using this plugin. 
     */
-   public void addDispatchManager(DispatchManager dispatchManager) {
+   public void addDispatchManager(I_DispatchManager dispatchManager) {
       DispatchManagerEntry managerEntry = new DispatchManagerEntry(dispatchManager);
       synchronized (this) {
          this.dispatchManagerEntryMap.put(dispatchManager, managerEntry);
@@ -266,7 +266,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * Called when new messages are available. 
     * @see I_MsgDispatchInterceptor#doActivate(DispatchManager)
     */
-   public final boolean doActivate(DispatchManager dispatchManager) {
+   public final boolean doActivate(I_DispatchManager dispatchManager) {
       return true; // The DispatchManager knows what and why it does it
 
       /*
@@ -289,7 +289,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * </p>
     * @see I_MsgDispatchInterceptor#handleNextMessages(DispatchManager, ArrayList)
     */
-   public final List<I_Entry> handleNextMessages(DispatchManager dispatchManager, List<I_Entry> entries)
+   public final List<I_Entry> handleNextMessages(I_DispatchManager dispatchManager, List<I_Entry> entries)
          throws XmlBlasterException {
 
       // take messages from queue (none blocking) ...
@@ -385,7 +385,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
       return resultList;
    }
 
-   private DispatchManagerEntry getDispatchManagerEntry(DispatchManager dispatchManager) {
+   private DispatchManagerEntry getDispatchManagerEntry(I_DispatchManager dispatchManager) {
       synchronized (this) {
          return (DispatchManagerEntry)this.dispatchManagerEntryMap.get(dispatchManager);
       }
@@ -422,7 +422,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     */
    private void flushHoldbackQueue(DispatchManagerEntry managerEntry) {
       synchronized (this)  {
-         DispatchManager dispatchManager = managerEntry.getDispatchManager();
+         I_DispatchManager dispatchManager = managerEntry.getDispatchManager();
          I_Queue holdbackQueue = managerEntry.getHoldbackQueue();
          if (holdbackQueue != null && holdbackQueue.getNumOfEntries() > 0) {
             log.info("Flushing " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId());
@@ -480,11 +480,11 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public final void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public final void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       changeManagerState(dispatchManager, ConnectionStateEnum.ALIVE, true);
    }
 
-   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
    
    /**
@@ -492,7 +492,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public final void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public final void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       changeManagerState(dispatchManager, ConnectionStateEnum.POLLING, true);
    }
 
@@ -501,11 +501,11 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public final void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+   public final void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
       changeManagerState(dispatchManager, ConnectionStateEnum.DEAD, true);
    }
 
-   private DispatchManagerEntry changeManagerState(DispatchManager dispatchManager, ConnectionStateEnum newState, boolean flush) {
+   private DispatchManagerEntry changeManagerState(I_DispatchManager dispatchManager, ConnectionStateEnum newState, boolean flush) {
       DispatchManagerEntry managerEntry = getDispatchManagerEntry(dispatchManager);
       if (managerEntry == null) {
          throw new IllegalArgumentException("Internal error in " + newState + ": dispatchManager=" + dispatchManager.toXml("") + " is unknown, dispatchManagerEntryMap.size()=" + dispatchManagerEntryMap.size());
@@ -535,7 +535,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * Deregister a dispatch manager. 
     * @see I_MsgDispatchInterceptor#shutdown(DispatchManager)
     */ 
-   public void shutdown(DispatchManager dispatchManager) throws XmlBlasterException {
+   public void shutdown(I_DispatchManager dispatchManager) throws XmlBlasterException {
       DispatchManagerEntry de = null;
       synchronized (this)  {
          de = (DispatchManagerEntry)this.dispatchManagerEntryMap.remove(dispatchManager);
@@ -601,13 +601,13 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    /**
     * Not doing anything in this method since no cleanup needed.
     */
-   public void postHandleNextMessages(DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException {
+   public void postHandleNextMessages(I_DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException {
    }
 
    /**
     * Not doing anything in this method since no Exception handling is done.
     */
-   public void onDispatchWorkerException(DispatchManager dispatchManager, Throwable ex) {
+   public void onDispatchWorkerException(I_DispatchManager dispatchManager, Throwable ex) {
    }
    
    

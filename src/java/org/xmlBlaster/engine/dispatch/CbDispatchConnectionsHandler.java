@@ -18,7 +18,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -40,7 +39,7 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
     * @param dispatchManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public CbDispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
+   public CbDispatchConnectionsHandler(Global glob, ServerDispatchManager dispatchManager) throws XmlBlasterException {
       super(glob, dispatchManager);
       this.ME = "CbDispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
    }

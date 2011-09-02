@@ -65,7 +65,7 @@ abstract public class DispatchConnectionsHandler
    public final String ME;
    protected final Global glob;
    private static Logger log = Logger.getLogger(DispatchConnectionsHandler.class.getName());
-   protected final DispatchManager dispatchManager;
+   protected final I_DispatchManager dispatchManager;
    protected final DispatchStatistic statistic;
    protected I_PostSendListener postSendListener;
 
@@ -79,7 +79,7 @@ abstract public class DispatchConnectionsHandler
     * @param dispatchManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public DispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
+   public DispatchConnectionsHandler(Global glob, I_DispatchManager dispatchManager) throws XmlBlasterException {
       this.ME = dispatchManager.getQueue().getStorageId().toString();
       this.glob = glob;
 
@@ -87,7 +87,7 @@ abstract public class DispatchConnectionsHandler
       this.statistic = new DispatchStatistic();
    }
 
-   public final DispatchManager getDispatchManager() {
+   public final I_DispatchManager getDispatchManager() {
       return this.dispatchManager;
    }
 

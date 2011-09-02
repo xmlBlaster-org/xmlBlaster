@@ -52,7 +52,7 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.log.I_LogListener;
@@ -725,7 +725,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 	                	  for (int se=0; se<ses.length; se++) {
 	                		  if (!wildcardMatch(sessionName.getPublicSessionId(), ses[se].getPublicSessionId()))
 	                			  continue;
-	                		  DispatchManager mgr = ses[se].getDispatchManager();
+	                		 I_DispatchManager mgr = ses[se].getDispatchManager();
 	                          if (mgr != null) {
 	                              mgr.addConnectionStatusListener(this);
 	                           }
@@ -736,7 +736,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                else {
                   log.fine("Register callback session state event = " + event);
                   SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
-                  DispatchManager mgr = null;
+                  I_DispatchManager mgr = null;
                   if (sessionInfo != null)
                      mgr = sessionInfo.getDispatchManager();
                   if (mgr != null) {
@@ -1603,7 +1603,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (found) {
                   SessionName sessionName = new SessionName(this.engineGlob, name);
                   SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
-                  DispatchManager mgr = null;
+                  I_DispatchManager mgr = null;
                   if (sessionInfo != null)
                      mgr = sessionInfo.getDispatchManager();
                   if (mgr != null) {
@@ -1710,7 +1710,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                // Remove the listener for now
                SessionName sessionName = new SessionName(this.engineGlob, name);
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
-               DispatchManager mgr = null;
+               I_DispatchManager mgr = null;
                if (sessionInfo != null)
                   mgr = sessionInfo.getDispatchManager();
                if (mgr != null) {
@@ -2283,7 +2283,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       return this.instanceCounter;
    }
 
-   protected void callbackStateChange(DispatchManager dispatchManager, ConnectionStateEnum oldState, ConnectionStateEnum newState) {
+   protected void callbackStateChange(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, ConnectionStateEnum newState) {
       if (this.callbackSessionStateSet == null) return;
 
       SessionName sessionName = dispatchManager.getSessionName();
@@ -2468,24 +2468,24 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
-   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.ALIVE);
    }
 
-   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
    
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
-   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.POLLING);
    }
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
     */
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+   public void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
       callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.DEAD);
    }
 

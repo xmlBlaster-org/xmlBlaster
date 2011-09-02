@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.error;
 
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.Global;
@@ -33,7 +33,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
    private final MsgUnitRaw msgUnitRaw;
    private final MsgUnit msgUnit;
    private final MsgQueueEntry[] msgQueueEntries;
-   private final DispatchManager dispatchManager;
+   private final I_DispatchManager dispatchManager;
    private final XmlBlasterException xmlBlasterException;
    
    /**
@@ -89,7 +89,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
     * @param throwable Creates an error info instance with errorCode="internal.unknown" <br />
     *        if throwable instanceof XmlBlasterException we use the given exception
     */
-   public MsgErrorInfo(Global glob, MsgQueueEntry msgQueueEntry, DispatchManager dispatchManager, Throwable throwable) {
+   public MsgErrorInfo(Global glob, MsgQueueEntry msgQueueEntry, I_DispatchManager dispatchManager, Throwable throwable) {
       this(glob, (msgQueueEntry == null) ? new MsgQueueEntry[0] : new MsgQueueEntry[]{ msgQueueEntry },
                                                                       dispatchManager, throwable);
    }
@@ -100,7 +100,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
     * @param throwable Creates an error info instance with errorCode="internal.unknown" <br />
     *        if throwable instanceof XmlBlasterException we use the given exception
     */
-   public MsgErrorInfo(Global glob, MsgQueueEntry[] msgQueueEntries, DispatchManager dispatchManager, Throwable throwable) {
+   public MsgErrorInfo(Global glob, MsgQueueEntry[] msgQueueEntries, I_DispatchManager dispatchManager, Throwable throwable) {
       if (throwable == null) {
          Thread.dumpStack();
          throw new IllegalArgumentException("MsgErrorInfo: xmlBlasterException may not be null");
@@ -132,7 +132,7 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
       return (this.dispatchManager != null) ? this.dispatchManager.getQueue() : null;
    }
 
-   public DispatchManager getDispatchManager() {
+   public I_DispatchManager getDispatchManager() {
       return this.dispatchManager;
    }
 

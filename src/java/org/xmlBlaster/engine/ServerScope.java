@@ -20,6 +20,7 @@ import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.dispatch.CbDispatchConnectionsHandler;
+import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.engine.distributor.plugins.MsgDistributorPluginManager;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
@@ -41,7 +42,6 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
@@ -652,7 +652,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
     * In util.Global we return the client side implementation 'ClientDispatchConnectionsHandler'
     * @return A new instance of CbDispatchConnectionsHandler
     */
-   public DispatchConnectionsHandler createDispatchConnectionsHandler(DispatchManager dispatchManager) throws XmlBlasterException {
+   public DispatchConnectionsHandler createDispatchConnectionsHandler(ServerDispatchManager dispatchManager) throws XmlBlasterException {
       return new CbDispatchConnectionsHandler(this, dispatchManager);
    }
 

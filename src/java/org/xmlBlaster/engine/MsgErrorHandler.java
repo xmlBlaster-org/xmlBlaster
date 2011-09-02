@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -89,7 +89,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          ErrorCode errorCode = xmlBlasterException.getErrorCode();
          message = xmlBlasterException.getMessage();
          MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
-         DispatchManager dispatchManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDispatchManager();
+         ServerDispatchManager dispatchManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDispatchManager();
          I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
    
          if (log.isLoggable(Level.FINER)) log.finer("Error handling started: " + msgErrorInfo.toString());

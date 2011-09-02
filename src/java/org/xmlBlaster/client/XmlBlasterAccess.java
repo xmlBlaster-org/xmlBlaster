@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.client.dispatch.ClientDispatchManager;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.PublishKey;
@@ -61,9 +62,9 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -108,7 +109,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    /** Client side queue during connection failure */
    private I_Queue clientQueue;
    /** The dispatcher framework **/
-   private DispatchManager dispatchManager;
+   private I_DispatchManager dispatchManager;
    /** Statistic about send/received messages, can be null if there is a DispatchManager around */
    private volatile DispatchStatistic statistic;
    /** The object handling message delivery problems */
@@ -452,7 +453,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                }
 
                boolean forceCbAddressCreation = (updateListener != null);
-               this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
+               this.dispatchManager = new ClientDispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses(forceCbAddressCreation), sn);
                // the above can call toDead() and the client may have called shutdown(): this.connectQos == null again
@@ -1328,7 +1329,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " connectInProgress=" + this.connectInProgress);
       if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
          log.info(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE +
@@ -1365,7 +1366,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
    }
 
-   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (this.connectionListener != null) {
          this.connectionListener.reachedAliveSync(oldState, this);
       }
@@ -1396,7 +1397,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
-   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING + " connectInProgress=" + this.connectInProgress);
       if (this.connectInProgress) return;
       if (this.connectionListener != null) {
@@ -1420,7 +1421,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * Call by DispatchManager on connection state transition.
     * <p>Enforced by interface I_ConnectionStatusListener</p>
     */
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+   public void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD + " connectInProgress=" + this.connectInProgress);
       if (this.connectionListener != null) {
     	 this.toDeadXmlBlasterException = xmlBlasterException; // hack, description see #getToDeadXmlBlasterException

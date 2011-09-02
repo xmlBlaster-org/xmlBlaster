@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.engine.query.I_Query;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
@@ -22,7 +23,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -194,7 +194,7 @@ public class QueueQueryPlugin implements I_Query, I_StorageSizeListener {
       }
       
       List<I_Entry> list = queue.peek(maxEntries, maxSize);
-      ArrayList entryListChecked = DispatchManager.prepareMsgsFromQueue(ME, log, queue, list);
+      ArrayList entryListChecked = ServerDispatchManager.prepareMsgsFromQueue(ME, log, queue, list);
       
       MsgQueueEntry[] entries = (MsgQueueEntry[])entryListChecked.toArray(new MsgQueueEntry[entryListChecked.size()]);
       

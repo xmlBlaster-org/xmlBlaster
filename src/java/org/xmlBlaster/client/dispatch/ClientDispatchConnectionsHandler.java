@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -32,7 +31,6 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 
 /**
  * Holding all necessary infos to establish a remote
@@ -49,7 +47,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
     * @param dispatchManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public ClientDispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
+   public ClientDispatchConnectionsHandler(Global glob, ClientDispatchManager dispatchManager) throws XmlBlasterException {
       super(glob, dispatchManager);
       this.ME = "ClientDispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
    }

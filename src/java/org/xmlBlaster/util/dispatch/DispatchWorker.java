@@ -27,10 +27,10 @@ public final class DispatchWorker implements Runnable
    public final String ME;
    private static Logger log = Logger.getLogger(DispatchWorker.class.getName());
 
-   private DispatchManager dispatchManager;
+   private I_DispatchManager dispatchManager;
    private I_Queue msgQueue;
 
-   public DispatchWorker(Global glob, DispatchManager mgr) {
+   public DispatchWorker(Global glob, I_DispatchManager mgr) {
       this.dispatchManager = mgr;
       this.msgQueue = mgr.getQueue();
       ME = "DispatchWorker-" + this.msgQueue.getStorageId(); 
@@ -151,7 +151,7 @@ public final class DispatchWorker implements Runnable
       }
    }
    
-   void shutdown() {
+   public void shutdown() {
       // Commented out to avoid NPE
       //this.dispatchManager = null;
       //this.msgQueue = null;

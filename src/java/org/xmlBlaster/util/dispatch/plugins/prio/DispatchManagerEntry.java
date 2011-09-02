@@ -5,11 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.queue.I_Queue;
 
@@ -27,18 +23,18 @@ import org.xmlBlaster.util.queue.I_Queue;
 public final class DispatchManagerEntry
 {
    private String ME = "DispatchManagerEntry";
-   private final DispatchManager dispatchManager;
+   private final I_DispatchManager dispatchManager;
    private I_Queue holdbackQueue;
    /** This is the configuration for the current connection state of the dispatcher framework or null: */
    private StatusConfiguration currConnectionStateConfiguration;
    private ConnectionStateEnum currConnectionState;
 
 
-   public DispatchManagerEntry(DispatchManager dispatchManager) {
+   public DispatchManagerEntry(I_DispatchManager dispatchManager) {
       this.dispatchManager = dispatchManager;
    }
 
-   public DispatchManager getDispatchManager() {
+   public I_DispatchManager getDispatchManager() {
       return this.dispatchManager;
    }
 

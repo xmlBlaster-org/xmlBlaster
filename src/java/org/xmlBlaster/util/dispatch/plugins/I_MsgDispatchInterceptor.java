@@ -10,8 +10,8 @@ import java.util.List;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.queue.I_Entry;
 
 /**
@@ -35,7 +35,7 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
    /**
     * This is called once for each dispatch manager using this plugin. 
     */
-   public void addDispatchManager(DispatchManager dispatchManager);
+   public void addDispatchManager(I_DispatchManager dispatchManager);
 
    /**
     * If there are new messages available in the queue, you get invoked
@@ -53,7 +53,7 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     *               where we can decide which messages it will process<br />
     *         false: abort, don't start worker thread
     */
-   public boolean doActivate(DispatchManager dispatchManager);
+   public boolean doActivate(I_DispatchManager dispatchManager);
 
    /**
     * If you returned true from doActivate() the worker thread will
@@ -91,7 +91,7 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     *            Other exceptions will lead to giving up sending messages as configured with I_MsgErrorHandler,
     *            usually shutdown queue and sending dead messages.
     */
-   public List<I_Entry> handleNextMessages(DispatchManager dispatchManager, List<I_Entry> pushEntries)
+   public List<I_Entry> handleNextMessages(I_DispatchManager dispatchManager, List<I_Entry> pushEntries)
          throws XmlBlasterException;
 
    /**
@@ -101,12 +101,12 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     * @param processedEntries The entries which have been previously processed.
     * @throws XmlBlasterException
     */
-   public void postHandleNextMessages(DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException;
+   public void postHandleNextMessages(I_DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException;
    
    /**
     * Deregister the given dispatchManager
     */
-   public void shutdown(DispatchManager dispatchManager) throws XmlBlasterException;
+   public void shutdown(I_DispatchManager dispatchManager) throws XmlBlasterException;
 
    /**
     * Shutdown the implementation, sync with data store
@@ -136,6 +136,6 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     * @param dispatchManager
     * @param ex
     */
-   public void onDispatchWorkerException(DispatchManager dispatchManager, Throwable ex);
+   public void onDispatchWorkerException(I_DispatchManager dispatchManager, Throwable ex);
    
 }

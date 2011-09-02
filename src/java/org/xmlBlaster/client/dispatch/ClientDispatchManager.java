@@ -3,7 +3,7 @@ Name:      DispatchManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util.dispatch;
+package org.xmlBlaster.client.dispatch;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,13 +14,20 @@ import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
+import org.xmlBlaster.util.dispatch.DispatchWorker;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -41,13 +48,13 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  * There is one instance of this class per queue and remote connection.
  * @author xmlBlaster@marcelruff.info
  */
-public final class DispatchManager implements I_Timeout, I_QueuePutListener
+public final class ClientDispatchManager implements I_DispatchManager
 {
    public final String ME;
    private final Global glob;
-   private static Logger log = Logger.getLogger(DispatchManager.class.getName());
+   private static Logger log = Logger.getLogger(ClientDispatchManager.class.getName());
    private final I_Queue msgQueue;
-   private final DispatchConnectionsHandler dispatchConnectionsHandler;
+   private final ClientDispatchConnectionsHandler dispatchConnectionsHandler;
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private final I_MsgDispatchInterceptor msgInterceptor;
@@ -90,7 +97,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */
-   public DispatchManager(Global glob, I_MsgErrorHandler failureListener,
+   public ClientDispatchManager(Global glob, I_MsgErrorHandler failureListener,
                           I_MsgSecurityInterceptor securityInterceptor,
                           I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener,
                           AddressBase[] addrArr, SessionName sessionName) throws XmlBlasterException {
@@ -107,7 +114,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.msgQueue = msgQueue;
       this.failureListener = failureListener;
       this.securityInterceptor = securityInterceptor;
-      this.dispatchConnectionsHandler = this.glob.createDispatchConnectionsHandler(this);
+      this.dispatchConnectionsHandler = new ClientDispatchConnectionsHandler(glob, this);
       this.connectionStatusListeners = new HashSet();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
 
@@ -286,7 +293,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * NOTE: toAlive is called initially when a protocol plugin is successfully loaded
     * but we don't know yet if it ever is able to connect
     */
-   void toAlive(ConnectionStateEnum oldState) {
+   public void toAlive(ConnectionStateEnum oldState) {
 
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Switch from " + oldState + " to ALIVE");
 
@@ -339,7 +346,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /** Call by DispatchConnectionsHandler on state transition */
-   void toPolling(ConnectionStateEnum oldState) {
+   public void toPolling(ConnectionStateEnum oldState) {
       
       if (isDead()) {
          return;
@@ -371,7 +378,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /** Call by DispatchConnectionsHandler on state transition */
-   void shutdownFomAnyState(ConnectionStateEnum oldState, XmlBlasterException ex) {
+   public void shutdownFomAnyState(ConnectionStateEnum oldState, XmlBlasterException ex) {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Switch from " + oldState + " to DEAD");
       if (oldState == ConnectionStateEnum.DEAD) return;
       if (this.isShutdown) return;
@@ -462,7 +469,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * Called by DispatchWorker if an Exception occured in sync mode
     * Only on client side
     */
-   void handleSyncWorkerException(List<I_Entry> entryList, Throwable throwable) throws XmlBlasterException {
+   public void handleSyncWorkerException(List<I_Entry> entryList, Throwable throwable) throws XmlBlasterException {
 
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
 
@@ -558,7 +565,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * Called by DispatchWorker if an Exception occurred in async mode. 
     * @throws XmlBlasterException should never happen but is possible during removing entries from queue
     */
-   void handleWorkerException(List<I_Entry> entryList, Throwable throwable) throws XmlBlasterException {
+   public void handleWorkerException(List<I_Entry> entryList, Throwable throwable) throws XmlBlasterException {
       // Note: The DispatchManager is notified about connection problems directly by its DispatchConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Async delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
@@ -763,7 +770,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * @see I_QueuePutListener#putPost(I_QueueEntry[])
     */
    public void putPost(I_QueueEntry[] queueEntries) throws XmlBlasterException {
-      if (!this.isSyncMode && !this.inAliveTransition) {
+      if (!this.isSyncMode) {
          if (this.dispatcherActive) notifyAboutNewEntry();
          if (queueEntries.length > 0 && ((MsgQueueEntry)queueEntries[0]).wantReturnObj()) {
             // Simulate return values, and manipulate missing informations into entries ...
@@ -1063,7 +1070,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * The worker notifies us that it is finished, if messages are available
     * it is triggered again.
     */
-   void setDispatchWorkerIsActive(boolean val) {
+   public void setDispatchWorkerIsActive(boolean val) {
       this.dispatchWorkerIsActive = val;
       if (val == false) {
          if (this.isShutdown) {

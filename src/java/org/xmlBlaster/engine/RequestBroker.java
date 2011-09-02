@@ -2520,7 +2520,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       ArrayList list = new ArrayList(arr.length);
       for (int i=0; i<arr.length; i++) {
          SessionInfo info = arr[i];
-         org.xmlBlaster.util.dispatch.DispatchManager manager = info.getDispatchManager();
+         org.xmlBlaster.engine.dispatch.ServerDispatchManager manager = info.getDispatchManager();
          if (manager != null && manager.getDispatchConnectionsHandler().isAlive()) {
             list.add(info.getSessionName().getAbsoluteName());
          }

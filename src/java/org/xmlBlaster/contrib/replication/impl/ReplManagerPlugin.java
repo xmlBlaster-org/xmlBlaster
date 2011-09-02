@@ -90,7 +90,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -901,7 +901,7 @@ public class ReplManagerPlugin extends GlobalInfo
     * This method is invoked always so see sessionAdded javadoc.
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#addDispatchManager(org.xmlBlaster.util.dispatch.DispatchManager)
     */
-   public void addDispatchManager(DispatchManager dispatchManager) {
+   public void addDispatchManager(I_DispatchManager dispatchManager) {
       /*
       try {
          SessionName sessionName = dispatchManager.getSessionName();
@@ -931,7 +931,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#doActivate(org.xmlBlaster.util.dispatch.DispatchManager)
     */
-   public boolean doActivate(DispatchManager dispatchManager) {
+   public boolean doActivate(I_DispatchManager dispatchManager) {
       if (dispatchManager.getDispatchConnectionsHandler().isPolling()) {
          log.fine("Can't send message as connection is lost and we are polling");
          return false;
@@ -957,7 +957,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#handleNextMessages(org.xmlBlaster.util.dispatch.DispatchManager, java.util.ArrayList)
     */
-   public List<I_Entry> handleNextMessages(DispatchManager dispatchManager, List<I_Entry> pushEntries)
+   public List<I_Entry> handleNextMessages(I_DispatchManager dispatchManager, List<I_Entry> pushEntries)
          throws XmlBlasterException {
 
       if (!this.initialized) {
@@ -1041,7 +1041,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#shutdown(org.xmlBlaster.util.dispatch.DispatchManager)
     */
-   public synchronized void shutdown(DispatchManager dispatchManager) throws XmlBlasterException {
+   public synchronized void shutdown(I_DispatchManager dispatchManager) throws XmlBlasterException {
       I_ReplSlave slave = null;
       String name = dispatchManager.getSessionName().getRelativeName();
       synchronized (this.replSlaveMap) {
@@ -1075,22 +1075,22 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
-   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
 
-   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
    
    /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, XmlBlasterException)
     */
-   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+   public void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
    }
 
    /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
-   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
 
    private synchronized void registerSqlStatement(String replPrefix, String reqId, String statement) throws Exception {
@@ -1532,7 +1532,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * Does cleanup, particularly it sets the status and counters. 
     */
-   public void postHandleNextMessages(DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException {
+   public void postHandleNextMessages(I_DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException {
       if (!this.initialized) {
          synchronized(this) {
             if (!this.initialized) {
@@ -1565,7 +1565,7 @@ public class ReplManagerPlugin extends GlobalInfo
       }
    }
 
-   public void onDispatchWorkerException(DispatchManager dispatchManager, Throwable ex) {
+   public void onDispatchWorkerException(I_DispatchManager dispatchManager, Throwable ex) {
       I_ReplSlave slave = null;
       String relativeName = dispatchManager.getSessionName().getRelativeName();
       synchronized (this.replSlaveMap) {

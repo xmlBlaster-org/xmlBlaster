@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.error;
 
-import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.MsgUnit;
@@ -38,7 +38,7 @@ public interface I_MsgErrorInfo
     * Access the DispatchManager which holds the queue. 
     * @return null if entries are not in a queue
     */
-   DispatchManager getDispatchManager();
+   I_DispatchManager getDispatchManager();
 
    /**
     * Access the exception object describing the problem

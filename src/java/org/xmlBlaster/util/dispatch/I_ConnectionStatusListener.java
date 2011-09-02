@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.dispatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**
@@ -17,13 +16,13 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
  */
 public interface I_ConnectionStatusListener
 {
-   void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState);
-   void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState);
-   void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState);
+   void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState);
+   void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState);
+   void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState);
    /**
     * @param dispatchManager
     * @param oldState
     * @param xmlBlasterException Can be null
     */
-   void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException);
+   void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException);
 }

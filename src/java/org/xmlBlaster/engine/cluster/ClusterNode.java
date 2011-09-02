@@ -24,6 +24,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.protocol.socket.SocketDriver;
@@ -37,8 +38,8 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -296,12 +297,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                }
             }
             
-            DispatchManager mgr = myRemotePartnerLogin.getDispatchManager();
+            ServerDispatchManager mgr = myRemotePartnerLogin.getDispatchManager();
             if (mgr != null) {
                boolean fireInitial = true;
                 mgr.addConnectionStatusListener(new I_ConnectionStatusListener() {
                    // The !remote! node has logged in (not our client connection)
-                   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                   public void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
                       SessionInfo myRemotePartnerLogin = fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
                       if (myRemotePartnerLogin != null && myRemotePartnerLogin.getAddressServer() != null) {
                          Object obj = myRemotePartnerLogin.getAddressServer().getCallbackDriver();
@@ -325,7 +326,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                          log.info(sessionName.toString() + " Adding toAlive 'dummyPlaceHolder' (myRemotePartnerLogin=null) entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                       }
                    }
-                   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                   public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
                       log.warning("toPolling(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                       log.info(sessionName.toString() + " Adding toPolling 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
@@ -333,14 +334,14 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                         ping(); // Force our client connection to POLLING as
                                 // well
                    }
-                   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
+                   public void toDead(I_DispatchManager dispatchManager, ConnectionStateEnum oldState, XmlBlasterException xmlBlasterException) {
                       log.severe("toDead(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                       log.info(sessionName.toString() + " Adding toDead 'dummyPlaceHolder' entryKey=" + globalKey + " global.instanceId=" + remoteGlob.getInstanceId() + "-" + remoteGlob.hashCode());
                       if (oldState == ConnectionStateEnum.ALIVE)
                         ping(); // Force our client connection to POLLING
                    }
-                   public void toAliveSync(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                   public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
                       log.severe("toAliveSync no handled for cluster callback tunnel");
                    }
                    

@@ -43,6 +43,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
+import org.xmlBlaster.client.dispatch.ClientDispatchManager;
 import org.xmlBlaster.client.protocol.CbServerPluginManager;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -67,8 +68,8 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
+import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
 import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
@@ -1790,8 +1791,8 @@ public class Global implements Cloneable
    /**
     * Returns the client access layer implementations 'ClientDispatchConnectionsHandler'
     */
-   public DispatchConnectionsHandler createDispatchConnectionsHandler(DispatchManager dispatchManager) throws XmlBlasterException {
-      return new ClientDispatchConnectionsHandler(this, dispatchManager);
+   public DispatchConnectionsHandler createDispatchConnectionsHandler(I_DispatchManager dispatchManager) throws XmlBlasterException {
+      return new ClientDispatchConnectionsHandler(this, (ClientDispatchManager)dispatchManager);
    }
 
    public void finalize() {

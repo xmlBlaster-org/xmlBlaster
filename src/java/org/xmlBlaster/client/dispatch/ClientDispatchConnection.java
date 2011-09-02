@@ -558,7 +558,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    protected final void reconnect() throws XmlBlasterException {
       if (this.driver == null) return;
       if (log.isLoggable(Level.FINER)) log.finer("Entering reconnect(" + this.driver.getProtocol() + ")");
-
+      
       if (this.connectReturnQos != null) {
          // needed to avoid failure
          this.connectionsHandler.getDispatchStatistic().clearCurrentReads();
