@@ -282,6 +282,23 @@ public class FileLocator
          }
       }
 
+      try {
+         // default (system) classpath
+         URL url = this.glob.getClass().getClassLoader().getResource(filename);
+         if (url != null) return url;
+      }
+      catch (Throwable ex) {
+         ex.printStackTrace();
+      }
+      try {
+         // context classpath
+         URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
+         if (url != null) return url;
+      }
+      catch (Throwable ex) {
+         ex.printStackTrace();
+      }
+
       // java.ext.dirs
       path = System.getProperty("java.ext.dirs", (String)null);
       if (path != null) {
