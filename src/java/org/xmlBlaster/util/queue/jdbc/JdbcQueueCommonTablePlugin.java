@@ -5,37 +5,36 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.jdbc;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_StorageSizeListener;
-import org.xmlBlaster.util.queue.I_Storage;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_QueuePutListener;
-import org.xmlBlaster.util.queue.ReturnDataHolder;
-import org.xmlBlaster.util.queue.I_StoragePlugin;
-import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.msgstore.I_Map;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
-import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.util.queue.I_StorageProblemListener;
-
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.I_QueuePutListener;
+import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.ReturnDataHolder;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 
 
 /**
@@ -100,7 +99,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public JdbcQueueCommonTablePlugin() {
       if (!isWarned) {
          isWarned = true;
-         log.warning("Be aware: You are using the OLD JdbcQueueCommonTablePlugin database persistence layer with the 'xb_entires' table which was the default up to xmlBlaster v1.6.4. " +
+         log.warning("Be aware: You are using the OLD JdbcQueueCommonTablePlugin database persistence layer with the 'xb_entries' table which was the default up to xmlBlaster v1.6.4. "
+               +
                "Please consider upgrading to the new persistence schema. Details: http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html");
       }
       this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
