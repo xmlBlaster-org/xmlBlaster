@@ -3,7 +3,6 @@
 	<classpathentry excluding="**/DebugConnection*|**/MainSvc.java|**/corba/*|**/j2me/**|**/mime/sql92/**|**/util/lexical/**|j2ee/**" kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/activation.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/clark_copying.txt"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-lang-2.4.jar"/>
@@ -12,12 +11,9 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ehcache.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ejb2.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/gnu-regexp.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/hsqldb_lic.txt"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/hsqldb.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/hypersonic_lic.txt"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jaas.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/java_cup.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/java_cup.LICENSE"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/javax.jms.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jax.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jaxen.jar"/>
@@ -31,7 +27,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jzlib.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ldbc.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/LICENSE"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mail.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/miniJacorb.jar"/>
@@ -89,7 +84,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/ant.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/bsf.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/cpptasks.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/README"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/xalan.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/xercesImpl.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/xml-apis.jar"/>
