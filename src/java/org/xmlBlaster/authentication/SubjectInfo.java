@@ -900,15 +900,15 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             boolean isInternal = q.getSessionQos().getSessionName().isPubSessionIdInternal();
             ArrayList<SessionInfo> list = new ArrayList<SessionInfo>(arr.length);
             for (int i=0; i<arr.length; i++) {
-                    if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
+               if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
                    list.add(arr[i]);
             }
-            log.warning("clearSessions for " + list.size() + " isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
+            log.warning(getId() + " clear " + list.size() + " sessions, isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
             return (SessionInfo[])list.toArray(new SessionInfo[list.size()]);
           }
           else {
-              log.warning("clearSessions for " + arr.length + " sessions, max=" + getNumSessions() + " reached");
-                  return arr;
+              log.warning(getId() + " clear " + arr.length + " sessions, max=" + getNumSessions() + " reached");
+              return arr;
           }
       }
       return new SessionInfo[0];
