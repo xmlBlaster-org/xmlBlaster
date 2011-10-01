@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17990 r17991 Low level performance tweaks (StringBuilder, TimeoutPooled#refreshTimeoutListener
+
  o r17985 STOMP and IOR (Corba) protocol are disabled as default setting (see config/xmlBlasterPlugins.xml.template)
 
  o r17979 Ported DispatchManager to I_DispatchManager and ServerDispatchManager and ClientDispatchManager. On Server side putPost has an
