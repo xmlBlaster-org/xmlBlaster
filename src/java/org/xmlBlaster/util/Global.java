@@ -33,7 +33,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.jasper.tagplugins.jstl.core.If;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.XmlBlasterAccess;
