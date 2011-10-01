@@ -1,11 +1,10 @@
 package org.xmlBlaster.test.classtest;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -51,7 +50,7 @@ public class StringPairTokenizerTest extends TestCase {
          long waitingDelay = 4000L;
          
          String cmd = "maxEntries=4&maxSize=-1&consumable=true&waitingDelay=1000";
-         Map props = StringPairTokenizer.parseToStringClientPropertyPairs(cmd, "&", "=");
+         Map<String, ClientProperty> props = StringPairTokenizer.parseToStringClientPropertyPairs(cmd, "&", "=");
          
          ClientProperty prop = (ClientProperty)props.get("maxEntries");
          assertNotNull("property should not be null", prop);
@@ -83,7 +82,7 @@ public class StringPairTokenizerTest extends TestCase {
 	    // TODO: need to add " around some parameter-values and extend the tokenizer accordingly
 		String cmd = "nodeClass=node&node=izar&action=initReplication&p1=Hallo";
 		try {
-			Map props = StringPairTokenizer.parseToStringClientPropertyPairs(
+			Map<String, ClientProperty> props = StringPairTokenizer.parseToStringClientPropertyPairs(
 					cmd, "&", "=");
 
 			assertTrue("Missing property", props.containsKey("nodeClass"));
@@ -107,7 +106,7 @@ public class StringPairTokenizerTest extends TestCase {
    public void testMapCSV() {
       {
          String line = "aKey=\"a value with &#034; apost, and semicolon\",otherKey=2300,third&#061;Key=a key with assignment,key4=\"Hello, == world\"";
-         Map map = StringPairTokenizer.CSVToMap(line);
+         Map<String, String> map = StringPairTokenizer.CSVToMap(line);
          String result = StringPairTokenizer.mapToCSV(map);
          map = StringPairTokenizer.CSVToMap(result);
          assertEquals(4, map.size());
@@ -123,7 +122,7 @@ public class StringPairTokenizerTest extends TestCase {
       }
       {
          String line = "aNullKey,otherEmptyKey=,thirdKey=\" \", fourthKey = Blanks ";
-         Map map = StringPairTokenizer.CSVToMap(line);
+         Map<String, String> map = StringPairTokenizer.CSVToMap(line);
          String result = StringPairTokenizer.mapToCSV(map);
          map = StringPairTokenizer.CSVToMap(result);
          assertEquals(4, map.size());
