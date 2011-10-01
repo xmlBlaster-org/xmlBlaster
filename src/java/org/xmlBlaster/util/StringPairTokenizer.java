@@ -86,8 +86,8 @@ public class StringPairTokenizer {
     */
    public static String[] parseLine(String[] nextLines, char separator,
                 char quotechar, boolean trimEmpty, boolean preserveInsideQuoteChar) {
-      List tokensOnThisLine = new ArrayList();
-      StringBuffer sb = new StringBuffer();
+      List<String> tokensOnThisLine = new ArrayList<String>();
+      StringBuilder sb = new StringBuilder(256);
       boolean inQuotes = false;
       if (nextLines.length < 1 || nextLines[0] == null)
          return new String[0];
@@ -118,7 +118,7 @@ public class StringPairTokenizer {
                else {
                   tokensOnThisLine.add(tmp);
                }
-               sb = new StringBuffer(); // start work on next token
+               sb = new StringBuilder(256); // start work on next token
             } else {
                sb.append(c);
             }
@@ -332,23 +332,21 @@ public class StringPairTokenizer {
      * @param map
      * @return e.g. "key1=15,name=joe"
      */
-    public static String dumpMap(Map map) {
-       StringBuffer buf = new StringBuffer();
+    public static String dumpMap(Map<String, ClientProperty> map) {
        if (map != null) {
+          StringBuilder buf = new StringBuilder(16 + map.size() * 16);
           boolean first = true;
-          Iterator it = map.entrySet().iterator();
+          Iterator<Map.Entry<String, ClientProperty>> it = map.entrySet().iterator();
           while (it.hasNext()) {
-             Map.Entry entry = (Map.Entry)it.next();
+             Map.Entry<String, ClientProperty> entry = it.next();
              buf.append(entry.getKey()).append("=").append(entry.getValue());
              if (!first) buf.append(",");
              first = false;
           }
+          return buf.toString();
        }
-       else
-          buf.append("null");
-       return buf.toString();
+       return "null";
     }
-
 
    /**
     * If a value is missing then a null object will be put into the map as value.
@@ -390,7 +388,8 @@ public class StringPairTokenizer {
     * If a value is missing then a null object as value.
     * the map returns pairs 'String,ClientProperty'.
     */
-   public static Map parseToStringClientPropertyPairs(String rawString, String outerToken, String innerToken) {
+   @SuppressWarnings("unchecked")
+   public static Map<String, ClientProperty> parseToStringClientPropertyPairs(String rawString, String outerToken, String innerToken) {
       return parseStringProperties(rawString, outerToken, innerToken, true);
    }
 
@@ -478,7 +477,7 @@ public class StringPairTokenizer {
       if (apos == 0) apos = '"';
       // "\\"+apos or "&apos;" or "&#034;" (' is &#039;)
       final String escApos = (apos == '"') ? "&#034;" : "&#039;";
-      StringBuffer buf = new StringBuffer(map.size() * 100);
+      StringBuilder buf = new StringBuilder(map.size() * 100);
       Iterator it = map.entrySet().iterator();
       while (it.hasNext()) {
          Map.Entry entry = (Map.Entry)it.next();
@@ -519,7 +518,7 @@ public class StringPairTokenizer {
    public static String arrayToCSV(String[] strs, String sep) {
       if (strs == null || strs.length < 1)
          return "";
-      StringBuffer buf = new StringBuffer(strs.length*100);
+      StringBuilder buf = new StringBuilder(strs.length*100);
       for (int i=0; i<strs.length; i++) {
          if (strs[i] == null) continue; // Ignore
          if (buf.length() > 0)

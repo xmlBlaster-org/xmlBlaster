@@ -29,16 +29,11 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-//import javax.management.AttributeChangeNotification;
-//import javax.management.Notification;
-//import javax.management.NotificationBroadcasterSupport;
-//import javax.management.ObjectName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.SAXParserFactory;
-//import javax.xml.transform.TransformerFactory;
-//import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.apache.jasper.tagplugins.jstl.core.If;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.XmlBlasterAccess;
@@ -57,8 +52,6 @@ import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-//import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-//import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
@@ -69,7 +62,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
-import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
 import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
@@ -2011,14 +2003,14 @@ public class Global implements Cloneable
     * </pre>
     */
    public String usage() {
-      StringBuffer sb = new StringBuffer(4028);
+      StringBuilder sb = new StringBuilder(4028);
       sb.append(org.xmlBlaster.client.XmlBlasterAccess.usage(this));
       sb.append(logUsage());
       return sb.toString();
    }
 
    public static String logUsage() {
-      StringBuffer sb = new StringBuffer(1024);
+      StringBuilder sb = new StringBuilder(1024);
       sb.append("Control properties framework:\n");
       sb.append("   -propertyFile <file> Specify an xmlBlaster.properties file to load.\n");
       sb.append("                        The contained settings overwrite a property file found in the xmlBlaster.jar file.\n");
@@ -2283,7 +2275,7 @@ public class Global implements Cloneable
              tmpList.add(fn);
          }
          else { // TODO: Get a proper dump, here we only dump the queueEntry information but not the message itself
-            StringBuffer sb = new StringBuffer(4096);
+            StringBuilder sb = new StringBuilder(4096);
             sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             sb.append("\n<xmlBlaster>");
             sb.append("\n <!-- Content dump is not yet implemented -->");
@@ -2434,7 +2426,7 @@ public class Global implements Cloneable
    * @return a nice readable memory statistic string
    */
    public static final String getMemoryStatistic() {
-      StringBuffer statistic = new StringBuffer();
+      StringBuilder statistic = new StringBuilder(256);
       statistic.append("Total memory allocated = ");
       statistic.append(byteString(Runtime.getRuntime().totalMemory()));
       statistic.append(".");

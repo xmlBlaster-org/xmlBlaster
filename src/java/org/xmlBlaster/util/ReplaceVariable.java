@@ -44,7 +44,7 @@ public final class ReplaceVariable
     * @param count int
     */
    public String charChain(char oneChar, int count) {
-     StringBuffer returnValue = new StringBuffer();
+     StringBuilder returnValue = new StringBuilder();
      if (count > 0)
        for (int index = 0; index < count; index++) {
          returnValue.append(oneChar);
@@ -117,7 +117,7 @@ public final class ReplaceVariable
          return str;
       if (str.indexOf(from) == -1)
          return str;
-      StringBuffer buf = new StringBuffer("");
+      StringBuilder buf = new StringBuilder(str.length() + 16);
       String tail = str;
       while (true) {
          int index = tail.indexOf(from, fromIndex);
@@ -142,7 +142,7 @@ public final class ReplaceVariable
          return str;
       if (str.indexOf(from) == -1)
          return str;
-      StringBuffer buf = new StringBuffer("");
+      StringBuilder buf = new StringBuilder(str.length() + to.length() + 16);
       String tail = str;
       while (true) {
          int index = tail.indexOf(from);
@@ -167,7 +167,7 @@ public final class ReplaceVariable
         return str;
       int index = str.indexOf(from);
       if (index >= 0) {
-        StringBuffer tmp = new StringBuffer("");
+        StringBuilder tmp = new StringBuilder(str.length() + to.length());
         if (index > 0)
           tmp.append(str.substring(0, index));
         tmp.append(to);

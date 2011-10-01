@@ -9,6 +9,7 @@ package org.xmlBlaster.util.lexical;
 import java.util.Map;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 
 /**
@@ -17,6 +18,6 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public interface I_Selector {
    
-   public boolean select(String query, Map clientProperties) throws XmlBlasterException;
+   public boolean select(String query, Map<String, ClientProperty> clientProperties) throws XmlBlasterException;
 
 }

@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 import java.io.StringReader;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class Sql92Selector implements I_Selector {
       this.parser = new Sql92Parser(this.global, this.scanner);
    }
    
-   public boolean select(String query, Map clientProperties) throws XmlBlasterException {
+   public boolean select(String query, Map<String, ClientProperty> clientProperties) throws XmlBlasterException {
       try {
          if (log.isLoggable(Level.FINER)) log.finer("select \"" + query + "\"");
          this.scanner.yyreset(new StringReader(query));
