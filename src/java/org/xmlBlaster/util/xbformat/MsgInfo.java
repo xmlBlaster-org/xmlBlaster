@@ -683,14 +683,14 @@ public class MsgInfo {
    /**
     * @return Returns the checksum.
     */
-   public boolean isChecksum() {
+   public final boolean isChecksum() {
       return this.checksum;
    }
 
    /**
     * @return Returns the compressed.
     */
-   public boolean isCompressed() {
+   public final boolean isCompressed() {
       return this.compressed;
    }
 

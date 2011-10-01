@@ -351,7 +351,11 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.I_TimeoutManager#refreshTimeoutListener(org.xmlBlaster.util.Timestamp, long)
     */
-   public final Timestamp refreshTimeoutListener(Timestamp key, long delay)
+   public final Timestamp refreshTimeoutListener(Timestamp key, long delay) throws XmlBlasterException {
+	   return refreshTimeoutListener(key, delay, true);
+   }
+   
+   private Timestamp refreshTimeoutListener(Timestamp key, long delay, boolean throwExceptionIfMissing)
          throws XmlBlasterException {
       if (key == null) {
          Thread.dumpStack();
@@ -365,10 +369,15 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
       }
 
       if (obj == null) {
-         String pos = Global.getStackTraceAsString(null);
-         throw new XmlBlasterException(Global.instance(),
+    	 if (throwExceptionIfMissing) {
+    		String pos = Global.getStackTraceAsString(null);
+            throw new XmlBlasterException(Global.instance(),
                ErrorCode.RESOURCE_UNAVAILABLE, ME, "The timeout handle '" + key
                      + "' is unknown, no timeout refresh done: " + pos);
+    	 }
+    	 else {
+    		 return null;
+    	 }
       }
       Container container = (Container) obj;
       I_Timeout callback = container.getCallback();
@@ -396,7 +405,12 @@ public class TimeoutPooled extends Thread implements I_TimeoutManager {
          return addTimeoutListener(listener, delay, userData);
       } else {
          try {
-            return refreshTimeoutListener(key, delay);
+            //return refreshTimeoutListener(key, delay);
+            Timestamp ts = refreshTimeoutListener(key, delay, false);
+            if (ts == null) {
+                return addTimeoutListener(listener, delay, userData);
+            }
+            return ts;
          } catch (XmlBlasterException e) {
             if (ErrorCode.RESOURCE_UNAVAILABLE == e.getErrorCode()) {
                return addTimeoutListener(listener, delay, userData);

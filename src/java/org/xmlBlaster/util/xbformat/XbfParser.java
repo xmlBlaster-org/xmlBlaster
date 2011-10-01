@@ -400,7 +400,7 @@ public class XbfParser implements I_MsgInfoParser
          out.write(NULL_BYTE);
 
          if (lenUnzipped > 0)
-            out.write(new String(""+lenUnzipped).getBytes());
+            out.write((""+lenUnzipped).getBytes());
          out.write(NULL_BYTE);
 
          for (int ii=0; ii<msgInfo.getMessages().size(); ii++) {
@@ -410,7 +410,7 @@ public class XbfParser implements I_MsgInfoParser
             out.write(unit.getKey().getBytes());
             out.write(NULL_BYTE);
             byte[] tmp = unit.getContent();
-            out.write((""+tmp.length).getBytes());
+            out.write(Integer.toString(tmp.length).getBytes());
             out.write(NULL_BYTE);
             out.write(tmp);
          }
@@ -421,9 +421,8 @@ public class XbfParser implements I_MsgInfoParser
             byte[] checkSumResultB = new String(""+checkSumResult).getBytes();
             out.insert(pos+EMPTY10.length-checkSumResultB.length, checkSumResultB);
          }
-
          // Finally we know the overall length, write it to the header:
-         byte[] msgLengthB = new String(""+out.size()).getBytes();
+         byte[] msgLengthB = (Integer.toString(out.size())).getBytes();
          out.insert(EMPTY10.length - msgLengthB.length, msgLengthB);
          return out.toByteArray();
       }
@@ -530,17 +529,27 @@ public class XbfParser implements I_MsgInfoParser
     * @return The stringified message, null bytes are replaced by '*'
     */
    public static final String createLiteral(byte[] arr) {
-      StringBuffer buffer = new StringBuffer(arr.length+10);
-      byte[] dummy = new byte[1];
+      StringBuilder buffer = new StringBuilder(arr.length+10);
       for (int ii=0; ii<arr.length; ii++) {
          if (arr[ii] == 0)
             buffer.append("*");
          else {
-            dummy[0] = arr[ii];
-            buffer.append(new String(dummy));
+            buffer.append((char)arr[ii]);
          }
       }
       return buffer.toString();
+//
+//      StringBuffer buffer = new StringBuffer(arr.length+10);
+//      byte[] dummy = new byte[1];
+//      for (int ii=0; ii<arr.length; ii++) {
+//         if (arr[ii] == 0)
+//            buffer.append("*");
+//         else {
+//            dummy[0] = arr[ii];
+//            buffer.append(new String(dummy));
+//         }
+//      }
+//      return buffer.toString();
    }
 
    private class Buf {
@@ -564,7 +573,7 @@ public class XbfParser implements I_MsgInfoParser
        * @return The stringified message, null bytes are replaced by '*'
        */
       public String toLiteral() {
-         StringBuffer buffer = new StringBuffer(200);
+         StringBuilder buffer = new StringBuilder(buf.length + 200);
          int start = 0;
          if (offset > 20)
             start = offset-20;
