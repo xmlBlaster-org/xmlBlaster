@@ -70,7 +70,7 @@ public final class ReplaceVariable
          if (fromIndex == -1) return text;
          minIndex = 0;
 
-         int to = text.indexOf(this.endToken, fromIndex);
+         int to = text.indexOf(this.endToken, fromIndex+1);
          //System.out.println("ReplaceVariable: Trying fromIndex=" + fromIndex + " toIndex=" + to + " '" + text.substring(fromIndex,to+1) + "'");
 
          if (false) {  // to support "${A${B}}"
