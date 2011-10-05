@@ -213,6 +213,10 @@ namespace org { namespace xmlBlaster { namespace util {
          "You can throw this on client side in your update() method: Like this the server queues the message and sets the dispatcActive to false. You need to manually activate the dispatcher again."
    );
 
+   const ErrorCode USER_UPDATE_DEADMESSAGE("user.update.deadMessage",
+         "You can throw this on client side in your update() method: Like this the server publishes the message as dead letter and removes it from the callback queue. Since xmlBlaster > v2.0."
+   );
+
    const ErrorCode USER_UPDATE_SECURITY_AUTHENTICATION_ACCESSDENIED("user.update.security.authentication.accessDenied",
          "The update method was invoked with an invalid callback session ID."
    );
