@@ -30,7 +30,6 @@ public class AllTests extends junit.framework.TestCase
     suite.addTest(org.xmlBlaster.test.dispatch.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.distributor.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.jms.AllTests.suite());
-    suite.addTest(org.xmlBlaster.test.jdbc.AllTests.suite());
     //suite.addTest(org.xmlBlaster.test.memoryleak.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.snmp.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.persistence.AllTests.suite());
