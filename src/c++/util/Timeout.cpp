@@ -7,7 +7,7 @@ Comment:   Allows you be called back after a given delay.
 #include <algorithm>
 #include <string>
 
-#include <util/Timeout.h>
+#include <util/Timeout.hpp>
 #include <util/lexical_cast.h>
 #include <util/Constants.h>
 #include <util/Global.h>

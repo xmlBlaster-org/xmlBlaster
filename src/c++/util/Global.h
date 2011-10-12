@@ -20,7 +20,7 @@ Version:   $Id$
 
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
-#include <util/Timeout.h>
+#include <util/Timeout.hpp>
 
 #include <string>
 #include <map>

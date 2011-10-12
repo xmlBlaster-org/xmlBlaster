@@ -7,7 +7,7 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
-#include <util/Timeout.h>
+#include <util/Timeout.hpp>
 #include <algorithm>
 #include <util/lexical_cast.h>
 #include <util/Global.h>

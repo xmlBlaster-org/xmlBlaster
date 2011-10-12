@@ -123,7 +123,8 @@ protected:
    static void releaseXMLCh(char** data);
 
    /** Receive notification of character data inside an element. */
-   void characters(const XMLCh *const chars, const unsigned int length);
+   void characters(const XMLCh *const chars, const unsigned int length); // xerces 2!
+   void characters(const XMLCh *const chars, const XMLSize_t length); // xerces 3!
    
    /** Receive notification of the end of the document. */
    void endDocument();

@@ -197,7 +197,6 @@ void Sax2Parser::startDocument()
 /** Receive notification of the start of an element. */
 void Sax2Parser::startElement(const XMLCh *const /*uri*/, const XMLCh *const /*localname*/, const XMLCh *const qname, const Attributes &attrs)
 {
-   //if (log_.call()) log_.call(ME, "startElement <" + name + ">");
    AttributeMap tmpMap;
    handler_->startElement(getStringValue(qname), getAttributeMap(tmpMap, attrs));
 }
@@ -217,7 +216,17 @@ void Sax2Parser::startCDATA()
 }
 
 /** Receive notification of character data inside an element. */
-void Sax2Parser::characters(const XMLCh *const chars, const unsigned int length)
+void Sax2Parser::characters (const XMLCh *const chars, const XMLSize_t length) // xerces 3
+{
+   //if (log_.call()) log_.call(ME, string("characters"));
+   string tmp;
+   bool doTrim = false;
+   tmp.assign(getStringValue(chars, doTrim), 0, length);
+   handler_->characters(tmp);
+}
+
+/** Receive notification of character data inside an element. */
+void Sax2Parser::characters(const XMLCh *const chars, const unsigned int length) // xerces 2
 {
    //if (log_.call()) log_.call(ME, string("characters"));
    string tmp;

@@ -7,7 +7,7 @@ Comment:   Handles the I_XmlBlasterConnections
 
 #include <util/dispatch/ConnectionsHandler.h>
 #include <util/Global.h>
-#include <util/Timeout.h>
+#include <util/Timeout.hpp>
 #include <util/Timestamp.h>
 #include <util/Constants.h>
 #include <util/lexical_cast.h>
