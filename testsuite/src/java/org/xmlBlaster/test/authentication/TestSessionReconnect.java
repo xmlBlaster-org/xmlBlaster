@@ -151,7 +151,7 @@ public class TestSessionReconnect extends TestCase
 
          log.info("============ STEP 3: Stop subscriber callback");
          try {
-            Client.shutdownCb(conSub, Client.Shutdown.KEEP_LOGGED_IN);
+            Client.shutdownCb(conSub, Client.Shutdown.LEAVE_SERVER);
             // conSub.getCbServer().shutdown();
          }
          catch (XmlBlasterException e) {
