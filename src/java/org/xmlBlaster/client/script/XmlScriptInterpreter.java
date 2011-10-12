@@ -37,6 +37,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
 
 /**
@@ -891,6 +892,9 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
                props.setProperty("inhibitContentCDATAWrapping", "true");
          }
             
+         // String contentCharset = ReplaceVariable.extractWithMatchingAttrs(msgUnits[0].getQos(), "clientProperty", Constants.CLIENTPROPERTY_CONTENT_CHARSET);
+         // String contentCharset = XmlScriptParser.getEncodingFromProcessingInstruction(header);
+         String contentCharset = null;
          if (msgUnits.length == 1) {
             if (type == MsgInfo.EXCEPTION_BYTE && this.sendSimpleExceptionFormat) {
                // This must be parsable on the other side similar to XmlBlasterException.parseByteArr()
@@ -903,13 +907,13 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
                out.write(buf.toString().getBytes(Constants.UTF8_ENCODING));
             }
             else {
-               msgUnits[0].toXml(offset, out, props);
+               msgUnits[0].toXml(offset, out, props, contentCharset);
             }
          }
          else {
             for (int i=0; i < msgUnits.length; i++) {
                out.write("\n  <message>".getBytes());
-               msgUnits[i].toXml(offset, out, props);
+               msgUnits[i].toXml(offset, out, props, contentCharset);
                out.write("\n  </message>\n".getBytes());
             }
          }
@@ -985,4 +989,6 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
          ex.printStackTrace();
       }
    }
+   
+   
 }

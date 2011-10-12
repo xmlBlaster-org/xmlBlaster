@@ -486,6 +486,9 @@ public class SqlInfo implements ReplicationConstants {
             }
             in.close();
             ClientProperty prop  = new ClientProperty(name, null, null);
+            // !TODO USE ENCODING OF DATABASE HERE (FIND A WAY TO GET IT
+            // Is baos in encoding of JVM already?
+            // If yes use System.getProperty("??? java.encoding");
             prop.setValue(new String(baos.toByteArray()));
             return prop;
          }

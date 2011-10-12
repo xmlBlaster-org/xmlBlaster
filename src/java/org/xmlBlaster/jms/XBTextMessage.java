@@ -8,6 +8,10 @@ package org.xmlBlaster.jms;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
+import org.xmlBlaster.util.def.Constants;
+
+import com.sun.corba.se.impl.orbutil.closure.Constant;
+
 /**
  * XBTextMessage
  *
@@ -22,11 +26,11 @@ public class XBTextMessage extends XBMessage implements TextMessage {
    
    public String getText() throws JMSException {
       if (this.content == null) return null;
-      return new String(this.content);
+      return Constants.toUtf8String(this.content);
    }
 
    public void setText(String text) throws JMSException {
       if (text == null) this.content = null;
-      else this.content = text.getBytes();
+      else this.content = Constants.toUtf8Bytes(text);
    }
 }

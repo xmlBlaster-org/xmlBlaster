@@ -59,9 +59,9 @@ public class StreamCallback implements I_Callback {
     * @param content the content to write
     * @param buf the StringBuffer object to fill with the content
     */
-   protected void writeContent(byte[] content, StringBuffer buf) {
+   protected void writeContent(String contentStr, StringBuffer buf) {
       buf.append(this.offset).append("   ").append("<content>");
-      buf.append("<![CDATA[").append(new String(content)).append("]]>"); // here you can change according to your needs
+      buf.append("<![CDATA[").append(contentStr).append("]]>"); // here you can change according to your needs
       buf.append("</content>");
    }
 
@@ -75,7 +75,7 @@ public class StreamCallback implements I_Callback {
       buf.append("\n").append(this.offset).append("<update>\n");
       buf.append(this.offset).append("<sessionId>").append(cbSessionId).append("</sessionId>");
       buf.append(updateKey.toXml(this.offset + "  ")).append("\n");
-      writeContent(content, buf);
+      writeContent(updateQos.getContentStr(content), buf);
       buf.append(updateQos.toXml(this.offset + "  ")).append("\n");
       buf.append(this.offset).append("</update>\n");
       synchronized (this.out) {

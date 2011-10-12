@@ -38,6 +38,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
@@ -234,7 +235,7 @@ public class MX4JAdaptor extends GlobalInfo {
          
          if (this.authMethod.equals("basic")) {
             authentication = authentication.substring(5, authentication.length());
-            String decodeString = new String(Base64Codec.decodeBase64(authentication.getBytes()));
+            String decodeString = Constants.toUtf8String(Base64Codec.decodeBase64(Constants.toUtf8Bytes(authentication)));
             if (decodeString.indexOf(":") > 0) {
                try {
                   StringTokenizer tokens = new StringTokenizer(decodeString, ":");

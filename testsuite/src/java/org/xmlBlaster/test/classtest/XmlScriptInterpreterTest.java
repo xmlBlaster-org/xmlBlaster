@@ -23,6 +23,7 @@ import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
 /**
  * Test ClientProperty. 
@@ -157,6 +158,35 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
 
    }
 
+   protected void testParseProcessingInstruction() throws Exception {
+      {
+         String pi = "<?xml version='1.0' encoding='UTF-8'?>";
+         String encoding = XmlScriptParser.getEncodingFromProcessingInstruction(pi);
+         assertEquals("Checking encoding", "UTF-8", encoding);
+      }
+      {
+         String pi = "<?xml version=\"1.0\" encoding=\"DUMMy\"?>";
+         String encoding = XmlScriptParser.getEncodingFromProcessingInstruction(pi);
+         assertEquals("Checking encoding", "DUMMy", encoding);
+      }
+      
+      {
+         String pi = "<?xml version=\"1.0\"?>";
+         String encoding = XmlScriptParser.getEncodingFromProcessingInstruction(pi);
+         assertEquals("Checking encoding", "UTF-8", encoding);
+      }
+      {
+         String pi = "<?xml version=\"1.0\" encoding=\"\"?>";
+         String encoding = XmlScriptParser.getEncodingFromProcessingInstruction(pi);
+         assertEquals("Checking encoding", "UTF-8", encoding);
+      }
+      {
+         String pi = null;
+         String encoding = XmlScriptParser.getEncodingFromProcessingInstruction(pi);
+         assertEquals("Checking encoding", "UTF-8", encoding);
+      }
+   }
+   
    protected void testConnect() throws Exception {
       String tmp = "<xmlBlaster>\n" +
                    "  <connect>\n" + 
@@ -365,6 +395,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
           Global global = new Global(args);
           XmlScriptInterpreterTest test = new XmlScriptInterpreterTest(global, "XmlScriptInterpreterTest");
           test.setUp();
+          test.testParseProcessingInstruction();
           test.testConnect();
           test.testSubscribe();
           test.testPublishArr();

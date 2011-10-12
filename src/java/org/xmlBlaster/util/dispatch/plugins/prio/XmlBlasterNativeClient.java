@@ -287,7 +287,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       if (updateKey.isInternal()) return "";
       if (updateQos.isErased()) return "";
 
-      String contentStr = new String(content);
+      String contentStr = updateQos.getContentStrNoEx(content);
 
       if (!updateQos.isOk()) {
          log.warning("Receiving unexpected asynchronous status message '" + updateKey.getOid() +

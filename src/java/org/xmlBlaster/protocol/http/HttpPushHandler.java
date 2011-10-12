@@ -455,7 +455,7 @@ public class HttpPushHandler implements I_Callback
 
          String pushStr="";
          String codedKey     = Global.encode(updateKey.toXml().trim(), BlasterHttpProxyServlet.ENCODING );
-         String codedContent = Global.encode(new String(content), BlasterHttpProxyServlet.ENCODING );
+         String codedContent = Global.encode(updateQos.getContentStr(content), BlasterHttpProxyServlet.ENCODING );
          String codedQos     = Global.encode(updateQos.toXml().trim(), BlasterHttpProxyServlet.ENCODING );
          pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
 

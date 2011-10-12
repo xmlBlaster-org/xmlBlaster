@@ -306,7 +306,7 @@ public class XBMessage implements Message {
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationId) throws JMSException {
-      setJMSCorrelationID(new String(correlationId));
+      setJMSCorrelationID(Constants.toUtf8String(correlationId));
    }
 
    /**

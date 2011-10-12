@@ -689,7 +689,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 	      try {
 	         if (origMsgUnit.getKey().indexOf(Constants.OID_DEAD_LETTER) != -1) {  // Check for recursion of dead letters
 	            log.severe("PANIC: Recursive dead message is lost, no recovery possible - dumping to file not yet coded: " +
-	                         origMsgUnit.toXml() + ": " +
+	                         origMsgUnit.toXml(null) + ": " +
 	                         ((text != null) ? (": " + text) : "") );
 	            Thread.dumpStack();
 	            return origMsgUnit.getKey();
@@ -715,7 +715,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 	         return publish(unsecureSessionInfo, msgUnit);
 	      }
 	      catch(Throwable e) {
-	         log.severe("PANIC: " + origMsgUnit.getKey() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml());
+	         log.severe("PANIC: " + origMsgUnit.getKey() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml(null));
 	         e.printStackTrace();
 	         return origMsgUnit.getKey();
 	      }

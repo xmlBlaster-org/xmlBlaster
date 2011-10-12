@@ -7,6 +7,7 @@ package org.xmlBlaster.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import org.xmlBlaster.client.key.PublishKey;
@@ -238,13 +239,20 @@ public final class MsgUnit implements java.io.Serializable
    }
 
    /**
-    * Convenience method to get the raw content as a string. 
+    * Convenience method to get the raw content as a string, the encoding is UTF-8 if not specified by clientProperty {@link Constants#CLIENTPROPERTY_CONTENT_CHARSET},
     * @return never null
     */
-   public String getContentStr() {
-      return new String(this.content);
-   }
+   public String getContentStr() throws XmlBlasterException {
+      String encoding = getQosData().getClientProperty(Constants.CLIENTPROPERTY_CONTENT_CHARSET, Constants.UTF8_ENCODING);
 
+      try {
+         return new String(this.content, encoding);
+      } catch (UnsupportedEncodingException e) {
+         e.printStackTrace();
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "ClientProperty", "Could not encode according to '" + encoding + "': " + e.getMessage());
+      }
+   }
+   
    /**
     * The QoS XML string. 
     * @return never null
@@ -253,6 +261,9 @@ public final class MsgUnit implements java.io.Serializable
       return this.qosData.toXml();
    }
 
+   public byte[] getQosBytes() {
+      return Constants.toUtf8Bytes(qosData.toXml());
+   }
    /**
     * The parsed key. 
     * @return for PUBLISH/UPDATE never null, otherwise it may be null
@@ -317,9 +328,9 @@ public final class MsgUnit implements java.io.Serializable
 
    public MsgUnitRaw getMsgUnitRaw() {
       return new MsgUnitRaw(this,
-                            (this.keyData == null) ? null : this.keyData.toXml(),
+                            (this.keyData == null) ? null : Constants.toUtf8Bytes(this.keyData.toXml()),
                             this.content,
-                            (this.qosData == null) ? null : this.qosData.toXml());
+                            (this.qosData == null) ? null : Constants.toUtf8Bytes(this.qosData.toXml()));
    }
 
    /**
@@ -404,7 +415,7 @@ public final class MsgUnit implements java.io.Serializable
             this.qosData.toXml(extraOffset, props));
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       try {
-         msgUnitRaw.toXml(extraOffset, out, props);
+         msgUnitRaw.toXml(extraOffset, out, props, qosData.getContentCharset());
          return out.toString(Constants.UTF8_ENCODING);
       } catch (IOException e) {
          e.printStackTrace();
@@ -447,20 +458,20 @@ public final class MsgUnit implements java.io.Serializable
       String qosXml = (qosData==null) ? "" : qosData.toXml(extraOffset, props);
       if (qosXml.length() > 0) {
          out.write(offsetB2);
-         out.write(qosXml.getBytes());
+         out.write(Constants.toUtf8Bytes(qosXml));
       }
       
       String keyXml = (keyData==null) ? "" : keyData.toXml(extraOffset);
       if (keyXml.length() > 0) {
          out.write(offsetB2);
-         out.write(keyXml.getBytes());
+         out.write(Constants.toUtf8Bytes(keyXml));
       }
       
       if (this.content == null || this.content.length == 0) {
          return;
       }
       
-      MsgUnitRaw.dumpContent(extraOffset, out, this.content, forceReadable);
+      MsgUnitRaw.dumpContent(extraOffset, out, this.content, forceReadable, qosData.getContentCharset());
       
       if (enclosingTag != null) {
          out.write(offsetB);

@@ -271,7 +271,7 @@ public final class CbDispatchConnection extends DispatchConnection
                mu = new MsgUnit(mu, null, null, msgQosData);
             }
 
-            MsgUnitRaw raw = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
+            MsgUnitRaw raw = new MsgUnitRaw(mu, Constants.toUtf8Bytes(mu.getKeyData().toXml()), mu.getContent(), Constants.toUtf8Bytes(mu.getQosData().toXml()));
             if (address.oneway() || entry.updateOneway()) {
                if (oneways == null) oneways = new ArrayList();
                oneways.add(new Holder(entry, raw, entry.getSubscriptionId()));

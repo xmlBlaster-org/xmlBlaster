@@ -335,6 +335,7 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
     * @param secretCbSessionId If not null it is checked as well
     */
    public void compareToReceived(MsgUnit[] expectedArr, String secretCbSessionId) {
+      
       assertEquals("We have received " + count() + " messages only", expectedArr.length, count());
       
       for(int i=0; i<expectedArr.length; i++) {

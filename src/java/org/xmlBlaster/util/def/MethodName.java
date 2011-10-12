@@ -245,7 +245,7 @@ public final class MethodName implements java.io.Serializable, Comparable
    }
 
    public static final MethodName toMethodName(byte[] methodNameBytes) throws IllegalArgumentException {
-      return toMethodName(new String(methodNameBytes)); // tuning possible by doing it ourself?
+      return toMethodName(Constants.toUtf8String(methodNameBytes)); // tuning possible by doing it ourself?
    }
 
    ///////////////

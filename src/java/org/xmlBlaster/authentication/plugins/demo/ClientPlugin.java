@@ -1,6 +1,7 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -64,9 +65,9 @@ public class ClientPlugin implements I_ClientPlugin {
    public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
       MsgUnitRaw msg = dataHolder.getMsgUnitRaw();
       msg = new MsgUnitRaw(msg.getMsgUnit(),
-                           importMessage(msg.getKey()),
+                           importMessage(msg.getKeyBytes()),
                            importMessage(msg.getContent()),
-                           importMessage(msg.getQos()));
+                           importMessage(msg.getQosBytes()));
 
       return msg;
    }
@@ -81,7 +82,7 @@ public class ClientPlugin implements I_ClientPlugin {
    private String importMessage(String xmlMsg) throws XmlBlasterException
    {
       if (xmlMsg==null) return null;
-      return new String(crypt(xmlMsg.getBytes()));
+      return Constants.toUtf8String(crypt(Constants.toUtf8Bytes(xmlMsg)));
    }
 
    private byte[] importMessage(byte[] byteArr) throws XmlBlasterException
@@ -99,20 +100,20 @@ public class ClientPlugin implements I_ClientPlugin {
    public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
       MsgUnitRaw msg = dataHolder.getMsgUnitRaw();
       msg = new MsgUnitRaw(msg.getMsgUnit(),
-                           exportMessage(msg.getKey()), 
+                           exportMessage(msg.getKeyBytes()), 
                            exportMessage(msg.getContent()),
-                           exportMessage(msg.getQos()));
+                           exportMessage(msg.getQosBytes()));
 
       return msg;
 
    }
-
-   private String exportMessage(String xmlMsg) throws XmlBlasterException
-   {
-      if (xmlMsg==null) return null;
-//      return new String(crypt(xmlMsg.toCharArray()));
-      return new String(crypt(xmlMsg.getBytes()));
-    }
+//
+//   private String exportMessage(String xmlMsg) throws XmlBlasterException
+//   {
+//      if (xmlMsg==null) return null;
+//      // return new String(crypt(xmlMsg.toCharArray()));
+//      return Constants.toUtf8String(crypt(Constants.toUtf8Bytes(xmlMsg)));
+//    }
 
    private byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
    {

@@ -5,19 +5,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.def.MethodName;
 import java.util.Map;
 import java.util.Properties;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
@@ -78,6 +78,26 @@ public final class UpdateQos
     */
    public UpdateQos(Global glob, String xmlQos) throws XmlBlasterException {
       this(glob, glob.getMsgQosFactory().readObject(xmlQos));
+   }
+   
+   /**
+    * Convenience method to get the raw content as a string, the encoding is UTF-8 if not specified by clientProperty {@link Constants#CLIENTPROPERTY_CONTENT_CHARSET}
+    * @return never null
+    */
+   public String getContentStr(byte[] msgContent) throws XmlBlasterException {
+      if (getData() == null)
+         return Constants.toUtf8String(msgContent);
+      return getData().getContentStr(msgContent);
+   }
+
+   /**
+    * Convenience method to get the raw content as a string, the encoding is UTF-8 if not specified by clientProperty {@link Constants#CLIENTPROPERTY_CONTENT_CHARSET}
+    * @return never null
+    */
+   public String getContentStrNoEx(byte[] msgContent) {
+      if (getData() == null)
+         return Constants.toUtf8String(msgContent);
+      return getData().getContentStrNoEx(msgContent);
    }
 
    /**

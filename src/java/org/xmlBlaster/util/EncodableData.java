@@ -141,7 +141,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
                e.printStackTrace();
             }
          }
-         return new String(content);
+         return Constants.toUtf8String(content);
       }
       return this.value;
    }

@@ -6,6 +6,7 @@ Comment:   Holding destination address attributes
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.def;
 
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.jms.XBConnectionMetaData;
@@ -250,6 +251,9 @@ public class Constants {
    /** ConnectReturnQos their QoS clientProperty the rcvTimestampStr in '__rcvTimestampStr' */
    public final static String CLIENTPROPERTY_RCVTIMESTAMPSTR = INTERNAL_OID_PREFIX_FOR_CORE + "rcvTimestampStr";
 
+   /** Used in Client Properties to define that the content is encoded with the specified value (default to UTF-8) */
+   public final static String CLIENTPROPERTY_CONTENT_CHARSET = "__contentCharset";
+   
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
 
@@ -373,7 +377,46 @@ public class Constants {
       return key;
    }
 
+   public static byte[] toUtf8Bytes(String s) {
+      if (s == null || s.length() == 0)
+              return new byte[0];
+      try {
+              return s.getBytes(Constants.UTF8_ENCODING);
+      } catch (UnsupportedEncodingException e) {
+              System.out.println("PANIC in XmlBlaster Constants.toUtf8Bytes(" + s
+                              + ", " + Constants.UTF8_ENCODING + "): " + e.toString());
+              e.printStackTrace();
+              return s.getBytes();
+      }
+   }
+ 
+   public static String toUtf8String(byte[] b) {
+      if (b == null || b.length == 0)
+              return "";
+      try {
+              return new String(b, Constants.UTF8_ENCODING);
+      } catch (UnsupportedEncodingException e) {
+              System.out.println("PANIC in toUtf8String(" + b + ", "
+                              + Constants.UTF8_ENCODING + "): " + e.toString());
+              e.printStackTrace();
+              return new String(b);
+      }
+   }
+   
+   public static String toEncodedString(byte[] b, String encoding) {
+      if (b == null)
+         return null;
+      if (encoding == null || encoding.trim().length() < 1)
+         encoding = Constants.UTF8_ENCODING;
 
+      try {
+         return new String(b, encoding);
+      } catch (UnsupportedEncodingException e) {
+         e.printStackTrace();
+         System.err.println("PANIC Could not encode according to '" + encoding + "': " + e.getMessage());
+         return Constants.toUtf8String(b);
+      }
+   }
 
 }
 

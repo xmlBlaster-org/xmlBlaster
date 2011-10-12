@@ -11,11 +11,13 @@ import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.MsgUnitRaw;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -529,15 +531,18 @@ public class XbfParser implements I_MsgInfoParser
     * @return The stringified message, null bytes are replaced by '*'
     */
    public static final String createLiteral(byte[] arr) {
-      StringBuilder buffer = new StringBuilder(arr.length+10);
-      for (int ii=0; ii<arr.length; ii++) {
+      
+      byte[] copy = new byte[arr.length];
+      System.arraycopy(arr, 0, copy, 0, arr.length);
+
+      final byte star = '*';
+      for (int ii=0; ii<copy.length; ii++) {
          if (arr[ii] == 0)
-            buffer.append("*");
-         else {
-            buffer.append((char)arr[ii]);
-         }
+            copy[ii] = star;
       }
-      return buffer.toString();
+
+      return Constants.toUtf8String(copy);
+      
 //
 //      StringBuffer buffer = new StringBuffer(arr.length+10);
 //      byte[] dummy = new byte[1];
@@ -565,7 +570,7 @@ public class XbfParser implements I_MsgInfoParser
             else
                tmp[ii] = buf[ii];
          }
-         return new String(tmp);
+         return Constants.toUtf8String(tmp);
       }
 
       /**
@@ -585,7 +590,7 @@ public class XbfParser implements I_MsgInfoParser
                buffer.append("*");
             else {
                dummy[0] = buf[ii];
-               buffer.append(new String(dummy));
+               buffer.append(Constants.toUtf8String(dummy));
             }
          }
          buffer.append("'");

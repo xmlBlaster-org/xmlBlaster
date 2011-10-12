@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -450,14 +452,14 @@ public class FileLocator
    *    <code>String data=FileUtil.readAsciiFile("/tmp/hello");</code>
    * @param parent Path to the file
    * @param fileName name of file
-   * @return ASCII data from the file<br />
+   * @return ASCII data from the UTF-8 encoded file<br />
    *         null on error
    */
    public static final String readAsciiFile(String parent, String child) throws XmlBlasterException {
       byte[] bb = readFile(parent, child);
       if (bb == null)
          return null;
-      return new String(bb);
+      return Constants.toUtf8String(bb);
    }
 
 

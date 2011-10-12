@@ -5,14 +5,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.RcvTimestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.property.PropBoolean;
 
@@ -719,7 +722,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    public final String writePropertiesXml(String offset, boolean forceReadable) {
       if (this.clientProperties.size() > 0) {
          Object[] arr = this.clientProperties.keySet().toArray();
-         StringBuffer sb = new StringBuffer(arr.length*256);
+         StringBuilder sb = new StringBuilder(arr.length*256);
          for (int i=0; i < arr.length; i++) {
         	ClientProperty p = this.clientProperties.get(arr[i]);
             sb.append(p.toXml(offset, null, forceReadable));
@@ -728,5 +731,41 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
       return "";
    }
+
+   public String getContentCharset() {
+      return getClientProperty(Constants.CLIENTPROPERTY_CONTENT_CHARSET, Constants.UTF8_ENCODING);
+   }
+
+   /**
+    * Convenience method to get the raw content as a string, the encoding is UTF-8 if not specified by clientProperty {@link Constants#CLIENTPROPERTY_CONTENT_CHARSET}
+    * @return never null
+    */
+   public String getContentStr(byte[] msgContent) throws XmlBlasterException {
+      if (msgContent == null)
+         return null;
+      String encoding = getClientProperty(Constants.CLIENTPROPERTY_CONTENT_CHARSET, Constants.UTF8_ENCODING);
+
+      try {
+         return new String(msgContent, encoding);
+      } catch (UnsupportedEncodingException e) {
+         e.printStackTrace();
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "UpdateQos-ClientProperty", "Could not encode according to '" + encoding + "': " + e.getMessage());
+      }
+   }
+
+   public String getContentStrNoEx(byte[] msgContent) {
+      if (msgContent == null)
+         return null;
+      String encoding = getClientProperty(Constants.CLIENTPROPERTY_CONTENT_CHARSET, Constants.UTF8_ENCODING);
+
+      try {
+         return new String(msgContent, encoding);
+      } catch (UnsupportedEncodingException e) {
+         e.printStackTrace();
+         System.err.println("UpdateQos-ClientProperty: Could not encode according to '" + encoding + "': " + e.getMessage());
+         return Constants.toUtf8String(msgContent);
+      }
+   }
+
    
 }

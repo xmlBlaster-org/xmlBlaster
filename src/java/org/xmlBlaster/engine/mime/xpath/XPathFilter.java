@@ -7,43 +7,42 @@ Comment:   Support check of message content with XPath expressions.
 package org.xmlBlaster.engine.mime.xpath;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.property.Args;
-import org.xmlBlaster.util.FileLocator;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XslTransformer;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.mime.I_AccessFilter;
-import org.xmlBlaster.engine.mime.Query;
-import org.xmlBlaster.engine.ServerScope;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
-import org.xml.sax.InputSource;
-import org.w3c.dom.Document;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.jaxen.SimpleFunctionContext;
-import org.jaxen.XPathFunctionContext;
 import org.jaxen.Function;
 import org.jaxen.JaxenException;
+import org.jaxen.SimpleFunctionContext;
+import org.jaxen.XPathFunctionContext;
 import org.jaxen.dom.DOMXPath;
+import org.w3c.dom.Document;
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.engine.mime.Query;
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XslTransformer;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.property.Args;
 
 /**
  * Filter content on an XPath expression.
@@ -236,9 +235,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
             }
          }
          
-         String xml = getXml(msgUnit).trim(); // Content or QoS
-         
-         if (xml.length() == 0) {
+         if (getXml(msgUnit).length == 0) {
             log.warning("Provided XML string is empty, query does not match.");
             return false;
          }
@@ -260,9 +257,8 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
             log.fine("Query "+query.getQuery()+" did" + (match ? " match" : " not match"));
          
          if (match == true && xslContentTransformer != null) {
-            String tmp = (this.matchAgainstQos) ? msgUnit.getContentStr() : xml;
-            String ret = xslContentTransformer.doXSLTransformation(tmp);
-            msgUnit.setContent(ret.getBytes());
+            byte[] ret = xslContentTransformer.doXSLTransformation(msgUnit.getContent());
+            msgUnit.setContent(ret);
          }
          
          return match;
@@ -388,24 +384,23 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @param msg
     * @return Is never null
     */
-   private String getXml(MsgUnit msg) {
+   private byte[] getXml(MsgUnit msg) {
       if (this.matchAgainstQos)
-         return msg.getQos();
+         return msg.getQosBytes();
       else
-         return msg.getContentStr();
+         return msg.getContent();
    }
    
    /**
     * Create a new dom document.
     * 
     */
-   private Document getDocument(String xml) throws XmlBlasterException {
+   private Document getDocument(byte[] xml) throws XmlBlasterException {
       try {   
-         java.io.StringReader reader = new java.io.StringReader(xml);
-         InputSource input = new InputSource(reader);
+         ByteArrayInputStream bais = new ByteArrayInputStream(xml);
          DocumentBuilderFactory factory = glob.getDocumentBuilderFactory();
          DocumentBuilder builder = factory.newDocumentBuilder ();
-         return builder.parse(input);  
+         return builder.parse(bais);  
       } catch (org.xml.sax.SAXException ex) {
          String reason = ex.getMessage();
          if(ex instanceof org.xml.sax.SAXParseException) {

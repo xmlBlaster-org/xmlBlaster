@@ -219,7 +219,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
             invokeAction(parameter);
          }
          if (mimeType.startsWith("text")) {
-            text = replaceAllVariables(new String(text)).getBytes();
+            text =Constants.toUtf8Bytes(replaceAllVariables(Constants.toUtf8String(text)));
          }
          return new HttpResponse(text, mimeType);
       }

@@ -9,6 +9,8 @@ package org.xmlBlaster.client.protocol.http.common;
 import java.io.InputStream;
 import java.io.IOException;
 
+import org.xmlBlaster.util.def.Constants;
+
 /**
  * BufferedInputStreamMicro
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
@@ -36,7 +38,7 @@ public class BufferedInputStreamMicro implements I_ObjectStream {
       if (nmax < 2) {
          byte[] tmp = new byte[1];
          tmp[0] = (byte)first;
-         return new String(tmp);
+         return Constants.toUtf8String(tmp);
       }
 
       byte[] buffer = new byte[nmax];
@@ -45,7 +47,7 @@ public class BufferedInputStreamMicro implements I_ObjectStream {
       while(read < nmax) {
          read += this.in.read(buffer, read, nmax-read);
       }
-      return new String(buffer);
+      return Constants.toUtf8String(buffer);
    }
    
    /**

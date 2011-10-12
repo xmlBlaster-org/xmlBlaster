@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * @author <a href='mailto:mr@ruff.info'>Marcel Ruff</a>
@@ -257,24 +258,14 @@ public abstract class XBFactory extends XBFactoryBase {
       } else if (useString2) {
          byte[] bytes = rs.getBytes(index);
          if (bytes != null) {
-            try {
-               return new String(rs.getBytes(index), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-               e.printStackTrace();
-               return rs.getString(index);
-            }
+            return Constants.toUtf8String(rs.getBytes(index));
          }
          else
             return "";
       } else if (useBinary) {
          InputStream stream = rs.getAsciiStream(index);
          if (stream != null) {
-            try {
-               return new String(readStream(stream), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-               e.printStackTrace();
-               return new String(readStream(stream));
-            }
+            return Constants.toUtf8String(readStream(stream));
          } else {
             return "";
          }

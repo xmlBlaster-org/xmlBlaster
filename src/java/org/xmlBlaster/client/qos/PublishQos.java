@@ -8,6 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -93,6 +94,25 @@ public final class PublishQos
    public PublishQos(Global glob, boolean persistent) {
       this(glob);
       setPersistent(persistent);
+   }
+   
+   /**
+    * Sets the encoding in the client properties of the content of the message to be published.
+    * Defaults to UTF-8
+    * Is usually not interpreted by xmlBlaster. But special server plugins (like regex filter plugin may want to look into the content and should know the encoding
+    * or the receiving client may want to know.
+    * Note that "text/xml" contents are usually self contained,
+    *  the processing instruction tells the xml encoding to the sax/dom parser and this clientProperty is ignored.
+    * @param encoding like "cp1252"
+    */
+   public void setContentEncoding(String encoding) {
+      if (encoding == null || encoding.trim().length() < 1) {
+         if (getData() == null || getData().getClientProperties() == null)
+            return;
+         getData().getClientProperties().remove(Constants.CLIENTPROPERTY_CONTENT_CHARSET);
+         return;
+      }
+      getData().addClientProperty(Constants.CLIENTPROPERTY_CONTENT_CHARSET, encoding.trim());
    }
 
    public MsgQosData getData() {

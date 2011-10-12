@@ -36,9 +36,9 @@ import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter;
-import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -46,6 +46,7 @@ import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.def.Constants;
 
 public abstract class SpecificDefault implements I_DbSpecific {
    public final static boolean ROLLBACK_YES = true;
@@ -1304,7 +1305,7 @@ public abstract class SpecificDefault implements I_DbSpecific {
                response = buf1.toString().getBytes();
             }
             // TODO make this a fine
-            log.info("statement to broadcast shall give this response: " + new String(response));
+            log.info("statement to broadcast shall give this response: " + Constants.toUtf8String(response));
          }
          finally {
             if (st2 != null)

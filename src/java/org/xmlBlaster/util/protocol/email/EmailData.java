@@ -385,7 +385,7 @@ public class EmailData {
       if (this.content == null || this.content.length() == 0) {
          AttachmentHolder h = getAttachment(MailUtil.BODY_NAME);
          if (h != null)
-            this.content = new String(h.getContent());
+            this.content = Constants.toEncodedString(h.getContent(), encoding);
       }
       return (this.content == null) ? "" : this.content;
    }
@@ -604,7 +604,7 @@ public class EmailData {
    public String getMessageId(String msgIdFileName) {
       AttachmentHolder attachmentHolder = getMessageIdAttachment(msgIdFileName);
       if (attachmentHolder == null) return null;
-      return new String(attachmentHolder.getContent());
+      return Constants.toUtf8String(attachmentHolder.getContent());
    }
 
    /**
@@ -635,7 +635,7 @@ public class EmailData {
          for (int i = 0; i < atts.length; i++) {
             if (atts[i].getFileName().indexOf(".") == -1) {
                // Trying extensionless attachments
-               String str = new String(atts[i].getContent());
+               String str = Constants.toUtf8String(atts[i].getContent());
                if (str.indexOf(startToken) == -1) {
                   log.warning("Can't guess messageId, trying this failed: '" + str + "'");
                }

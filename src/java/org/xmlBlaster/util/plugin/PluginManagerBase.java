@@ -13,6 +13,7 @@ import java.util.logging.Level;
 //import org.xmlBlaster.engine.runlevel.PluginConfig;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 
@@ -280,7 +281,7 @@ public class PluginManagerBase implements I_PluginManager {
          ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
          PrintStream ps = new PrintStream(baos);
          pluginInfo.getParameters().list(ps);
-         log.warning("The plugin " + pluginInfo.getClassName() + " '" + pluginInfo.getId() + "' is configured in the properties and in the xmlBlasterPlugins.xml file. I will take the plugin attributes/parameters defined in the properties which are: " + new String(baos.toByteArray()));
+         log.warning("The plugin " + pluginInfo.getClassName() + " '" + pluginInfo.getId() + "' is configured in the properties and in the xmlBlasterPlugins.xml file. I will take the plugin attributes/parameters defined in the properties which are: " + Constants.toUtf8String(baos.toByteArray()));
       }
       return pluginInfo;
    }

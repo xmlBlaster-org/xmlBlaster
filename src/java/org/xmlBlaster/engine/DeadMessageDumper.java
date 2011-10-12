@@ -257,7 +257,7 @@ public class DeadMessageDumper implements I_Plugin {
                EncodableData data = new EncodableData("content", null, null, null);
                //String charSet = "UTF-8"; // "ISO-8859-1", "US-ASCII"
                //data.setValue(new String(content, charSet), null);
-               data.setValueRaw(new String(content));
+               data.setValueRaw(updateQos.getContentStr(content));
                data.forceCdata(true);
                data.setSize(content.length);
                to.write(data.toXml(" ").getBytes());

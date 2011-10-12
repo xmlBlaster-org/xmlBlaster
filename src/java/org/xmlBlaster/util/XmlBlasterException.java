@@ -691,22 +691,22 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          exceptionFromServer = new Boolean(new String(data, start, end-start));
       }
       catch (java.lang.StringIndexOutOfBoundsException e) {
-         log.severe("Receiving invalid format for XmlBlasterException in '" + new String(data) + "'");
+         log.severe("Receiving invalid format for XmlBlasterException in '" + Constants.toUtf8String(data) + "'");
       }
       ErrorCode errorCode = (fallback == null) ? ErrorCode.INTERNAL_UNKNOWN : fallback;
       try {
          errorCode = ErrorCode.toErrorCode(errorCodeStr);
       }
       catch (Throwable e) {
-         log.severe("Receiving invalid errorCode in XmlBlasterException in '" + new String(data) + "', handling it as " + errorCode.toString());
-         message = "Receiving invalid errorCode in XmlBlasterException: Can't parse XmlBlasterException in method parseByteArr(). original message is '" + new String(data) + "'";
+         log.severe("Receiving invalid errorCode in XmlBlasterException in '" + Constants.toUtf8String(data) + "', handling it as " + errorCode.toString());
+         message = "Receiving invalid errorCode in XmlBlasterException: Can't parse XmlBlasterException in method parseByteArr(). original message is '" + Constants.toUtf8String(data) + "'";
       }
       Timestamp ti = new Timestamp();
       try {
          ti = Timestamp.valueOf(timestampStr);
       }
       catch (Throwable e) {
-         log.fine("Receiving invalid timestamp in XmlBlasterException in '" + new String(data) + "'");
+         log.fine("Receiving invalid timestamp in XmlBlasterException in '" + Constants.toUtf8String(data) + "'");
       }
       return new XmlBlasterException(glob, errorCode,
                                node, location, lang, message, versionInfo, ti,

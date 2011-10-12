@@ -509,7 +509,7 @@ public class XBSession extends Thread implements Session, I_Callback {
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      log.severe("update: should never be invoked ... '" + new String(content) + "' '" + updateQos.toXml() + "'");      
+      log.severe("update: should never be invoked ... '" + updateQos.getContentStr(content) + "' '" + updateQos.toXml() + "'");      
       return "OK";
    }
 

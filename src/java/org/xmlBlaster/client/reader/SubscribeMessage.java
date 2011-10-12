@@ -170,7 +170,7 @@ public class SubscribeMessage implements I_Callback
       System.out.println(updateKey.toXml());
       System.out.println("");
       System.out.println("<content>");
-      System.out.println(new String(content));
+      System.out.println(updateQos.getContentStrNoEx(content));
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
       System.out.println("</xmlBlaster>");

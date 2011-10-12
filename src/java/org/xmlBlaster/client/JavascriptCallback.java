@@ -139,7 +139,7 @@ public class JavascriptCallback implements I_Callback
       //System.out.println("*****RECEIVING updateKey=" + updateKey.toXml());
       String key = ReplaceVariable.replaceAll(updateKey.toXml(), "\n", " ");
       //key = ReplaceVariable.replaceAll(key, "\"", "\\\"");
-      String con = ReplaceVariable.replaceAll(new String(content), "\n", " ");
+      String con = ReplaceVariable.replaceAll(updateQos.getContentStr(content), "\n", " ");
       // This code escapes all quotation marks in the XML content.
       // This is required to fix an error caused when the XML tags include
       // attributes, which causes an exception to be thrown because of malformed

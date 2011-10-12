@@ -49,7 +49,7 @@ public class ReplSourceEngine implements I_Update, ReplicationConstants, I_Repla
       String msg = new String();
       try {
          if (is != null)
-            msg = new String(ReplManagerPlugin.getContent(is));
+            msg = Constants.toUtf8String(ReplManagerPlugin.getContent(is));
          // this comes from the requesting ReplSlave
          log.info("update for '" + topic + "' and msg='" + msg + "'");
          if (REPL_REQUEST_UPDATE.equals(msg)) {

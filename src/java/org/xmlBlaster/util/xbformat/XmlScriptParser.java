@@ -87,6 +87,22 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    */
    private String schemaDecl;
    
+   
+   public static String getEncodingFromProcessingInstruction(String pi) {
+      //<?xml version='1.0' encoding='UTF-8'?>
+      if (pi == null || pi.length() < 1)
+         return Constants.UTF8_ENCODING;
+      int i = pi.indexOf("encoding=");
+      if (i == -1 || i+5+"encoding=".length() >= pi.length())
+         return Constants.UTF8_ENCODING;
+      String endStr = pi.substring(i + "encoding=".length()+1);
+      int i2 = endStr.indexOf("'");
+      if (i2 == -1)
+         i2 = endStr.indexOf('"');
+      String charset = endStr.substring(0, i2);
+      return charset;
+   }
+   
    static {
       MsgInfoParserFactory.instance().register(XMLSCRIPT_EXTENSION, XmlScriptParser.class.getName());
       MsgInfoParserFactory.instance().register(XMLSCRIPT_ZLIB_EXTENSION, XmlScriptParser.class.getName());
@@ -233,8 +249,8 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       }
       
       
-      MsgUnitRaw msgUnitRaw = new MsgUnitRaw(super.key.toString(),
-            super.contentData, super.qos.toString());
+      MsgUnitRaw msgUnitRaw = new MsgUnitRaw(Constants.toUtf8Bytes(super.key.toString()),
+            super.contentData, Constants.toUtf8Bytes(super.qos.toString()));
       msgInfo.setMethodName(methodName);
       msgInfo.setSecretSessionId(sessionId);
       msgInfo.setRequestId(requestId);

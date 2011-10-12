@@ -124,7 +124,8 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
 
       if (log.isLoggable(Level.FINEST)) {
          for (int ii=0; ii<msgUnitArrRaw.length; ii++) {
-            log.finest(msgUnitArrRaw[ii].toXml());
+            final String contentCharset = null;
+            log.finest(msgUnitArrRaw[ii].toXml(contentCharset));
          }
       }
       return msgUnits;

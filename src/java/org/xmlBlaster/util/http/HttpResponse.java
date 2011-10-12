@@ -20,10 +20,10 @@ public class HttpResponse
    String mimeType = Constants.MIME_HTML;
 
    public HttpResponse(String text) {
-      this.content = text.getBytes();
+      this.content = Constants.toUtf8Bytes(text);
    }
    public HttpResponse(String text, String mimeType) {
-      this.content = text.getBytes();
+      this.content = Constants.toUtf8Bytes(text);
       this.mimeType = mimeType;
    }
    public HttpResponse(byte[] content) {
@@ -44,7 +44,7 @@ public class HttpResponse
       return this.content;
    }
    public String getContentStr() {
-      return new String(this.content);
+      return Constants.toUtf8String(content);
    }
 }
 

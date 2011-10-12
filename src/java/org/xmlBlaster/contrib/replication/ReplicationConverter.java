@@ -264,6 +264,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
                }
             }
             */
+            // !TODO CHECK THIS ACCORDING TO SqlInfo.java encoding issue
             content = new String(buf);
          }
       }

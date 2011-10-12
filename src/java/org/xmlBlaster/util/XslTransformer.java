@@ -1,7 +1,8 @@
 package org.xmlBlaster.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
@@ -86,17 +87,17 @@ public class XslTransformer {
       return transformer;
    }
        
-   public String doXSLTransformation(String xmlLiteral) throws XmlBlasterException {
+   public byte[] doXSLTransformation(byte[] xmlLiteral) throws XmlBlasterException {
       if (this.transformer == null) {
          return xmlLiteral;
       }
       else {
          try {
-            StreamSource xmlStreamSource = new StreamSource(new StringReader(xmlLiteral));
-            StringWriter stringWriter = new StringWriter();
-            StreamResult resultStream = new StreamResult(stringWriter);
+            StreamSource xmlStreamSource = new StreamSource(new ByteArrayInputStream(xmlLiteral));
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            StreamResult resultStream = new StreamResult(os);
             this.transformer.transform(xmlStreamSource, resultStream);
-            return stringWriter.toString();
+            return os.toByteArray();
          }
          catch (TransformerException ex) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, "XslTransformer", "An exception occured when transforming '" + xmlLiteral + "'", ex);

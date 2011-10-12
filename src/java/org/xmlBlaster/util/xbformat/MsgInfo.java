@@ -1064,7 +1064,7 @@ public class MsgInfo {
             if (msgInfo.getMessageArr().length > 0) {
                System.out.println(testName + ": FAILURE msgLength="
                      + msgInfo.getMessageArr().length + " dump="
-                     + msgInfo.getMessageArr()[0].toXml(""));
+                     + msgInfo.getMessageArr()[0].toXml("", null));
             } else {
                // System.out.println("\nReceived: \n" + msgInfo.dump());
                String receive = msgInfo.toLiteral();

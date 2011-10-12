@@ -5,7 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.http.common;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * Encapsulates the xmlKey, content and qos. 
@@ -41,8 +47,16 @@ public final class Msg
    /**
     * Get the raw content, never null
     */
-   public String getContentStr() {
-      return new String(this.content);
+   public String getContentStr() throws XmlBlasterException {
+      String encoding = (String)qos.get(Constants.CLIENTPROPERTY_CONTENT_CHARSET);
+      if (encoding == null)
+         encoding = Constants.UTF8_ENCODING;
+      try {
+         return new String(this.content, encoding);
+      } catch (UnsupportedEncodingException e) {
+         e.printStackTrace();
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "ClientProperty", "Could not encode according to '" + encoding + "': " + e.getMessage());
+      }
    }
 
    /**

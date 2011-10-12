@@ -9,6 +9,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.MsgQosData;
 
 import junit.framework.Assert;
@@ -79,8 +80,13 @@ public class Msg extends Assert
       assertEquals("The keyOid is wrong", msgUnit.getKeyOid(), updateKey.getOid());
       assertEquals("The persistence flag is lost", qos.isPersistent(), updateQos.isPersistent());
       assertEquals("The message content length is corrupted", msgUnit.getContent().length, content.length);
-      assertTrue("The message content is corrupted, expected='"+
-                 msgUnit.getContentStr()+"' but was '"+new String(content)+"'", msgUnit.sameContent(content));
+      try {
+         assertTrue("The message content is corrupted, expected='"+
+                    msgUnit.getContentStr()+"' but was '"+new String(content)+"'", msgUnit.sameContent(content));
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         fail("Exception: " + e.getMessage());
+      }
    }   
 
    /**

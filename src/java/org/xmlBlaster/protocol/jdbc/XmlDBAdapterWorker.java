@@ -16,9 +16,12 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
+
+import com.sun.corba.se.impl.orbutil.closure.Constant;
 
 /**
  * For every database access, an instance of this class does the work in a dedicated thread.
@@ -62,11 +65,14 @@ public class XmlDBAdapterWorker extends Thread {
             if (log.isLoggable(Level.FINE)) log.fine("No result message returned to client");
             return;
          }
+         PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", "SQLQuery");
+         PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
+         byte[] keyBytes = Constants.toUtf8Bytes(key.toXml());
+         byte[] qosBytes = Constants.toUtf8Bytes(qos.toXml());
+         
          for (int ii=0; ii<msgArr.length; ii++) {
-            PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", "SQLQuery");
-            PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
-            MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[ii], key.toXml(), msgArr[ii].getContent(), qos.toXml());
-            String  oid = callback.publish(msgUnitRaw);
+            MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[ii], keyBytes, msgArr[ii].getContent(), qosBytes);
+            callback.publish(msgUnitRaw);
             if (log.isLoggable(Level.FINEST)) log.finest("Delivered Results...\n" + new String(content));
          }
       }

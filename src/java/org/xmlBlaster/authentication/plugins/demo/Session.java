@@ -149,9 +149,9 @@ public class Session implements I_Session {
       }   
       
       msg = new MsgUnitRaw(msg.getMsgUnit(),
-                           importMessage(msg.getKey()),
+                           importMessage(msg.getKeyBytes()),
                            importMessage(msg.getContent()),
-                           importMessage(msg.getQos()));
+                           importMessage(msg.getQosBytes()));
    
       if (dataHolder.getAction().wantsMsgArrArg()) {
          secMgr.getGUI().printQoS(msg.getQos());
@@ -195,9 +195,9 @@ public class Session implements I_Session {
       }
 
       msg = new MsgUnitRaw(msg.getMsgUnit(),
-                           exportMessage(msg.getKey()),
+                           exportMessage(msg.getKeyBytes()),
                            exportMessage(msg.getContent()),
-                           exportMessage(msg.getQos()));
+                           exportMessage(msg.getQosBytes()));
 
       if (dataHolder.getAction().wantsMsgArrArg()) {
          secMgr.getGUI().printQoS(msg.getQos());

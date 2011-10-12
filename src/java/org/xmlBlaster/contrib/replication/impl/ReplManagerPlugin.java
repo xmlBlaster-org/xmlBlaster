@@ -229,7 +229,7 @@ public class ReplManagerPlugin extends GlobalInfo
       String srcVersion = tmpInfo.get("replication.version", "0.0").trim();
       if (srcVersion.length() < 1)
          throw new Exception("The replication '" + replPrefix + "' has no version defined");
-      return new String(transformVersion(replPrefix, srcVersion, destVersion, destination, is.getBytes()));
+      return Constants.toUtf8String(transformVersion(replPrefix, srcVersion, destVersion, destination, is.getBytes()));
    }
    
    public void clearVersionCache() {
@@ -778,7 +778,7 @@ public class ReplManagerPlugin extends GlobalInfo
                if (requestId == null)
                   throw new Exception("The requestId has not been defined");
                String repl =  updateQos.getClientProperty(REPL_PREFIX_KEY, REPL_PREFIX_DEFAULT);
-               String sql =  new String(content);
+               String sql =  updateQos.getContentStr(content);
                sendBroadcastRequest(repl, sql, highPrio, requestId);
                return "OK";
             }
