@@ -3525,7 +3525,7 @@ TODO
       <property name="csharp.compiler.exe" value="gmcs"/>
       <property name="csharp.out.exe" value="Hello#.exe"/>
       <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="true" failifexecutionfails="false">
-         <arg line="-debug+ /unsafe /warn:4 /define:'XMLBLASTER_MONO' -out:${csharp.out.exe} PInvokeCE.cs NativeC.cs XmlBlasterAccess.cs Key.cs Qos.cs Hello.cs util/*.cs service/*.cs"/>
+         <arg line="-debug+ /unsafe /warn:4 /define:'XMLBLASTER_MONO' -out:${csharp.out.exe} PInvokeCE.cs NativeC.cs client/XmlBlasterAccess.cs client/Key.cs client/Qos.cs Hello.cs util/*.cs service/*.cs"/>
       </exec>
       <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/> 
       <echo message="Usage: 'mono ${src.csharp.dir}/${csharp.out.exe} -dispatch/connection/plugin/socket/hostname localhost'"/> 
