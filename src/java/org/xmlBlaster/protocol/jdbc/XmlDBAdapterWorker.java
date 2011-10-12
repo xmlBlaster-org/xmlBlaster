@@ -21,8 +21,6 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 
-import com.sun.corba.se.impl.orbutil.closure.Constant;
-
 /**
  * For every database access, an instance of this class does the work in a dedicated thread.
  */
