@@ -3,6 +3,19 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+
+Changes for 2.1.0 [2011-10-12] r18009 (JDK >= 1.5 only)
+=======================================================
+
+ o r18007 C++: Renamed Timeout.h to Timeout.hpp to avoid name clash with C variant
+          C++: Ported to xerces 3.0 (xerces 2.x still works fine) 
+
+ o r18003 Removed deprecated jdbc tests
+
+ o r17998-18000 charset encoding for byte[] content harmonized, see Constants.toUtf8Bytes et al
+          XpathFilter ported to byte[] handling to be charset neutral
+
  o r17990 r17991 Low level performance tweaks (StringBuilder, TimeoutPooled#refreshTimeoutListener
 
  o r17985 STOMP and IOR (Corba) protocol are disabled as default setting (see config/xmlBlasterPlugins.xml.template)
