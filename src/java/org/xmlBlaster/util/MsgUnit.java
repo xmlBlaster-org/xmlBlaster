@@ -252,7 +252,18 @@ public final class MsgUnit implements java.io.Serializable
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "ClientProperty", "Could not encode according to '" + encoding + "': " + e.getMessage());
       }
    }
-   
+
+   public String getContentStrNoEx() {
+      String encoding = getQosData().getClientProperty(Constants.CLIENTPROPERTY_CONTENT_CHARSET, Constants.UTF8_ENCODING);
+      try {
+         return new String(this.content, encoding);
+      } catch (UnsupportedEncodingException e) {
+         e.printStackTrace();
+         System.err.println("ClientProperty: Could not encode according to '" + encoding + "': " + e.getMessage());
+         return Constants.toUtf8String(this.content);
+      }
+   }
+
    /**
     * The QoS XML string. 
     * @return never null
