@@ -474,32 +474,32 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   TopicProperty topicProps = ((MsgQosData)topicEntry.getMsgUnit().getQosData()).getTopicProperty();
                   if (topicProps != null && topicProps.getMsgUnitStoreProperty() != null) {
                      MsgUnitStoreProperty p = topicProps.getMsgUnitStoreProperty();
-                     if (p.getMaxBytes() > limitM.getMaxBytes()) { // How to prevent a smaller limit than actual bytes on HD?
+                     if (p.getMaxBytes() < limitM.getMaxBytes()) { // How to prevent a smaller limit than actual bytes on HD?
                         p.setMaxBytes(limitM.getMaxBytes());
                      }
-                     if (p.getMaxBytesCache() > limitM.getMaxBytesCache()) {
+                     if (p.getMaxBytesCache() < limitM.getMaxBytesCache()) {
                         p.setMaxBytesCache(limitM.getMaxBytesCache());
                      }
-                     if (p.getMaxEntries() > limitM.getMaxEntries()) { // How to prevent a smaller limit than actual entries on HD?
+                     if (p.getMaxEntries() < limitM.getMaxEntries()) { // How to prevent a smaller limit than actual entries on HD?
                         p.setMaxEntries(limitM.getMaxEntries());
                      }
-                     if (p.getMaxEntriesCache() > limitM.getMaxEntriesCache()) {
+                     if (p.getMaxEntriesCache() < limitM.getMaxEntriesCache()) {
                         p.setMaxEntriesCache(limitM.getMaxEntriesCache());
                      }
                   }
 
                   if (topicProps != null && topicProps.getHistoryQueueProperty() != null) {
                      HistoryQueueProperty h = topicProps.getHistoryQueueProperty();
-                     if (h.getMaxBytes() > limitH.getMaxBytes()) {
+                     if (h.getMaxBytes() < limitH.getMaxBytes()) {
                         h.setMaxBytes(limitH.getMaxBytes());
                      }
-                     if (h.getMaxBytesCache() > limitH.getMaxBytesCache()) {
+                     if (h.getMaxBytesCache() < limitH.getMaxBytesCache()) {
                         h.setMaxBytesCache(limitH.getMaxBytesCache());
                      }
-                     if (h.getMaxEntries() > limitH.getMaxEntries()) {
+                     if (h.getMaxEntries() < limitH.getMaxEntries()) {
                         h.setMaxEntries(limitH.getMaxEntries());
                      }
-                     if (h.getMaxEntriesCache() > limitH.getMaxEntriesCache()) {
+                     if (h.getMaxEntriesCache() < limitH.getMaxEntriesCache()) {
                         h.setMaxEntriesCache(limitH.getMaxEntriesCache());
                      }
                   }
