@@ -7,6 +7,9 @@ Changes for current svn
 
 Changes for 2.1.0 [2011-10-12] r18009 (JDK >= 1.5 only)
 =======================================================
+ o r18011 Allowed the change of size for the msgUnitStore in JMX (was not working due to inhability to find the topic name)
+
+ o R18010 Changed the logic when starting and comparing the queue sizes (now it only allows bigger queues in xmlBlaster.properties)
 
  o r18007 C++: Renamed Timeout.h to Timeout.hpp to avoid name clash with C variant
           C++: Ported to xerces 3.0 (xerces 2.x still works fine) 
