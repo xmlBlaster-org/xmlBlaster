@@ -828,7 +828,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          // Find out my topic name:
          String tmp = this.storageId.getXBStore().getPostfix();
          ContextNode ctx = ContextNode.valueOf(tmp);
-         String oid = ctx.getInstanceName(); 
+         String oid = ctx.getInstanceName();
+         if (oid == null)
+            oid = tmp;
          if (oid != null) {
             org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob, oid);
             org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
