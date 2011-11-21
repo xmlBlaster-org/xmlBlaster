@@ -126,7 +126,7 @@ abstract public class DispatchConnectionsHandler
             if (cbAddr == null || cbAddr.length==0) {
                for (int ii=0; ii<tmpList.length; ii++) {
                   if (tmpList[ii] != null)
-                     tmpList[ii].shutdown();
+                     tmpList[ii].shutdown(true);
                }
                updateState(null);
                return;
@@ -217,7 +217,8 @@ abstract public class DispatchConnectionsHandler
          for (int i=0;  i<toShutdown.size(); i++) {
             DispatchConnection con = (DispatchConnection)toShutdown.get(i);
             try {
-               con.shutdown();
+                boolean delayed = false;
+                con.shutdown(delayed); // Immediate shutdown (and send POLLING events etc
             }
             catch (XmlBlasterException ex) {
                log.severe(ME+"initialize(): Could not shutdown properly. " + ex.getMessage());
@@ -418,7 +419,7 @@ abstract public class DispatchConnectionsHandler
          conList.remove(con);
       }
       try {
-         con.shutdown();
+         con.shutdown(true);
       }
       catch (XmlBlasterException ex) {
          log.severe(ME+": Could not shutdown properly. " + ex.getMessage());
@@ -510,7 +511,7 @@ abstract public class DispatchConnectionsHandler
       clearDispatchConnectionList();
       for (int ii=0; ii<arr.length; ii++) {
          try {
-            arr[ii].shutdown();
+            arr[ii].shutdown(true);
          }
          catch (XmlBlasterException ex) {
             log.severe(ME+": Could not shutdown properly. " + ex.getMessage());

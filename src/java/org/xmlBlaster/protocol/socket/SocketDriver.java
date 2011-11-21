@@ -532,6 +532,18 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
+            
+            // # cat /proc/sys/net/ipv4/tcp_keepalive_time (seconds-> 2hours until Linux kernel sends first keep alive)
+            //7200
+            //# cat /proc/sys/net/ipv4/tcp_keepalive_intvl
+            //75
+            //# cat /proc/sys/net/ipv4/tcp_keepalive_probes
+            //9
+            // The first two parameters are expressed in seconds, and the last is the pure number. This means that the keepalive routines wait for two hours (7200 secs) before sending the first keepalive probe, and then resend it every 75 seconds. If no ACK response is received for nine consecutive times, the connection is marked as broken. 
+            //boolean isKeepAlive = accept.getKeepAlive();
+            //if (!isKeepAlive)
+            //	accept.setKeepAlive(true);
+            
             if (log.isLoggable(Level.INFO))
             	log.info(ME + ": New incoming request on " + this.socketUrl.getUrl() + " from " + accept.getInetAddress() + ":" + accept.getPort());
             if (!running) {

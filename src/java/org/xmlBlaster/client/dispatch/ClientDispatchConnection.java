@@ -606,8 +606,8 @@ public final class ClientDispatchConnection extends DispatchConnection
    /**
     * Stop all callback drivers of this client.
     */
-   public final void shutdown() throws XmlBlasterException {
-      super.shutdown();
+   public final void shutdown(boolean delayed) throws XmlBlasterException {
+      super.shutdown(delayed);
       if (driver != null) {
          driver.shutdown();
       }

@@ -902,6 +902,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
         "\n  The pending message is handled as not delivered and will be kept in queue";
    }
 
+   public boolean isShutdownCompletly() {
+      return isShutdown();
+   }
+
    public boolean isShutdown() {
       return true;
    }

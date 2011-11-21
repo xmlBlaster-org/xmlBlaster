@@ -447,7 +447,7 @@ abstract public class DispatchConnection implements I_Timeout
          if (isDead()) {
             log.severe(ME + "Timeout ignored, we are DEAD");
             try {
-               shutdown();
+               shutdown(true);
                connectionsHandler.getDispatchManager().shutdown();
             } catch (Throwable e) {
                e.printStackTrace();
@@ -715,7 +715,7 @@ abstract public class DispatchConnection implements I_Timeout
    /**
     * Stop all remote connections.
     */
-   public void shutdown() throws XmlBlasterException {
+   public void shutdown(boolean delayed) throws XmlBlasterException {
       this.state = ConnectionStateEnum.DEAD;
       if (log.isLoggable(Level.FINER)) log.finer(ME + "Entering shutdown ...");
       if (this.timerKey != null) {

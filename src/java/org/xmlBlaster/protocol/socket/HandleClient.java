@@ -65,6 +65,8 @@ public class HandleClient extends SocketExecutor implements Runnable
 
    protected boolean disconnectIsCalled = false;
    
+   private boolean isShutdownCompletly = false;
+   
    private Thread socketHandlerThread;
 
    /**
@@ -133,6 +135,11 @@ public class HandleClient extends SocketExecutor implements Runnable
       return this.driver.getType();
    }
 
+   public boolean isShutdownCompletly() {
+      return this.isShutdownCompletly;
+   }
+
+   @Override
    synchronized public boolean isShutdown() {
       return (this.running == false);
    }
@@ -160,14 +167,21 @@ public class HandleClient extends SocketExecutor implements Runnable
          //   driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
          running = false;
-
+         
          driver.removeClient(this);
 
          clearResponseListenerMap();
 
          freePendingThreads();
       }
+      I_Authenticate auth = this.authenticate;
+      if (auth != null) {
+         // From the point of view of the incoming client connection we are dead
+         // The callback dispatch framework may have another point of view (which is not of interest here)
+         auth.connectionState(this.secretSessionId, ConnectionStateEnum.DEAD);
+      }
       closeSocket();
+      this.isShutdownCompletly = true;
    }
 
    public String toString() {
@@ -407,12 +421,12 @@ public class HandleClient extends SocketExecutor implements Runnable
                if (e.getCause() != null && (e.getCause() instanceof OutOfMemoryError || e.getCause() instanceof IllegalArgumentException)) {
                   e.printStackTrace();
                }
-               I_Authenticate auth = this.authenticate;
-               if (auth != null) {
-                  // From the point of view of the incoming client connection we are dead
-                  // The callback dispatch framework may have another point of view (which is not of interest here)
-                  auth.connectionState(this.secretSessionId, ConnectionStateEnum.DEAD);
-               }
+//               I_Authenticate auth = this.authenticate;
+//               if (auth != null) {
+//                  // From the point of view of the incoming client connection we are dead
+//                  // The callback dispatch framework may have another point of view (which is not of interest here)
+//                  auth.connectionState(this.secretSessionId, ConnectionStateEnum.DEAD);
+//               }
                shutdown();
                break;
             }

@@ -20,6 +20,7 @@ import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -58,7 +59,7 @@ public final class CbDispatchConnection extends DispatchConnection
    private SessionName sessionName;
    //private boolean acceptRemoteLoginAsTunnel;
    private boolean useRemoteLoginAsTunnel;
-
+   
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
     * @param address The address i shall connect to
@@ -428,11 +429,18 @@ public final class CbDispatchConnection extends DispatchConnection
    /**
     * Stop all callback drivers of this client.
     */
-   public final void shutdown() throws XmlBlasterException {
-      super.shutdown();
+   public final void shutdown(boolean delayed) throws XmlBlasterException {
+      super.shutdown(delayed);
       glob.removeNativeCallbackDriver(cbKey);
-      if (this.cbDriver != null) {
-         this.cbDriver.shutdown();
+      I_CallbackDriver cbDrv = this.cbDriver;
+      if (cbDrv != null) {
+         if (!delayed && cbDrv instanceof CallbackSocketDriver) {
+             //Hack to shutdown immediate 2011-11 marcel, to not need to change interface we misuse ping call
+        	 cbDrv.ping("SCHUTDOWN IMMEDIATE");
+         }
+         else {
+        	 cbDrv.shutdown();
+         }
       }
    }
 

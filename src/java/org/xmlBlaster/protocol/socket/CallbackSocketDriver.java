@@ -15,6 +15,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -110,7 +111,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       // This can happen when on xmlBlaster restart a session is recovered from persistency
       // and the client has not yet connected (so we can't reuse its socket for callbacks).
       // In such a case this callback driver is loaded as a dummy.
-      log.fine("init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
+      log.fine(ME+": init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
       this.pluginInfo = pluginInfo;
    }
 
@@ -127,7 +128,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       this.glob = glob;
 
       this.ME = "CallbackSocketDriver" + this.glob.getLogPrefixDashed();
-      if (log.isLoggable(Level.FINER)) log.finer("init()");
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": init()");
       this.callbackAddress = callbackAddress;
       
       //if (this.pluginInfo == null) {
@@ -147,13 +148,13 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
          catch (XmlBlasterException e) {
             // Don't log if no configuration is found
             if (e.isErrorCode(ErrorCode.RESOURCE_CONFIGURATION))
-               log.fine("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
+               log.fine(ME+": No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
             else
-               log.warning("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
+               log.warning(ME+": No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
          }
          catch (Throwable e) {
             e.printStackTrace();
-            log.warning("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
+            log.warning(ME+": No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
          }
       //}
          
@@ -197,10 +198,33 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
     * @exception XmlBlasterException If client not reachable
     */
    public final String ping(String qos) throws XmlBlasterException {
+      if ("SCHUTDOWN IMMEDIATE".equals(qos)) {
+         //Hack to shutdown immediate 2011-11 marcel, to not need to change interface we misuse ping call
+    	 //To avoid changing interface I_CallbackDriver#shutdown
+         boolean delayed = false;
+         shutdown(delayed);
+         // This wait loop is most likely not needed, as above shutdown() happens in same thread
+         for (int i=0; i<200; i++) {
+            SocketExecutor socketExecutor = this.handler;
+            if (socketExecutor != null && !socketExecutor.isShutdownCompletly()) {
+               try {
+                  log.severe(ME+": Sleeping for 10 millis to wait until socket is closed i=" + i);
+                  Thread.sleep(10);
+               } catch (InterruptedException e) {
+                  e.printStackTrace();
+               }
+            }
+            else {
+               break;
+            }
+         }
+         return Constants.RET_OK;
+      }
+	   
       // "<qos><state info='INITIAL'/></qos>"
       // Send from CbDispatchConnection.java on connect 
       if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
-         if (log.isLoggable(Level.FINE)) log.fine("Socket callback ping is suppressed as doing it before connect() may" +
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Socket callback ping is suppressed as doing it before connect() may" +
          " block the clients connect() if the callback is not functional");
          return Constants.RET_OK;
       }
@@ -236,26 +260,39 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       return this.handler.getProgressListener();
    }
 
+   /**
+    * {@link I_Plugin#shutdown()}
+    */
+   @Override
    public void shutdown() {
+	   shutdown(true);
+   }
+   
+   private void shutdown(boolean delayed) {
       if (log != null) {
-         if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
+         if (log.isLoggable(Level.FINER)) log.finer(ME+": shutdown()");
       } 
       final SocketExecutor se = this.handler;
       if (se != null) {
-         // The core can not do it, it does not know the HandleClient instance
-         // it would be possible to pass the HandleClient with AddressServer to
-         // the core but this needs to be discussed
-         //this.handler.shutdown();
-         
-         // Give a Authenticate.connect exception to be delivered to the client
-         // or the client some chance to close the socket itself after disconnect
-         long delay = 5000; // 5 sec
-         glob.getBurstModeTimer().addTimeoutListener(new I_Timeout() {
+         if (delayed) {
+            // The core can not do it, it does not know the HandleClient instance
+            // it would be possible to pass the HandleClient with AddressServer to
+            // the core but this needs to be discussed
+            //this.handler.shutdown();
+	         
+            // Give a Authenticate.connect exception to be delivered to the client
+            // or the client some chance to close the socket itself after disconnect
+            long delay = 5000; // 5 sec
+            glob.getBurstModeTimer().addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   se.shutdown();
                   //handler = null;
                }
             }, delay, null);
+         }
+         else {
+            se.shutdown();
+         }
       }
    }
    
