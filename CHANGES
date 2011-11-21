@@ -3,7 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
-
+ o r18013 Fixed reconnect race condition with socket protocol
+          Example for mobile phones: When network goes down (e.g. in a tunnel) and phone reconnects therafter
+          the cleanup of the old,stale connection was 5 sec delayed and the POLLING event came too late for DropOnPolling plugin
 
 Changes for 2.1.0 [2011-10-12] r18009 (JDK >= 1.5 only)
 =======================================================
