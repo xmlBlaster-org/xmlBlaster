@@ -108,7 +108,7 @@ public class StringPairTokenizer {
             char c = nextLine.charAt(i);
             if (c == quotechar) {
                inQuotes = !inQuotes;
-               if (preserveInsideQuoteChar && i>0 && i<(nextLine.length()-1))
+               if (preserveInsideQuoteChar && sb.length()>0 && i<(nextLine.length()-1))
                   sb.append(c);
             } else if (c == separator && !inQuotes) {
                String tmp = sb.toString();
@@ -118,7 +118,7 @@ public class StringPairTokenizer {
                else {
                   tokensOnThisLine.add(tmp);
                }
-               sb = new StringBuilder(256); // start work on next token
+               sb.setLength(0);// = new StringBuilder(256); // start work on next token
             } else {
                sb.append(c);
             }
@@ -561,5 +561,13 @@ public class StringPairTokenizer {
            System.out.println(entry.getKey() + "=" + entry.getValue());
         }
       }
+      {
+          System.out.println("\nTesting with quotes:\n");
+          String[] nextLines = { "addr=\"My street 102, 445566 München, Germany\"" };
+          String[] tuple = parseLine(nextLines, '=', '"', false, true);
+          for (String s: tuple) {
+            System.out.println(s);
+          }
+        }
    }
 }
