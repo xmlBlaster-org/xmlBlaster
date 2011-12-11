@@ -30,8 +30,10 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.address.Destination;
 
 /**
  * This is the native implementation of the xmlBlaster interface.
@@ -395,6 +397,22 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       String response = sessionSecCtx.interceptExeptionByAuthorizer(e, sessionHolder, dataHolder);
       return response;
    }
+   
+   public Destination getDestination(MsgUnit msgUnit) {
+	      final QosData qosData = msgUnit.getQosData();
+	      final MethodName m = qosData.getMethod();
+	      if (MethodName.PUBLISH.equals(m) || MethodName.PUBLISH_ARR.equals(m) || MethodName.PUBLISH_ONEWAY.equals(m)
+	       || MethodName.UPDATE.equals(m) || MethodName.UPDATE_ONEWAY.equals(m)) {
+	         if (qosData instanceof MsgQosData) {
+	            MsgQosData msgQosData = (MsgQosData)qosData;
+	            return (msgQosData.getDestinationArr().length > 0) ? msgQosData
+	               .getDestinationArr()[0]
+	               : null;
+	         }
+	      }
+	      return null;
+	   }
+
 
    /**
     * Check message via security plugin.
@@ -486,9 +504,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          XmlBlasterException exceptionToThrow = dataHolder.getExceptionToThrow();
          if (exceptionToThrow != null)
         	 throw exceptionToThrow;
+         Destination destination = getDestination(msgUnit);
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED, ME,
                        "Subject '" + subjSecCtx.getName() + "' is not permitted to perform action '" + action +
                        "' on key '" + key + "' security plugin='" + sessionSecCtx.getManager().getType() + "' " +
+                       (destination != null ? "to " + destination.getDestination().getAbsoluteName() : "") +
                        ((dataHolder.getNotAuthorizedInfo()==null)?"":": "+dataHolder.getNotAuthorizedInfo()));
       }
 
