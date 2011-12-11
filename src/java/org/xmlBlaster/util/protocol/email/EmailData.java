@@ -399,12 +399,20 @@ public class EmailData {
       return null;
    }
    
-
    /**
     * Dumps message to xml.
     * @param readable If true '\0' are replaced by '*' 
     */
    public String toXml(boolean readable) {
+	   return toXml(readable, true);
+   }
+   
+   /**
+    * Dumps message to xml.
+    * @param readable If true '\0' are replaced by '*' 
+    * @param dumpAttachmentData set to false to avoid dumping huge attachment binaries
+    */
+   public String toXml(boolean readable, boolean dumpAttachmentData) {
       String offset = "\n";
       StringBuffer sb = new StringBuffer(1024);
       sb.append(offset).append("<message>");
@@ -444,7 +452,7 @@ public class EmailData {
       }
       AttachmentHolder[] att = getAttachments();
       for (int i = 0; i < att.length; i++)
-         sb.append(att[i].toXml(readable));
+         sb.append(att[i].toXml(readable, dumpAttachmentData));
       sb.append(offset).append("</message>");
       return sb.toString();
    }
