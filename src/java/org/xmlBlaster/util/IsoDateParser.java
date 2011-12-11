@@ -64,7 +64,7 @@ public class IsoDateParser {
 
    /**
     * @return The ISO 8601 UTC-time string
-    * "2006-02-21"
+    * "14:05:51.703Z"
     */
    public static String getCurrentUTCTime() {
       return getUTCTimestamp(new Date()).substring(11);
