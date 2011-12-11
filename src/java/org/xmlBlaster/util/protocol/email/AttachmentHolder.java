@@ -146,12 +146,16 @@ public class AttachmentHolder {
       }
       return buffer.toString();
    }
+
+   public String toXml(boolean readable) {
+	   return toXml(readable, true);
+   }
    
    /**
     * Dumps message to xml.
     * @param readable If true '\0' are replaced by '*' 
     */
-   public String toXml(boolean readable) {
+   public String toXml(boolean readable, boolean dumpAttachmentData) {
      String offset = "\n";
      StringBuffer sb = new StringBuffer(1024);
      sb.append(offset).append("  <attachment>");
@@ -159,11 +163,13 @@ public class AttachmentHolder {
      sb.append(offset).append("    <contenttype>").append(XmlNotPortable.escape(getContentType())).append("</contenttype>");
      try {
         sb.append(offset).append("    <content size='").append(getContent().length).append("'>");
-        if (readable) {
-           sb.append(XmlNotPortable.escape(createLiteral(getContent())));
-        }
-        else {
-           sb.append(XmlNotPortable.escape(new String(getContent(), Constants.UTF8_ENCODING)));
+        if (dumpAttachmentData) {
+           if (readable) {
+              sb.append(XmlNotPortable.escape(createLiteral(getContent())));
+           }
+           else {
+              sb.append(XmlNotPortable.escape(new String(getContent(), Constants.UTF8_ENCODING)));
+           }
         }
         sb.append("</content>");
      } catch (UnsupportedEncodingException e) {
