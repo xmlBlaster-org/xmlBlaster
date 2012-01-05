@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.key.KeyData;
@@ -335,6 +336,10 @@ public final class XmlKey
     */
    public final boolean match(QueryKeyData queryKey) throws XmlBlasterException {
       if (log.isLoggable(Level.FINE)) log.fine("Trying query=" + queryKey.toXml() + "\non key=" + literal());
+
+      if (queryKey.getOid() != null && queryKey.getOid().startsWith(Constants.SUBSCRIPTIONID_PREFIX))
+         return false;
+      
       if (queryKey.isDomain()) {
          if (queryKey.getDomain() == null) {
             log.warning("Your query is of type DOMAIN but you have not specified a domain: " + queryKey.toXml());

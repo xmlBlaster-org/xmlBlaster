@@ -827,8 +827,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             try {
                subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
                SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
-               if (ret != null)
+               if (ret != null) {
                   qos = ret.getData();
+                  // map/change the slave.master-subId back to client's subId
+                  qos.setSubscriptionId(returnOid);
+               }
                //Thread.currentThread().dumpStack();
                //if (ret != null) return ret.toXml();
             }
