@@ -269,10 +269,17 @@ public class ServerImpl implements ServerOperations {    // TIE approach
     * Ping to check if xmlBlaster is alive.
     * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
-   public String ping(String qos)
+   public String ping(String qos) //throws XmlBlasterException
    {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+") ...");
-      return blaster.ping(this.addressServer, qos);
+      try {
+         if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+") ...");
+         return blaster.ping(this.addressServer, qos);
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         e.printStackTrace();
+         return "";
+         //throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
+      }
    }
 }
 
