@@ -568,6 +568,10 @@ final public class Authenticate implements I_RunlevelListener
          }
 
          SessionInfo sessionInfo = getSessionInfo(secretSessionId);
+         if (sessionInfo != null) {
+        	 log.warning("Given secretSessionId=" + secretSessionId + " is not known, no disconnect possible: " + qos_literal);
+        	 return;
+         }
          if (sessionInfo.getCbQueueNumMsgs() > 0) {
             long sleep = glob.getProperty().get("cb.disconnect.pending.sleep", 1000L); // TODO: allow configuration over DisconnectQos
             log.info("Sleeping cb.disconnect.pending.sleep=" + sleep + " millis in disconnect(" + sessionInfo.getId() + ") to deliver " + sessionInfo.getCbQueueNumMsgs() + " pending messages ...");
