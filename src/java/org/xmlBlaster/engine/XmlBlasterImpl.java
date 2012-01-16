@@ -21,8 +21,10 @@ import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.def.Constants;
@@ -33,6 +35,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 
 /**
@@ -520,7 +523,35 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
     * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
     */
-   public final String ping(AddressServer addressServer, String qos) {
+   public final String ping(AddressServer addressServer, String qos) throws XmlBlasterException {
+      // secretSessionId is always unknown here !!!
+      // sessionName is always null since not filled. Workaround for Socket
+      SessionName sessionName = addressServer.getSessionName();
+      
+      if (sessionName == null) {
+         Object cbd = addressServer.getCallbackDriver();
+         //boolean isTunnel = false;
+         if (cbd != null && cbd instanceof CallbackSocketDriver) {
+            CallbackAddress cba = ((CallbackSocketDriver)cbd).getCallbackAddress();
+            if (cba != null) {
+               sessionName = cba.getSessionName();
+            }
+            else {
+//               if (!isTunnel)
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, "XmlBlasterImpl", "ping failed since no CallbackAddress, no SessionInfo found");
+               //return "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>";
+            }
+         }
+      }
+      
+      if (sessionName != null) {
+         SessionInfo info = null;
+         if (sessionName != null)
+            info = authenticate.getSessionInfo(sessionName);
+         if (info == null || info.isShutdown())
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, "XmlBlasterImpl", "ping failed since no SessionInfo found");
+      }
+
       String ret = "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
       if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+"), returning " + ret + " ...");
       return ret;

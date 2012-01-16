@@ -264,6 +264,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                }
 
                ConnectReturnQosServer retQos = authenticate.connect(conQos);
+               this.addressServer.setSessionName(retQos.getSessionName());
                this.secretSessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);

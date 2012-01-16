@@ -4,6 +4,12 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r18023 Bugfixes on server side:
+   - client ping throws exception now if the callback listener exists but there is no associated session to it (happens on race 
+     conditions between connect and disconnect): now the client is notified on stale session by communication exception.
+   - race condition for disconnect vs re-connect of same client with negative pubSessionId and non-failsafe 
+   - for socket and email set proper sessionName on Connection (was empty)
+
  o r18021 fixed wrong subId coming from Master's returnQos in cluster environment to the original client's subId
 
  o r18015 Fixed StringPairTokenizer#parseLine:

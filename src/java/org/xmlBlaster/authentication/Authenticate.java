@@ -66,7 +66,7 @@ final public class Authenticate implements I_RunlevelListener
     * key   = sessionId A unique identifier
     * value = SessionInfo object, containing all data about a client
     */
-   final private Map sessionInfoMap = new HashMap();
+   final private Map<String, SessionInfo> sessionInfoMap = new HashMap<String, SessionInfo>();
 
    /**
     * With this map you can find a client using his login name.
@@ -74,12 +74,12 @@ final public class Authenticate implements I_RunlevelListener
     * key   = loginName, the unique login name of a client
     * value = SessionInfo object, containing all data about a client
     */
-   final private Map loginNameSubjectInfoMap = new HashMap();
+   final private Map<String, SubjectInfo> loginNameSubjectInfoMap = new HashMap<String, SubjectInfo>();
 
    /**
     * For listeners who want to be informed about login/logout
     */
-   final private Set clientListenerSet = new HashSet();
+   final private Set<I_ClientListener> clientListenerSet = new HashSet<I_ClientListener>();
 
    /** The singleton handle for this xmlBlaster server */
    private final I_XmlBlaster xmlBlasterImpl;
@@ -192,6 +192,15 @@ final public class Authenticate implements I_RunlevelListener
       return connect(xmlQos, null);
    }
 
+   private boolean isKnownInSessionInfoMap(String previousSecretSessionId) {
+      if (previousSecretSessionId == null)
+         return false;
+      synchronized(sessionInfoMap) {
+         SessionInfo ret = sessionInfoMap.get(previousSecretSessionId);
+         return ret != null;
+      }
+   }
+   
    /**
     * Login to xmlBlaster.
     *
@@ -206,7 +215,7 @@ final public class Authenticate implements I_RunlevelListener
     * @param connectQos  The login/connect QoS, see ConnectQosServer.java
     * @param secretSessionId   The caller (here CORBA-POA protocol driver) may insist to you its own secretSessionId
     */
-   public /*synchronized*/ final ConnectReturnQosServer connect(ConnectQosServer connectQos, String secretSessionId) throws XmlBlasterException
+   public /*synchronized*/ final ConnectReturnQosServer connect(ConnectQosServer connectQos, String forcedSecretSessionId) throws XmlBlasterException
    {
       if (connectQos.getSessionQos().getSessionName().getLoginName().equals(this.glob.getId())) {
          String text = "You are not allowed to login with the cluster node name " + connectQos.getSessionName().toString() + ", access denied.";
@@ -240,7 +249,8 @@ final public class Authenticate implements I_RunlevelListener
          }
       }
 
-
+      String secretSessionId = forcedSecretSessionId;
+      String previousSecretSessionId = secretSessionId;
       // [1] Try reconnecting with secret sessionId
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Entering connect(sessionName=" + connectQos.getSessionName().getAbsoluteName() + ")"); // " secretSessionId=" + secretSessionId + ")");
@@ -254,7 +264,7 @@ final public class Authenticate implements I_RunlevelListener
          }
          if (secretSessionId != null && secretSessionId.length() >= 2) {
             SessionInfo info = getSessionInfo(secretSessionId);
-            if (info != null) {  // authentication succeeded
+            if (info != null && !info.isShutdown()) {  // authentication succeeded
 
                updateConnectQos(info, connectQos);
 
@@ -277,7 +287,12 @@ final public class Authenticate implements I_RunlevelListener
       // [2] Try reconnecting with publicSessionId
       if (connectQos.hasPublicSessionId()) {
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
-         if (info != null && !info.isShutdown() && !info.getConnectQos().bypassCredentialCheck()) {
+         if (info != null && !isKnownInSessionInfoMap(previousSecretSessionId)) {
+            // set pubSessionId=0 because race condition between disconnect and re-connect 
+            SessionName sessionName = new SessionName(this.glob, connectQos.getSessionName().getNodeId(), connectQos.getSessionName().getLoginName(), 0);
+            connectQos.setSessionName(sessionName);
+         }
+         if (info != null && !info.isShutdown() && !isKnownInSessionInfoMap(previousSecretSessionId) && !info.getConnectQos().bypassCredentialCheck() && connectQos.hasPublicSessionId()) {
             if (connectQos.getSessionQos().reconnectSameClientOnly()) {
                String text = "Only the creator of session " + connectQos.getSessionName().toString() + " may reconnect, access denied.";
                log.warning(text);
@@ -326,7 +341,7 @@ final public class Authenticate implements I_RunlevelListener
       }
 
       // [3] Generate a secret session ID
-      if (secretSessionId == null || secretSessionId.length() < 2) {
+      if (forcedSecretSessionId == null || forcedSecretSessionId.length() < 2) {
          secretSessionId = createSessionId("null" /*subjectCtx.getName()*/);
          connectQos.getSessionQos().setSecretSessionId(secretSessionId); // assure consistency
          if (log.isLoggable(Level.FINE)) log.fine("Empty secretSessionId - generated secretSessionId=" + secretSessionId);
@@ -717,8 +732,10 @@ final public class Authenticate implements I_RunlevelListener
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".changeSecretSessionId()", "Couldn't lookup secretSessionId.");
          }
          if (this.sessionInfoMap.get(newSessionId) != null) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".changeSecretSessionId()", "The new secretSessionId is already in use.");
+            // Happens in race condition of disconnect vs re-connect
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESOURCE_TEMPORARY_UNAVAILABLE, ME+".changeSecretSessionId()", "The new secretSessionId '" + newSessionId + "' is already in use.");
          }
+         
          this.sessionInfoMap.put(newSessionId, sessionInfo);
          this.sessionInfoMap.remove(oldSessionId);
 

@@ -146,7 +146,12 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
      */
    public String ping(String qos) throws RemoteException
    {
-      return blasterNative.ping(this.addressServer, qos);
+      try {
+         return blasterNative.ping(this.addressServer, qos);
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         throw new RemoteException("Ping failed", e);
+      }
    }
 }
 

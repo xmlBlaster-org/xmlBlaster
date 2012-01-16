@@ -106,7 +106,7 @@ public interface I_XmlBlaster
      * Other returned id's are "RUNLEVEL_CLEANUP", "RUNLEVEL_STANDBY", "RUNLEVEL_HALTED".
      * All none "OK" values tell that the server is not willing to process messages.
      */
-   public String ping(AddressServer addressServer, String qos);
+   public String ping(AddressServer addressServer, String qos) throws XmlBlasterException;
 
    public String toXml() throws XmlBlasterException;
    public String toXml(String extraOffset) throws XmlBlasterException;

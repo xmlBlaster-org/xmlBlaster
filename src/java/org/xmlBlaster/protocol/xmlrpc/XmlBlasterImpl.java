@@ -487,7 +487,7 @@ public class XmlBlasterImpl {
     * Test the xml-rpc connection and if xmlBlaster is available for requests.
     * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
     */
-   public String ping(String qos) {
+   public String ping(String qos) throws XmlBlasterException {
       return blasterNative.ping(this.addressServer, qos);
    }
 
