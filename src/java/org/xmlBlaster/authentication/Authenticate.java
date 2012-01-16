@@ -568,7 +568,7 @@ final public class Authenticate implements I_RunlevelListener
          }
 
          SessionInfo sessionInfo = getSessionInfo(secretSessionId);
-         if (sessionInfo != null) {
+         if (sessionInfo == null) {
         	 log.warning("Given secretSessionId=" + secretSessionId + " is not known, no disconnect possible: " + qos_literal);
         	 return;
          }
