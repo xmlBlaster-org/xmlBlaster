@@ -287,7 +287,9 @@ final public class Authenticate implements I_RunlevelListener
       // [2] Try reconnecting with publicSessionId
       if (connectQos.hasPublicSessionId()) {
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
-         if (info != null && !isKnownInSessionInfoMap(previousSecretSessionId) && !connectQos.getSessionName().isPubSessionIdUser()) {
+         if (info != null && !isKnownInSessionInfoMap(previousSecretSessionId) && connectQos.getSessionName().getPublicSessionId() <= 0) {
+            if (connectQos.getData().getClientQueueProperty().getCurrentAddress().getRetries() == -1)
+               log.severe(connectQos.getSessionName().getAbsoluteName() + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId");
             // set pubSessionId=0 because race condition between disconnect and re-connect 
             SessionName sessionName = new SessionName(this.glob, connectQos.getSessionName().getNodeId(), connectQos.getSessionName().getLoginName(), 0);
             connectQos.setSessionName(sessionName);
@@ -342,6 +344,8 @@ final public class Authenticate implements I_RunlevelListener
 
       // [3] Generate a secret session ID
       if (forcedSecretSessionId == null || forcedSecretSessionId.length() < 2) {
+         if (connectQos.getSessionName().getPublicSessionId() <= 0 && connectQos.getData().getClientQueueProperty().getCurrentAddress().getRetries() == -1)
+            log.severe(connectQos.getSessionName().getAbsoluteName() + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId");
          secretSessionId = createSessionId("null" /*subjectCtx.getName()*/);
          connectQos.getSessionQos().setSecretSessionId(secretSessionId); // assure consistency
          if (log.isLoggable(Level.FINE)) log.fine("Empty secretSessionId - generated secretSessionId=" + secretSessionId);
