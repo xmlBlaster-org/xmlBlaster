@@ -287,7 +287,7 @@ final public class Authenticate implements I_RunlevelListener
       // [2] Try reconnecting with publicSessionId
       if (connectQos.hasPublicSessionId()) {
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
-         if (info != null && !isKnownInSessionInfoMap(previousSecretSessionId)) {
+         if (info != null && !isKnownInSessionInfoMap(previousSecretSessionId) && !connectQos.getSessionName().isPubSessionIdUser()) {
             // set pubSessionId=0 because race condition between disconnect and re-connect 
             SessionName sessionName = new SessionName(this.glob, connectQos.getSessionName().getNodeId(), connectQos.getSessionName().getLoginName(), 0);
             connectQos.setSessionName(sessionName);
