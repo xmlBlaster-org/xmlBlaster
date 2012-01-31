@@ -226,7 +226,7 @@ public class StorageId implements java.io.Serializable
       }
       else {
          // 
-         log.severe("Can't handle storageId '" + post + "'");
+         log.severe("Can't handle storageId '" + post + "' relating=" + relating + " is not known");
          // throw new IllegalArgumentException("Can't handle storageId '" + post
          // + "'");
       }
