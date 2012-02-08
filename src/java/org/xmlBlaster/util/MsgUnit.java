@@ -370,6 +370,15 @@ public final class MsgUnit implements java.io.Serializable
       //glob.getLog("core").info("MsgUnit", this.qosData.toXml() + "qosSize=" + this.qosData.size() + " keySize=" + this.keyData.size() + " contentSize=" + this.content.length + this.qosData.toXml());
       return this.qosData.size() + ((this.keyData==null)?0:this.keyData.size()) + this.content.length;
    }
+   
+   public String toString() {
+      if (keyData==null) {
+    	  return "topicId=null";
+      }
+      StringBuilder sb = new StringBuilder();
+      sb.append("topicId=" + keyData.getOid());
+      return sb.toString();
+   }
 
    /**
     * Dump state of this object into a XML ASCII string.
