@@ -552,7 +552,9 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       //       preferably in the server implementation (see RequestBroker.java)
       // TODO: As soon we have implemented it here we need to remove 
       //       data.setDuplicateUpdates(false); in NodeInfo.java
-
+      if (subscribeQos2.getData().getMultiSubscribe() == true) {
+    	  log.warning("Caution: Using multisubscribe=true in cluster environment can have side effect in delivering multiple messages to other subscriber clients as well, this behaviour is not yet investigated");
+      }
       //subscribeQos2.setMultiSubscribe(false);
 
       return con.subscribe(new SubscribeKey(this.glob, xmlKey), subscribeQos2);
