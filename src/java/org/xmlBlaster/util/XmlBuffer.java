@@ -8,21 +8,21 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 
 /**
- * Same as StringBuffer but has the additional method appendEscaped() which
+ * Same as StringBuilder but has the additional method appendEscaped() which
  * escapes predefined XML identities.
  * @author mr@marcelruff.info
  */
 public class XmlBuffer {
-        private StringBuffer buf;
+        private StringBuilder buf;
         public XmlBuffer(int len) {
-                this.buf = new StringBuffer(len);
+                this.buf = new StringBuilder(len);
         }
 
     /**
      * Escape predefined xml entities (&, <, >, ', ").
      * Additionally the '\0' is escaped.
      * @param text
-     * @return The escaped text is appended to the StringBuffer.
+     * @return The escaped text is appended to the StringBuilder.
      */
         public XmlBuffer appendEscaped(String text) {
                 append(this.buf, text);
@@ -33,7 +33,7 @@ public class XmlBuffer {
          * Escape predefined xml entities (', ", \r) for attributes.
          * Additionally the '\0' is escaped.
          * @param text
-         * @return The escaped text is appended to the StringBuffer.
+         * @return The escaped text is appended to the StringBuilder.
          */
             public XmlBuffer appendAttributeEscaped(String text) {
                     appendAttr(this.buf, text);
@@ -93,7 +93,7 @@ public class XmlBuffer {
         }
 
         /**
-         * Aquivalent to a StringBuffer.append().
+         * Aquivalent to a StringBuilder.append().
          */
         public XmlBuffer append(String str) {
                 this.buf.append(str);
@@ -101,7 +101,7 @@ public class XmlBuffer {
         }
 
         /**
-         * Aquivalent to a StringBuffer.append().
+         * Aquivalent to a StringBuilder.append().
          */
         public XmlBuffer append(long ln) {
                 this.buf.append(ln);
@@ -109,7 +109,7 @@ public class XmlBuffer {
         }
 
         /**
-         * Aquivalent to a StringBuffer.append().
+         * Aquivalent to a StringBuilder.append().
          */
         public XmlBuffer append(float ln) {
                 this.buf.append(ln);
@@ -117,7 +117,7 @@ public class XmlBuffer {
         }
 
         /**
-         * Aquivalent to a StringBuffer.append().
+         * Aquivalent to a StringBuilder.append().
          */
         public XmlBuffer append(double ln) {
                 this.buf.append(ln);
@@ -125,14 +125,14 @@ public class XmlBuffer {
         }
 
         /**
-         * Aquivalent to a StringBuffer.append().
+         * Aquivalent to a StringBuilder.append().
          */
         public XmlBuffer append(boolean b){
                 this.buf.append(b);
                 return this;
         }
         
-        public StringBuffer getRawBuffer() {
+        public StringBuilder getRawBuffer() {
         	return this.buf;
         }
         
@@ -171,7 +171,7 @@ public class XmlBuffer {
     public static String escape(String text) {
         if (text == null || text.length() < 1)
                 return text;
-        StringBuffer buf = new StringBuffer((int)(text.length()*1.2));
+        StringBuilder buf = new StringBuilder((int)(text.length()*1.2));
         append(buf, text);
         return buf.toString();
     }
@@ -180,9 +180,9 @@ public class XmlBuffer {
      * Escape predefined xml entities (&, <, >, ', ").
      * Additionally the '\0' is escaped.
      * @param text
-     * @return The escaped text is appended to the given StringBuffer.
+     * @return The escaped text is appended to the given StringBuilder.
      */
-    public static void append(StringBuffer buf, String text) {
+    public static void append(StringBuilder buf, String text) {
         if (text == null) return;
         int length = text.length();
         for (int i = 0; i < length; i++) {
@@ -218,9 +218,9 @@ public class XmlBuffer {
      * Escape predefined xml entities (\0, ', ", \r). for attribute notation
      * Additionally the '\0' is escaped.
      * @param text
-     * @return The escaped text is appended to the given StringBuffer.
+     * @return The escaped text is appended to the given StringBuilder.
      */
-    public static void appendAttr(StringBuffer buf, String text) {
+    public static void appendAttr(StringBuilder buf, String text) {
         if (text == null) return;
         int length = text.length();
         for (int i = 0; i < length; i++) {
@@ -260,7 +260,7 @@ public class XmlBuffer {
     }
     
     public final static String unEscapeXml(String xml) {
-       StringBuffer buf = new StringBuffer();
+       StringBuilder buf = new StringBuilder();
        int i, len;
        if (xml == null)
           return null;
