@@ -25,7 +25,8 @@ public final class SessionName implements java.io.Serializable {
    /** Name for logging output */
    private static String ME = "SessionName";
    private transient final Global glob;
-   public final static String ROOT_MARKER_TAG = "/" + ContextNode.CLUSTER_MARKER_TAG; // "/node";
+   public final static String SEPERATOR = "/";
+   public final static String ROOT_MARKER_TAG = SEPERATOR + ContextNode.CLUSTER_MARKER_TAG; // "/node";
    public final static String SUBJECT_MARKER_TAG = ContextNode.SUBJECT_MARKER_TAG; // "client";
    /** The absolute name */
    private String absoluteName;
