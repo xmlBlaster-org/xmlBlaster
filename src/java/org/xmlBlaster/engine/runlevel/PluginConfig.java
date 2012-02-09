@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_AttributeUser;
+import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
@@ -179,7 +181,27 @@ public class PluginConfig implements PluginConfigMBean, I_AttributeUser
       return this.downAction;
    }
 
-   public void addAttribute(String key, String value) {
+   public void addAttribute(final String key, String value) {
+	  if (value != null && value.contains("${")) {
+		  ReplaceVariable replaceVariable = new ReplaceVariable();
+		  final String origValue = value;
+		  value = replaceVariable.replace(value, new I_ReplaceVariable() {
+			//@Override
+			public String get(String token) { // token is "MyKey" for value="Hello ${MyKey} world"
+				try {
+					String val = glob.get(token, null, null, null);
+					if (val == null) {
+						log.warning("xmlBlasterPlugins.xml replacement of id=" + id + " " + key + "=" + origValue + " fails: token '" + token + "' is not known");
+						val = token;
+					}
+					return val;
+				} catch (XmlBlasterException e) {
+					e.printStackTrace();
+					return token;
+				}
+			}
+		});
+	  }
       this.attributes.setProperty(key, value);
    }
 
@@ -313,4 +335,22 @@ public class PluginConfig implements PluginConfigMBean, I_AttributeUser
     * @see org.xmlBlaster.util.admin.I_AdminUsage#setUsageUrl(java.lang.String)
     */
    public void setUsageUrl(java.lang.String url) {}
+   
+   public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("id").append("=").append(getId());
+      sb.append(",");
+      sb.append("className").append("=").append(getClassName());
+      sb.append(",");
+      sb.append("create").append("=").append(isCreate());
+      sb.append(",");
+      if (jarPath != null) {
+         sb.append("jarPath").append("=").append(jarPath);
+         sb.append(",");
+      }
+      sb.append("actions").append("=").append(getActions());
+      sb.append(",");
+      sb.append("attributes").append("=").append(attributes);
+      return sb.toString();
+   }
 }

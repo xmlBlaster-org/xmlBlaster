@@ -9,6 +9,9 @@
 #            http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.env.html
 #            You can activate/disactivate plugins with comments
 #            or with the attribute create='true' or 'false'
+# Replacement: Since xmlBlaster v2.2 attribute values with ${VARIABLEKEY} are replaced by
+#            xmlBlaster.properties setting or command line argument or JVM environment setting if found.
+#            If the key is not found, the key itself is used and a log.warning is written
 -->
 <xmlBlaster>
 
