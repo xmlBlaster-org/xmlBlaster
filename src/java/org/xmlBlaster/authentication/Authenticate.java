@@ -213,7 +213,7 @@ final public class Authenticate implements I_RunlevelListener
     * <p />
     *
     * @param connectQos  The login/connect QoS, see ConnectQosServer.java
-    * @param secretSessionId   The caller (here CORBA-POA protocol driver) may insist to you its own secretSessionId
+    * @param secretSessionId   The caller (here CORBA-POA protocol driver or SessionPersistencePlugin) may insist to you its own secretSessionId
     */
    public /*synchronized*/ final ConnectReturnQosServer connect(ConnectQosServer connectQos, String forcedSecretSessionId) throws XmlBlasterException
    {
@@ -506,6 +506,9 @@ final public class Authenticate implements I_RunlevelListener
                          " lasts forever"));
          sb.append(", ").append(subjectInfo.getNumSessions()).append(" of ");
          sb.append(connectQos.getMaxSessions()).append(" sessions are in use.");
+         if (connectQos.isFromPersistenceRecovery()) {
+        	 sb.append(" isFromPersistenceRecovery=" + true);
+         }
          log.info(sb.toString());
          if (log.isLoggable(Level.FINEST)) log.finest(toXml());
          if (log.isLoggable(Level.FINEST)) log.finest("Returned QoS:\n" + returnQos.toXml());

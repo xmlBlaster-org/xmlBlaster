@@ -742,7 +742,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                }
                log.info("Ignoring duplicate subscription '" +
                        ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
-                        "' as you have set multiSubscribe to false");
+                        "' as you have set multiSubscribe to false" + (subscribeQos.isRecoveredFromPersistenceStore() ? ", recovered from persistenceStore=true" : ""));
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
                SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);
@@ -1602,7 +1602,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, text + " Your QoS:" + publishQos.toXml(""));
                }
                int stratum = -1; // not known yet, addRouteInfo() sets my stratum to one closer to the master,
-                                 // this needs to be checked here as soon as we know which stratum we are!!!
+                                 // this needs to be checked here as soon as we know which stratum we are!!
                publishQos.addRouteInfo(new RouteInfo(glob.getNodeId(), stratum, publishQos.getRcvTimestamp()));
             }
          }
@@ -1612,6 +1612,70 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          if (msgKeyData.isAdministrative()) {
             if (!glob.supportAdministrative())
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_ADMIN_UNAVAILABLE, ME, "Sorry administrative publish() is not available, try to configure xmlBlaster.");
+
+            // First untested try (2012-02-09 marcel) to forward admin messages in cluster environment
+            if (this.glob.useCluster()) {
+                if (!publishQos.isClusterUpdate()) { // updates from other nodes are arriving here in publish as well
+                   if (this.glob.isClusterManagerReady()) {
+                      if (publishQos.isPtp()) {  // is PtP message, see req cluster.ptp
+                         Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
+                         for (int ii = 0; ii<destinationArr.length; ii++) {
+                            if (log.isLoggable(Level.FINE)) log.fine("Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
+                            publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, publishQos.isClusterUpdate(), destinationArr[ii]);
+                            if (publishReturnQos != null) {
+                               if (destinationArr.length > 1) {
+                                  String txt = "Messages with more than one destinations in a cluster environment is not implemented, only destination '" + destinationArr[ii].toXml() + "' of '" + msgUnit.getLogId() + "' was delivered";
+                                  log.warning(txt);
+                                  throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, txt);
+                               }
+                               I_Checkpoint cp = glob.getCheckpointPlugin();
+                               if (cp != null)
+                                  cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
+                               return publishReturnQos.toXml();
+                            }
+                         }
+                      }
+                      // Publish/Subscribe mode (or if PtP had no result)
+                      else { // if (publishQos.isSubscribable()) {
+                         try {
+                            PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
+                            //Thread.currentThread().dumpStack();
+                            if (ret != null) { // Message was forwarded to master cluster
+                                I_Checkpoint cp = glob.getCheckpointPlugin();
+                                if (cp != null)
+                                   cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
+                               publishReturnQos = ret.getPublishReturnQos();
+                               if (ret.getNodeMasterInfo().isDirtyRead() == false) {
+                                  if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeMasterInfo().getId() + ", dirtyRead==false nothing more to do");
+                                  return publishReturnQos.toXml();
+                               }
+                               // else we publish it locally as well (dirty read!)
+                            }
+                         }
+                         catch (XmlBlasterException e) {
+                            if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+                               this.glob.setUseCluster(false);
+                            }
+                            else {
+                               e.printStackTrace();
+                               throw e;
+                            }
+                         }
+                      }
+                   }
+                   else {
+                      if (! publishQos.isFromPersistenceStore()) {
+                         if (msgKeyData.isInternal()) {
+                            if (log.isLoggable(Level.FINE)) log.fine("Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                         }
+                         else {
+                            log.warning("Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                         }
+                      }
+                   }
+                }
+             }
+
             return glob.getMomClientGateway().setCommand(sessionInfo, msgKeyData, msgUnit, publishQos, publishQos.isClusterUpdate());
          }
 

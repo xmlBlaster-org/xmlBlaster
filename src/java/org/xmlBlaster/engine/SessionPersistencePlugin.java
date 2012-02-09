@@ -93,6 +93,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	            qos.isFromPersistenceRecovery(true);
 	            qos.setPersistenceUniqueId(entry.getUniqueId());
 	            qos.setAddressServer(this.addressServer);
+	            //qos.bypassCredentialCheck(true); // The security plugin may decide itself with connectQosServer.isFromPersistenceRecovery() check
 
 	            SessionName sessionName = data.getSessionName();
 	            absoluteName = sessionName.getAbsoluteName();
@@ -101,7 +102,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	            if (log.isLoggable(Level.FINE))
 	               log.fine("recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "' and persistenceUniqueId=" + entry.getUniqueId());
 	            // if (log.isLoggable(Level.FINE)) log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
-	            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos);
+	            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos, sessionId);
 	            if (log.isLoggable(Level.FINEST))
 	               log.finest("recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
 	         }
@@ -171,8 +172,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             });
             if (duplicateCounter > 0) {
                this.subscribeStore.clear();
-               if (this.subscribeStore.getNumOfEntries() > 0)
-                     log.severe("Internal prpblem with checkForDuplicateSubscriptions");
                java.util.Iterator it = duplicates.keySet().iterator();
                while (it.hasNext()) {
                   this.subscribeStore.put((I_MapEntry)duplicates.get(it.next()));

@@ -61,6 +61,8 @@ public class Session implements I_Session, I_Subject {
    // this is unique for the session
    protected String loginName;
    protected String passwd;
+   
+   protected ConnectQosServer connectQosServer;
 
    public Session( Manager sm, String sessionId ) throws XmlBlasterException {
       this.glob = (sm.getGlobal() == null) ? Global.instance() : sm.getGlobal();
@@ -76,6 +78,7 @@ public class Session implements I_Session, I_Subject {
    }
 
    public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException {
+	  this.connectQosServer = connectQos;
       return connectQos;
    }
 
@@ -95,6 +98,17 @@ public class Session implements I_Session, I_Subject {
       this.authenticated = false;
       this.loginName = securityQos.getUserId();
       this.passwd = securityQos.getCredential();
+      
+      ConnectQosServer qos = this.connectQosServer;
+      if (qos != null && qos.isFromPersistenceRecovery()) { // during xmlBlaster startup
+          if (this.loginName == null) {
+             throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed from persistence recovery, login name is null");
+          }
+    	  this.connectQosServer = null;
+          this.authenticated = true;
+          if (log.isLoggable(Level.FINE)) log.fine( "Checking password disabled as from persistence recovery ...");
+    	  return null;
+      }
 
       if (this.loginName == null || this.passwd == null) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed, you've passed an illegal login name or password");
@@ -104,8 +118,9 @@ public class Session implements I_Session, I_Subject {
       this.authenticated = this.htpasswd.checkPassword(this.loginName, this.passwd);
       if (log.isLoggable(Level.FINE)) log.fine( "The password" /*+ this.passwd */+ " for " + this.loginName + " is " + ((this.authenticated)?"":" NOT ") + " valid.");
 
-      if (!this.authenticated)
+      if (!this.authenticated) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed");
+      }
 
       return null; // no extra information
    }
