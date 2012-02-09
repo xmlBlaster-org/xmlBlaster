@@ -86,6 +86,14 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	            // do connect
 	            SessionEntry entry = (SessionEntry)entries[i];
 	            ConnectQosData data = this.global.getConnectQosFactory().readObject(entry.getQos());
+	            
+	            //String absolute = data.getSessionName().getAbsoluteName();
+	            if (data.getSessionName().isPubSessionIdInternal()) {
+	               // if pubSessionId < 0
+	               boolean removed = removeSession(entry.getUniqueId(), data);
+	               log.warning("Removed persistent session " + data.getSessionName().getAbsoluteName() + " because of negative pubSessionId, removed=" + removed);
+	               continue;
+	            }
 
 	            this.addressServer = new AddressServer(this.global, "NATIVE", this.global.getId(), (java.util.Properties)null);
 
@@ -143,9 +151,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                      SessionName sessionName = new SessionName(global, subscribeEntry.getSessionName());
                      Object found = sessionIds.get(sessionName.getAbsoluteName());
                      if (found == null) {
-                        if (errorCounter == 0) {
-                           log.warning("Ignoring invalid entry '" + sessionName.getAbsoluteName() + "' as user is not known");
-                        }
+                        //if (errorCounter == 0) {
+                        //   log.warning("Ignoring invalid subscription entry '" + subscribeEntry.getKey() + "' of '" + sessionName.getAbsoluteName() + "' as user is not known");
+                        //}
+                        int count = subscribeStore.remove(subscribeEntry.getUniqueId());
+                        log.warning("Ignoring " + count + " invalid subscription entry '" + subscribeEntry.getKey() + "' of '" + sessionName.getAbsoluteName() + "' as user is not known");
                         errorCounter++;
                         return null;
                      }
@@ -204,7 +214,10 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
             String sessionId = (String)sessionIds.get(sessionName.getAbsoluteName());
             if (sessionId == null) {
-               log.severe("The persistent session '" + sessionName.getAbsoluteName() + "' is not found, removing persistent subscription " + entry.getLogId());
+               if (sessionName.isPubSessionIdInternal()) // pubSessionId < 0
+                  log.warning("The persistent session '" + sessionName.getAbsoluteName() + "' is not found, removing persistent subscription " + entry.getUniqueId() + " on topic=" + entry.getKey());
+               else
+                   log.severe("The persistent session '" + sessionName.getAbsoluteName() + "' is not found, removing persistent subscription " + entry.getLogId());
                this.subscribeStore.remove(entry);
                continue;
                //throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
@@ -447,6 +460,18 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             log.fine("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' failed, entry not found.");
          else
             log.severe("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' failed, entry not found.");
+      }
+   }
+   
+   public boolean removeSession(long uniqueId, ConnectQosData connectQosData) {
+      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L, null);
+      try {
+         int num = this.sessionStore.remove(entry);
+         return (num > 0);
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         log.severe("Can't remove session " + connectQosData.getSessionName().getAbsoluteName() + " from persistent store: " + e.toString());
+         return false;
       }
    }
 

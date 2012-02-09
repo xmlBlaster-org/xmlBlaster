@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r18050 Remove persistent session and persistent subscription on startup if pubSessionId<0
+
  o r18040 on server side
    - Handle recovery of session on startup for changed passwords in htpasswd
    - Added cluster forward for administratice commands

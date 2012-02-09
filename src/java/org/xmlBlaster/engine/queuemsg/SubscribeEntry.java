@@ -119,7 +119,7 @@ public class SubscribeEntry implements I_MapEntry {
     * @see org.xmlBlaster.util.queue.I_Entry#getLogId()
     */
    public String getLogId() {
-      return getEmbeddedType() + "/" + this.uniqueIdStr + "/" + this.qos;
+      return getEmbeddedType() + "/" + this.uniqueIdStr + "/" + this.getKey() + "/" + this.qos;
    }
 
    /**
