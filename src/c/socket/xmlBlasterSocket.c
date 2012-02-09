@@ -512,7 +512,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
        ( udp && numRead < MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes but expected %d", (long)numRead, MSG_LEN_FIELD_LEN);
-      if (debug) { printf(exception->message); printf("\n"); }
+      if (debug) { printf("%s", exception->message); printf("\n"); }
       return true;
    }
    if (udp) {
@@ -525,7 +525,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
               "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes with invalid message length='%s'",
               (long)numRead, msgLenPtr);
-      if (debug) { printf(exception->message); printf("\n"); }
+      if (debug) { printf("%s", exception->message); printf("\n"); }
       return true;
    }
    socketDataHolder->msgLen = (size_t)msgLenL;
@@ -536,7 +536,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
               "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes with invalid message length='%s' parsed to '%ld'",
               (long)numRead, msgLenPtr, (long)socketDataHolder->msgLen);
-      if (debug) { printf(exception->message); printf("\n"); }
+      if (debug) { printf("%s", exception->message); printf("\n"); }
       return true;
    }
 
@@ -557,7 +557,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    if ((size_t)numRead != (socketDataHolder->msgLen-MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received numRead=%ld message bytes but expected %lu", (long)numRead, (unsigned long)(socketDataHolder->msgLen-MSG_LEN_FIELD_LEN));
-      if (debug) { printf(exception->message); printf("\n"); }
+      if (debug) { printf("%s", exception->message); printf("\n"); }
       free(rawMsg);
       return true;
    }
@@ -580,7 +580,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
        socketDataHolder->type != MSG_TYPE_EXCEPTION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received response message of type=%c", socketDataHolder->type);
-      if (debug) { printf(exception->message); printf("\n"); }
+      if (debug) { printf("%s", exception->message); printf("\n"); }
       free(rawMsg);
       return true;
    }
@@ -589,7 +589,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    if (socketDataHolder->version != XMLBLASTER_SOCKET_VERSION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received response message of unsupported version=%c", socketDataHolder->version);
-      if (debug) { printf(exception->message); printf("\n"); }
+      if (debug) { printf("%s", exception->message); printf("\n"); }
       free(rawMsg);
       return true;
    }

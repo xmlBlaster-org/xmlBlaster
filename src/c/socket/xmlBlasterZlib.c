@@ -286,6 +286,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
             hasMoreBytes = select (fd+1, &fds, NULL, NULL, NULL);
       */
    }
+   return -1; /* never reached, to make compiler happy */
 }
 
 

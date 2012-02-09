@@ -564,6 +564,7 @@ bool startsWith(const char * const str, const char * const token) {
                 if (str[i] != token[i])
                         return false;
         }
+        return false; /* never reached, to make compiler happy */
 }
 
 Dll_Export

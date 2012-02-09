@@ -700,6 +700,7 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName, sqlite3_st
                 break;
                 case SQLITE_SCHEMA:
                         LOG __FILE__, "%s() Sql execution problem [sqlCode=%d], inconsistent schema", methodName, rc);
+                        /* no break */
                 case SQLITE_MISUSE:
                 default:
             LOG __FILE__, "%s() SQL execution problem [sqlCode=%d]. See %s for details", methodName, rc, errLink);
