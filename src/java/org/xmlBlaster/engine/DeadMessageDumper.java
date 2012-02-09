@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.def.Constants;
@@ -83,6 +84,7 @@ public class DeadMessageDumper implements I_Plugin {
    private String directoryName;
 
    private String loginName;
+   private long pubSessionId = 1;
    private String password = "secret";
    /** forceBase64==false: ASCII dump for content if possible (XML embedable) */
    private boolean forceBase64 = false;
@@ -110,6 +112,12 @@ public class DeadMessageDumper implements I_Plugin {
       log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
 
       this.loginName = this.global.get("loginName", "_DeadMessageDumper", null, this.pluginInfo);
+      if (this.loginName.indexOf("/") != -1) { // "_DeadMessageDumper/session/1"
+    	  SessionName sessionName = new SessionName(glob, this.loginName);
+    	  this.loginName = sessionName.getLoginName();
+    	  this.pubSessionId = sessionName.getPublicSessionId();
+      }
+      this.pubSessionId = this.global.get("pubSessionId", this.pubSessionId, null, this.pluginInfo);
       this.password = this.global.get("password", this.password, null, this.pluginInfo);
       this.forceBase64 = this.global.get("forceBase64", this.forceBase64, null, this.pluginInfo);
       
@@ -155,6 +163,10 @@ public class DeadMessageDumper implements I_Plugin {
          this.connection = new XmlBlasterAccess(this.global);
 
          ConnectQos connectQos = new ConnectQos(this.global, loginName, password);
+         if (this.pubSessionId != 0) {
+            SessionName sessionName = new SessionName(this.global, null, this.loginName, this.pubSessionId);
+            connectQos.setSessionName(sessionName);
+         }
          connectQos.setSecretCbSessionId(secretCbSessionId);
          // Constants.ONOVERFLOW_DISCARDOLDEST
 
