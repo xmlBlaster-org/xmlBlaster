@@ -181,8 +181,12 @@ public class PluginConfig implements PluginConfigMBean, I_AttributeUser
       return this.downAction;
    }
 
-   public void addAttribute(final String key, String value) {
-	  if (value != null && value.contains("${")) {
+   public void addAttribute(String key, String value) {
+	   addAttribute(key, value, true);
+   }
+   
+   public void addAttribute(final String key, String value, boolean replacePlaceHolder) {
+	  if (replacePlaceHolder && value != null && value.contains("${")) {
 		  ReplaceVariable replaceVariable = new ReplaceVariable();
 		  final String origValue = value;
 		  value = replaceVariable.replace(value, new I_ReplaceVariable() {

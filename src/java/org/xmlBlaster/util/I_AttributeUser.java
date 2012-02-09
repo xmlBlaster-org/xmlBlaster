@@ -10,7 +10,19 @@ package org.xmlBlaster.util;
  */
 public interface I_AttributeUser {
 
+   /**
+    * @param key
+    * @param value ${xy} are replaced since xmlBlaster v2.2
+    */
    void addAttribute(String key, String value);
+   
+   /**
+    * 
+    * @param key
+    * @param value
+    * @param replacePlaceHolder if true ${xy} are replaced
+    */
+   void addAttribute(String key, String value, boolean replacePlaceHolder);
    
    /**
     * When the attribute is written to a string in the toXml methods it is wrapped inside a CDATA in case

@@ -5,10 +5,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.def.ErrorCode;
+import java.util.logging.Logger;
+
 import org.xml.sax.Attributes;
+import org.xmlBlaster.util.def.ErrorCode;
 
 
 /**
@@ -35,6 +36,7 @@ public class AttributeSaxFactory extends SaxHandlerBase
 
    private I_AttributeUser attributeUser;
    private String attributeKey;
+   private boolean attributeReplace; // replace ${xy} tokens? defaults to true since xmlBlaster v2.2 2012-01-09 
    private StringBuffer attributeValue;
    private boolean inAttribute = false;
    private boolean wrappedInCDATA = false; // for example: <attribute id='publishQos'><![CDATA[ bla ]]></attribute>
@@ -77,6 +79,10 @@ public class AttributeSaxFactory extends SaxHandlerBase
          this.inAttribute = true;
          this.wrappedInCDATA = false;
          this.attributeKey = attrs.getValue("id");
+         this.attributeReplace = true;
+         String replace = attrs.getValue("replace");
+         if (replace != null && "false".equalsIgnoreCase(replace))
+        	 this.attributeReplace = false;
          this.attributeValue = new StringBuffer(1024);
          if (this.attributeKey == null || this.attributeKey.length() < 1)
             this.ex = new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".startElement",  "the attributes in the <plugin> tag must have an non-empty 'id' attribute");
@@ -142,7 +148,7 @@ public class AttributeSaxFactory extends SaxHandlerBase
                }
             }
             if (this.attributeUser != null) {
-               this.attributeUser.addAttribute(this.attributeKey, val);
+               this.attributeUser.addAttribute(this.attributeKey, val, this.attributeReplace);
                if (this.wrappedInCDATA) {
                   this.attributeUser.wrapAttributeInCDATA(this.attributeKey);
                   this.wrappedInCDATA = false;

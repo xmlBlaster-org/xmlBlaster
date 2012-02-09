@@ -12,6 +12,8 @@
 # Replacement: Since xmlBlaster v2.2 attribute values with ${VARIABLEKEY} are replaced by
 #            xmlBlaster.properties setting or command line argument or JVM environment setting if found.
 #            If the key is not found, the key itself is used and a log.warning is written
+#            You can switch replacement off with:
+#            <attribute id='port' replace='false'>${socketPort}</attribute>
 -->
 <xmlBlaster>
 
