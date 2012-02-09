@@ -641,7 +641,7 @@ abstract public class DispatchConnection implements I_Timeout
             return;
          }
          
-         this.address.setFromPersistenceRecovery(false); // reset
+         //this.address.setFromPersistenceRecovery(false); // reset
             
          if (this.address.getRetries() == -1 || retryCounter < this.address.getRetries()) {
             // poll for connection ...
@@ -656,9 +656,11 @@ abstract public class DispatchConnection implements I_Timeout
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
                   //if (throwable != null) throwable.printStackTrace();
-                  log.warning(ME + "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
+                  if (!this.address.isFromPersistenceRecovery()) {
+                     log.warning(ME + "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
                                this.address.getLogId() +
                                " is unaccessible, we poll for it every " + this.address.getDelay() + " msec" + str);
+                  }
                   if (log.isLoggable(Level.FINE)) log.fine(ME + "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + ME +
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
