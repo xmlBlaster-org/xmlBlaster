@@ -230,7 +230,7 @@
    <plugin create='false' id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
       <action do='LOAD' onStartupRunlevel='5' sequence='4' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='4'/>
-      <attribute id='loginName'>_DeadMessageDumper/session/1</attribute>
+      <attribute id='loginName'>_DeadMessageDumper</attribute>
       <attribute id='directoryName'>${java.io.tmpdir}${file.separator}xmlBlaster-deadMessages</attribute>
       <attribute id='password'>secret</attribute>
       <attribute id='forceBase64'>false</attribute>
@@ -382,7 +382,7 @@
       <action do='LOAD' onStartupRunlevel='6' sequence='5'
                            onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='5' sequence='5'/>
-      <attribute id='loginName'>_StartupTasks/session/1</attribute>
+      <attribute id='loginName'>_StartupTasks</attribute>
       <attribute id='password'>secret</attribute>
       <attribute id='doConnect'>true</attribute>
       <attribute id='doDisconnect'>true</attribute>
