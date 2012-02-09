@@ -4,6 +4,15 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r18041 configuration in xmlBlasterPlugins.xml:
+          Please change loginName to use a pubSessionId == 1 to avoid severe logging output:
+          <attribute id='loginName'>_DeadMessageDumper/session/1</attribute>
+
+ o r18040 on server side
+   - Handle recovery of session on startup for changed passwords in htpasswd
+   - Added cluster forward for administratice commands
+   - SessionPersistencePlugin passes secretSessionId for reuse, else persistent subscribes are not working since fix of r18029
+
  o r18036-r18038 xmlBlasterPlugins.xml does now ${xy} replacement (before there was no such support)
           You can switch replacement off with the 'replace' attribute, for example:
           <attribute id='port' replace='false'>${socketPort}</attribute>
