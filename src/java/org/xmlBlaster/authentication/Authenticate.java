@@ -331,7 +331,8 @@ final public class Authenticate implements I_RunlevelListener
                return returnQos;
             }
             catch (XmlBlasterException e) {
-               log.warning("Access is denied when trying to reconnect to session " + info.getSessionName() + ": " + e.getMessage());
+               String secName = connectQos.getSecurityQos().getUserId();
+               log.warning("Access is denied when trying to reconnect to session " + info.getSessionName() + " with security Qos userId=" + secName + ": " + e.getMessage());// + ": " + connectQos.toXml());
                throw e; // Thrown if authentication failed
             }
             catch (Throwable e) {

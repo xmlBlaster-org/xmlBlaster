@@ -4,6 +4,7 @@ import org.xml.sax.Attributes;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 
@@ -57,7 +58,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 
    public SecurityQos(String loginName, String password)
    {
-      this.user = loginName;
+      setUserId(loginName);
       this.passwd = password;
    }
 
@@ -81,6 +82,13 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public void setUserId(String userId)
    {
       this.user = userId;
+      if (this.user != null && this.user.indexOf(SessionName.SEPERATOR) != -1) {
+    	  boolean strip = glob.getProperty().get("securityQos/stripSessionName", false);
+    	  if (strip) {
+    	     SessionName sn = new SessionName(glob, this.user);
+    	     this.user = sn.getLoginName(); // Strip "joe/session/1" to "joe"
+    	  }
+      }
    }
 
    public String getUserId()
