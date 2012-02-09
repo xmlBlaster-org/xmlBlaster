@@ -10,8 +10,6 @@ import javax.jms.TextMessage;
 
 import org.xmlBlaster.util.def.Constants;
 
-import com.sun.corba.se.impl.orbutil.closure.Constant;
-
 /**
  * XBTextMessage
  *
