@@ -903,7 +903,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
                    list.add(arr[i]);
             }
-            log.warning(getId() + " clear " + list.size() + " sessions, isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
+            if (list.size() == 0)
+               log.info(getId() + "pubSessionId=" + q.getSessionQos().getSessionName().getPublicSessionId() + ", max sessions = " + getNumSessions() + " is reached");
+            else
+               log.warning(getId() + " clear " + list.size() + " sessions, isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
             return (SessionInfo[])list.toArray(new SessionInfo[list.size()]);
           }
           else {
