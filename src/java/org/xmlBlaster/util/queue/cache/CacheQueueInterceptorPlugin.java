@@ -308,9 +308,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          catch (XmlBlasterException ex) {
             log.severe(ME+"Could not initialize the persistent queue '" + uniqueQueueId + "'. Is the JDBC Driver jar file in the CLASSPATH ?" +
                 " Is the DB up and running ? We continue RAM based ..." + ex.getMessage() +
-                " The propery settings are:" + queuePropertyBase.toXml());
+                " The propery settings are:" + queuePropertyBase.toXml() + ": " + Global.getStackTraceAsString(ex));
             // start a polling thread to see if the connection can be established later 
-            ex.printStackTrace();
+            //ex.printStackTrace();
          }
 
          // do the queue specific stuff like delete all volatile entries in
