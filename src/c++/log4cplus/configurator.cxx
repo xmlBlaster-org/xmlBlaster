@@ -96,7 +96,7 @@
 
 #include <sys/stat.h>
 #include <algorithm>
-
+#include <functional>
 using namespace std;
 using namespace log4cplus;
 using namespace log4cplus::helpers;
