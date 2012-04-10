@@ -13,6 +13,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Log.h>
 #include <set>
+#include <functional>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
