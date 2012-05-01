@@ -28,6 +28,7 @@ public class ExecHelper {
    private File dir;
    private boolean waitFor;
    private boolean daemon = true;
+   private String logSevereText = null;
 
    public ExecHelper(EventPlugin eventPlugin, String configuration) throws XmlBlasterException {
       // this.eventPlugin = eventPlugin;
@@ -60,6 +61,8 @@ public class ExecHelper {
 
       if ("false".equals(map.get("daemon")))
          this.daemon = false; // jvm will not exit during shell execution
+      
+      this.logSevereText = map.get("logSevereText");
    }
 
    public void execute(String summary, String description, String eventType, String errorCode, SessionName sessionName) {
@@ -68,7 +71,12 @@ public class ExecHelper {
          return;
       }
       try {
-         log.info("Executing EventPlugin command from xmlBlasterPlugins.xml: " + this.command);
+         if (this.logSevereText != null && this.logSevereText.length() > 0) {
+        	 log.severe("Executing EventPlugin command from xmlBlasterPlugins.xml eventType=" + eventType + ", errorCode=" + errorCode + ", sessionName=" + sessionName + " description=" + description + ": " + this.command + ": " + this.logSevereText);
+         }
+         else {
+             log.info("Executing EventPlugin command from xmlBlasterPlugins.xml eventType=" + eventType + ", errorCode=" + errorCode + ", sessionName=" + sessionName + " description=" + description + ": " + this.command);
+         }
          Runtime r = Runtime.getRuntime();
          Process p = null;
          String jvmPid = "";
