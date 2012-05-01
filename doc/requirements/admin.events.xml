@@ -190,6 +190,28 @@
      there choose the 'Notifications[0]' tabulator and click the 'Subscribe' button.
      Now you receive the configured events.</td>
  </tr>
+ <tr>
+    <td>destination.exec</td>
+    <td>Executes the given shell command.
+     You can specifiy parameters as such:
+<pre class="BORDER">
+&lt;attribute id='destination.exec'>
+   command=/bin/bash /home/jack/bin/restartFromEventPlugin.sh 10 20,
+   envp=KEY1:hello;KEY2:theValue2,
+   dir=/tmp/app/runtime,
+   logSevereText=Log this text additionally,
+   waitFor=false
+&lt;/attribute>
+</pre>
+     The given <code>command</code> ist executed (with arguments 10 and 20) in the given <code>dir</code> path.
+     The <code>envp</code> variables are available as environment variables inside the shell script.
+     The <code>waitFor</code> defaults to false, so the executing thread continues during shell execution.
+     <br />
+     The separator between the properties <code>command</code>,  <code>envp</code> etc
+     is a comma ','.
+     See <code>xmlBlaster/config/xmlBlasterPlugins.xml.template</code> for a complete example and how to use the variables in the shell script.
+     </td>
+ </tr>
  </table>
  
       <p class="celltitel">Additional notes</p>
