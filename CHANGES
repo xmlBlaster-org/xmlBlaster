@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r18059 Introduced EventPlugin which executes shell command (refactored EventPlugin.java)
+    can be used to kill xmlBlaster on events or do other nice things
+    For an example see xmlBlaster/config/xmlBlasterPlugins.xml.template "execEvents"
+
  o r18050 Remove persistent session and persistent subscription on startup if pubSessionId<0
 
  o r18040 on server side

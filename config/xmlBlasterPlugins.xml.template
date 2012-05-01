@@ -377,6 +377,58 @@
       </attribute>
    </plugin>
 
+   <!--
+   Example which executes a shell command 
+   Attributes:
+        String "command"           : for example "cmd /c dir"
+        String[] "envp" optionally : for example "user:jack;amount:200" will produce environment variable user=jack and amount=200
+	execution "dir" optionally : for example "/home/xmlblaster"
+	"waitFor" defaults to false: If set to true the xmlBlaster executing thread blocks during command execution and stdout/stderr are displayed synchronously
+   Example /tmp/dummy.sh (the echo is shown in the xmlBlaster logging output)
+	#!/bin/bash
+	echo "$0 is executing ..."
+	rm /tmp/dummy.txt
+	echo "my name is $0" >> /tmp/dummy.txt
+	echo "execution dir is `pwd`" >> /tmp/dummy.txt
+	echo "waitFor is $waitFor" >> /tmp/dummy.txt
+	echo "summary is $summary" >> /tmp/dummy.txt
+	echo "description is $description" >> /tmp/dummy.txt
+	echo "eventType is $eventType" >> /tmp/dummy.txt
+	echo "errorCode is $errorCode" >> /tmp/dummy.txt
+	echo "sessionName is $sessionName" >> /tmp/dummy.txt
+	# jvmPid is known to work with SUN JVM and Linux, others are not tested
+	echo "The JVM parent PID is $jvmPid" >> /tmp/dummy.txt
+	echo "KEY1 is $KEY1" >> /tmp/dummy.txt
+	echo "KEY2 is $KEY2" >> /tmp/dummy.txt
+	if [[ "$KEY1" == "killMe" && "$jvmPid" != "" ]]; then
+	   echo "we kill the parent Java machine $jvmPid after $1 seconds" >> /tmp/dummy.txt
+	   sleep $1
+	   echo "killing now the parent Java machine $jvmPid" >> /tmp/dummy.txt
+	   echo "Bye parent, KEY1=$KEY1"
+	   kill $jvmPid
+	else
+	   echo "my sleep argument is $1, we are sleeping now for $1 seconds ..." >> /tmp/dummy.txt
+	   sleep $1
+	   echo "we are done, bye" >> /tmp/dummy.txt
+	fi
+	echo "Bye"
+	exit 0
+   -->
+   <plugin create='false' id='execEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>
+         service/RunlevelManager/event/startupRunlevel9,
+         service/RunlevelManager/event/shutdownRunlevel8
+      </attribute>
+      <attribute id='destination.exec'>
+         command=/bin/bash /tmp/dummy.sh 3,
+	 envp=KEY1:killMe;KEY2:theValue2,
+	 dir=/tmp,
+         waitFor=false
+      </attribute>
+   </plugin>
+
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html -->
    <plugin create='false' id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
       <action do='LOAD' onStartupRunlevel='6' sequence='5'
