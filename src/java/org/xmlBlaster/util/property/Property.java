@@ -588,7 +588,13 @@ public class Property implements Cloneable {
         String a = ap.getParameter(key);
         if (a != null) return a;
       }
-      return (String)properties.get(key);
+      Object obj = properties.get(key);
+      if (obj == null)
+    	  return null;
+      else if (obj instanceof String)
+    	  return (String)obj;
+      return ""+obj;
+      //return (String)properties.get(key);
    }
 
    private Map getMap_(String key)
