@@ -67,13 +67,13 @@ public class EmailData {
    
    protected String subject;
    
-   // TODO: Not yet supported
+   // TO DO: Not yet supported
    protected boolean sendContentAsText;
 
    protected String content;
 
    /** Containts AttachmentHolder instances */
-   protected ArrayList attachments;
+   protected ArrayList<AttachmentHolder> attachments;
 
    /** Contains sessionId * */
    protected String sessionId;
@@ -212,11 +212,12 @@ public class EmailData {
    }
 
    public void addAttachment(AttachmentHolder attachmentHolder) {
-      if (this.attachments == null) this.attachments = new ArrayList();
+      if (this.attachments == null)
+         this.attachments = new ArrayList<AttachmentHolder>();
       this.attachments.add(attachmentHolder);
    }
 
-   public void setAttachments(ArrayList attachmentHolders) {
+   public void setAttachments(ArrayList<AttachmentHolder> attachmentHolders) {
       this.attachments = attachmentHolders;
    }
 
@@ -520,7 +521,7 @@ public class EmailData {
       start = parseTag(start, "from", xml, sb);
       String from = sb.toString();
 
-      ArrayList toList = new ArrayList();
+      ArrayList<String> toList = new ArrayList<String>();
       int startTmp;
       while (true) {
          startTmp = parseTag(start, "to", xml, sb);
@@ -890,15 +891,16 @@ public class EmailData {
     * For manual tests. java org.xmlBlaster.util.protocol.email.EmailData
     */
    public static void main(String[] args) {
-      if (false) {
-         String[] receivers = { "Receiver1", "Receiver2" };
-         EmailData msg = new EmailData(receivers, "Sender", "A subject",
-               "A content");
-         msg.addAttachment(new AttachmentHolder("xy.xbf", "application/xmlBlaster", "Hello World".getBytes()));
-         System.out.println("ORIG:\n" + msg.toXml(true));
-         msg = EmailData.parseXml(msg.toXml(true));
-         System.out.println("NEW:\n" + msg.toXml(true));
-      }
+      // if (false) {
+      // String[] receivers = { "Receiver1", "Receiver2" };
+      // EmailData msg = new EmailData(receivers, "Sender", "A subject",
+      // "A content");
+      // msg.addAttachment(new AttachmentHolder("xy.xbf",
+      // "application/xmlBlaster", "Hello World".getBytes()));
+      // System.out.println("ORIG:\n" + msg.toXml(true));
+      // msg = EmailData.parseXml(msg.toXml(true));
+      // System.out.println("NEW:\n" + msg.toXml(true));
+      // }
       {
          String[] receivers = { "Receiver" };
          String subject = "<messageId><expires>2006-01-24\r\nT09:04:50.248Z</expires></messageId>";      
