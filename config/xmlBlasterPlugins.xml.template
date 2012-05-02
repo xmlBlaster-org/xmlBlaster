@@ -382,8 +382,9 @@
    Attributes:
         String "command"           : for example "cmd /c dir"
         String[] "envp" optionally : for example "user:jack;amount:200" will produce environment variable user=jack and amount=200
-	execution "dir" optionally : for example "/home/xmlblaster"
-	"waitFor" defaults to false: If set to true the xmlBlaster executing thread blocks during command execution and stdout/stderr are displayed synchronously
+        execution "dir" optionally : for example "/home/xmlblaster"
+        activationDelayAfterStartupSec optionally: for example 30 to wait 30 seconds after plugin creation to get active
+        "waitFor" defaults to false: If set to true the xmlBlaster executing thread blocks during command execution and stdout/stderr are displayed synchronously
    Example /tmp/dummy.sh (the echo is shown in the xmlBlaster logging output)
 	#!/bin/bash
 	echo "$0 is executing ..."
