@@ -439,15 +439,15 @@ public class HtPasswd {
          if (log.isLoggable(Level.FINEST)) {
             if (this.htpasswdMap != null) {
                java.util.Iterator i = this.htpasswdMap.values().iterator();
-               System.out.println("========================================");
+               System.out.println("readHtpasswordFile() ========================================");
                while (i.hasNext()) {
                   Container container = (Container)i.next();
                   System.out.println(container.toString());
                }
-               System.out.println("========================================");
+               System.out.println("readHtpasswordFile() ========================================");
             }
             else {
-               System.out.println("======NO PASSWD ENTRY==================================");
+               System.out.println("readHtpasswordFile() ======NO PASSWD ENTRY==================================");
             }
          }
          

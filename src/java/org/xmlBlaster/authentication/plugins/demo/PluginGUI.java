@@ -152,7 +152,7 @@ public class PluginGUI extends JFrame {
       jScrollPane5.getViewport().add(outContent, null);
       contentPane.add(jScrollPane2, null);
       jScrollPane2.getViewport().add(outOutput, null);
-      System.out.println("DONE");
+      System.out.println("jbInit() DONE");
    }
 
 

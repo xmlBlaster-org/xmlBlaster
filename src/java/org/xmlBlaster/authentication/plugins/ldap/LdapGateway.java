@@ -279,7 +279,7 @@ public class LdapGateway
          while ( searchResults.hasMore() )
          {
             SearchResult nextEntry = ( SearchResult )searchResults.next();
-            System.out.println("name: " + nextEntry.getName());
+            System.out.println("LdapGateway.getAllAttributes() name: " + nextEntry.getName());
 
             Attributes attributeSet = nextEntry.getAttributes();
             if (attributeSet.size() == 0)
@@ -342,7 +342,7 @@ public class LdapGateway
          } else {
             Attribute attr = result.get("userPassword");
             if (attr != null) {
-               System.out.println("userPassword:");
+               System.out.println("LdapGateway userPassword:");
                String password = null;
                for (NamingEnumeration vals = attr.getAll(); vals.hasMoreElements();)
                   password = (String)vals.nextElement();

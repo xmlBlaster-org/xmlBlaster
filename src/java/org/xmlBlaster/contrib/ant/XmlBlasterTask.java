@@ -192,7 +192,7 @@ public class XmlBlasterTask extends Task {
           }
 
           if (verbose > 0)  System.out.println("scriptFile=" + this.scriptFile + " propertyFile=" + this.propertyFile + " loggingFile=" + this.loggingFile);
-          if (verbose > 2)  System.out.println(this.glob.getProperty().toXml());
+          if (verbose > 2)  System.out.println("XmlBlasterTask: " + this.glob.getProperty().toXml());
           
           this.interpreter.parse(this.reader);
        }

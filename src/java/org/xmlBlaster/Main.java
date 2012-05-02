@@ -29,6 +29,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.log.StdoutStderrRedirector;
 import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.util.property.Property;
 
@@ -91,6 +92,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
     * false: running without GUI
     */
    static MainGUI controlPanel = null;
+   
+   private StdoutStderrRedirector stdoutStderrRedirector;
 
    /**
     * You need to call init() after construction.
@@ -184,6 +187,19 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
             throw new IllegalArgumentException(glob.getErrorText());
          else
             System.exit(0);
+      }
+      
+      boolean redirect = glob.getProperty().get("xmlBlaster/stdoutStderrToLogging", false);
+      if (redirect) {
+          String filterSetOut = glob.getProperty().get("xmlBlaster/stdoutSuppressSet", (String)null);
+          String filterSetErr = glob.getProperty().get("xmlBlaster/stderrSuppressSet", (String)null);
+          log.info("Redirecting stdout and stderr to java.util.logging as -xmlBlaster/stdoutStderrToLogging=" + redirect + " -xmlBlaster/stdoutSuppressSet=" + filterSetOut + " -xmlBlaster/stderrSuppressSet=" + filterSetErr);
+    	  this.stdoutStderrRedirector = new StdoutStderrRedirector(filterSetOut, filterSetErr, ";");
+    	  this.stdoutStderrRedirector.redirect();
+    	  //System.out.println("First stdout redirect test");
+    	  //System.err.println("First stderr redirect test");
+    	  //Exception e = new Exception("First stderr exception redirect test");
+    	  //e.printStackTrace();
       }
 
       long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
