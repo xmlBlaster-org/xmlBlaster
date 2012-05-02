@@ -162,7 +162,7 @@ public class Checkpoint implements I_Checkpoint {
          if (showAllMessages || foundKey) {
             boolean finest = l.isTraceEnabled();
             if (l.isInfoEnabled()) {
-               StringBuffer buf = new StringBuffer(2048);
+               StringBuilder buf = new StringBuilder(2048);
                append(buf, "cp", CP_NAMES[checkpoint]);
                append(buf, "topicId", msgUnit.getKeyOid());
                if (serverScope!=null && serverScope.isClusterManagerReady() && msgUnit.getDomain() != null && msgUnit.getDomain().length() > 0)
@@ -207,6 +207,7 @@ public class Checkpoint implements I_Checkpoint {
                   buf.append(" ").append(msgUnit.toXml("", true));
                   l.trace(buf.toString());
                } else {
+            	  // 09:01:40,442  INFO enter:94 - <cp>publish.enter</cp> <topicId>eu.saken.skipperHD.productInfo</topicId> <contentLen>25954</contentLen> <sender>client/_ProxySubscriber/session/1</sender> 
                   l.info(buf.toString());
                }
             }
@@ -224,7 +225,7 @@ public class Checkpoint implements I_Checkpoint {
     * @param key
     * @param value
     */
-   protected void append(StringBuffer buf, String key, String value) {
+   protected void append(StringBuilder buf, String key, String value) {
       if (xmlStyle) {
          buf.append("<").append(key).append(">");
          buf.append(value);
