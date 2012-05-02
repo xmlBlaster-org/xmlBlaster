@@ -14,7 +14,6 @@ import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -59,7 +58,7 @@ public final class ServerDispatchManager implements I_DispatchManager
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private final I_MsgDispatchInterceptor msgInterceptor;
-   private HashSet connectionStatusListeners;
+   private HashSet<I_ConnectionStatusListener> connectionStatusListeners;
    private final String typeVersion;
    /** If > 0 does burst mode */
    private long collectTime = -1L;
@@ -116,7 +115,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       this.failureListener = failureListener;
       this.securityInterceptor = securityInterceptor;
       this.dispatchConnectionsHandler = this.glob.createServerDispatchConnectionsHandler(this);
-      this.connectionStatusListeners = new HashSet();
+      this.connectionStatusListeners = new HashSet<I_ConnectionStatusListener>();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
 
       initDispatcherActive(addrArr);
@@ -201,13 +200,18 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
     * @return true if we did not already contain the specified element.
     */
-   public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-      return this.connectionStatusListeners.add(connectionStatusListener);
+   public boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      synchronized (this.connectionStatusListeners) {
+         return this.connectionStatusListeners.add(connectionStatusListener);
+      }
    }
 
-   public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener, boolean fireInitial) {
+   public boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener, boolean fireInitial) {
       if (connectionStatusListener == null) return true;
-      boolean ret = this.connectionStatusListeners.add(connectionStatusListener);
+      boolean ret;
+      synchronized (this.connectionStatusListeners) {
+         ret = this.connectionStatusListeners.add(connectionStatusListener);
+      }
       if (fireInitial) {
          if (isDead())
             connectionStatusListener.toDead(this, ConnectionStateEnum.DEAD, null/*"Initial call"*/);
@@ -225,14 +229,18 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @param connectionStatusListener
     * @return true if it was removed
     */
-   public synchronized boolean removeConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-      return this.connectionStatusListeners.remove(connectionStatusListener);
+   public boolean removeConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      synchronized (this.connectionStatusListeners) {
+         return this.connectionStatusListeners.remove(connectionStatusListener);
+      }
    }
 
-   public synchronized I_ConnectionStatusListener[] getConnectionStatusListeners() {
-      if (this.connectionStatusListeners.size() == 0)
-         return new I_ConnectionStatusListener[0];
-      return (I_ConnectionStatusListener[])this.connectionStatusListeners.toArray(new I_ConnectionStatusListener[this.connectionStatusListeners.size()]);
+   public I_ConnectionStatusListener[] getConnectionStatusListeners() {
+      synchronized (this.connectionStatusListeners) {
+         if (this.connectionStatusListeners.size() == 0)
+            return new I_ConnectionStatusListener[0];
+         return (I_ConnectionStatusListener[])this.connectionStatusListeners.toArray(new I_ConnectionStatusListener[this.connectionStatusListeners.size()]);
+      }
    }
 
    /**
@@ -1132,7 +1140,9 @@ public final class ServerDispatchManager implements I_DispatchManager
          this.msgQueue.removePutListener(this);
 
          // remove all ConnectionStatusListeners
-         this.connectionStatusListeners.clear();
+         synchronized (this.connectionStatusListeners) {
+            this.connectionStatusListeners.clear();
+         }
 
          removeBurstModeTimer();
 
