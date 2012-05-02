@@ -21,7 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public class ExecHelper {
    private static Logger log = Logger.getLogger(ExecHelper.class.getName());
-   // private final EventPlugin eventPlugin;
+   private final EventPlugin eventPlugin;
    private String configuration;
    private String command;
    private String[] envArr;
@@ -29,12 +29,16 @@ public class ExecHelper {
    private boolean waitFor;
    private boolean daemon = true;
    private String logSevereText = null;
+   private int activationDelayAfterStartupSec;
+   private int creationTimeSec;
 
    public ExecHelper(EventPlugin eventPlugin, String configuration) throws XmlBlasterException {
-      // this.eventPlugin = eventPlugin;
+      this.eventPlugin = eventPlugin;
       this.configuration = configuration;
       @SuppressWarnings("unchecked")
       Map<String, String> map = StringPairTokenizer.parseLineToProperties(configuration);
+      
+      this.creationTimeSec = (int)(System.currentTimeMillis() / 1000l);
 
       // for example "cmd /c dir"
       this.command = map.get("command");
@@ -63,19 +67,40 @@ public class ExecHelper {
          this.daemon = false; // jvm will not exit during shell execution
       
       this.logSevereText = map.get("logSevereText");
+      
+      String delay = map.get("activationDelayAfterStartupSec");
+      if (delay != null) {
+    	  try {
+    		  this.activationDelayAfterStartupSec = Integer.valueOf(delay);
+    	  }
+    	  catch (NumberFormatException e) {
+    		  log.warning(getLogId() + "Invalid activationDelayAfterStartupSec=" + delay + " setting is ignored");
+    		  e.printStackTrace();
+    	  }
+      }
    }
 
    public void execute(String summary, String description, String eventType, String errorCode, SessionName sessionName) {
       if (this.command == null || this.command.length() == 0) {
-         log.warning("Command to execute is empty, nothing done");
+         log.warning(getLogId() + "Command to execute is empty, nothing done");
          return;
       }
+      
+      if (this.activationDelayAfterStartupSec > 0) {
+    	  int nowSec = (int)(System.currentTimeMillis() / 1000L);
+    	  int runningSecs = nowSec - this.creationTimeSec;
+    	  if (runningSecs < this.activationDelayAfterStartupSec) {
+   	         log.warning(getLogId() + "Plugin is ignored as activationDelayAfterStartupSec=" + this.activationDelayAfterStartupSec + " is not reached");
+   	         return;
+    	  }
+      }
+      
       try {
          if (this.logSevereText != null && this.logSevereText.length() > 0) {
-        	 log.severe("Executing EventPlugin command from xmlBlasterPlugins.xml eventType=" + eventType + ", errorCode=" + errorCode + ", sessionName=" + sessionName + " description=" + description + ": " + this.command + ": " + this.logSevereText);
+        	 log.severe(getLogId() + "Executing command eventType=" + eventType + ", errorCode=" + errorCode + ", sessionName=" + sessionName + " description=" + description + ": " + this.command + ": " + this.logSevereText);
          }
          else {
-             log.info("Executing EventPlugin command from xmlBlasterPlugins.xml eventType=" + eventType + ", errorCode=" + errorCode + ", sessionName=" + sessionName + " description=" + description + ": " + this.command);
+             log.info(getLogId() + "Executing command eventType=" + eventType + ", errorCode=" + errorCode + ", sessionName=" + sessionName + " description=" + description + ": " + this.command);
          }
          Runtime r = Runtime.getRuntime();
          Process p = null;
@@ -127,7 +152,7 @@ public class ExecHelper {
             executableOutput(p, true);
             p.waitFor();
             int exitValue = p.exitValue();
-            log.info("Executing EventPlugin command from xmlBlasterPlugins.xml is finished with exitValue=" + exitValue + ": " + this.command);
+            log.info(getLogId() + "Executing command is finished with exitValue=" + exitValue + ": " + this.command);
          } else {
             final Process process = p;
             Thread t = new Thread(new Runnable() {
@@ -139,12 +164,16 @@ public class ExecHelper {
             t.start();
             // java.lang.IllegalThreadStateException: process hasn't exited
             // int exitValue = p.exitValue();
-            log.info("Executing EventPlugin command from xmlBlasterPlugins.xml is spawned: " + this.command);
+            log.info(getLogId() + "Executing command is spawned: " + this.command);
          }
       } catch (Throwable e) {
-         log.warning("Executing '" + this.command + "' failed, please check your EventPlugin configuration in xmlBlasterPlugins.xml: " + e.toString());
+         log.warning(getLogId() + "Executing '" + this.command + "' failed, please check your configuration: " + e.toString());
          e.printStackTrace();
       }
+   }
+   
+   private String getLogId() {
+	   return "xmlBlasterPlugins.xml EventPlugin " + this.eventPlugin.getUniqueInstanceName() + " ";
    }
 
    private void executableOutput(Process p, boolean sync) {
@@ -162,7 +191,7 @@ public class ExecHelper {
          }
          bre.close();
       } catch (Throwable e) {
-         log.warning("Running '" + this.command + "' failed, please check your EventPlugin configuration in xmlBlasterPlugins.xml: " + e.toString());
+         log.warning(getLogId() + "Running '" + this.command + "' failed, please check your configuration: " + e.toString());
          e.printStackTrace();
       }
    }

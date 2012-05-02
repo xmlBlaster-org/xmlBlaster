@@ -2464,4 +2464,12 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       connectionStateChange(connection, oldState, ConnectionStateEnum.DEAD);
    }
+
+public String getUniqueInstanceName() {
+	return uniqueInstanceName;
+}
+
+public I_PluginConfig getPluginConfig() {
+	return pluginConfig;
+}
 }
