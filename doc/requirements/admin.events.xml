@@ -200,12 +200,15 @@
    envp=KEY1:hello;KEY2:theValue2,
    dir=/tmp/app/runtime,
    logSevereText=Log this text additionally,
+   activationDelayAfterStartupSec=30,
    waitFor=false
 &lt;/attribute>
 </pre>
      The given <code>command</code> ist executed (with arguments 10 and 20) in the given <code>dir</code> path.
      The <code>envp</code> variables are available as environment variables inside the shell script.
      The <code>waitFor</code> defaults to false, so the executing thread continues during shell execution.
+     You can delay the activation of the EventPlugin with <code>activationDelayAfterStartupSec</code>, like this after 
+     the plugin is created (during startup of xmlBlaster) it will not actively do actions until the given seconds have elapsed.
      <br />
      The separator between the properties <code>command</code>,  <code>envp</code> etc
      is a comma ','.
