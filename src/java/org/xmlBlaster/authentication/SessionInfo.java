@@ -1105,6 +1105,13 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       return false;
    }
+   
+   public String reactivateDispatcherThread(boolean force) {
+      if (this.dispatchManager != null) {
+         return this.dispatchManager.reactivateDispatcherThread(force);
+      }
+      return "No DispatchManager instance found, nothing done";
+   }
 
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
       return this.glob.peekMessages(this.sessionQueue, numOfEntries, "callback", true, true);

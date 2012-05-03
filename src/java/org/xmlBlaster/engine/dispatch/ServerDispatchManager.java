@@ -1222,6 +1222,43 @@ public final class ServerDispatchManager implements I_DispatchManager
    public boolean isDispatcherActive() {
       return this.dispatcherActive;
    }
+   
+   public String reactivateDispatcherThread(boolean force) {
+      StringBuilder sb = new StringBuilder(1024);
+      sb.append("Before:\n");
+      sb.append("id=").append(getId()).append("\n");
+      sb.append("dispatchWorkerIsActive=").append(this.dispatchWorkerIsActive).append("\n");
+      sb.append("dispatcherActive=").append(this.dispatcherActive).append("\n");
+      sb.append("isShutdown=").append(this.isShutdown).append("\n");
+      sb.append("state=").append(this.dispatchConnectionsHandler.getState().toString()).append("\n");
+      sb.append("isSyncMode=").append(this.isSyncMode).append("\n");
+      if (this.msgQueue != null) {
+         sb.append("msgQueue.isShutdown=").append(msgQueue.isShutdown()).append("\n");
+         sb.append("msgQueue.getNumOfEntries=").append(msgQueue.getNumOfEntries()).append("\n");
+      }
+      sb.append("force=").append(force).append("\n");
+
+      log.warning(ME+": reactivateDispatcherThread is called (JMX?): " + sb.toString() + "\n" + toXml(""));
+
+      if (this.dispatchWorkerIsActive && force) {
+          this.dispatchWorkerIsActive = false;
+      }
+      
+      startWorkerThread(false);
+      
+      sb.append("After:\n");
+      sb.append("dispatchWorkerIsActive=").append(this.dispatchWorkerIsActive).append("\n");
+      sb.append("dispatcherActive=").append(this.dispatcherActive).append("\n");
+      sb.append("isShutdown=").append(this.isShutdown).append("\n");
+      sb.append("state=").append(this.dispatchConnectionsHandler.getState().toString()).append("\n");
+      sb.append("isSyncMode=").append(this.isSyncMode).append("\n");
+      if (this.msgQueue != null) {
+         sb.append("msgQueue.isShutdown=").append(msgQueue.isShutdown()).append("\n");
+         sb.append("msgQueue.getNumOfEntries=").append(msgQueue.getNumOfEntries()).append("\n");
+      }
+      log.warning(ME+": reactivateDispatcherThread call finished: " + sb.toString());
+      return sb.toString();
+   }
 
    public ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
       return this.dispatchConnectionsHandler.filterDistributorEntries(entries, ex);

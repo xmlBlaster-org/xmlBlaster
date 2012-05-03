@@ -238,6 +238,10 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getDispatcherActive();
    }
 
+   public String reactivateDispatcherThread(boolean force) {
+	   return this.sessionInfo.reactivateDispatcherThread(force);
+   }
+
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
       return this.sessionInfo.peekCallbackMessages(numOfEntries);
    }

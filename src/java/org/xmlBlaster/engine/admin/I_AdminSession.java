@@ -208,6 +208,9 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public void setDispatcherActive(boolean dispatcherActive);
    /** true if the dispatcher is currently able to dispatch asyncronously */
    public boolean getDispatcherActive();
+   
+   public String reactivateDispatcherThread(boolean force);
+   
    /**
     * Peek messages from callback queue, they are not removed
     * @param numOfEntries The number of messages to peek, taken from the front
