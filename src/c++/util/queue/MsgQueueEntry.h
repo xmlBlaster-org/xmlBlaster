@@ -52,7 +52,8 @@ class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 {
 protected:
    std::string ME;
-   mutable org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::Global& global_;
+   //mutable org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log& log_;
    int priority_;
    bool persistent_;
