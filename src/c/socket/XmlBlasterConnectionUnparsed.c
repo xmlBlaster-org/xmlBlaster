@@ -306,7 +306,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 #else
    xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
 #endif
-        if (xb->socketToXmlBlaster != -1) {
+   if (xb->socketToXmlBlaster != -1) {
       int ret=0;
       const char *localHostName = xb->props->getString(xb->props, "plugin/socket/localHostname", 0);
       int localPort = xb->props->getInt(xb->props, "plugin/socket/localPort", 0);
@@ -386,149 +386,92 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          ret = -1;
       }
 #else
-		{
-			/*
+      {
+         /*
             xmlBlasterProps:
               dispatch/connection/useSelect=1
               dispatch/connection/plugin/socket/connectTimeout=3
               Johannes Ahlert:
                   beides ist so laufzeitabh�ngig, find ich noch besser
                   default f�r useSelect ist 0
-			*/
-			int useSelect = 0;
-			useSelect = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/useSelect", useSelect);
+         */
+         int useSelect = 0;
+         useSelect = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/useSelect", useSelect);
 
-			if ( useSelect ) 
-			{
+         if ( useSelect ) 
+         {
 #if defined(_WINDOWS)
-			   /* Die Variante mit select erfordert, dass der Socket nicht-blockierend
-				   gemacht wird. Dies kann (und wird in diesem Beispiel) nach dem Verbinden
-				   wieder rueckgaengig gemacht, sodass man wie gewohnt mit dem Socket arbeiten kann.
-				*/
-				int            ret; 
-				fd_set         fds;
-				int            connectTimeout = 5;
-				unsigned long  opt            = 1;
-				struct timeval timeout;
+            /* Die Variante mit select erfordert, dass der Socket nicht-blockierend
+               gemacht wird. Dies kann (und wird in diesem Beispiel) nach dem Verbinden
+               wieder rueckgaengig gemacht, sodass man wie gewohnt mit dem Socket arbeiten kann.
+            */
+            fd_set         fds;
+            int            connectTimeout = 5;
+            unsigned long  opt            = 1;
+            struct timeval timeout;
+            int conret;
+            int wsaret;
 
-				ioctlsocket( xb->socketToXmlBlaster, FIONBIO, &opt );
+            ioctlsocket( xb->socketToXmlBlaster, FIONBIO, &opt );
 
-				/*
-					Den Verbindungsaufbau anstossen
-				*/
-				if ( connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr)) == SOCKET_ERROR )
-				{
-					/*
-					   Das schlaegt normalerweise fehl, wobei der Fehler WSAEWOULDBLOCK
-					   darauf hinweist, dass der Verbindungsaufbau durchaus noch Erfolgreich
-					   sein kann, und der Aufruf nur fehlgeschlagen ist, weil er andernfalls
-					   blockieren wuerde, was ja absichtlich deaktiviert wurde.
-					*/
-					if ( WSAGetLastError() != WSAEWOULDBLOCK ) 
-					{
-						/* logging */
-						return false;
-					}
-				}
+            /*
+               Den Verbindungsaufbau anstossen
+               returns 0 or SOCKET_ERROR only
+            */
+            if ( (conret = connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == SOCKET_ERROR )
+            {
+               /*
+                  Das schlaegt normalerweise fehl, wobei der Fehler WSAEWOULDBLOCK
+                  darauf hinweist, dass der Verbindungsaufbau durchaus noch Erfolgreich
+                  sein kann, und der Aufruf nur fehlgeschlagen ist, weil er andernfalls
+                  blockieren wuerde, was ja absichtlich deaktiviert wurde.
+               */
+               if ( (wsaret = WSAGetLastError()) != WSAEWOULDBLOCK ) 
+                  return false; /* kein logging und socket wird nicht wieder blockierend?   TODO  ?? */
 
-				/* Deskriptor-Set zuruecksetzen und mit dem zu verbindenden Socket belegen */
-				FD_ZERO( &fds );
-				FD_SET( xb->socketToXmlBlaster, &fds );
+               /* Deskriptor-Set zuruecksetzen und mit dem zu verbindenden Socket belegen */
+               FD_ZERO( &fds );
+               FD_SET( xb->socketToXmlBlaster, &fds );
 
-				/* Den gewaehlte timeout-Wert einsetzen */
-				connectTimeout  = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/connectTimeout", connectTimeout);
-				timeout.tv_sec  = connectTimeout;
-				timeout.tv_usec = 0;
+               /* Den gewaehlte timeout-Wert einsetzen */
+               connectTimeout  = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/connectTimeout", connectTimeout);
+               timeout.tv_sec  = connectTimeout;
+               timeout.tv_usec = 0;
 
-				/* Nun select aufrufen; dieses kehrt entweder nach Ablauf des Timeouts
-				   zurueck, oder wenn der Socket zum Schreiben bereit ist, was genau dann
-				  passiert, wenn er erfolgreich verbunden wurde.
-				*/
-				ret = select( xb->socketToXmlBlaster + 1, 0, &fds, 0, &timeout );
-				if ( ret == SOCKET_ERROR )
-				{
-					/* logging */
-					return false;
-				}
+               /* Nun select aufrufen; dieses kehrt entweder nach Ablauf des Timeouts
+                  zurueck, oder wenn der Socket zum Schreiben bereit ist, was genau dann
+                  passiert, wenn er erfolgreich verbunden wurde.
+                   */
+               ret = select( xb->socketToXmlBlaster + 1, 0, &fds, 0, &timeout );
+               if ( ret == SOCKET_ERROR )
+                  ret = -1;
+               if (ret == 0)
+                  ret = -1; /* timeout */
 
-				/* Falls select zurueckgekehrt ist, aber der zu verbindende Socket nicht
-				   im Deskriptor-Set vorhanden ist, war das Verbinden in der gegebenen
-				   Zeit nicht erfolgreich.
-				*/
-				if ( FD_ISSET(xb->socketToXmlBlaster, &fds) == 0 )
-				{
-					/* logging */
-					ret = -1;
-				}
-
-				/*
-				   Der Socket kann nun wieder blockierend gemacht werden
-				*/
-				opt = 0;
-				ioctlsocket( xb->socketToXmlBlaster, FIONBIO, &opt );
-#else
-				printf("dispatch/connection/plugin/socket/useSelect is not supported on Linux, exit! (For Linux porting you could use fcntl)");
-				exit(1);
-#endif
-			}
-			else {
-				ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
-			}
-		}
-#endif
-      if(ret != -1) {
-         if (xb->logLevel>=XMLBLASTER_LOG_INFO) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
-         xb->useUdpForOneway = xb->props->getBool(xb->props, "plugin/socket/useUdpForOneway", xb->useUdpForOneway);
-         xb->useUdpForOneway = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/useUdpForOneway", xb->useUdpForOneway);
-
-         if (xb->useUdpForOneway) {
-            struct sockaddr_in localAddr;
-            socklen_t size = (socklen_t)sizeof(localAddr);
-            xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
-               "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/useUdpForOneway true");
-
-            xb->socketToXmlBlasterUdp = (int)socket(AF_INET, SOCK_DGRAM, 0);
-
-            if (xb->socketToXmlBlasterUdp != -1) {
-               if (getsockname(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, &size) == -1) {
-                  if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
-                     "Can't determine the local socket host and port (in UDP), errno=%d", errno);
-                  return false;
-               }
-
-               if (bind(xb->socketToXmlBlasterUdp, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
-                  if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
-                     "Failed binding local port (in UDP) -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
-                     localHostName, localPort);
-                  return false;
-               }
-               if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
-                  "Bound local UDP port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
-                  localHostName, localPort);
-
-               if ((ret=connect(xb->socketToXmlBlasterUdp, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == -1) {
-                  char errnoStr[MAX_ERRNO_LEN];
-                  xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
-                  strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-                  SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                           "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP), ret=%d, %s",
-                           __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
-                  if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
-                  return false;
-               }
-               if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connected to xmlBlaster with UDP");
-            } /* if (xb->socketToXmlBlasterUdp != -1) */
-            else {
-               strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-               SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                        "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP) errno=%d",
-                        __FILE__, __LINE__, serverHostName, servTcpPort, errno);
-               return false;
+               /* Falls select zurueckgekehrt ist, aber der zu verbindende Socket nicht
+                  im Deskriptor-Set vorhanden ist, war das Verbinden in der gegebenen
+                  Zeit nicht erfolgreich.
+               */
+               if ( FD_ISSET(xb->socketToXmlBlaster, &fds) == 0 )
+                  ret = -1; /* timeout anderer test */
             }
-         } /* if (xb->useUdpForOneway) */
 
+            /*
+               Der Socket kann nun wieder blockierend gemacht werden
+            */
+            opt = 0;
+            ioctlsocket( xb->socketToXmlBlaster, FIONBIO, &opt );
+#else
+            printf("dispatch/connection/plugin/socket/useSelect is not supported on Linux, exit! (For Linux porting you could use fcntl)");
+            exit(1);
+#endif
+         }
+         else {
+            ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr));
+         }
       }
-      else { /* connect(...) == -1 */
+#endif
+      if (ret == -1) {
          char errnoStr[MAX_ERRNO_LEN];
          xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
          strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -538,6 +481,57 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
          return false;
       }
+
+      if (xb->logLevel>=XMLBLASTER_LOG_INFO) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
+      xb->useUdpForOneway = xb->props->getBool(xb->props, "plugin/socket/useUdpForOneway", xb->useUdpForOneway);
+      xb->useUdpForOneway = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/useUdpForOneway", xb->useUdpForOneway);
+
+      if (xb->useUdpForOneway) {
+         struct sockaddr_in localAddr;
+         socklen_t size = (socklen_t)sizeof(localAddr);
+         xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
+            "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/useUdpForOneway true");
+
+         xb->socketToXmlBlasterUdp = (int)socket(AF_INET, SOCK_DGRAM, 0);
+
+         if (xb->socketToXmlBlasterUdp != -1) {
+            if (getsockname(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, &size) == -1) {
+               if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+                  "Can't determine the local socket host and port (in UDP), errno=%d", errno);
+               return false;
+            }
+
+            if (bind(xb->socketToXmlBlasterUdp, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+               if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+                  "Failed binding local port (in UDP) -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                  localHostName, localPort);
+               return false;
+            }
+            if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+               "Bound local UDP port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+               localHostName, localPort);
+
+            if ((ret=connect(xb->socketToXmlBlasterUdp, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == -1) {
+               char errnoStr[MAX_ERRNO_LEN];
+               xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
+               strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+               SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                        "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP), ret=%d, %s",
+                        __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
+               if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
+               return false;
+            }
+            if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connected to xmlBlaster with UDP");
+         } /* if (xb->socketToXmlBlasterUdp != -1) */
+         else {
+            strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                     "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP) errno=%d",
+                     __FILE__, __LINE__, serverHostName, servTcpPort, errno);
+            return false;
+         }
+      } /* if (xb->useUdpForOneway) */
+
    }
    else {
       strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
