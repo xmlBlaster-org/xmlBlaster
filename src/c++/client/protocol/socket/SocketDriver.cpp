@@ -443,6 +443,9 @@ ConnectReturnQosRef SocketDriver::connect(const ConnectQosRef& qos) //throw (Xml
    Lock lock(mutex_);
    try {
       loginName_ = qos->getUserId();
+	  if ( connection_ != 0 && !connection_->isConnected(connection_)) {
+			freeResources(true);
+	  }
       if (connection_ == 0) {
          reconnectOnIpLevel(); // Connects on IP level only, throws an exception on failure
          if (secretSessionId_ != "") {
