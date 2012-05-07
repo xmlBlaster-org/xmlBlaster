@@ -837,6 +837,9 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * cons
 static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
             bool checkIsConnected, XmlBlasterException *exception)
 {
+   if (exception != 0)
+      initializeXmlBlasterException(exception);
+
    if (xa == 0) {
       char *stack = getStackTrace(10);
       if (exception == 0) {
@@ -872,8 +875,6 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
       xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
       return false;
    }
-
-   initializeXmlBlasterException(exception);
 
    return true;
 }
