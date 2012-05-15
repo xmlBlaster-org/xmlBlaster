@@ -2,10 +2,12 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 
 
@@ -33,17 +35,24 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    private String user;
    private String passwd;
    private String clientIp;
+   /** Passwords containing & or < will fail (Marcel 2012-05-14)
+	  Javascript -> Tomcat -> XmlScriptParser &amp; is OK -> ConnectQosSaxFactory ok -> SecurityQosParserPlugin fails as <CDATA has orignial &
+      Workaround, browser sends it base64 encoded:
+   */
+   private boolean useBase64Marker = true;
 
    public SecurityQos(Global glob, ClientPlugin clientPlugin)
    {
       super(glob);
       this.type = clientPlugin.getType();
       this.version = clientPlugin.getVersion();
+	  this.useBase64Marker = glob.getProperty().get("securityQos/useBase64Marker", this.useBase64Marker);
    }
 
    public SecurityQos(Global glob, String xmlQos_literal) throws XmlBlasterException
    {
       super(glob);
+	  this.useBase64Marker = glob.getProperty().get("securityQos/useBase64Marker", this.useBase64Marker);
       parse(xmlQos_literal);
    }
 
@@ -173,8 +182,14 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       if (name.equalsIgnoreCase("passwd")) {
          inPasswd = false;
          passwd = character.toString().trim();
+         if (this.useBase64Marker && passwd.startsWith("__base64:")) {
+			// Passwords containing & or < will fail (Marcel 2012-05-14)
+			// Javascript -> Tomcat -> XmlScriptParser &amp; is OK -> ConnectQosSaxFactory ok -> SecurityQosParserPlugin fails as <CDATA has orignial &
+	        // Workaround, browser sends it base64 encoded:
+            passwd = passwd.substring("__base64:".length());
+            passwd = Constants.toUtf8String(Base64.decode(passwd));
+         }
          character.setLength(0);
-
          return;
       }
 
@@ -199,13 +214,18 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer(250);
+      XmlBuffer sb = new XmlBuffer(250);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
+      String pw = passwd;
+      if (this.useBase64Marker && (passwd.indexOf("&") != -1 || passwd.indexOf("<") != -1)) {
+         pw = "__base64:" + Base64.encode(Constants.toUtf8Bytes(passwd));
+      }
+      
       sb.append(offset).append("<securityService type=\"").append(getPluginType()).append("\" version=\"").append(getPluginVersion()).append("\"><![CDATA[");
-      sb.append(offset).append(" <user>").append(user).append("</user>");
-      sb.append(offset).append(" <passwd>").append(passwd).append("</passwd>");
+      sb.append(offset).append(" <user>").appendEscaped(user).append("</user>");
+      sb.append(offset).append(" <passwd>").appendEscaped(pw).append("</passwd>");
       sb.append(offset).append("]]></securityService>");
 
       return sb.toString();

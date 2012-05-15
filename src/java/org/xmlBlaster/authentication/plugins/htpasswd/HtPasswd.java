@@ -489,11 +489,25 @@ public class HtPasswd {
       return false;
    }
      
-
+   private static String crypt(String userPassword) {
+      String salt = "xy";
+      log.info("The Salt used is '" + salt + "'");
+      String userEncoded = jcrypt.crypt(salt,userPassword);
+      return userEncoded.trim();
+   }
+   
+   /**
+    * org.xmlBlaster.authentication.plugins.htpasswd.HtPasswd 11111
+    */
    public static void main(String[] args) {
-      if (args.length < 2) {
+      if (args.length < 1) {
          System.err.println("usage: " + HtPasswd.class.getName() + " userPwd encodedPwd");
          System.exit(-1);
+      }
+      if (args.length < 2) {
+          String userPwd = args[0];
+          log.info(userPwd + " -> " + HtPasswd.crypt(userPwd));
+          System.exit(0);
       }
       String userPwd = args[0];
       String encoded = args[1];
