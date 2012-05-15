@@ -33,6 +33,7 @@ import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.StopParseException;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -266,10 +267,14 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          this.cdata.append(ch, start, length);
       }
       else if (this.inQos > 0) {
-         this.qos.append(ch, start, length);
+    	 String tmp = new String(ch, start, length);
+    	 tmp = XmlBuffer.escape(tmp);
+         this.qos.append(tmp);
       }
       else if (this.inKey > 0) {
-         this.key.append(ch, start, length);
+     	 String tmp = new String(ch, start, length);
+     	 tmp = XmlBuffer.escape(tmp);
+         this.key.append(tmp);
       }
       else if (this.inContent > 0) {
          this.content.append(ch, start, length);
