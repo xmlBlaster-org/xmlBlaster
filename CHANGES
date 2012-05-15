@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r18077 HtPasswd SecurityQos
+          Added coding to base64 endoce/decode the password (prefix "__base64:"), needed if it contains invalid XML chars '&' and '<'
+
+ o r18076 XmlScriptInterpreter: Fixed xml encoding of parsed key and qos ('&' and '<' chars)
+
  o r18070 JMX reactivateDispatcherThread() method added for error diagnostic of inactive callback thread
  o r18069 ServerDispatchManager.java Smaller synchronize for this.connectionStatusListeners
 
