@@ -533,6 +533,14 @@ public class StringPairTokenizer {
       String test = (args.length > 0) ? args[0] : "/node/heron/client/\"joe/the/great\"";
       String separator = (args.length > 1) ? args[1] : "/";
       String quotechar = (args.length > 2) ? args[2] : "\"";
+      
+      {
+    	  Map<String, String> map = new HashMap<String, String>();
+    	  map.put("photoSize", "big");
+    	  String csv = StringPairTokenizer.mapToCSV(map, ':', '"', ';');
+    	  Map<String,String> hash = StringPairTokenizer.CSVToMap(csv, ';', '"', ':');
+    	  System.out.println("key=photoSize" + " value=" + hash.get("photoSize"));
+      }
 
       System.out.println("From '" + test + "' we get");
       /*
