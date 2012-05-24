@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -98,6 +100,22 @@ public class DispatchWorkerPool //implements I_RunlevelListener
     		  this.threadLifetime.getValue(), TimeUnit.MILLISECONDS,
               new SynchronousQueue<Runnable>(),
               threadFactory);
+      
+      this.pool.setRejectedExecutionHandler(new RejectedExecutionHandler() {
+		@Override
+		public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+			String text = "";
+			if (r != null && r instanceof I_DispatchManager) {
+				I_DispatchManager dm = (I_DispatchManager)r;
+				text = "Internal error, can't start thread for dispatchWorker " + dm.getId();
+			}
+			else {
+				text = "Internal error, can't start thread for unkown dispatchWorker";
+			}
+			log.severe(text);
+			throw new RejectedExecutionException(text);
+		}
+	});
       //this.pool = Executors.newCachedThreadPool(new DeamonThreadFactory(glob.getId(), this.threadPrio.getValue()));
       
 //      this.pool = new PooledExecutor(new LinkedQueue());
@@ -113,12 +131,13 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       return this.isShutdown;
    }
 
-   final public synchronized void execute(java.lang.Runnable command) throws java.lang.InterruptedException {
+   final public synchronized boolean execute(java.lang.Runnable command) throws java.lang.InterruptedException {
       if (this.isShutdown) {
-         log.fine("The pool is shudown, ignoring execute()");
-         return;
+         log.severe("The pool is shudown, ignoring execute()");
+         return false;
       }
       this.pool.execute(command);
+      return true;
    }
 
    public String getStatistic() {
