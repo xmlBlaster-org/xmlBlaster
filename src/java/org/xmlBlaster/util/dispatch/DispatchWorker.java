@@ -84,10 +84,10 @@ public final class DispatchWorker implements Runnable
     * Asynchronous pull mode, invoked by DispatchWorkerPool.execute() -> see DispatchManager calling it
     */
    public void run() {
-      if (log.isLoggable(Level.FINER)) log.finer("Starting remote dispatch with " + this.msgQueue.getNumOfEntries() + " entries.");
       List<I_Entry> entryList = null;
       List<I_Entry> entryListChecked = null;
       try {
+         if (log.isLoggable(Level.FINER)) log.finer("Starting remote dispatch with " + this.msgQueue.getNumOfEntries() + " entries.");
          I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDispatchInterceptor();
          if (msgInterceptor != null) {
                entryListChecked = msgInterceptor.handleNextMessages(dispatchManager, null); // should call prepareMsgsFromQueue() immediately
@@ -128,13 +128,16 @@ public final class DispatchWorker implements Runnable
             dispatchManager.handleWorkerException(entryList, throwable);
          }
          catch (Throwable e) {
-            e.printStackTrace();
-            StringBuffer buf = new StringBuffer(2048);
-            for (int i=0; i<entryList.size(); i++)
-               buf.append(" ").append(((MsgQueueEntry)entryList.get(i)).getLogId());
-            log.severe("Commit of sending of " +
+        	try {
+               e.printStackTrace();
+               StringBuffer buf = new StringBuffer(2048);
+               for (int i=0; i<entryList.size(); i++)
+                  buf.append(" ").append(((MsgQueueEntry)entryList.get(i)).getLogId());
+               log.severe("Commit of sending of " +
                   entryList.size() + " messages failed, current queue size is " +
                   this.msgQueue.getNumOfEntries() + " '" + buf.toString() + "': " + e.toString());
+        	}
+            catch (Throwable e2) {}
          }
          // ArrayList entriesWithNoDistributor = this.sendAsyncResponseEvent(entryList);
          // if (entriesWithNoDistributor.size() > 0) dispatchManager.handleWorkerException(entriesWithNoDistributor, throwable);
@@ -145,6 +148,7 @@ public final class DispatchWorker implements Runnable
          }
          catch (Throwable e) {
             e.printStackTrace();
+            log.severe("Failed to mark thread as terminated: " + e.toString());
          }
          entryList = null;
          shutdown();
