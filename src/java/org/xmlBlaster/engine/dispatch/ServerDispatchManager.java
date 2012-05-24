@@ -917,7 +917,9 @@ public final class ServerDispatchManager implements I_DispatchManager
                this.dispatchWorkerIsActive = true;
                this.notifyCounter = 0;
                try {
-                  this.glob.getDispatchWorkerPool().execute(new DispatchWorker(glob, this));
+                  boolean success = this.glob.getDispatchWorkerPool().execute(new DispatchWorker(glob, this));
+                  if (!success)
+                      this.dispatchWorkerIsActive = false;
                }
                catch (Throwable e) {
                   this.dispatchWorkerIsActive = false;
