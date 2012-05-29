@@ -91,6 +91,8 @@ public final class ServerDispatchManager implements I_DispatchManager
    private boolean shallCallToAliveSync;
    private boolean inDispatchManagerCtor;
 
+   private boolean dispatcherThreadWorkaround;
+
    private SessionName sessionName;
 
    /**
@@ -107,6 +109,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       this.inDispatchManagerCtor = true;
       this.ME = this.hashCode() + "-" + msgQueue.getStorageId().getId();
       this.glob = glob;
+      this.dispatcherThreadWorkaround = this.glob.get("xmlBlaster/dispatcherThreadWorkaround", false, null, null);
 
       this.sessionName = sessionName;
 
@@ -174,6 +177,12 @@ public final class ServerDispatchManager implements I_DispatchManager
    public final void updateProperty(CallbackAddress[] addressArr) throws XmlBlasterException {
       initDispatcherActive(addressArr);
       this.dispatchConnectionsHandler.initialize(addressArr);
+      if (this.dispatcherThreadWorkaround) {
+         if (this.dispatchWorkerIsActive) {
+            log.severe(ME+": Forcing reset of dispatchWorkerIsActive, test code only because of '-xmlBlaster/dispatcherThreadWorkaround true' ...");
+            reactivateDispatcherThread(true);
+         }
+      }
    }
 
    public void finalize() {
@@ -1226,6 +1235,12 @@ public final class ServerDispatchManager implements I_DispatchManager
       return this.dispatcherActive;
    }
    
+   /**
+    * Usually by JMX
+    * Bug workaround if Dispatcher is not delivering messages to client anymore. 
+    * @param force set to true to reactivate
+    * @return The internal dump
+    */
    public String reactivateDispatcherThread(boolean force) {
       StringBuilder sb = new StringBuilder(1024);
       sb.append("Before:\n");
