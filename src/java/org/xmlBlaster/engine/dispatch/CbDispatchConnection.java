@@ -66,7 +66,7 @@ public final class CbDispatchConnection extends DispatchConnection
     */
    public CbDispatchConnection(Global glob, CbDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
-      this.ME = connectionsHandler.getDispatchManager().getQueue().getStorageId().toString();
+      this.ME = this.hashCode() + "-" + connectionsHandler.getDispatchManager().getQueue().getStorageId().getId();
 
       sessionName = connectionsHandler.getDispatchManager().getSessionName();
       ServerScope serverScope = (ServerScope)glob;
@@ -321,7 +321,7 @@ public final class CbDispatchConnection extends DispatchConnection
                new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Callback failed", t);
             
             if (ErrorCode.USER_UPDATE_DEADMESSAGE.equals(ex.getErrorCode()) && glob instanceof ServerScope) {
-               log.warning(ME + " Got exception " + ex.getErrorCode() + " from client, sending dead letter, removing it from callback queue as if delivered: " + ex.toString());
+               log.warning(ME+": Got exception " + ex.getErrorCode() + " from client, sending dead letter, removing it from callback queue as if delivered: " + ex.toString());
                ServerScope serverScope = (ServerScope)glob;
                serverScope.getRequestBroker().deadMessage(msgArr_, (I_Queue)null, ex.getMessage());
                rawReturnVal = new String[] { "<qos><state id='REJECTED'/></qos>" }; // should remove msg from queue as if delivered

@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -526,7 +527,7 @@ abstract public class DispatchConnectionsHandler
     * @return internal state of SessionInfo as a XML ASCII string
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(1000);
+      XmlBuffer sb = new XmlBuffer(1000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
@@ -536,7 +537,7 @@ abstract public class DispatchConnectionsHandler
          sb.append(offset).append(" <noDispatchConnection/>");
       else {
          for (int ii=0; ii<arr.length; ii++) {
-            sb.append(offset).append(" <connection type='" + arr[ii].getDriverName() + "' state='" + arr[ii].getState() + "'/>");
+            sb.append(offset).append(" <connection type='").appendEscaped(arr[ii].getDriverName()).append("' state='").append(""+arr[ii].getState()).append("'/>");
          }
       }
       sb.append(offset).append("</DispatchConnectionsHandler>");

@@ -18,6 +18,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -104,7 +105,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
       this.inDispatchManagerCtor = true;
-      this.ME = msgQueue.getStorageId().getId();
+      this.ME = this.hashCode() + "-" + msgQueue.getStorageId().getId();
       this.glob = glob;
 
       this.sessionName = sessionName;
@@ -445,7 +446,7 @@ public final class ServerDispatchManager implements I_DispatchManager
          }
          catch (Throwable e) {
             e.printStackTrace();
-            log.warning("postSendListener.postSend() exception: " + e.toString());
+            log.warning(ME+": postSendListener.postSend() exception: " + e.toString());
          }
       }
    }
@@ -469,7 +470,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       }
       catch (Throwable e) {
          e.printStackTrace();
-         log.warning("postSendListener.sendingFailed() exception: " + e.toString());
+         log.warning(ME+": postSendListener.sendingFailed() exception: " + e.toString());
          return false;
       }
    }
@@ -565,7 +566,7 @@ public final class ServerDispatchManager implements I_DispatchManager
          msgInterceptor.postHandleNextMessages(this, msgUnits);
       }
       
-      if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " +
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Commit of successful sending of " +
             entries.length + " messages done, current queue size is " +
             this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
    }
@@ -1133,7 +1134,7 @@ public final class ServerDispatchManager implements I_DispatchManager
     * We don't shutdown the corresponding queue.
     */
    public void shutdown() {
-      if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering shutdown ...");
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering shutdown ... " + toXml(""));
       if (this.isShutdown) return;
       synchronized (this) {
          if (this.isShutdown) return;
@@ -1191,11 +1192,11 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @return internal state as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(2000);
+	   XmlBuffer sb = new XmlBuffer(2000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<DispatchManager id='").append(getId());
+      sb.append(offset).append("<DispatchManager id='").appendEscaped(getId());
       if (this.msgQueue != null)
          sb.append("' numEntries='").append(this.msgQueue.getNumOfEntries());
       sb.append("' isShutdown='").append(this.isShutdown).append("'>");

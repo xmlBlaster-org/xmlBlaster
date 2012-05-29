@@ -65,7 +65,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    public ClientDispatchConnection(Global glob, ClientDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
-      this.ME = "ClientDispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
+      this.ME = "ClientDispatchConnection-" + this.hashCode() + "-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
       this.securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
    }
 
@@ -104,7 +104,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          //spanPingTimer(1, true); // Could deadlock as it uses complete dispatch framework with its synchronized?
          this.driver.ping("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");  // Try a low level ping
       }
-      if (log.isLoggable(Level.FINE)) log.fine("Connected low level to " + super.address.toString());
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Connected low level to " + super.address.toString());
    }
 
    /**
@@ -172,11 +172,11 @@ public final class ClientDispatchConnection extends DispatchConnection
             if (this.connectEntry != null && e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED)) {
                // Happens if the client was killed in the server by an admin task
                // and has tried to reconnect with the old sessionId
-               log.warning("Server changed sessionId, trying reconnect now: " + e.toString());
+               log.warning(ME+": Server changed sessionId, trying reconnect now: " + e.toString());
                //reconnect();   // loops?!
                connect(this.connectEntry);
                connectionsHandler.getDispatchManager().postSendNotification(this.connectEntry);
-               if (log.isLoggable(Level.FINE)) log.fine("Server changed sessionId to " + this.connectReturnQos.getServerInstanceId());
+               if (log.isLoggable(Level.FINE)) log.fine(ME+": Server changed sessionId to " + this.connectReturnQos.getServerInstanceId());
                ii--;
             }
             else {
@@ -212,7 +212,7 @@ public final class ClientDispatchConnection extends DispatchConnection
             CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH, msgArr[i].getMsgUnitRaw());
             msgUnitRawArr[i] = securityInterceptor.exportMessage(dataHolder);
          }
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted " + msgArr.length + " publish messages.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted " + msgArr.length + " publish messages.");
       }
       else {
          log.warning("No session security context, sending " + msgArr.length + " publish messages without encryption");
@@ -224,7 +224,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (MethodName.PUBLISH_ONEWAY == msgArr_[0].getMethodName()) {
          this.driver.publishOneway(msgUnitRawArr);
          connectionsHandler.getDispatchStatistic().incrNumPublish(msgUnitRawArr.length);
-         if (log.isLoggable(Level.FINE)) log.fine("Success, sent " + msgArr.length + " oneway publish messages.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + msgArr.length + " oneway publish messages.");
          if (cp != null) {
             for (int i=0; i<msgArr.length; i++) {
                cp.passingBy(I_Checkpoint.CP_CONNECTION_PUBLISH_ACK, msgArr[i],
@@ -234,7 +234,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          return;
       }
 
-      if (log.isLoggable(Level.FINE)) log.fine("Before publish " + msgArr.length + " acknowledged messages ...");
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Before publish " + msgArr.length + " acknowledged messages ...");
 
       String[] rawReturnVal = this.driver.publishArr(msgUnitRawArr);
       if (rawReturnVal == null) {
@@ -243,7 +243,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       }
       connectionsHandler.getDispatchStatistic().incrNumPublish(rawReturnVal.length);
 
-      if (log.isLoggable(Level.FINE)) log.fine("Success, sent " + msgArr.length + " acknowledged publish messages, return value #1 is '" + rawReturnVal[0] + "'");
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + msgArr.length + " acknowledged publish messages, return value #1 is '" + rawReturnVal[0] + "'");
 
       if (rawReturnVal != null) {
          for (int i=0; i<rawReturnVal.length; i++) {
@@ -267,12 +267,12 @@ public final class ClientDispatchConnection extends DispatchConnection
                msgArr_[i].setReturnObj(new PublishReturnQos(glob, rawReturnVal[i]));
             }
             catch (Throwable e) {
-               log.warning("Can't parse publish returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
+               log.warning(ME+": Can't parse publish returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
                //e.printStackTrace();
                msgArr_[i].setReturnObj(new PublishReturnQos(glob, "<qos/>"));
             }
          }
-         if (log.isLoggable(Level.FINE)) log.fine("Imported/decrypted " + rawReturnVal.length + " publish message return values.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Imported/decrypted " + rawReturnVal.length + " publish message return values.");
       }
    }
 
@@ -289,10 +289,10 @@ public final class ClientDispatchConnection extends DispatchConnection
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
          key = msgUnitRaw.getKey();
          qos = msgUnitRaw.getQos();
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted subscribe request.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted subscribe request.");
       }
       else {
-         log.warning("No session security context, subscribe request is not encrypted");
+         log.warning(ME+": No session security context, subscribe request is not encrypted");
       }
 
       String rawReturnVal = this.driver.subscribe(key, qos); // Invoke remote server
@@ -309,7 +309,7 @@ public final class ClientDispatchConnection extends DispatchConnection
             subscribeEntry.setReturnObj(new SubscribeReturnQos(glob, rawReturnVal));
          }
          catch (Throwable e) {
-            log.warning("Can't parse returned subscribe value '" + rawReturnVal + "', setting to default: " + e.toString());
+            log.warning(ME+": Can't parse returned subscribe value '" + rawReturnVal + "', setting to default: " + e.toString());
             subscribeEntry.setReturnObj(new SubscribeReturnQos(glob, "<qos/>"));
          }
       }
@@ -328,10 +328,10 @@ public final class ClientDispatchConnection extends DispatchConnection
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
          key = msgUnitRaw.getKey();
          qos = msgUnitRaw.getQos();
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted unSubscribe request.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted unSubscribe request.");
       }
       else {
-         log.warning("No session security context, unSubscribe request is not encrypted");
+         log.warning(ME+": No session security context, unSubscribe request is not encrypted");
       }
 
       String[] rawReturnValArr = this.driver.unSubscribe(key, qos); // Invoke remote server
@@ -353,7 +353,7 @@ public final class ClientDispatchConnection extends DispatchConnection
             unSubscribeEntry.setReturnObj(retQosArr);
          }
          catch (Throwable e) {
-            log.warning("Can't parse returned unSubscribe value setting to default: " + e.toString());
+            log.warning(ME+": Can't parse returned unSubscribe value setting to default: " + e.toString());
             for (int ii=0; ii<rawReturnValArr.length; ii++) {
                retQosArr[ii] = new UnSubscribeReturnQos(glob, "<qos/>");
             }
@@ -375,10 +375,10 @@ public final class ClientDispatchConnection extends DispatchConnection
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
          key = msgUnitRaw.getKey();
          qos = msgUnitRaw.getQos();
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted get request.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted get request.");
       }
       else {
-         log.warning("No session security context, get request is not encrypted");
+         log.warning(ME+": No session security context, get request is not encrypted");
       }
 
       MsgUnitRaw[] rawReturnValArr = this.driver.get(key, qos); // Invoke remote server
@@ -414,10 +414,10 @@ public final class ClientDispatchConnection extends DispatchConnection
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
          key = msgUnitRaw.getKey();
          qos = msgUnitRaw.getQos();
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted erase request.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted erase request.");
       }
       else {
-         log.warning("No session security context, erase request is not encrypted");
+         log.warning(ME+": No session security context, erase request is not encrypted");
       }
 
       String[] rawReturnValArr = this.driver.erase(key, qos); // Invoke remote server
@@ -439,7 +439,7 @@ public final class ClientDispatchConnection extends DispatchConnection
             eraseEntry.setReturnObj(retQosArr);
          }
          catch (Throwable e) {
-            log.warning("Can't parse returned erase value setting to default: " + e.toString());
+            log.warning(ME+": Can't parse returned erase value setting to default: " + e.toString());
             for (int ii=0; ii<rawReturnValArr.length; ii++) {
                retQosArr[ii] = new EraseReturnQos(glob, "<qos/>");
             }
@@ -458,14 +458,14 @@ public final class ClientDispatchConnection extends DispatchConnection
       cqd.addClientProperty(Constants.CLIENTPROPERTY_UTC, IsoDateParser.getCurrentUTCTimestamp());
       this.connectQosData = cqd;
       if (this.securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-          if (log.isLoggable(Level.FINE)) log.fine("TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
+          if (log.isLoggable(Level.FINE)) log.fine(ME+": TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
           CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, cqd.toXml()));
           String encryptedConnectQos = this.securityInterceptor.exportMessage(dataHolder).getQos();
-          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");
+          if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted connect request.");
           return encryptedConnectQos;
       }
       else {
-          log.warning("No session security context, connect request is not encrypted");
+          log.warning(ME+": No session security context, connect request is not encrypted");
           return cqd.toXml();
       }
    }
@@ -495,7 +495,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          setCheckpointContext(this.connectReturnQos);
       }
       catch (XmlBlasterException e) {
-         log.severe("Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
+         log.severe(ME+": Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
          throw e;
       }
 
@@ -525,10 +525,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.DISCONNECT, new MsgUnitRaw(null, (byte[])null, qos));
          qos = securityInterceptor.exportMessage(dataHolder).getQos();
-         if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted disconnect request.");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted disconnect request.");
       }
       else {
-         log.warning("No session security context, disconnect request is not encrypted");
+         log.warning(ME+": No session security context, disconnect request is not encrypted");
       }
 
       //returns void
@@ -547,7 +547,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     * Nothing to do here
     */
    public final void resetConnection() {
-      if (log.isLoggable(Level.FINE)) log.fine("resetConnection(): Initializing driver for polling");
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": resetConnection(): Initializing driver for polling");
       this.connectReturnQos = null;
       this.driver.resetConnection();
    }
@@ -557,7 +557,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    protected final void reconnect() throws XmlBlasterException {
       if (this.driver == null) return;
-      if (log.isLoggable(Level.FINER)) log.finer("Entering reconnect(" + this.driver.getProtocol() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering reconnect(" + this.driver.getProtocol() + ")");
       
       if (this.connectReturnQos != null) {
          // needed to avoid failure
@@ -597,7 +597,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          }
       }
       catch (XmlBlasterException e) {
-         log.severe("reconnect(): Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
+         log.severe(ME+": reconnect(): Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
          throw e;
       }
       this.driver.setConnectReturnQos(this.connectReturnQos);
