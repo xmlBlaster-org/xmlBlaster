@@ -123,7 +123,7 @@ java javaclients.HelloWorldPublish -session.name Publisher/1 -numPublish 1000 -c
 
 <pre class="BORDER">
 2007-10-21 14:32:42.269  INFO   12-XmlBlaster.SOCKET.tcpListener-Publisher org.xmlBlaster.util.checkpoint.Checkpoint passingBy: 
-[cp=publish.ack] [topicId=Hello] [sender=client/Publisher/1]
+[cp=publish.ack] [topicId=Hello] [wfguid=234345667777] [sender=client/Publisher/1] [destination=client/Subscribe/1]
 </pre>
 
 <p>The logging output has an ISO 8601 formatted date and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
