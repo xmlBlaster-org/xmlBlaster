@@ -857,7 +857,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       if (useBurstModeTimer() == true)
          return;
 
-      startWorkerThread(false);
+      startWorkerThread(false, false);
    }
 
    /**
@@ -879,7 +879,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       if (useBurstModeTimer() == true)
          return;
 
-      startWorkerThread(false);
+      startWorkerThread(false, false);
    }
 
    /**
@@ -915,19 +915,32 @@ public final class ServerDispatchManager implements I_DispatchManager
 
    /**
     * @param fromTimeout for logging only
+    * @param intensiveLogging set to true for debugging purposes
     */
-   private void startWorkerThread(boolean fromTimeout) {
+   private void startWorkerThread(boolean fromTimeout, final boolean intensiveLogging) {
+      if (intensiveLogging) {
+         log.info(ME+": startWorkerThread(" + fromTimeout + "," + intensiveLogging + ") this.dispatchWorkerIsActive=" + this.dispatchWorkerIsActive);
+      }
       if (this.dispatchWorkerIsActive == false) {
          synchronized (this) {
             if (this.isShutdown) {
+               if (intensiveLogging) {
+                  log.info(ME+": startWorkerThread() failed, we are shutdown: " + toXml(""));
+               }
                if (log.isLoggable(Level.FINE)) log.fine(ME+": startWorkerThread() failed, we are shutdown: " + toXml(""));
                return;
+            }
+            if (intensiveLogging) {
+               log.info(ME+": startWorkerThread(" + fromTimeout + "," + intensiveLogging + ") inside synchronized this.dispatchWorkerIsActive=" + this.dispatchWorkerIsActive);
             }
             if (this.dispatchWorkerIsActive == false) { // send message directly
                this.dispatchWorkerIsActive = true;
                this.notifyCounter = 0;
                try {
                   boolean success = this.glob.getDispatchWorkerPool().execute(new DispatchWorker(glob, this));
+                  if (intensiveLogging) {
+                      log.info(ME+": startWorkerThread(" + fromTimeout + "," + intensiveLogging + ") execute done: success=" + success);
+                  }
                   if (!success)
                       this.dispatchWorkerIsActive = false;
                }
@@ -1058,7 +1071,7 @@ public final class ServerDispatchManager implements I_DispatchManager
    public void timeout(Object userData) {
       this.timerKey = null;
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Burst mode timeout occurred, queue entries=" + msgQueue.getNumOfEntries() + ", starting callback worker thread ...");
-      startWorkerThread(true);
+      startWorkerThread(true, false);
    }
 
 
@@ -1253,6 +1266,7 @@ public final class ServerDispatchManager implements I_DispatchManager
     */
    public String reactivateDispatcherThread(boolean force) {
       StringBuilder sb = new StringBuilder(1024);
+      sb.append("reactivateDispatcherThread force=").append(force).append("\n");
       sb.append("Before:\n");
       sb.append("id=").append(getId()).append("\n");
       sb.append("dispatchWorkerIsActive=").append(this.dispatchWorkerIsActive).append("\n");
@@ -1266,13 +1280,15 @@ public final class ServerDispatchManager implements I_DispatchManager
       }
       sb.append("force=").append(force).append("\n");
 
-      log.warning(ME+": reactivateDispatcherThread is called (JMX?): " + sb.toString() + "\n" + toXml(""));
+      log.warning(ME+": reactivateDispatcherThread(force=" + force + ") is called (JMX?): " + sb.toString() + "\n" + toXml(""));
 
       if (this.dispatchWorkerIsActive && force) {
+          sb.append("forcing from dispatchWorkerIsActive=").append(this.dispatchWorkerIsActive).append(" to dispatchWorkerIsActive=false").append("\n");
           this.dispatchWorkerIsActive = false;
+          log.warning(ME+": reactivateDispatcherThread is called (force=true): forced this.dispatchWorkerIsActive=" + this.dispatchWorkerIsActive);
       }
       
-      startWorkerThread(false);
+      startWorkerThread(false, true);
       
       sb.append("After:\n");
       sb.append("dispatchWorkerIsActive=").append(this.dispatchWorkerIsActive).append("\n");
