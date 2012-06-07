@@ -1082,6 +1082,11 @@ public final class ServerDispatchManager implements I_DispatchManager
    private void initDispatcherActive(AddressBase[] addrArr) {
       if (addrArr != null) {
          for (int ii=0; ii<addrArr.length; ii++) { // TODO: How to handle setting of multiple addresses??
+            if (addrArr[ii].isDispatcherActive() == false && this.dispatcherActive == true) {
+              String pos = "";
+              //pos = ": " + ServerScope.getStackTraceAsString(null);
+              log.warning(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + addrArr[ii].isDispatcherActive() + pos);
+            }
             this.dispatcherActive = addrArr[ii].isDispatcherActive();
          }
       }
@@ -1221,9 +1226,11 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @param dispatcherActive
     */
    public void setDispatcherActive(boolean dispatcherActive) {
-	  if (dispatcherActive == false && this.dispatcherActive == true) {
-		  log.warning(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + dispatcherActive);
-	  }
+      if (dispatcherActive == false && this.dispatcherActive == true) {
+         String pos = "";
+         //pos = ": " + ServerScope.getStackTraceAsString(null);
+         log.warning(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + dispatcherActive + pos);
+      }
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + dispatcherActive);
       this.dispatcherActive = dispatcherActive;
       if (this.dispatcherActive) notifyAboutNewEntry();
