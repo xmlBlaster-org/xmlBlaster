@@ -406,11 +406,10 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                wieder rueckgaengig gemacht, sodass man wie gewohnt mit dem Socket arbeiten kann.
             */
             fd_set         fds;
-            int            connectTimeout = 5;
+            int            connectTimeout = 3;
             unsigned long  opt            = 1;
             struct timeval timeout;
-            int conret;
-            int wsaret;
+            int conret, wsaret, rets;
 
             ioctlsocket( xb->socketToXmlBlaster, FIONBIO, &opt );
 
@@ -426,8 +425,9 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                   sein kann, und der Aufruf nur fehlgeschlagen ist, weil er andernfalls
                   blockieren wuerde, was ja absichtlich deaktiviert wurde.
                */
-               if ( (wsaret = WSAGetLastError()) != WSAEWOULDBLOCK ) 
+               if ( (wsaret = WSAGetLastError()) != WSAEWOULDBLOCK ) {
                   return false; /* kein logging und socket wird nicht wieder blockierend?   TODO  ?? */
+					}
 
                /* Deskriptor-Set zuruecksetzen und mit dem zu verbindenden Socket belegen */
                FD_ZERO( &fds );
@@ -441,11 +441,16 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                /* Nun select aufrufen; dieses kehrt entweder nach Ablauf des Timeouts
                   zurueck, oder wenn der Socket zum Schreiben bereit ist, was genau dann
                   passiert, wenn er erfolgreich verbunden wurde.
-                   */
-               ret = select( xb->socketToXmlBlaster + 1, 0, &fds, 0, &timeout );
-               if ( ret == SOCKET_ERROR )
+
+                  The select function returns the total number of socket handles that are ready and contained in the fd_set structures,
+                  zero if the time limit expired, or SOCKET_ERROR if an error occurred.
+                  If the return value is SOCKET_ERROR, WSAGetLastError can be used to retrieve a specific error code.
+               */
+               rets = select( xb->socketToXmlBlaster + 1, 0, &fds, 0, &timeout );
+               if ( rets == SOCKET_ERROR )
                   ret = -1;
-               if (ret == 0)
+
+               if (rets == 0)
                   ret = -1; /* timeout */
 
                /* Falls select zurueckgekehrt ist, aber der zu verbindende Socket nicht
