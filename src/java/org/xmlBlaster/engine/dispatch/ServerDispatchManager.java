@@ -1221,6 +1221,9 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @param dispatcherActive
     */
    public void setDispatcherActive(boolean dispatcherActive) {
+	  if (dispatcherActive == false && this.dispatcherActive == true) {
+		  log.warning(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + dispatcherActive);
+	  }
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + dispatcherActive);
       this.dispatcherActive = dispatcherActive;
       if (this.dispatcherActive) notifyAboutNewEntry();
