@@ -180,7 +180,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       if (this.dispatcherThreadWorkaround) {
          if (this.dispatchWorkerIsActive) {
             String details = reactivateDispatcherThread(true);
-            log.severe(ME+": Forced reset of dispatchWorkerIsActive, test code only because of '-xmlBlaster/dispatcherThreadWorkaround true': " + details);
+            log.warning(ME+": Forced reset of dispatchWorkerIsActive, test code only because of '-xmlBlaster/dispatcherThreadWorkaround true': " + details);
          }
       }
    }
