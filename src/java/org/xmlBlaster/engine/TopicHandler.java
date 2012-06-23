@@ -745,7 +745,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          msgUnitWrapper.startExpiryTimer();
       }
       catch (XmlBlasterException e) {
-         if (e.isUser()) {
+         if (e.isUser()) { // e.g. "user.ptp.unknownDestination"
            log.warning(ME+": "+e.getMessage());
          }
          else {
