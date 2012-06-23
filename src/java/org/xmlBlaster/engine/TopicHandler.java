@@ -851,11 +851,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             // 3 + 6 (force queing ignored since same reaction for both)
             destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
             if (!forceQueing && destinationClient==null) {
-               String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
+               String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' from '" + publishQos.getSender().getAbsoluteName() + "' failed, the destinationSubject is unknown, the message rejected.";
                boolean ignoreSilently = publishQos.getData().getClientProperty("_user.ptp.unknownDestination.ignoreSilently", false);
                if (ignoreSilently) {
                    log.warning(tmp);
-            	   return;
+            	   continue;
                }
                //log.warning(tmp); is logged by caller already
                throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
@@ -901,8 +901,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             }
 
             if (receiverSessionInfo == null && !forceQueing) {
-               String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
-               log.warning(tmp);
+               String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' from '" + publishQos.getSender().getAbsoluteName() + "' failed, the receiverSessionInfo is unkown, the message rejected.";
+               boolean ignoreSilently = publishQos.getData().getClientProperty("_user.ptp.unknownDestination.ignoreSilently", false);
+               if (ignoreSilently) {
+                 log.warning(tmp);
+                 continue;
+               }
                throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                      " Client is not logged in and <destination forceQueuing='true'> is not set");
             }

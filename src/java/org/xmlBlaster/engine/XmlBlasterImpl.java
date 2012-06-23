@@ -208,7 +208,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return sessionInfo.getSecuritySession().exportMessage(dataHolder).getQos();
       }
       catch (Throwable e) {
-    	  e.printStackTrace();
+    	  if (!(e instanceof XmlBlasterException)) {
+    	     e.printStackTrace();
+    	  }
           String xml = interceptExeptionByAuthorizer(e, sessionInfo, addressServer, msgUnit, methodName);
           if (xml != null)
          	 return xml;
