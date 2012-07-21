@@ -481,6 +481,20 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_SECURITY_AUTHENTICATION_ILLEGALDEVICEID = new ErrorCode("user.security.authentication.illegalDeviceId",
+	         "Login denied due to device identification failed. For example for invalid IMEI given.",
+	         new ResourceInfo[] {
+	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+	         }
+	      );
+
+   public static final ErrorCode USER_SECURITY_AUTHENTICATION_ILLEGALDEVICETYPE = new ErrorCode("user.security.authentication.illegalDeviceType",
+	         "Login denied due to illegal device type. For example for invalid smartphone type.",
+	         new ResourceInfo[] {
+	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+	         }
+	      );
+
    public static final ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED_UNKNOWNLOGINNAME = new ErrorCode("user.security.authentication.accessDenied.unknownLoginName",
 	         "Login failed due to unkown login name.",
 	         new ResourceInfo[] {
