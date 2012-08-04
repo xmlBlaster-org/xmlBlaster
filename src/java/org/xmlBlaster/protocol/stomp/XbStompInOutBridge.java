@@ -470,7 +470,8 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		RequestHolder requestHolder = framesToAck.get(messageId);
 		if (requestHolder == null) {
 			// Happens on multiple Ack or on wrong messageId
-			log.warning(getExtendedLogId() + " Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable: " + dump(command));
+			log.severe(getExtendedLogId() + " Internal ACK API error: messageId=" + messageId + " not found in framesToAck hashtable: " + dump(command));
+			return;
 		}
 		
 		requestHolder.returnQos = (String) headers.get(XB_SERVER_HEADER_QOS);
