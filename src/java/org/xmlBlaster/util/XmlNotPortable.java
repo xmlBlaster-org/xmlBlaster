@@ -8,25 +8,24 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.Document;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Enumeration;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * XmlNotPortable holds static methods for parser dependent code. 
@@ -106,6 +105,44 @@ public class XmlNotPortable
    public static Enumeration getNodeSetFromXPath(String expression, org.w3c.dom.Document document) throws XmlBlasterException {
       try {
          if (getJvmXmlVersionToUse() >= 15) {
+            javax.xml.xpath.XPath xpath = null;
+            synchronized (javax.xml.xpath.XPathFactory.class) {
+               // XPathFactory is not re-entrant. While one of the newInstance
+               // methods is being invoked, applications may not attempt to
+               // recursively invoke a newInstance method, even from the same
+               // thread.
+               javax.xml.xpath.XPathFactory xpathFactory = javax.xml.xpath.XPathFactory.newInstance();
+               // The XPathFactory class is not thread-safe. In other words, it
+               // is the application's responsibility to ensure
+               // that at most one thread is using a XPathFactory object at any
+               // given moment.
+               // Implementations are encouraged to mark methods as synchronized
+               // to protect themselves from broken clients.
+               xpath = xpathFactory.newXPath();
+            }
+            // An XPath object is not thread-safe and not reentrant. In other
+            // words, it is the application's responsibility
+            // to make sure that one XPath object is not used from more than one
+            // thread at any given time,
+            // and while the evaluate method is invoked, applications may not
+            // recursively call the evaluate method.
+            final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList) xpath.evaluate(expression, document, javax.xml.xpath.XPathConstants.NODESET);
+            // contains Document, Element ...
+            final int length = nodes.getLength();
+            return new java.util.Enumeration<Object>() {
+               int i = 0;
+
+               public boolean hasMoreElements() {
+                  return i < length;
+               }
+
+               public Object nextElement() {
+                  i++;
+                  return nodes.item(i - 1);
+               }
+            };
+         }
+         else if (getJvmXmlVersionToUse() >= 15) { // old code until 2012-08-24 andrew.yinger@gmail.com reported racecondition
             //javax.xml.xpath.XPath xpath = javax.xml.xpath.XPathFactory.newInstance().newXPath();
             //final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList)xpath.evaluate(expression, document, javax.xml.xpath.XPathConstants.NODESET);
             Object xpath = null;
@@ -166,6 +203,12 @@ public class XmlNotPortable
          }
       }
       catch (Exception e) { // javax.xml.xpath.XPathExpressionException or com.jclark.xsl.om.XSLException
+         // Can't process XPath expression
+         // '////key':javax.xml.xpath.XPathExpressionException null:
+         // Cause=javax.xml.transform.TransformerException: Nach dem Token '/'
+         // oder '//' wurde ein Positionsschritt erwartet.
+         log.warning("Can't process XPath expression '" + expression + "': " + e.toString() + " " + e.getMessage() + ": Cause="
+               + (e.getCause() != null ? e.getCause().toString() : ""));
          e.printStackTrace();
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't process XPath expression '" + expression + "'", e);
       }
