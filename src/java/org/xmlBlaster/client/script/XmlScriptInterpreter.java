@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -157,6 +160,8 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       <p>Note: The errorCode is stripped to the main category</p>
     */
    protected boolean sendSimpleExceptionFormat;
+   protected String simpleExceptionFormatList;
+   
    protected boolean forceReadable;
    protected boolean inhibitContentCDATAWrapping;
    
@@ -169,6 +174,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    public final String ECHO_TAG = "echo";
    public final String INPUT_TAG = "input";
    public final String WAIT_TAG = "wait";
+   
    
    /**
     * You need to call initialize() if using this default constructor. 
@@ -907,7 +913,7 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
                //ErrorCode errorCode = ErrorCode.getCategory(msgUnits[0].getQos()); -> toplevel only, like 'user' 
                ErrorCode errorCode = ErrorCode.toErrorCode(msgUnits[0].getQos()); 
                StringBuffer buf = new StringBuffer(1024);
-               buf.append("<qos><state id='ERROR' info='").append(errorCode.getErrorCode());
+               buf.append("<qos><state id='ERROR' info='").append(simplifiedErrorCode(simpleExceptionFormatList, errorCode.getErrorCode()));
                buf.append("'/></qos>");
                out.write(buf.toString().getBytes(Constants.UTF8_ENCODING));
             }
@@ -930,6 +936,45 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
          out.write(">\n".getBytes());
       }
       out.flush();
+   }
+   
+   /**
+    * made public only for testing purposes
+    * @param errCode
+    * @return
+    */
+   public static String simplifiedErrorCode(String codeList, String errCode) {
+      if (errCode == null)
+         return null;
+      if (codeList == null || codeList.trim().length() < 1)
+         return errCode;
+      Set<String> set = getSimpleExceptionFormatList(codeList);
+      if (set.contains(errCode.trim()))
+         return errCode;
+      
+      String simpleErrCode = "internal"; // the default since we do not know better
+      String[] keys = set.toArray(new String[set.size()]);
+      boolean found = false;
+      for (int i=0; i < keys.length; i++) {
+         if (errCode.startsWith(keys[i])) {
+            simpleErrCode = keys[i];
+            found = true;
+         }
+         else if (found)
+            break;
+      }
+      log.info("simplifying '" + errCode + "' to '" + simpleErrCode + "'");
+      return simpleErrCode;
+   }
+
+   private static Set<String> getSimpleExceptionFormatList(String list) {
+      StringTokenizer tokenizer = new StringTokenizer(list.trim(), ":");
+      Set<String> allowedCodes = new TreeSet<String>();
+      while (tokenizer.hasMoreTokens()){
+         allowedCodes.add(tokenizer.nextToken().trim());
+      }
+      
+      return allowedCodes;
    }
    
    

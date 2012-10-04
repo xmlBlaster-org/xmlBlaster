@@ -5,6 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.xbformat;
 
+import org.apache.log4j.lf5.LogLevel;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -133,6 +134,10 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.sendRequestRequestId = glob.get("sendRequestRequestId", true, null, pluginConfig);
       this.isNullTerminated = glob.get("isNullTerminated", false, null, pluginConfig);
       super.sendSimpleExceptionFormat = glob.get("sendSimpleExceptionFormat", false, null, pluginConfig);
+      super.simpleExceptionFormatList = glob.get("simpleExceptionFormatList", (String)null, null, pluginConfig);
+      if (super.simpleExceptionFormatList != null) {
+         log.finest("simpleExceptionFormatList=" + super.simpleExceptionFormatList);
+      }
       super.forceReadable = glob.get("forceReadable", false, null, pluginConfig);
       super.inhibitContentCDATAWrapping = glob.get(Constants.INHIBIT_CONTENT_CDATA_WRAPPING, false, null, pluginConfig);
       super.initialize(glob, null, null);
