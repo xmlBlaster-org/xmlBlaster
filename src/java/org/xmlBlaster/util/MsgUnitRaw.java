@@ -34,6 +34,31 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
    public static final String QOS_TAG = "qos";
 
    /**
+    * @deprecated provided only for backwards compatibility, this will be removed in
+    * later releases. The byte array variant will be used.
+    * 
+    * @param msgUnit
+    * @param key
+    * @param content
+    * @param qos
+    */
+   public MsgUnitRaw(Object msgUnit, String key, byte[] content, String qos) {
+      this(msgUnit, Constants.toUtf8Bytes(key), content, Constants.toUtf8Bytes(qos));
+   }
+   
+   /**
+    * @deprecated provided only for backwards compatibility, this will be removed in
+    * later releases. The byte array variant will be used.
+    * 
+    * @param key
+    * @param encodedContent
+    * @param qos
+    */
+   public MsgUnitRaw(String key, EncodableData encodedContent, String qos) {
+      this(Constants.toUtf8Bytes(key), encodedContent, Constants.toUtf8Bytes(qos));
+   }   
+   
+   /**
     * @param msgUnit Temporary object with parsed information, this is not evaluated internally
     * @param key
     * @param content
