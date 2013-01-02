@@ -88,6 +88,8 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
          ::exit(val);
 #     elif  __GNUC__==3
          ::exit(val);
+#     elif  __GNUC__==4
+         ::exit(val);
 #     elif defined(__sun)
          ::exit(val);
 #     else
