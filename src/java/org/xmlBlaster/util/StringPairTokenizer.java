@@ -80,7 +80,7 @@ public class StringPairTokenizer {
     * @param nextLines An array of lines, followup lines will only be parsed if an open quotechar exists
     * @param separator Defaults to StringPairTokenizer.DEFAULT_SEPARATOR=','
     * @param quotechar Defaults to StringPairTokenizer.DEFAULT_QUOTE_CHARACTER='"'
-    * @param trimEmpty if true removes silently empy tokens
+    * @param trimEmpty if true removes silently empty tokens
     * @param preserveInsideQuoteChar true: Preserve the  inside quotes of "bla, bla, "blu blu", bli"
     * @return Never null, if nextLines is null or empty we return an empty array
     */
