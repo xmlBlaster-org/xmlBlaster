@@ -20,6 +20,8 @@ echo Starting Ant...
 REM -Dbuild.compiler=jikes  or  modern  or classic
 
 "%JAVA_HOME%\bin\java.exe" -Dant.home=. -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %*
+REM to see compiler options use -verbose
+REM "%JAVA_HOME%\bin\java.exe" -Dant.home=. -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main -verbose %*
 
 goto end
 
