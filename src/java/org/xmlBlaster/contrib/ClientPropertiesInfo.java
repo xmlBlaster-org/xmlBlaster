@@ -5,10 +5,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -276,8 +276,17 @@ public class ClientPropertiesInfo implements I_Info {
    /**
     * @return Never null
     */
-   public ClientProperty[] getClientPropertyArr() {
+   public synchronized ClientProperty[] getClientPropertyArr() {
       if (this.clientPropertyMap.size() == 0) return new ClientProperty[0]; 
       return (ClientProperty[])this.clientPropertyMap.values().toArray(new ClientProperty[this.clientPropertyMap.size()]);
+   }
+
+   /**
+    * A shallow clone to avoid race conditions. 
+    * @return Never null
+    */
+   public synchronized Map<String, ClientProperty> getClientPropertiesClone() {
+      Map<String, ClientProperty> map = new HashMap<String, ClientProperty>(this.clientPropertyMap);
+      return map;
    }
 }
