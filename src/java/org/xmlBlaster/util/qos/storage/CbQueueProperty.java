@@ -22,6 +22,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 public class CbQueueProperty extends QueuePropertyBase
 {
    private static Logger log = Logger.getLogger(CbQueueProperty.class.getName());
+   private boolean hasCallbackAddress;
 
    /**
     * @param relating  To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
@@ -84,8 +85,14 @@ public class CbQueueProperty extends QueuePropertyBase
     * Currently only one address is allowed, failover addresses will be implemented in a future version
     */
    public void setCallbackAddress(CallbackAddress address) {
+      if (address == null) {
+         this.addressArr = EMPTY_ADDRESS_ARR;
+         this.hasCallbackAddress = false;
+         return;
+      }
       this.addressArr = new CallbackAddress[1];
       this.addressArr[0] = address;
+      this.hasCallbackAddress = true;
    }
 
    /**
@@ -93,9 +100,11 @@ public class CbQueueProperty extends QueuePropertyBase
    public void setCallbackAddresses(CallbackAddress[] addresses) {
       if (addresses == null) {
          this.addressArr = EMPTY_ADDRESS_ARR;
+         this.hasCallbackAddress = false;
       }
       else {
          this.addressArr = addresses;
+         this.hasCallbackAddress = (addresses.length > 0);
       }
    }
 
@@ -110,6 +119,10 @@ public class CbQueueProperty extends QueuePropertyBase
       return cba;
    }
 
+   public boolean hasCallbackAddress() {
+      return this.hasCallbackAddress;
+   }
+
    /**
     * @return Never null, a default is created if none is available. 
     */
@@ -120,6 +133,7 @@ public class CbQueueProperty extends QueuePropertyBase
          return (CallbackAddress)this.addressArr[0];
       CallbackAddress addr = new CallbackAddress(glob);
       setCallbackAddress(addr);
+      this.hasCallbackAddress = false;
       return addr;
    }
 

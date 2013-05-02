@@ -206,19 +206,24 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
       this.sessionQueue.addStorageSizeListener(this);
 
+      // boolean hasCallbackAddress =
+      // this.connectQos.getSessionCbQueueProperty().hasCallbackAddress();
       CallbackAddress[] cba = this.connectQos.getSessionCbQueueProperty().getCallbackAddresses();
-      if (cba.length > 0) {
+      if (/* hasCallbackAddress && */cba.length > 0) {
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Creating dispatch manager as ConnectQos contains callback addresses");
          for (int i=0; i<cba.length; i++) {
-            cba[i].setSessionName(this.sessionName);
-            cba[i].addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
-            cba[i].setFromPersistenceRecovery(connectQos.isFromPersistenceRecovery());
+            CallbackAddress cb = cba[i];
+            cb.setSessionName(this.sessionName);
+            cb.addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
+            cb.setFromPersistenceRecovery(connectQos.isFromPersistenceRecovery());
          }
          this.dispatchManager = new ServerDispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 cba, this.sessionName);
       }
-      else { // No callback configured
+ else {
+         // No callback configured (for SOCKET and LOCAL bad as server is
+               // not pinging client to protect leaks)
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Don't create dispatch manager as ConnectQos contains no callback addresses");
          this.dispatchManager = null;
       }

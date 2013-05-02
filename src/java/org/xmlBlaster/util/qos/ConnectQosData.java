@@ -676,6 +676,10 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       prop.setCallbackAddress(callback);
    }
 
+   public boolean hasCallbackAddress() {
+      return getSessionCbQueueProperty().hasCallbackAddress();
+   }
+
    /**
     * Access the currently used callback address. 
     * @return can be null
@@ -683,6 +687,16 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    public CallbackAddress getCurrentCallbackAddress() {
       CbQueueProperty prop = getSessionCbQueueProperty(); // never null
       CallbackAddress cbAddr = prop.getCurrentCallbackAddress();
+      if (!prop.hasCallbackAddress()) {
+         if ("LOCAL".equals(getAddress().getType())) {
+            // Fix the default SOCKET type to LOCAL if cbAddr is missing in
+            // LOCAL type
+            // The LOCAL client is pinged by server even if not interested in
+            // update
+            // messages, to allow server side resource cleanup
+            cbAddr.setType("LOCAL");
+         }
+      }
       cbAddr.setSessionName(getSessionName());
       return cbAddr;
    }
