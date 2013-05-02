@@ -289,7 +289,8 @@ final public class Authenticate implements I_RunlevelListener
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
          if (info != null && !isKnownInSessionInfoMap(previousSecretSessionId) && connectQos.getSessionName().getPublicSessionId() <= 0) {
             if (connectQos.getData().getCurrentCallbackAddress().getRetries() == -1)
-               log.severe(connectQos.getSessionName().getAbsoluteName() + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId.");
+               log.warning(connectQos.getSessionName().getAbsoluteName()
+                     + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId.");
             // set pubSessionId=0 because race condition between disconnect and re-connect 
             SessionName sessionName = new SessionName(this.glob, connectQos.getSessionName().getNodeId(), connectQos.getSessionName().getLoginName(), 0);
             connectQos.setSessionName(sessionName);
