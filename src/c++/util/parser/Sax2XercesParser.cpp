@@ -216,6 +216,7 @@ void Sax2Parser::startCDATA()
 }
 
 /** Receive notification of character data inside an element. */
+#if _XERCES_VERSION >= 30000
 void Sax2Parser::characters (const XMLCh *const chars, const XMLSize_t length) // xerces 3
 {
    //if (log_.call()) log_.call(ME, string("characters"));
@@ -224,8 +225,7 @@ void Sax2Parser::characters (const XMLCh *const chars, const XMLSize_t length) /
    tmp.assign(getStringValue(chars, doTrim), 0, length);
    handler_->characters(tmp);
 }
-
-/** Receive notification of character data inside an element. */
+#else
 void Sax2Parser::characters(const XMLCh *const chars, const unsigned int length) // xerces 2
 {
    //if (log_.call()) log_.call(ME, string("characters"));
@@ -234,6 +234,7 @@ void Sax2Parser::characters(const XMLCh *const chars, const unsigned int length)
    tmp.assign(getStringValue(chars, doTrim), 0, length);
    handler_->characters(tmp);
 }
+#endif
 
 //
 // ErrorHandler methods

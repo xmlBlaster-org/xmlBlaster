@@ -123,9 +123,11 @@ protected:
    static void releaseXMLCh(char** data);
 
    /** Receive notification of character data inside an element. */
-   void characters(const XMLCh *const chars, const unsigned int length); // xerces 2!
+#if _XERCES_VERSION >= 30000
    void characters(const XMLCh *const chars, const XMLSize_t length); // xerces 3!
-   
+#else
+   void characters(const XMLCh *const chars, const unsigned int length); // xerces 2!
+#endif
    /** Receive notification of the end of the document. */
    void endDocument();
 
