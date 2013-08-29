@@ -42,6 +42,58 @@ public class StringPairTokenizerTest extends TestCase {
    protected void tearDown() {
    }
 
+   public void testTokenizerApos() {
+	   {
+		   boolean preserveInsideQuoteChar = true;
+		   String csv = "b=\"6\"";
+		   //String csv = "a=\"5\",b=\"6,7\"";
+		   String[] toks = StringPairTokenizer.parseLine(new String[] { csv }, ',', '"',
+					false, preserveInsideQuoteChar);
+		   for (String tok: toks) {
+			   System.out.println(tok);
+		   }
+		   assertEquals(1, toks.length);
+		   assertEquals("b=\"6\"", toks[0]);
+	   }
+	   {
+		   boolean preserveInsideQuoteChar = true;
+		   String csv = "a=\"5\",b=\"6,7\"";
+		   String[] toks = StringPairTokenizer.parseLine(new String[] { csv }, ',', '"',
+					false, preserveInsideQuoteChar);
+		   for (String tok: toks) {
+			   System.out.println(tok);
+		   }
+		   assertEquals(2, toks.length);
+		   assertEquals("a=\"5\"", toks[0]);
+		   assertEquals("b=\"6,7\"", toks[1]);
+	   }
+	   {
+		   boolean preserveInsideQuoteChar = false;
+		   String csv = "a=\"5\",b=\"6,7\"";
+		   String[] toks = StringPairTokenizer.parseLine(new String[] { csv }, ',', '"',
+					false, preserveInsideQuoteChar);
+		   for (String tok: toks) {
+			   System.out.println(tok);
+		   }
+		   assertEquals(2, toks.length);
+		   assertEquals("a=5", toks[0]);
+		   assertEquals("b=6,7", toks[1]);
+	   }
+	   {
+		   boolean preserveInsideQuoteChar = false;
+		   String csv = "a=5,b=6,7";
+		   String[] toks = StringPairTokenizer.parseLine(new String[] { csv }, ',', '"',
+					false, preserveInsideQuoteChar);
+		   for (String tok: toks) {
+			   System.out.println(tok);
+		   }
+		   assertEquals(3, toks.length);
+		   assertEquals("a=5", toks[0]);
+		   assertEquals("b=6", toks[1]);
+		   assertEquals("7", toks[2]);
+	   }
+   }
+
    public void testClientProperties() {
       try {
          int maxEntries = 0;
