@@ -108,7 +108,7 @@ public class StringPairTokenizer {
             char c = nextLine.charAt(i);
             if (c == quotechar) {
                inQuotes = !inQuotes;
-               if (preserveInsideQuoteChar && sb.length()>0 && i<(nextLine.length()-1))
+               if (preserveInsideQuoteChar && sb.length()>0 && i<nextLine.length())
                   sb.append(c);
             } else if (c == separator && !inQuotes) {
                String tmp = sb.toString();
