@@ -89,9 +89,10 @@
 	 <td>false</td>
 	 <td>optional: if you want to use this file writer as part of a file replication, you want to administer/monitor the
 	     workflow with the replication monitor. To enable this you must specify <i>true</i> here. Setting this value to
-	     <i>true</i> will </td> result in <i>mom.subscribeKey</i> and <i>mom.subscribeQos</i> to be ignored, since the 
+	     <i>true</i> will result in <i>mom.subscribeKey</i> and <i>mom.subscribeQos</i> to be ignored, since the 
 	     subscription will first be done by the administrator via the replication monitor.
 	     If you do not choose <i>true</i> here, you will not be able to use the replication monitor.
+	</td>
        </tr>
 
        <tr>
