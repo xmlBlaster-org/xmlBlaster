@@ -408,7 +408,7 @@ and here a minimalistic one:
 			 <td>replication.prefix</td>
 			 <td>String</td>
 			 <td></td>
-		 	<td><b>optional</b>: This identifier (which mus be unique) tells xmlBlaster that this filewatcher wants to be monitored
+		 	<td><b>optional</b>: This identifier (which must be unique) tells xmlBlaster that this filewatcher wants to be monitored
 				 via the replication monitor. This is a parameter which has currenlty no effect on the replication of files.
 			 </td>
 		 </tr>
