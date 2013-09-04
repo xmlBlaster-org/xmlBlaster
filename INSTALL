@@ -134,7 +134,7 @@ precedence.
 +----------------------------+
 
 XmlBlaster is ready configured to
-suppport server crash recovery and huge message
+support server crash recovery and huge message
 amount to be queued (swapping) with the embedded
 database HSQLDB.
 
