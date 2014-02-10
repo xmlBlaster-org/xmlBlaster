@@ -7,6 +7,7 @@ package org.xmlBlaster.jms;
 
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.logging.Logger;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
@@ -29,6 +30,7 @@ public class XBStreamingMessage extends XBTextMessage {
    private InputStream in;
    private int maxBufSize = 1000000;
    private I_ReplaceContent contentReplacer;
+   private final static Logger log = Logger.getLogger(XBStreamingMessage.class.getName());
    
    /**
     * @param session
@@ -64,18 +66,24 @@ public class XBStreamingMessage extends XBTextMessage {
          bufSize = this.maxBufSize;
       byte[] buf = new byte[bufSize];
       long count = 0L;
+
+      int offset = 0;
+      int remainingLength = bufSize;
+      int lengthRead = 0;
+      int length = offset;
+      
       try {
          while (true) {
-            int offset = 0;
-            int remainingLength = bufSize;
-            int lengthRead = 0;
+        	 offset = 0;
+            remainingLength = bufSize;
+            lengthRead = 0;
             while ((lengthRead = in.read(buf, offset, remainingLength)) != -1) {
                remainingLength -= lengthRead;
                offset += lengthRead;
                if (remainingLength == 0) 
                   break;
             }
-            int length = offset;
+            length = offset;
             if (this.contentReplacer != null)
                buf = this.contentReplacer.replace(buf, this.props);
 
@@ -94,14 +102,24 @@ public class XBStreamingMessage extends XBTextMessage {
          }            
       }
       catch (Exception ex) {
+    	  String txt = "Exception: offset=" + offset + ", remainingLength=";
+    	  txt += remainingLength + ", lengthRead=" + lengthRead + ", length=";
+    	  txt += length + ", count=" + count;
+    	  txt += " exception: "  + ex.getMessage(); 
+    	  log.severe(txt);
+    	  ex.printStackTrace();
          if (count > 0) {
             BytesMessage chunk = session.createBytesMessage();
             chunk.setBooleanProperty(XBConnectionMetaData.JMSX_GROUP_EOF, true);
             chunk.setLongProperty(XBConnectionMetaData.JMSX_GROUP_SEQ, count);
-            Enumeration eNum = chunk.getPropertyNames();
+            Enumeration<?> eNum = chunk.getPropertyNames();
             while (eNum.hasMoreElements()) {
                String key = (String)eNum.nextElement();
-               chunk.setObjectProperty(key, getObjectProperty(key));
+               Object obj = getObjectProperty(key);
+               log.fine("Ex: prop " + key + " mapped to '" + obj + "'");
+               if (obj == null)
+            	   obj = "";
+               chunk.setObjectProperty(key, obj);
             }
             chunk.setStringProperty(XBConnectionMetaData.JMSX_GROUP_EX, ex.getMessage());
             producer.send(dest, chunk);
