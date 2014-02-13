@@ -20,6 +20,8 @@ import org.xmlBlaster.util.XmlBlasterException;
  * </pre>
  */
 public interface I_SecurityQos {
+   //Would be nice for information only:	
+   //public String getPluginType(); // "htpasswd" etc
 
    /**
     * Parse the given xml string which contains the userId and credentials.

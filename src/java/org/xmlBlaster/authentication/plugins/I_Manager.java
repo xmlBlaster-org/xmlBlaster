@@ -40,4 +40,6 @@ public interface I_Manager extends I_Plugin
     */
    public I_Session getSessionById(String id) throws XmlBlasterException;
 
+   public String getType();
+   public String getVersion();
 }
