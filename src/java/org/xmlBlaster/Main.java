@@ -132,9 +132,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       // The setting 'java -DxmlBlaster/initClassName=mypackage.MyClass ...' allows to load an initial class instance
       String initClass = System.getProperty("xmlBlaster/initClassName", "");
       if (initClass.length() > 0) {
-         try {
-                        this.getClass().getClassLoader().loadClass(initClass).newInstance();
-             } catch (Exception e) {
+        try {
+          this.getClass().getClassLoader().loadClass(initClass).newInstance();
+         } catch (Exception e) {
             e.printStackTrace();
          }
       }
