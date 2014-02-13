@@ -1383,7 +1383,14 @@ public class Property implements Cloneable {
          String key = (String)e.next();
          args[ii] = "-"+key;
          ii++;
-         args[ii] = (String)props.get(key);
+         try {
+            args[ii] = (String)props.get(key);
+         }
+         catch (ClassCastException ex) {
+            ex.printStackTrace();
+            args[ii] = props.get(key).toString();
+            System.out.println("Can't cast key=" + key + " value=" + args[ii]);
+         }
          //System.out.println("ii=" + ii + ": " + args[ii] + " key=" + key);
          ii++;
       }
