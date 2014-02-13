@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.property.PropBoolean;
@@ -398,6 +399,12 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * or e.g. "__subId:client/joe-135692304540000" in other cases
     */
    public String generateSubscriptionId(SessionName sessionName, QueryKeyData subscribeKey) {
+      if (sessionName == null) {
+         this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
+                     "UnknownUser-" +
+                     new Timestamp().getTimestamp();
+         return this.subscriptionId;
+      }
       if (sessionName.isPubSessionIdUser() || !getMultiSubscribe()) {
          // This key is assured to be the same on client restart
          // a previous subscription in the server will have the same subscriptionId
