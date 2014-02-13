@@ -104,7 +104,12 @@ public class PluginManagerBase implements I_PluginManager {
       synchronized (this) {
          // check in hash if plugin is instantiated already
          plug = this.glob.getPluginRegistry().getPlugin(pluginInfo.getId());
-         if (plug!=null) return plug;
+         if (plug!=null) {
+        	 if (plug.getType() != null && !plug.getType().equals(pluginInfo.getType())) {
+        		 log.warning("Loaded security plugin " + plug.getType() + "," + plug.getVersion() + " but " + pluginInfo.getTypeVersion() + " was requested");
+        	 }
+        	 return plug;
+         }
          // not in hash, instantiate plugin
          plug = instantiatePluginFirstPhase(pluginInfo, true);
       }
@@ -250,7 +255,7 @@ public class PluginManagerBase implements I_PluginManager {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", text, e);
       }
       catch (Throwable e) {
-         String text = "The plugin class or initializer '" + pluginName + "' is invalid, check the plugin name, check if the plugin has a default constructor and check the CLASSPATH to the plugin";
+         String text = "The plugin class or initializer '" + pluginName + "' is invalid, check the plugin name, check if the plugin has a default constructor and check the CLASSPATH to the plugin: " + e.toString();
          log.severe(text);
          //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", text, e);
