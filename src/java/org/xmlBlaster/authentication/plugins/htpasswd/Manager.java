@@ -102,7 +102,7 @@ public class Manager implements I_Manager {
    }
 
 	public String toString() {
-		return this.getClass().getName() + ":" + getType() + ":" + getVersion();
+		return this.getClass().getName() + ":" + getType() + "," + getVersion();
 	}
 }//class Manager
 
