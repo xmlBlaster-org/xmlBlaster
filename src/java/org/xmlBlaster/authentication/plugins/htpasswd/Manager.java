@@ -2,8 +2,10 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -99,6 +101,8 @@ public class Manager implements I_Manager {
    public void shutdown() throws XmlBlasterException {
    }
 
-
+	public String toString() {
+		return this.getClass().getName() + ":" + getType() + ":" + getVersion();
+	}
 }//class Manager
 
