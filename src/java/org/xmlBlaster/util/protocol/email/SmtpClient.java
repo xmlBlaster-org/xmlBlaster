@@ -415,7 +415,9 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          t.start();
       }
       
-      if (this.mbeanHandle == null) {
+      boolean registerJmx = glob.get("xmlBlaster/jmx/registerSmtpClient",
+              true, null, pluginConfig);
+      if (registerJmx && this.mbeanHandle == null) {
         // For JMX instanceName may not contain ","
         this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
                             "SmtpClient[" + getType() + "]", 
