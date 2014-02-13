@@ -333,7 +333,7 @@ final public class Authenticate implements I_RunlevelListener
             }
             catch (XmlBlasterException e) {
                String secName = connectQos.getSecurityQos().getUserId();
-               log.warning("Access is denied when trying to reconnect to session " + info.getSessionName() + " with security Qos userId=" + secName + ": " + e.getMessage());// + ": " + connectQos.toXml());
+               log.warning("Access is denied when trying to reconnect to session " + info.getSessionName() + " with security Qos " + connectQos.getSecurityQos() + " userId=" + secName + ": " + e.getMessage());// + ": " + connectQos.toXml());
                throw e; // Thrown if authentication failed
             }
             catch (Throwable e) {
@@ -376,6 +376,7 @@ final public class Authenticate implements I_RunlevelListener
             String securityInfo = sessionCtx.init(connectQos.getSecurityQos()); // throws XmlBlasterExceptions if authentication fails
             if (securityInfo != null && securityInfo.length() > 1) log.warning("Ignoring security info: " + securityInfo);
          }
+         log.info("Access for " + connectQos.getSessionName().getAbsoluteName() + " " + securityMgr + " authenticated");
          // Now the client is authenticated
       }
       catch (XmlBlasterException e) {
