@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r18124 Added getType() getVersion() to I_Manager.java
+          If you have coded a security plugin please add those methods
+
  o r18108 Fixed LOCAL protocol without callback configuration (e.g. FilePollerPlugin and FileWatcherPlugin)
           The fallback was SOCKET and the cb ping failed
 	  Now the LOCAL client is pinged properly by the server (to allow resource cleanup)
