@@ -9,6 +9,7 @@ package org.xmlBlaster.engine.cluster.simpledomain;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ServerScope;
@@ -79,9 +80,9 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     * @param nodeMasterInfoSet A set containing NodeMasterInfo objects, the possible xmlBlaster nodes.
     *                       Is never null, but may have a size of 0.
     * @return The chosen nodeMasterInfo to handle the message or null to handle it locally
-    * @see org.xmlBlaster.engine.cluster.I_LoadBalancer#getClusterNode(java.util.Set)
+    * @see org.xmlBlaster.engine.cluster.I_LoadBalancer#getClusterNode(java.util.Set, String)
     */
-   public synchronized NodeMasterInfo getClusterNode(Set nodeMasterInfoSet) throws XmlBlasterException {
+   public synchronized NodeMasterInfo getClusterNode(Set nodeMasterInfoSet, String keyOidForLogging) throws XmlBlasterException {
 
       // TODO: Change return to NodeMasterInfo[] if multiple fail over nodes exist !!!
       
@@ -130,10 +131,10 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
             // handle locally, no need to send to a worse or equal stratum
             if (nodeMasterInfo.getStratum() > 0) {
                log.warning("Selected myself as master node from a choice of " + nodeMasterInfoSet.size()
-                    + " nodes, but we are only stratum=" + nodeMasterInfo.getStratum() + ". The message is not routed further!");
+                    + " nodes, but we are only stratum=" + nodeMasterInfo.getStratum() + ". The message is not routed further! " + keyOidForLogging + " -> " + nodeMasterInfo.getKeyMappingFirstLog());
             }
             else {
-               if (log.isLoggable(Level.FINE)) log.fine("Selected myself as master node from a choice of " + nodeMasterInfoSet.size() + " nodes");
+               if (log.isLoggable(Level.FINE)) log.fine("Selected myself as master node from a choice of " + nodeMasterInfoSet.size() + " nodes: " + keyOidForLogging + " -> " + nodeMasterInfo.getKeyMappingFirstLog());
             }
             return null; // handle locally: clusterManager.getMyClusterNode();
          }

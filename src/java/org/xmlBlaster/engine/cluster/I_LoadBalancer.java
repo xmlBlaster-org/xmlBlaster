@@ -63,9 +63,10 @@ public interface I_LoadBalancer {
     *  </pre>
     *  The set contains only nodes marked as allowed (these are nodes we are connected
     *  to or polling for), not available nodes are filtered away already.
+    * @param keyOidForLogging A nice string for logging the context
     * @return The chosen nodeMasterInfo to handle the message or null to handle it locally
     * You can access the master ClusterNode with <code>nodeMasterInfo.getClusterNode()</code> and the xmlBlasterConnection
     * to the master node with <code>nodeMasterInfo.getClusterNode().getXmlBlasterAccess()</code>
     */
-   public NodeMasterInfo getClusterNode(Set nodeMasterInfoSet) throws XmlBlasterException;
+   public NodeMasterInfo getClusterNode(Set nodeMasterInfoSet, String keyOidForLogging) throws XmlBlasterException;
 }

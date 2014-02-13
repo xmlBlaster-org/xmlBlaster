@@ -151,6 +151,13 @@ public final class NodeMasterInfo implements Comparable, NodeMasterInfoMBean
       }
    }
 
+   public String getKeyMappingFirstLog() {
+	   QueryKeyData[] arr = getKeyMappings();
+	   if (arr == null || arr.length == 0)
+		   return "";
+	   return arr[0].toString();
+   }
+
    /**
     * Access the cluster master filters
     * @return never null but length == 0 if none is specified. 

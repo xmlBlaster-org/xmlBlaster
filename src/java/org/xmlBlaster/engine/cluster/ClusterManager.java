@@ -895,7 +895,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
                                       "' domain='" + msgUnit.getDomain() + "'");
       }
 
-      NodeMasterInfo nodeMasterInfo = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
+      NodeMasterInfo nodeMasterInfo = loadBalancer.getClusterNode(masterSet, msgUnit.getKeyOid()); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
 
       /*
       if (nodeMasterInfo == null) {
