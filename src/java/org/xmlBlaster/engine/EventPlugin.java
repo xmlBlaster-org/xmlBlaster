@@ -27,6 +27,7 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
@@ -41,6 +42,7 @@ import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_EventDispatcher;
+import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -750,7 +752,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            sendEmail(summary, description, eventType, null, sessionName, false, sessionInfo.getRemoteProperties());
          }
 
          if (this.publishDestinationHelper != null) {
@@ -787,7 +789,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.smtpDestinationHelper != null) {
             // Ignores contentTemplate and forces the XML as last argument
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            sendEmail(summary, description, eventType, null, sessionName, false, null);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1137,7 +1139,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          catch (Throwable e) {}
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, errorCode, null, false);
+            sendEmail(summary, description, eventType, errorCode, null, false, null);
          }
 
          /*
@@ -1249,6 +1251,21 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   private String replaceVariable(final ClientPropertiesInfo clientPropertiesInfo, String value) {
+      if (clientPropertiesInfo == null) {
+    	  return value;
+      }
+  	  ReplaceVariable replaceVariable = new ReplaceVariable("$_{", "}");
+	  value = replaceVariable.replace(value, new I_ReplaceVariable() {
+		//@Override
+		public String get(String token) { // token is "MyKey" for value="Hello ${MyKey} world"
+			String val = clientPropertiesInfo.get(token, token);
+			return val;
+		}
+	  });
+	  return value;
+   }
+
    /**
     * Sending email as configured with <code>destination.smtp</code>.
     * @param summary The email summary line to use, it is injected to the template as $_{summary}
@@ -1256,10 +1273,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
  * @param eventType For example "logging/severe/*"
  * @param sessionName TODO
  * @param forceSending If true send directly and ignore the timeout
-    * @see http://www.faqs.org/rfcs/rfc2822.html
+ * @param clientPropertiesInfo TODO
+ * @see http://www.faqs.org/rfcs/rfc2822.html
     */
    protected void sendEmail(String summary, String description,
-            String eventType, String errorCode, SessionName sessionName, boolean forceSending) {
+            String eventType, String errorCode, SessionName sessionName, boolean forceSending, ClientPropertiesInfo clientPropertiesInfo) {
       try {
          if (this.smtpDestinationHelper == null) return;
          if (!this.isActive) return;
@@ -1283,16 +1301,20 @@ this.smtpDestinationHelper.getSubjectTemplate(), summary, description,
          
          // Build the email, if timer is active append new logging to the content of the existing mail ...
          final EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
-         emailData.setSubject(replaceTokens(
-this.smtpDestinationHelper.getSubjectTemplate(), summary, description,
-               eventType, errorCode, sessionName));
-         String old = (emailData.getContent().length() == 0) ? "" :
- emailData.getContent()
-               + this.smtpDestinationHelper.getContentSeparator();
-         emailData.setContent(old
-               + replaceTokens(
-this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType,
-                     errorCode, sessionName));
+         
+         String value = replaceTokens(
+        		 this.smtpDestinationHelper.getSubjectTemplate(), summary, description,
+        		                eventType, errorCode, sessionName);
+         value = replaceVariable(clientPropertiesInfo, value);
+         emailData.setSubject(value);
+         
+         String old = (emailData.getContent().length() == 0) ? "" : emailData.getContent() + this.smtpDestinationHelper.getContentSeparator();
+         String content = old
+                 + replaceTokens(
+                		 this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType,
+                		                      errorCode, sessionName);
+         content = replaceVariable(clientPropertiesInfo, content);
+         emailData.setContent(content);
 
          synchronized(this.smtpDestinationMonitor) {
             // If no timer was active send immeditately (usually the first email)
@@ -1387,7 +1409,7 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          if (eventType == null) return;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, null, false);
+            sendEmail(summary, description, eventType, null, null, false, null);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1413,14 +1435,14 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
 
 
    /**
-    * Enforced by I_EventDispatcher
+    * Enforced by I_EventDispatcher, notifies about I_Storage changes. 
     * @param summary
     * @param description
     * @param eventType
     */public void dispatchEvent(String summary, String description, String eventType) {
       try {
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, null, false);
+            sendEmail(summary, description, eventType, null, null, false, null);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1532,7 +1554,7 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            sendEmail(summary, description, eventType, null, sessionName, false, sessionInfo.getRemoteProperties());
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1645,7 +1667,8 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            ClientPropertiesInfo clientPropertiesInfo = (sessionInfo != null) ? sessionInfo.getRemoteProperties() : null;
+            sendEmail(summary, description, eventType, null, sessionName, false, clientPropertiesInfo);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1701,7 +1724,7 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
     * JMX
     */
    public String sendTestEmail() {
-      sendEmail("Test email", "Hello world :-) &<>?", "testEvent", null, null, true);
+      sendEmail("Test email", "Hello world :-) &<>?", "testEvent", null, null, true, null);
       synchronized(this.smtpDestinationMonitor) {
          if (this.smtpDestinationHelper != null)
             return "Send email from '" + this.smtpDestinationHelper.getFrom() + "' to '"
@@ -1930,7 +1953,7 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            sendEmail(summary, description, eventType, null, sessionName, false, sessionInfo.getRemoteProperties());
          }
 
          if (this.publishDestinationHelper != null) {
@@ -2030,7 +2053,7 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            sendEmail(summary, description, eventType, null, sessionName, false, sessionInfo.getRemoteProperties());
          }
 
          if (this.publishDestinationHelper != null) {
@@ -2118,7 +2141,7 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, null, false);
+            sendEmail(summary, description, eventType, null, null, false, null);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -2253,15 +2276,21 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
                + sessionName.getAbsoluteName());
          String eventType = foundEvent + " " + newState.toString();
          String errorCode = null;
+         
+         ClientPropertiesInfo clientPropertiesInfo = null; 
+         SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+         if (sessionInfo != null) {
+            // If ConnectQos sends __remoteProperties=true to forward those
+            clientPropertiesInfo = sessionInfo.getRemoteProperties();
+         }
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, sessionName, false);
+            sendEmail(summary, description, eventType, null, sessionName, false, clientPropertiesInfo);
          }
 
          if (this.publishDestinationHelper != null) {
             ClientProperty[] clientProperties = null;
             if (newState == ConnectionStateEnum.ALIVE) {
-               SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
                if (sessionInfo != null) {
                   // If ConnectQos sends __remoteProperties=true to forward those
                   clientProperties = sessionInfo.getRemotePropertyArr();
@@ -2328,7 +2357,12 @@ this.smtpDestinationHelper.getContentTemplate(), summary, description, eventType
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, absoluteName, false);
+        	ClientPropertiesInfo clientPropertiesInfo = null; 
+        	SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+            if (sessionInfo != null) {
+            	clientPropertiesInfo = sessionInfo.getRemoteProperties();
+            }
+            sendEmail(summary, description, eventType, null, absoluteName, false, clientPropertiesInfo);
          }
 
          if (this.publishDestinationHelper != null) {

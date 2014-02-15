@@ -1196,6 +1196,12 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       return tmp.getClientPropertyArr();
    }
 
+   public Map<String, ClientProperty> getRemotePropertiesMap() {
+      ClientPropertiesInfo tmp = this.remoteProperties;
+      if (tmp == null) return new HashMap<String, ClientProperty>();
+      return tmp.getClientPropertyMap();
+   }
+   
    /**
     * Set properties send by our client.
     * @param remoteProperties The remoteProperties to set, pass null to reset.
