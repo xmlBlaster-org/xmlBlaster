@@ -178,7 +178,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       this.sessionId = null;
    }
 
-   private XmlRpcClient getXmlRpcClient() throws XmlBlasterException {
+   public XmlRpcClient getXmlRpcClient() throws XmlBlasterException {
       if (this.xmlRpcClient == null) {
          if (log.isLoggable(Level.FINE)) 
             log.fine("No XMLRPC connection available.");
@@ -990,6 +990,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
      */
    }
 
-
+   public String getSessionId() {
+	   return sessionId;
+   }
+   
 }
 
