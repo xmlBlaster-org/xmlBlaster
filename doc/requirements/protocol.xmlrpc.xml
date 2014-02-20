@@ -92,6 +92,23 @@
          </tr>
 
          <tr>
+            <td>plugin/xmlrpc/customProxyClass</td>
+            <td>null</td>
+            <td>
+	       The name of the class to use for proxying requests coming from the client.
+	       This class shall only be specified if you have some non-standard behaviour,
+	       i.e. if your client is sending xmlrpc commands which are not the normal
+	       subscribe, publish ... methods internally defined by xmlBlaster.
+	       Suppose you want to send the HTTP Requests over a proxy, a firewall or a proprietary
+	       security gateway which does not allow these methods, then you could tunnel these
+	       inside other methods which are defined by a proprietary client protocol. On the
+	       server side these requests have to be extracted and decoded before invoking the
+	       original xmlBlasterImpl and authenticate requests.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>plugin/xmlrpc/responseTimeout</td>
             <td>0</td>
             <td>
