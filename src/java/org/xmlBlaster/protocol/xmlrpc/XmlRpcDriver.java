@@ -8,6 +8,8 @@ Version:   $Id$
 package org.xmlBlaster.protocol.xmlrpc;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
@@ -27,7 +29,6 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
 import org.apache.xmlrpc.server.XmlRpcHttpServer;
-import org.apache.xmlrpc.server.XmlRpcServer;
 import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 
@@ -209,8 +210,43 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
          
          XmlBlasterImpl xblImpl = new XmlBlasterImpl(glob, this, xmlBlasterImpl);
          AuthenticateImpl auImpl = new AuthenticateImpl(glob, this, authenticate, xblImpl);
-         
          XblRequestFactoryFactory factoryFactory = new XblRequestFactoryFactory();
+
+         String customProxy = addressServer.getEnv("customProxyClass", null).getValue();
+         if (customProxy != null) {
+        	 customProxy = customProxy.trim();
+        	 log.info("customProxyClass set to '" + customProxy + "'");
+        	 try {
+            	 @SuppressWarnings("unchecked")
+				Class<XmlRpcCustomProxy> clazz = (Class<XmlRpcCustomProxy>) Class.forName(customProxy);
+            	 Constructor<XmlRpcCustomProxy> constr = clazz.getConstructor((Class<?>)null);
+            	 XmlRpcCustomProxy obj = constr.newInstance((Object)null);
+        		 obj.init(xblImpl,  auImpl);
+        		 factoryFactory.add(obj);
+        		 mapping.addHandler("custom", clazz);
+        	 }
+        	 catch (ClassNotFoundException ex) {
+        		 String txt = "Class '" + customProxy + "' not found";
+                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
+        	 }
+        	 catch (NoSuchMethodException ex) {
+        		 String txt = "Default Constructor method for Class '" + customProxy + "' not found";
+                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
+        	 }
+        	 catch (InvocationTargetException ex) {
+        		 String txt = "Invocation target exception for for Class '" + customProxy + "'";
+                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
+        	 }
+        	 catch (IllegalAccessException ex) {
+        		 String txt = "Default Constructor method for Class '" + customProxy + "' can not be accessed";
+                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
+        	 }
+        	 catch (InstantiationException ex) {
+        		 String txt = "Instantiation Exception for Default Constructor method for Class '" + customProxy + "'";
+                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
+        	 }
+         }
+         
          factoryFactory.add(auImpl);
          factoryFactory.add(xblImpl);
          mapping.setRequestProcessorFactoryFactory(factoryFactory);
