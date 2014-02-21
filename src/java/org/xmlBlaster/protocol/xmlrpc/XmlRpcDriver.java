@@ -213,28 +213,20 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
          XblRequestFactoryFactory factoryFactory = new XblRequestFactoryFactory();
 
          String customProxy = addressServer.getEnv("customProxyClass", null).getValue();
+    	 XmlRpcCustomProxy xmlRpcProxy = null;
          if (customProxy != null) {
         	 customProxy = customProxy.trim();
         	 log.info("customProxyClass set to '" + customProxy + "'");
         	 try {
             	 @SuppressWarnings("unchecked")
 				Class<XmlRpcCustomProxy> clazz = (Class<XmlRpcCustomProxy>) Class.forName(customProxy);
-            	 Constructor<XmlRpcCustomProxy> constr = clazz.getConstructor((Class<?>)null);
-            	 XmlRpcCustomProxy obj = constr.newInstance((Object)null);
-        		 obj.init(xblImpl,  auImpl);
-        		 factoryFactory.add(obj);
-        		 mapping.addHandler("custom", clazz);
+            	 xmlRpcProxy = clazz.newInstance();
+            	 xmlRpcProxy.init(xblImpl,  auImpl);
+        		 factoryFactory.add(xmlRpcProxy);
+        		 log.info("Successfully instantiated custom proxy for XMLRPC");
         	 }
         	 catch (ClassNotFoundException ex) {
         		 String txt = "Class '" + customProxy + "' not found";
-                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
-        	 }
-        	 catch (NoSuchMethodException ex) {
-        		 String txt = "Default Constructor method for Class '" + customProxy + "' not found";
-                 throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
-        	 }
-        	 catch (InvocationTargetException ex) {
-        		 String txt = "Invocation target exception for for Class '" + customProxy + "'";
                  throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, ME + ".activate", txt, ex);
         	 }
         	 catch (IllegalAccessException ex) {
@@ -253,6 +245,8 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
          
          mapping.addHandler("authenticate", auImpl.getClass());      // register update() method
          mapping.addHandler("xmlBlaster", xblImpl.getClass());
+         if (xmlRpcProxy != null)
+        	 mapping.addHandler("custom", xmlRpcProxy.getClass());
          
          XmlRpcHttpServer xmlRpcServer = (XmlRpcHttpServer)webServer.getXmlRpcServer();
          XmlRpcServerConfigImpl serverCfg = new XmlRpcServerConfigImpl();
