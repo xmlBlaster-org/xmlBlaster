@@ -46,7 +46,7 @@ public class DbWriterPlugin extends GlobalInfo implements DbWriterPluginMBean {
       catch (Throwable e) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, "DbWriterPlugin", "init failed", e); 
       }
-      log.info("Loaded DbWatcher plugin '" + getType() + "'");
+      log.info("Loaded DbWriter plugin '" + getType() + "'");
    }
    
    public String addDbWriter(String loginName, String password) {
@@ -121,7 +121,7 @@ public class DbWriterPlugin extends GlobalInfo implements DbWriterPluginMBean {
             }
          }
       }
-      log.info("Stopped DbWatcher plugin '" + getType() + "'");
+      log.info("Stopped DbWriter plugin '" + getType() + "'");
    }
 
 }
