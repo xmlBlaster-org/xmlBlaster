@@ -96,8 +96,15 @@ public class XmlBuffer {
          * Aquivalent to a StringBuilder.append().
          */
         public XmlBuffer append(String str) {
+        	try {
                 this.buf.append(str);
                 return this;
+        	}
+        	catch (java.lang.OutOfMemoryError e) {
+        		// XmlBuffer.append size=41232896 extend with 1: java.lang.OutOfMemoryError: Java heap space
+        		System.err.println("XmlBuffer.append size=" + this.buf.length() + " extend with " + str.length() + ": " + e.toString());
+        		throw e;
+        	}
         }
 
         /**
