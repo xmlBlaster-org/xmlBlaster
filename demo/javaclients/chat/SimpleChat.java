@@ -78,8 +78,8 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
                 //prepare the speach synthetizer ...
       try {
         Class speech = Class.forName("com.eclettic.speech.DefaultInputSpeaker");
-        java.lang.reflect.Constructor constr = speech.getConstructor(null);
-        this.speaker = constr.newInstance(null);
+        java.lang.reflect.Constructor constr = speech.getConstructor((Class[])null);
+        this.speaker = constr.newInstance((Object[])null);
         Class[] argClasses = new Class[1];
         argClasses[0] = String.class;
         this.speakMethod = speech.getMethod("speak", argClasses);
