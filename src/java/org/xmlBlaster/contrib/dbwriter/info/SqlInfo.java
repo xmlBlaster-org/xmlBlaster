@@ -551,8 +551,8 @@ public class SqlInfo implements ReplicationConstants {
       else {
          
          if (val.getClass().getName().equals("oracle.sql.TIMESTAMP")) {
-            Method meth = val.getClass().getMethod("timestampValue", null);
-            Object obj = meth.invoke(val, null);
+            Method meth = val.getClass().getMethod("timestampValue", (Class<?>[])null);
+            Object obj = meth.invoke(val, (Object[])null);
             if (obj instanceof Timestamp) {
                Timestamp ts = (Timestamp)obj;
                return new ClientProperty(name, null, null, ts.toString());
