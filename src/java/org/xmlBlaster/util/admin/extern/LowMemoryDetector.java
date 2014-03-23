@@ -6,32 +6,27 @@ Usage:     java -Xms1M -Xmx2M -Dcom.sun.management.jmxremote -Djava.util.logging
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.admin.extern;
 
-import javax.management.ObjectName;
-import javax.management.ObjectInstance;
-import javax.management.QueryExp;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-
 // JDK 1.5
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryNotificationInfo;
-import javax.management.NotificationListener;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+import java.lang.management.MemoryNotificationInfo;
+import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
-
+import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// Needed only for DefaultLowMemoryListener
-import org.xmlBlaster.engine.RequestBroker;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
+
 import org.xmlBlaster.util.Global;
+// Needed only for DefaultLowMemoryListener
 
 /**
  * Get notification when heap memory usage exceeds 90%. 
