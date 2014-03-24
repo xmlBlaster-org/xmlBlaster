@@ -1362,7 +1362,8 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
          entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
          final boolean onlyRefCounter = true;
          XBMeat newMeat = entry.getMeat();
-         long diffSize = databaseAccessor.modifyEntry(xbStore, newMeat, null, onlyRefCounter);
+         // long diffSize = databaseAccessor.modifyEntry(xbStore, newMeat, null, onlyRefCounter);
+         long diffSize = databaseAccessor.modifyEntry(xbStore, newMeat, newMeat, onlyRefCounter);
          this.numOfBytes += diffSize;
          if (entry.isPersistent())
             this.numOfPersistentBytes += diffSize;
