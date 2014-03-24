@@ -3,6 +3,13 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o r18141 JdbcQueue.java: fixed bug wich caused MsgUnitStore size to be wrong after an Overflow
+
+ o r18131 added XmlRpcCustomProxy to XMLRPC to allow custom non-standard clients to access the XMLRPC protocol
+          directly. Can be used for tunnelling standard xmlBlaster operations such subscribe publish .... to 
+	  other methods specified by the customer
+
  o r18124 Added getType() getVersion() to I_Manager.java
           If you have coded a security plugin please add those methods
 
