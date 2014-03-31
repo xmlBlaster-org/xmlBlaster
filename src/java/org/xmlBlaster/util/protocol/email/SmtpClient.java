@@ -276,6 +276,15 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                + this.authentication.toString());
       return this.authentication;
    }
+   
+   private void fillProperties(String key, String defaultValue, Properties props, Global glob, I_PluginConfig pluginConfig) throws XmlBlasterException {
+	   if (props.getProperty(key) != null) {
+		   return;
+	   }
+	   String val = glob.get(key, System.getProperty(key, defaultValue), null, pluginConfig);
+	   if (val != null)
+		   props.put(key, val);
+   }
 
    /**
     * Set session properties and create a session.
@@ -312,6 +321,17 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
       if (props == null)
          props = new Properties();
+      
+      // "465"
+      fillProperties("mail.smtp.socketFactory.port", null, props, glob, pluginConfig);
+      // javax.net.ssl.SSLSocketFactory
+      fillProperties("mail.smtp.socketFactory.class", null, props, glob, pluginConfig);
+      // true, see below: auto set when password given
+      fillProperties("mail.smtp.auth", null, props, glob, pluginConfig);
+      // "mail.smtp.port", "465" SSL
+      // "mail.smtp.port", "587" TLS
+      // true
+      fillProperties("mail.smtp.starttls.enable", null, props, glob, pluginConfig);
 
       if (props.getProperty("mail.debug") == null)
          props.put("mail.debug", glob.get("mail.debug", System.getProperty(
