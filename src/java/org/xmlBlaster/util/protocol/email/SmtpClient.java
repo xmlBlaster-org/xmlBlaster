@@ -369,8 +369,13 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       }
       props.put("mail.transport.protocol", this.xbUri.getScheme());
       props.put("mail.smtp.host", this.xbUri.getHost());
-      if (this.xbUri.getPort() > 0)
+      if (this.xbUri.getPort() > 0) {
          props.put("mail.smtp.port", ""+this.xbUri.getPort());
+      }
+      else {
+    	  // "465"
+    	  fillProperties("mail.smtp.port", null, props, glob, pluginConfig);
+      }
       
       String p;
       if (props.getProperty("messageIdForceBase64") == null)
@@ -420,6 +425,14 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       this.authentication = new PasswordAuthentication(getUser(), this.xbUri.getPassword());
       this.session = Session.getDefaultInstance(props, this);
       this.isInitialized = true;
+      
+      if (log.isLoggable(Level.FINE)) {
+    	  // log.info("SMTP Property password=" + this.xbUri.getPassword());
+	      for (Object key: props.keySet()) {
+	    	  String value = props.getProperty(key.toString());
+	    	  log.info("SMTP Property " + key +"=" + value);
+	      }
+      }
       
       // Setup asynchronous sending thread for outgoing emails
       this.asyncSendQueueSizeMax = glob.get("asyncSendQueueSizeMax",
