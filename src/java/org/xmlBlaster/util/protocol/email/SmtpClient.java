@@ -909,6 +909,7 @@ Some body text
          EmailData msg = new EmailData(to, from, subject, content);
          if (ts != null) msg.setExpiryTime(ts);
          System.out.println("Sending message " + msg.toXml(true));
+         mail.setSessionProperties(null, glob, null);
          mail.sendEmail(msg, null);
          System.out.println("Sent a message from '" + from + "' to '" + to
                + "'");
