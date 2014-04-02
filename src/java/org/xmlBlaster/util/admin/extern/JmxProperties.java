@@ -127,6 +127,10 @@ public class JmxProperties implements DynamicMBean {
    }
 
    private boolean isReadOnly(String name) {
+	  if (name == null || name.length() == 0) {
+		  log.severe("System.getProperty(name) with name='" + name + "'");
+		  return true;
+	  }
       return System.getProperty(name) != null;
       /*
       return name.startsWith("java.") ||
@@ -260,6 +264,8 @@ public class JmxProperties implements DynamicMBean {
 
       for (Enumeration e = props.propertyNames(); e.hasMoreElements();) {
          String name = (String) e.nextElement();
+         if (name == null || name.length() == 0)
+        	 continue;
          boolean isWritable = !isReadOnly(name);
          tmp.add(new MBeanAttributeInfo(name,
                                     "java.lang.String",
