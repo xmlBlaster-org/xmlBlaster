@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
 
 import org.jaxen.Function;
 import org.jaxen.JaxenException;
@@ -34,6 +35,7 @@ import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JAXPFactory;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -97,6 +99,45 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
    private boolean matchAgainstQos;
    private String xslContentTransformerFileName;
    //private String xslQosTransformerFileName;
+
+   private DocumentBuilderFactory docBuilderFactory;
+
+	/**
+	 * @return
+	 *
+	 * @throws XmlBlasterException
+	 */
+	private DocumentBuilderFactory getDocumentBuilderFactory()
+		throws XmlBlasterException {
+		if(docBuilderFactory == null) {
+			try {
+				if(log.isLoggable(Level.FINEST)) {
+					log.finest(glob.getProperty().toXml());
+				}
+
+				String fac = glob.getProperty().get(
+					"javax.xml.parsers.DocumentBuilderFactory", (String)null
+				);
+
+				if(fac == null) {
+					docBuilderFactory = JAXPFactory.newDocumentBuilderFactory();
+				}
+				else {
+					docBuilderFactory = JAXPFactory.newDocumentBuilderFactory(fac);
+				}
+
+				docBuilderFactory.setNamespaceAware(true);
+			}
+			catch(FactoryConfigurationError e) {
+				throw new XmlBlasterException(
+					glob, ErrorCode.RESOURCE_CONFIGURATION_XML, ME,
+					"DocumentBuilderFactoryError", e
+				);
+			} // end of try-catch
+		} // end of if ()
+
+		return docBuilderFactory;
+	}
 
    /**
     * This is called after instantiation of the plugin 
@@ -390,6 +431,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       else
          return msg.getContent();
    }
+
    
    /**
     * Create a new dom document.
@@ -398,7 +440,9 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
    private Document getDocument(byte[] xml) throws XmlBlasterException {
       try {   
          ByteArrayInputStream bais = new ByteArrayInputStream(xml);
-         DocumentBuilderFactory factory = glob.getDocumentBuilderFactory();
+         DocumentBuilderFactory factory = getDocumentBuilderFactory();
+         
+         factory.setNamespaceAware(true);
          DocumentBuilder builder = factory.newDocumentBuilder ();
          return builder.parse(bais);  
       } catch (org.xml.sax.SAXException ex) {
