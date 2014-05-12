@@ -327,6 +327,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected String jmxDestinationConfiguration;
 
    protected ExecHelper execHelper;
+   
+   protected long logInfinitLoopSuppressDelayMillis;
 
    public EventPlugin() {
       synchronized (EventPlugin.class) {
@@ -367,7 +369,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return;
       }
       this.eventTypes = this.eventTypes.trim();
-      
+
+      this.logInfinitLoopSuppressDelayMillis = this.glob.get("logInfinitLoopSuppressDelayMillis", 1000, null,this.pluginConfig);
+
       String add = this.glob.get("addClientProperties", "", null, this.pluginConfig);
       this.addClientProperties = ReplaceVariable.toArray(add.trim(), ",");
 
@@ -1092,6 +1096,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
       return this.smtpClient;
    }
+   
+   private long lastMillisLog_LoopProtection = 0;
 
    /**
     * Redirect logging.
@@ -1105,6 +1111,25 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       if (record == null) return;
       if (this.loggingSet == null) return;
+      
+	  // Fatal case: a log.severe triggers this log() which processing triggers again a log.severe
+	  // infinite loop -> java.lang.StackOverflowError
+      boolean protectAgainstInfiniteLoop = false;
+      Throwable reason = record.getThrown();
+      if (reason != null) {
+    	  if (reason.getStackTrace().length > 100) {
+    		  protectAgainstInfiniteLoop = true;
+    	  }
+      }
+      long currMillis = System.currentTimeMillis();
+      if (currMillis - this.lastMillisLog_LoopProtection < this.logInfinitLoopSuppressDelayMillis) {
+		  protectAgainstInfiniteLoop = true;
+      }
+      this.lastMillisLog_LoopProtection = currMillis;
+      if (protectAgainstInfiniteLoop) {
+    	  return;  // no better idea how to inform innocent user
+      }
+      
       Level level = record.getLevel();
       String source = record.getSourceClassName()+"."+record.getSourceMethodName();
       String str = record.getMessage();
