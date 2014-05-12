@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18149  EventPlugin protect against infinite loop of logging redirects
+          logInfinitLoopSuppressDelayMillis=1000
+	  -> Log messages inbetween one second are silently lost
+
  o r18147 made XPathFilter namespace-aware
 
  o r18143 SmtpClient.java properties added
