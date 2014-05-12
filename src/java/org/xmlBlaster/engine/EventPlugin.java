@@ -1125,10 +1125,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (currMillis - this.lastMillisLog_LoopProtection < this.logInfinitLoopSuppressDelayMillis) {
 		  protectAgainstInfiniteLoop = true;
       }
-      this.lastMillisLog_LoopProtection = currMillis;
       if (protectAgainstInfiniteLoop) {
     	  return;  // no better idea how to inform innocent user
       }
+      this.lastMillisLog_LoopProtection = currMillis;
       
       Level level = record.getLevel();
       String source = record.getSourceClassName()+"."+record.getSourceMethodName();
