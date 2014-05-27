@@ -71,7 +71,7 @@
         <xsd:attribute name="schema" type="xsd:token" use="required"/>
         <xsd:attribute name="table" type="xsd:token" use="required"/>
         <xsd:attribute name="searchable" type="xsd:boolean" default="true"/>
-        <xsd:attribute name=" pkName" type="xsd:token" use="optional"/>
+        <xsd:attribute name="pkName" type="xsd:token" use="optional"/>
         <xsd:attribute name="sqlType" type="xsd:int" default="0"/>
         <xsd:attribute name="colSize" type="xsd:int" default="0"/>
         <xsd:attribute name="radix" type="xsd:int" default="0"/>
