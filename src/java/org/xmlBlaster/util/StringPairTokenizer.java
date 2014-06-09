@@ -424,6 +424,7 @@ public class StringPairTokenizer {
     * Counterpart to #mapToCSV(Map)
     * Fails if key contains token "&#061;"
     * and fails if value contains token "&#034;" 
+    * Fails if sep==';' and value contains a real token "%53"
     * @param csv
     * @param sep Defaults to ","
     * @param apos Only '"' or "'" is supported, defaults to '"'
@@ -445,6 +446,10 @@ public class StringPairTokenizer {
          }
          value = ReplaceVariable.replaceAll(value, "&#034;", "\"");
          //value = ReplaceVariable.replaceAll(value, "&#039;", "'");
+         if (sep == ';') {
+        	 // Is better than &#59; (which unfortunately contains again a ;)
+             value = ReplaceVariable.replaceAll(value, "%53", ";");
+         }
          map.put(key, value);
       }
       return map;

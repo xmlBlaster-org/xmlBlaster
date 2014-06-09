@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18155  StringPairTokenizer fix to convert "%53" to ";"
+
  o 18153  added CLIENTPROPERTY_MULTISUB_CHECKQOS to allow recognition of different filters on subscriptions having 
           the same XPATH or topic (without it making two subs with same XPATH but different filter would overwrite 
           eachother
