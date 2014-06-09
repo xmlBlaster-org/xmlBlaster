@@ -5,3 +5,24 @@ http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
 Invoke:
 
     java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.cluster.AllTests
+
+Precond: You need to activate CORBA plugin, as all cluster tests where developed with CORBA
+ vi xmlBlasterPlugins.xml
+   <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
+   <plugin create='true' id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='30'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='40'/>   
+   </plugin>
+
+ vi xmlBlaster.properties
+   protocol=IOR
+
+Precond: You need to use a native DB like Oracle or PostgreSQL (HSQLDB fails)
+   createdb test
+   psql test
+    create role postgres LOGIN;
+    ALTER USER postgres CREATEDB;
+
+   and activate it in xmlBlaster.properties
+

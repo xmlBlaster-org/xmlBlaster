@@ -1,31 +1,22 @@
 package org.xmlBlaster.test.cluster;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
 
-// for client connections:
-import org.xmlBlaster.util.*;
+import junit.framework.TestCase;
+
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+// for client connections:
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.Destination;
-
-
-import junit.framework.*;
 
 /**
  * Test publishing a message from bilbo to heron. 
@@ -46,10 +37,7 @@ public class PtPTest extends TestCase {
    private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon;
 
    private int updateCounterHeron = 0;
-   private int updateCounterFrodo = 0;
-   private int updateCounterBilbo = 0;
    private String oid = "PublishToBilbo";
-   private String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS
    private String contentStr = "We win";
 
    private String assertInUpdateHeron = null;
