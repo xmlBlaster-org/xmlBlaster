@@ -413,11 +413,23 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
 
       if (clusterNode == null && destination.getDestination().isNodeIdExplicitlyGiven() &&
             !glob.getId().equals(destination.getDestination().getNodeIdStr())) {
-         String text = "PtP message '" + msgUnit.getLogId() +
-                        "' for destination " + destination.getDestination() +
-                        ": Explicitely given remote destination cluster node '"+destination.getDestination().getNodeIdStr()+"' not found in cluster configuration";
-         log.severe(text + ", please check your configuration");
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, text);
+         // Added 2014-06-09 Marcel so that PtPTest.java does not fail (bilbo
+         // via frodo to heron): guesswork routing
+         boolean tryClusterNodeHopping = true;
+         if (tryClusterNodeHopping) {
+            clusterNode = getClusterNodeIntermediate(destination.getDestination().getNodeId());
+            if (clusterNode != null)
+               log.info("PtP message '" + msgUnit.getLogId() + "' for destination " + destination.getDestination()
+                     + ": Explicitely given remote destination cluster node '" + destination.getDestination().getNodeIdStr()
+                     + "' not found in cluster configuration, trying to use intermediate node " + clusterNode.getNodeId().getId() + ": " + clusterNode);
+         }
+         if (clusterNode == null) {
+            String text = "PtP message '" + msgUnit.getLogId() + "' for destination " + destination.getDestination()
+                  + ": Explicitely given remote destination cluster node '" + destination.getDestination().getNodeIdStr()
+                  + "' not found in cluster configuration";
+            log.severe(text + ", please check your configuration");
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, text);
+         }
       }
       
       if (clusterNode != null && destination.getDestination().isNodeIdExplicitlyGiven()) {
@@ -754,6 +766,29 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          if (this.clusterNodeMap == null) return null;
          return (ClusterNode)this.clusterNodeMap.get(id);
       }
+   }
+
+   /**
+    * If a destination node is not known, we can try to use another node for
+    * hopping, probably this node knows how to route further
+    * 
+    * @return The best guess ClusterNode instance or null if unknown
+    */
+   public final ClusterNode getClusterNodeIntermediate(NodeId nodeId) {
+      ClusterNode match = null;
+      ClusterNode[] nodes = getClusterNodes();
+      for (ClusterNode node : nodes) {
+         if (node.isAllowed() && !node.isLocalNode()) {
+            match = node;
+            try {
+               if (node.isAlive())
+                  break;
+            } catch (XmlBlasterException e) {
+               e.printStackTrace();
+            }
+         }
+      }
+      return match;
    }
 
    /*
