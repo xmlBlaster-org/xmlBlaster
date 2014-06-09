@@ -20,7 +20,8 @@ import junit.framework.*;
  * <p />
  * All methods starting with 'test' and without arguments are invoked automatically
  * <p />
- * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.TestConsumableQueue
+ * Invoke:
+ *   java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.distributor.TestConsumableQueue
  * @see org.xmlBlaster.util.qos.ConnectQosData
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/jms.html" target="others">the jms requirement</a>
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
