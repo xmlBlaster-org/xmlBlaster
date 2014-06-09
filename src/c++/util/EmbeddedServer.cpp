@@ -74,7 +74,7 @@ EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const s
    applArguments_  = applArguments;
    jvmArguments_   = jvmArguments;
    externalAccess_ = externalAccess; 
-   runner_         = false;
+   runner_         = NULL;
 }
 
 EmbeddedServer::~EmbeddedServer()
