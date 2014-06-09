@@ -90,8 +90,8 @@ TODO
    <property file="build.properties" />
 
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="2.1.0"/>
-   <property name="year" value="1999-2011"/>
+   <property name="version" value="2.2.0"/>
+   <property name="year" value="1999-2014"/>
 
    <!-- property name="build.compiler" value="classic"/ -->
    <property name="debug" value="on"/>

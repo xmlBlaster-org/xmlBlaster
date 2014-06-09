@@ -1,4 +1,4 @@
-This is xmlBlaster version 2.1.0 2011-10-12 'Premium'
+This is xmlBlaster version 2.2.0 2014-06-09 'Piano'
 
 
 XmlBlaster  is  under development or productive in a huge range
@@ -49,6 +49,11 @@ The xmlBlaster maintainers
 See:
 ----
 http://www.xmlblaster.org/xmlBlaster/CHANGES
+
+Notes for V2.2.0:
+-----------------
+Some minor extensions but mainly fixes, see CHANGES file
+
 
 Notes for V2.1.0:
 -----------------

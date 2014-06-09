@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+Changes for 2.2.0 [2014-06-09] r18164 (JDK >= 1.5 only)
+=======================================================
+
  o 18155  StringPairTokenizer fix to convert "%53" to ";"
 
  o 18153  added CLIENTPROPERTY_MULTISUB_CHECKQOS to allow recognition of different filters on subscriptions having 
