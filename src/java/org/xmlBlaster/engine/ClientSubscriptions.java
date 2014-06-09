@@ -6,10 +6,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.engine.ServerScope;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
@@ -226,7 +228,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     *         is > 1 if this session has subscribed multiple times on the
     *         same message, or null if this session has not subscribed it
     */
-   public ArrayList<SubscriptionInfo> getSubscription(SessionInfo sessionInfo, QueryKeyData queryKey) throws XmlBlasterException {
+   public ArrayList<SubscriptionInfo> getSubscription(SessionInfo sessionInfo, QueryKeyData queryKey, QueryQosData queryQos) throws XmlBlasterException {
       if (queryKey == null || sessionInfo==null) return null;
       Object obj;
       Map subMap;
@@ -239,6 +241,10 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
          subMap = (Map)obj;
       }
 
+      boolean checkQos = false;
+      if (queryQos != null && 
+    		  queryQos.getClientProperty(Constants.CLIENTPROPERTY_MULTISUB_CHECKQOS, (String)null) != null)
+    	  checkQos = true;
       // Slow linear search of all subscribes of a session
       // Don't use for performance critical tasks
       ArrayList<SubscriptionInfo> vec = null;
@@ -252,8 +258,10 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
 //            	
 //            }
             if (queryKey.equals(sub.getKeyData())) {
-               if (vec == null) vec = new ArrayList<SubscriptionInfo>();
-               vec.add(sub);
+            	if (!checkQos || queryQos.equals(sub.getQueryQosData())) {
+            		if (vec == null) vec = new ArrayList<SubscriptionInfo>();
+                    vec.add(sub);
+            	}
             }
          }
       }

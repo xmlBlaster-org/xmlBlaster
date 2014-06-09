@@ -734,7 +734,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          String returnOid = "";
 
          if (subscribeQos.getMultiSubscribe() == false) {
-            ArrayList<SubscriptionInfo> vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey);
+            ArrayList<SubscriptionInfo> vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey, subscribeQos.getData());
             if (vec != null && vec.size() > 0) {
                for (int i=0; i<vec.size(); i++) {
                   SubscriptionInfo sub = vec.get(i);
@@ -1431,7 +1431,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 //            		log.info(si.toXml());
 //            		log.info("");
 //            	}
-            	ArrayList<SubscriptionInfo> vec = clientSubscriptions.getSubscription(sessionInfo, xmlKey);
+            	ArrayList<SubscriptionInfo> vec = clientSubscriptions.getSubscription(sessionInfo, xmlKey, unSubscribeQos.getData());
             	if (vec != null) {
 	            	for (int i=0; i<vec.size(); i++) {
 	            		SubscriptionInfo si = vec.get(i);

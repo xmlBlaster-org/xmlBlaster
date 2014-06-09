@@ -320,6 +320,8 @@ public class Constants {
 
    public final static String CLIENTPROPERTY_ISINITIALUPDATE = "__isInitialUpdate"; // msgs from history queue directly after subscribe
 
+   public final static String CLIENTPROPERTY_MULTISUB_CHECKQOS = "__multiSubCheckQos"; // if set it will also check the qos to determine subscription equality
+
    /** Mimetypes */
    // see @apache/mime.conf or so
 
