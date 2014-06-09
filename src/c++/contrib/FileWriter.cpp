@@ -133,7 +133,7 @@ std::string FileWriter::update(const std::string &sessionId,
 			// InputStream is = MomEventEngine.decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
          std::string timestamp = "" + updateQos.getRcvTime();
          std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> props = updateQos.getClientProperties();
-         std::map<std::string, org::xmlBlaster::util::qos::ClientProperty>::const_iterator iter = props.end();
+         //std::map<std::string, org::xmlBlaster::util::qos::ClientProperty>::const_iterator iter = props.end();
         	org::xmlBlaster::util::qos::ClientProperty property(Constants::TIMESTAMP_ATTR, timestamp, Constants::TYPE_STRING, "UTF-8");
          props.insert(pair<std::string, org::xmlBlaster::util::qos::ClientProperty>(Constants::TIMESTAMP_ATTR, property));
 			return callback_->update(sessionId, updateKey, content, contentSize, updateQos);
