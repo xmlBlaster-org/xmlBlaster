@@ -13,13 +13,10 @@ import junit.framework.TestSuite;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.test.MsgInterceptor;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -29,7 +26,6 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
@@ -193,7 +189,9 @@ public class TestPtDQueueRedeliver extends TestCase
 
          ConnectReturnQos crqSub = conRcv.connect(qosSub, this.updateInterceptorRcv); // Login to xmlBlaster
          log.info("Connect as subscriber '" + crqSub.getSessionName() + "' success");
-
+         log.info(this.updateInterceptorRcv.toString());
+         
+         /*
          SubscribeKey sk = new SubscribeKey(globRcv, oid);
          SubscribeQos sq = new SubscribeQos(globRcv);
          sq.setWantInitialUpdate(false);
@@ -206,6 +204,7 @@ public class TestPtDQueueRedeliver extends TestCase
 
          SubscribeReturnQos srq = conRcv.subscribe(sk.toXml(), sq.toXml());
          log.info("Subscription to '" + oid + "' done");
+         */
 
          log.info("============ STEP 6: Check if messages arrived");
          assertEquals("", numPub, this.updateInterceptorRcv.waitOnUpdate(4000L, oid, Constants.STATE_OK));
