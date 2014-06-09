@@ -192,7 +192,9 @@ omni_condition::wait(void)
 int
 omni_condition::timedwait(unsigned long secs, unsigned long nanosecs)
 {
-    timespec rqts = { secs, nanosecs };
+	//long secsS = (long)secs; // Linux g++ 4.8
+	long nanosecsS = (long)nanosecs;
+    timespec rqts = { secs, nanosecsS };
 
 again:
     int rc = ERRNO(pthread_cond_timedwait(&posix_cond,
@@ -853,7 +855,9 @@ omni_thread::yield(void)
 void
 omni_thread::sleep(unsigned long secs, unsigned long nanosecs)
 {
-    timespec rqts = { secs, nanosecs };
+	//long secsS = (long)secs;
+	long nanosecsS = (long)nanosecs;
+    timespec rqts = { secs, nanosecsS };
 
 #ifndef NoNanoSleep
 
