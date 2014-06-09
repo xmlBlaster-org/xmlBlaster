@@ -69,7 +69,7 @@ public class Msg extends Assert
    public String getState() {
       return (this.updateQos == null) ? null : this.updateQos.getState();
    }
-
+   
    /**
     * Check if the given message (usually published) is the one we hold (usually updated).
     * throws a junit assert on error
@@ -97,4 +97,8 @@ public class Msg extends Assert
    public void compareMsg(PublishReturnQos retQos) {
       assertEquals("The receive timestamp is corrupted", retQos.getRcvTimestamp(), updateQos.getRcvTimestamp());
    }   
+
+   public String toString() {
+      return "oid='" + this.updateKey.getOid() + "'";
+   }
 }

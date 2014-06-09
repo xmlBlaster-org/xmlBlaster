@@ -263,7 +263,7 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
 
 
    // Holding all messages
-   private Vector updateVec = new Vector();
+   private Vector<Msg> updateVec = new Vector<Msg>();
    
    public void add(Msg msg) {
       this.updateVec.addElement(msg);
@@ -367,6 +367,18 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
    
    public void setMsgContent(byte[] msgContent) {
       this.msgContent = msgContent;
+   }
+   
+   public String toString() {
+      StringBuilder sb = new StringBuilder();
+      for (int i=0; i<updateVec.size(); i++) {
+         Msg msg = updateVec.get(i);
+         if (i > 0)
+            sb.append("\n");
+         sb.append("#").append(i);
+         sb.append(": ").append(msg.toString());
+      }
+      return sb.toString();
    }
    
 } // MsgInterceptor
