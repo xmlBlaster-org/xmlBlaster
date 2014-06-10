@@ -4,6 +4,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.awt.event.KeyEvent;
+
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 
@@ -189,11 +191,11 @@ public class XmlBuffer {
      * @param text
      * @return The escaped text is appended to the given StringBuilder.
      */
-    public static void append(StringBuilder buf, String text) {
+    public final static void append(StringBuilder buf, String text) {
         if (text == null) return;
         int length = text.length();
         for (int i = 0; i < length; i++) {
-            char c = text.charAt(i);
+            final char c = text.charAt(i);
             switch (c) {
                 case '\0':
                     buf.append(NULL);
@@ -217,10 +219,53 @@ public class XmlBuffer {
                         buf.append(SLASH_R);
                     break;
                 default:
+                	if (isPrintableCharExtended(c)) {
                         buf.append(c);
+                	}
+                	else {
+                    	boolean isControl = Character.isISOControl(c);
+                    	boolean isUndefined = c == KeyEvent.CHAR_UNDEFINED;
+                    	Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
+                    	boolean isSpecial = block != null &&
+                    			block != Character.UnicodeBlock.SPECIALS;
+                    	boolean isAsciiControl = (int)c < 20;
+                		System.out.println("XmlBuffer.append caution: Dropping none UTF-8 character '" + c + "' isControl=" + isControl + " isUndefined=" + isUndefined + " isSpecial=" + isSpecial + " isAsciiControl=" + isAsciiControl);
+                	}
             }
         }
     }
+    
+    /**
+     * Detect strange characters
+     * i=rk�9<?9,id=7807049
+     * @param c
+     * @return false for above or eg "\n"
+     */
+    public final static boolean isPrintableChar( char c ) {
+    	Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
+    	// isIsoControl finds: 
+    	// � is found by SPECIALS
+    	return (!Character.isISOControl(c)) &&
+    			c != KeyEvent.CHAR_UNDEFINED &&
+    			block != null &&
+    			block != Character.UnicodeBlock.SPECIALS;
+    }
+
+    /**
+     * @param c
+     * @return \n etc are valid
+     */
+    public final static boolean isPrintableCharExtended( char c ) {
+    	Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
+    	// isIsoControl finds: 
+    	// � is found by SPECIALS
+    	return ((c == '\n' || c == '\t' || c == 0x0d )
+    			|| !Character.isISOControl(c)) &&
+    			c != KeyEvent.CHAR_UNDEFINED &&
+    			block != null &&
+    			block != Character.UnicodeBlock.SPECIALS;
+    }
+
     /**
      * Escape predefined xml entities (\0, ', ", \r). for attribute notation
      * Additionally the '\0' is escaped.
