@@ -79,6 +79,7 @@ public class StringPairTokenizer {
     *
     * @param nextLines An array of lines, followup lines will only be parsed if an open quotechar exists
     * @param separator Defaults to StringPairTokenizer.DEFAULT_SEPARATOR=','
+    * Note: , is not escaped with &comma; or similar, use "" to protect inside separators
     * @param quotechar Defaults to StringPairTokenizer.DEFAULT_QUOTE_CHARACTER='"'
     * @param trimEmpty if true removes silently empty tokens
     * @param preserveInsideQuoteChar true: Preserve the  inside quotes of "bla, bla, "blu blu", bli"
@@ -89,17 +90,18 @@ public class StringPairTokenizer {
       List<String> tokensOnThisLine = new ArrayList<String>();
       StringBuilder sb = new StringBuilder(256);
       boolean inQuotes = false;
+      boolean inInsideQuotes = false;
       if (nextLines.length < 1 || nextLines[0] == null)
          return new String[0];
       int jj=0;
       String nextLine = nextLines[jj];
       do {
          if (sb.length() > 0) {
-            // continuing a quoted section, reappend newline
-            sb.append("\n");
             jj++;
             if (jj >= nextLines.length)
                break;
+            // continuing a quoted section, reappend newline
+            sb.append("\n");
             nextLine = nextLines[jj];
             if (nextLine == null)
                continue;
@@ -108,14 +110,22 @@ public class StringPairTokenizer {
             char c = nextLine.charAt(i);
             if (c == quotechar) {
                inQuotes = !inQuotes;
-               if (preserveInsideQuoteChar && sb.length()>0 && i<nextLine.length())
+               if (preserveInsideQuoteChar && sb.length()>0 && inQuotes) {
+            	  inInsideQuotes = true;
                   sb.append(c);
+               }
+               if (preserveInsideQuoteChar && !inQuotes && inInsideQuotes) {
+            	   inInsideQuotes = false;
+                   sb.append(c);
+                }
             } else if (c == separator && !inQuotes) {
                String tmp = sb.toString();
                if (trimEmpty && tmp.trim().length() == 0) {
                   ;
                }
                else {
+                   inQuotes = false;
+              	   inInsideQuotes = false;
                   tokensOnThisLine.add(tmp);
                }
                sb.setLength(0);// = new StringBuilder(256); // start work on next token

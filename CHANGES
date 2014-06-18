@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18166  2014-06-17
+          StringPairTokenizer fix preserveInsideQuoteChar=true with ending apos "
+          StringPairTokenizer fix one \n too much for csv with ending apos "
+
 Changes for 2.2.0 [2014-06-09] r18164 (JDK >= 1.5 only)
 =======================================================
 
