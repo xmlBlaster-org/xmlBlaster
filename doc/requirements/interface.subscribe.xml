@@ -146,6 +146,14 @@
           requirements for details. There are XPath, regular expression and SQL 92 filter plugins available.
       </td>
       </tr>
+      <tr>
+      <td>__newestOnly</td>
+      <td>You can add a clientProperty __newestOnly=true. In this case xmlBlaster throws away all oder messages of this
+          topic which are in the callback queue of the subscriber and delivers only the most current.
+	  This use case is useful for mobile clients being off line for longer periods and
+	  the topic delivers complete updates of some information. The client don't wants to receive the outdated older updates.
+      </td>
+      </tr>
       </table>
 
       <h3>
