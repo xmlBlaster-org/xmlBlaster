@@ -81,7 +81,7 @@ public class EntrySize {
          MsgQueueUpdateEntry entryArr[] = new MsgQueueUpdateEntry[numCreate];
          for(int i=0; i<numCreate; i++) {
             entryArr[i] = new MsgQueueUpdateEntry(global, msgWrapper, storageId,
-                                             receiver, "__subId", false);
+                                             receiver, "__subId", false, false);
             MsgUnitWrapper w = entryArr[i].getMsgUnitWrapper();
             if ((i % step) == 0) {
                log.info("Overall created #" + i + ": Created " + step + " new MsgQueueUpdateEntry instances, hit a key to create more ...");

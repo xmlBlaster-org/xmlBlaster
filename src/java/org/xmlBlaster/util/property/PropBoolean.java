@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.property;
 
-import org.xmlBlaster.util.def.Constants;
 
 
 /**
@@ -14,6 +13,7 @@ import org.xmlBlaster.util.def.Constants;
  */
 public final class PropBoolean extends PropEntry implements java.io.Serializable, Cloneable
 {
+   private static final long serialVersionUID = 5664321757271875143L;
    private boolean value;
 
    /**

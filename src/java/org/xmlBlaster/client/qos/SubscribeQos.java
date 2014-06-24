@@ -214,6 +214,13 @@ public final class SubscribeQos
    }
    
    /**
+    * if __newestOnly client property is true remove older instances from callback queue of client
+    */
+   public void setNewestOnly(boolean newestOnly) {
+	   this.queryQosData.setNewestOnly(newestOnly);
+   }
+
+   /**
     * Converts the data into a valid XML ASCII string.
     * @return An XML ASCII string
     */

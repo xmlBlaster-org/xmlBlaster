@@ -10,16 +10,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Singleton in ServerScope to access a TopicHandler instance.
@@ -304,6 +303,22 @@ public final class TopicAccessor {
       if (topicHandler == null)
          return null;
       return topicHandler.getMsgUnitWrapper(msgUnitWrapperUniqueId);
+   }
+
+   /**
+    * Access the newest entry. 
+    * @param topicId
+    * @return null if not found
+    * @throws XmlBlasterException
+    */
+   public MsgUnitWrapper lookupNewest(String topicId) throws XmlBlasterException {
+      TopicHandler topicHandler = getTopicHandlerDirtyRead(topicId);
+	  if (topicHandler == null)
+	     return null;
+	  MsgUnitWrapper[] arr = topicHandler.getMsgUnitWrapperArr(1, true);
+	  if (arr.length > 0)
+	     return arr[0];
+	  return null;
    }
 
    public void changeDirtyRead(MsgUnitWrapper msgUnitWrapper)

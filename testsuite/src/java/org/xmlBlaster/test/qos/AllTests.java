@@ -48,6 +48,7 @@ public class AllTests
       suite.addTest(TestSubNoDup.suite());
       suite.addTest(TestSubNotify.suite());
       suite.addTest(TestSub.suite());
+      suite.addTest(TestSubNewestOnly.suite());
       suite.addTest(TestSubId.suite());
       // suite.addTest(TestSubHistory.suite());
       suite.addTest(TestSubLostClient.suite());

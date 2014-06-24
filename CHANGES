@@ -4,6 +4,15 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18167  2014-06-24
+          Added SubscribeQos ClientProperty __newestOnly
+          If set __newestOnly=true, xmlBlaster throws away all oder messages of this
+          topic which are in the callback queue of the subscriber and delivers only the most current.
+	  This use case is useful for mobile clients being off line for longer periods and
+	  the topic delivers complete updates of some information.
+	  The client don't wants to receive the outdated older updates.
+	  Added toString() variants for easier debugging.
+
  o 18166  2014-06-17
           StringPairTokenizer fix preserveInsideQuoteChar=true with ending apos "
           StringPairTokenizer fix one \n too much for csv with ending apos "

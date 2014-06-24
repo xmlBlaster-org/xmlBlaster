@@ -39,26 +39,28 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
 
    /**
     * A new message object is fed by method publish(). 
-    * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
+ * @param wantNewestOnly TODO
+ * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
    public MsgQueueUpdateEntry(ServerScope glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
-                              String subscriptionId, boolean wantUpdateOneway) throws XmlBlasterException {
-      this(glob, msgUnitWrapper, (Timestamp)null, storageId, receiver, subscriptionId, wantUpdateOneway);                           
+                              String subscriptionId, boolean wantUpdateOneway, boolean wantNewestOnly) throws XmlBlasterException {
+      this(glob, msgUnitWrapper, (Timestamp)null, storageId, receiver, subscriptionId, wantUpdateOneway, wantNewestOnly);                           
    }   
    
    /**
     * convenience constructor to allow passing an already given uniqueId (the timestamp)
     * @param glob
-    * @param msgUnitWrapper
-    * @param timestamp
-    * @param storageId
-    * @param receiver
-    * @param subscriptionId
-    * @param wantUpdateOneway
+ * @param msgUnitWrapper
+ * @param timestamp
+ * @param storageId
+ * @param receiver
+ * @param subscriptionId
+ * @param wantUpdateOneway
+ * @param wantNewestOnly TODO
     * @throws XmlBlasterException
     */
    public MsgQueueUpdateEntry(ServerScope glob, MsgUnitWrapper msgUnitWrapper, Timestamp timestamp, StorageId storageId, SessionName receiver,
-                              String subscriptionId, boolean wantUpdateOneway) throws XmlBlasterException {
+                              String subscriptionId, boolean wantUpdateOneway, boolean wantNewestOnly) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, timestamp, storageId, receiver);
       this.getMsgQosData().setSender(msgUnitWrapper.getMsgQosData().getSender());
       this.subscriptionId = subscriptionId;
@@ -67,6 +69,9 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       String flagTmp = (this.updateOneway) ? this.state+"|oneway" : this.state;
       if (msgUnitWrapper.getMsgQosData().getForceDestroyProp().getValue() == true)
          flagTmp += "|forceDestroy";
+      if (wantNewestOnly) {
+          flagTmp += "|newestOnly";
+      }
       this.flag = flagTmp;
       if (log.isLoggable(Level.FINE)) log.fine("Created new MsgQueueUpdateEntry for published message '" + msgUnitWrapper.getLogId() + "', id=" + getUniqueId() + " prio=" + priority.toString());
    }
@@ -103,7 +108,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     */
    public MsgQueueUpdateEntry(MsgQueueUpdateEntry entry, StorageId storageId) throws XmlBlasterException {
       this(entry.getGlobal(), entry.getMsgUnitWrapper(), entry.uniqueIdTimestamp, storageId,
-           entry.getReceiver(), entry.getSubscriptionId(), entry.updateOneway());
+           entry.getReceiver(), entry.getSubscriptionId(), entry.updateOneway(), entry.newestOnly());
    }
 
    public String getSubscriptionId() {
@@ -113,10 +118,14 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    public String getState() {
       return this.state;
    }
+   
+   public boolean newestOnly() {
+	   return this.flag != null && this.flag.contains("newestOnly");
+   }
 
    /**
     * Holds state and updateOneway information
-    * @return for example "OK|oneway"
+    * @return for example "OK|oneway|newestOnly"
     */
    public String getFlag() {
       return this.flag;

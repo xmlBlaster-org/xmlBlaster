@@ -42,5 +42,17 @@ public class SessionHolder {
     */
    public void setSessionInfo(SessionInfo sessionInfo) {
       this.sessionInfo = sessionInfo;
-   } 
+   }
+   
+   public String toString() {
+	   StringBuilder sb = new StringBuilder(256);
+	   if (this.sessionInfo != null)
+		   sb.append(this.sessionInfo.toString());
+	   if (this.addressServer != null) {
+		   if (sb.length() > 0)
+			   sb.append("  ");
+		   sb.append(this.addressServer.toString());
+	   }
+	   return sb.toString();
+   }
 }

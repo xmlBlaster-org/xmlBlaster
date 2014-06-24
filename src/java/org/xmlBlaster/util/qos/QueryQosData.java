@@ -5,19 +5,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ReplaceVariable;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.property.PropBoolean;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.MethodName;
-
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.property.PropBoolean;
 
 /**
  * Data container handling of query / access QoS.
@@ -69,7 +66,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    /** Set for each subscription if you want updateOneway() instead of update()
        currently this is a flag of the connectQos as well */
    private PropBoolean updateOneway = new PropBoolean(false);
-
+   
    /** Mime based filter rules */
    private ArrayList filters = null;
    private transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
@@ -173,6 +170,15 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    public PropBoolean getUpdateOnewayProp() {
       return this.updateOneway;
+   }
+
+   /** if __newestOnly client property is true remove older instances from callback queue of client */
+   public boolean newestOnly() {
+	   return getClientProperty("__newestOnly", false);
+   }
+
+   public void setNewestOnly(boolean newestOnly) {
+	   addClientProperty("__newestOnly", newestOnly);
    }
 
    /**

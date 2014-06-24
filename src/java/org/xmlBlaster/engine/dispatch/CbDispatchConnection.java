@@ -218,7 +218,7 @@ public final class CbDispatchConnection extends DispatchConnection
    {
       ArrayList oneways = null;
       ArrayList responders = null;
-
+      MsgUnitWrapper wrapperNewest = null;
       {
          for (int i=0; i<msgArr_.length; i++) {
             MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
@@ -233,6 +233,21 @@ public final class CbDispatchConnection extends DispatchConnection
                if (log.isLoggable(Level.FINE)) log.fine(ME+": doSend("+entry.getLogId()+") ignoring callback message as PtP is not wanted");
                entry.setReturnObj(new UpdateReturnQosServer(this.glob, Constants.RET_ERASED));
                continue;
+            }
+            
+            if (entry.newestOnly()) {
+                if (log.isLoggable(Level.FINE)) log.fine(ME+": doSend("+entry.getLogId()+") __newestOnly=true");
+                if (wrapperNewest == null) {
+                   ServerScope serverScope = (ServerScope)glob;
+                   String topicId = entry.getKeyOid();
+           		   wrapperNewest = serverScope.getTopicAccessor().lookupNewest(topicId);
+                }
+                if (wrapperNewest != null) {
+                   if (entry.getUniqueIdLong() < wrapperNewest.getUniqueId()) {
+                	  log.info(ME+": doSend("+entry.getLogId()+", __newestOnly=true) is not sent as too old");
+                	  continue;
+                   }
+                }                
             }
 
             MsgUnit mu = msgUnitWrapper.getMsgUnit();

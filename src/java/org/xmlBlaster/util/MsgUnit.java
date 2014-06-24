@@ -376,7 +376,7 @@ public final class MsgUnit implements java.io.Serializable
     	  return "topicId=null";
       }
       StringBuilder sb = new StringBuilder();
-      sb.append("topicId=" + keyData.getOid());
+      sb.append("topicId=" + keyData.getUrl());
       return sb.toString();
    }
 

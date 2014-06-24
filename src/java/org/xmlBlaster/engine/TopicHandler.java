@@ -869,7 +869,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             try {
                MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(serverScope, cacheEntry,
                         destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
-                        Constants.SUBSCRIPTIONID_PtP, false);
+                        Constants.SUBSCRIPTIONID_PtP, false, false);
                destinationClient.queueMessage(msgEntrySubject);
                continue;
             }
@@ -948,7 +948,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      cacheEntry,
                      receiverSessionInfo.getSessionQueue().getStorageId(),
                      destination.getDestination(),
-                     Constants.SUBSCRIPTIONID_PtP, false);
+                     Constants.SUBSCRIPTIONID_PtP, false, false);
             receiverSessionInfo.queueMessage(msgEntry);
             continue;
          }
@@ -1347,7 +1347,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   MsgQueueEntry[] entries = {
                        new MsgQueueUpdateEntry(serverScope, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                    sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
-                                   sub.getSubscribeQosServer().getWantUpdateOneway()) };
+                                   sub.getSubscribeQosServer().getWantUpdateOneway(), sub.getSubscribeQosServer().newestOnly()) };
                   requestBroker.deadMessage(entries, null, reason);
                }
 
@@ -1394,7 +1394,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       throws XmlBlasterException {
       return new MsgQueueUpdateEntry(msgUnitWrapper.getServerScope(), msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
-               sub.getSubscribeQosServer().getWantUpdateOneway());
+               sub.getSubscribeQosServer().getWantUpdateOneway(), sub.getSubscribeQosServer().newestOnly());
    }
 
    /**
@@ -1459,7 +1459,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                MsgQueueEntry[] entries = {
                      new MsgQueueUpdateEntry(serverScope, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                  sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
-                                 sub.getSubscribeQosServer().getWantUpdateOneway()) };
+                                 sub.getSubscribeQosServer().getWantUpdateOneway(), sub.getSubscribeQosServer().newestOnly()) };
                String reason = e.toString();
                if (e instanceof XmlBlasterException)
                   reason = ((XmlBlasterException)e).getMessage();

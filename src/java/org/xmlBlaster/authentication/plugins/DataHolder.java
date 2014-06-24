@@ -102,7 +102,14 @@ public class DataHolder {
    }
 	
    public String toString() {
-      return this.action + " " + this.msgUnit.getKeyOid();
+	  StringBuilder sb = new StringBuilder(256);
+      sb.append(this.action).append(" ").append(getKeyUrl());
+      SessionName dest = getDestinationSessionName();
+      if (dest != null)
+    	  sb.append(" destination=").append(getDestinationSessionName().getAbsoluteName());
+      else
+    	  sb.append(" PubSub=true");
+      return sb.toString();
    }
    
    /**

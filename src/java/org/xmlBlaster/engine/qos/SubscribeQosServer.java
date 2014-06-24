@@ -99,6 +99,13 @@ public final class SubscribeQosServer
    public boolean getWantNotify() {
       return this.queryQosData.getWantNotify();
    }
+   
+   /**
+    * if __newestOnly client property is true remove older instances from callback queue of client
+    */
+   public boolean newestOnly() {
+	   return this.queryQosData.newestOnly();
+   }
 
    /**
     * Are multiple subscribes allowed?
