@@ -834,6 +834,10 @@ public abstract class QueuePropertyBase implements Cloneable
    public boolean isEmbedded() {
       return this.embedded;
    }
+   
+   public String toString() {
+	   return getTypeVersion() + " " + getPrefix();
+   }
 }
 
 
