@@ -83,7 +83,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
    /**
     * This constructor is for internal creation from persistence only. 
-    *
+    * @param entryType MethodName.SUBSCRIBE etc
     * @param timestamp The unique nano timestamp as from org.xmlBlaster.util.Timestamp or null to create one now
     */
    public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean persistent) {
