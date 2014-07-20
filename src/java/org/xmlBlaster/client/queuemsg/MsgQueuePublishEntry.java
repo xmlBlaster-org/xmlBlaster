@@ -78,6 +78,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
 
    /**
     * For persistence recovery
+    * @param priority PriorityEnum.MIN1_PRIORITY etc does not work, the priority from qos is used (remove this parameter)
     * @param sizeInByte The estimated size of the entry in RAM (can be totally different on HD). 
     */
    public MsgQueuePublishEntry(Global glob, MethodName entryType, PriorityEnum priority, StorageId storageId,
@@ -85,11 +86,11 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
                                MsgUnit msgUnit) {
       super(glob, entryType.toString(), ((MsgQosData)msgUnit.getQosData()).getPriority(),
             publishEntryTimestamp, storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
-      if (msgUnit == null) {
-         log.severe("Invalid constructor parameter");
-         Thread.dumpStack();
-         throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
-      }
+//      if (msgUnit == null) {
+//         log.severe("Invalid constructor parameter");
+//         Thread.dumpStack();
+//         throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
+//      }
       this.msgUnit = msgUnit;
       this.msgQosData = (MsgQosData)msgUnit.getQosData();
       this.immutableSizeInBytes = sizeInBytes;
