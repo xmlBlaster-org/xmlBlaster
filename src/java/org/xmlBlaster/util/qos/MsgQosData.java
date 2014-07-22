@@ -742,6 +742,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       super.setGlobal(glob);
       this.factory = glob.getMsgQosFactory();
    }
+   
+   public String toString() {
+	   return toXml();
+   }
 
    public static void main(String[] args) {
       MsgQosData md = new MsgQosData(new Global(args), MethodName.UPDATE);

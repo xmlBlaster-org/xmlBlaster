@@ -478,5 +478,9 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       super.setGlobal(glob);
       this.factory = glob.getQueryQosFactory();
    }
+   
+   public String toString() {
+	   return toXmlReadable();
+   }
 }
 
