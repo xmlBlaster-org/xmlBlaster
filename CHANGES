@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18177  20154-08-27 StringPairTokenizer.java
+          Changed semicolon ; escape to %3B, until 2014-08-27 it was %53
+
  o 18167  2014-06-24
           Added SubscribeQos ClientProperty __newestOnly
           If set __newestOnly=true, xmlBlaster throws away all oder messages of this
