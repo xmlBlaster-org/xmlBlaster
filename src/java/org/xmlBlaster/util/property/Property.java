@@ -571,9 +571,20 @@ public class Property implements Cloneable {
    public final java.util.Properties getProperties() {
       return properties;
    }
+   
+   public boolean supportsApplet() {
+      try {
+		return Class.forName("java.applet.Applet") != null;
+      } catch (ClassNotFoundException e) {
+         return false;
+      }
+   }
 
    public void setApplet(Object/* java.applet.Applet*/ applet)
    {
+	  if (!supportsApplet()) {
+         return;
+	  }
       this.applet = applet;
       java.applet.Applet ap = (java.applet.Applet)this.applet;
       if (ap.getParameter("--help")!=null || ap.getParameter("-?")!=null || ap.getParameter("-h")!=null || ap.getParameter("-help")!=null)
