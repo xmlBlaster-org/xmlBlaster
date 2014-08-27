@@ -78,7 +78,7 @@ public class XmlBuffer {
 	                switch (separator) {
 	                    case ';':
 	            			// ';' is escaped as %3B (as in URL) and HTML as &#59; (which unfortunately contains again a ;)
-	                        buf.append("%3B"); // What about &semicolon;
+	                        buf.append(SEMICOLON_STR); // What about &semicolon;
 	                        break;
 	                    case ',':
                             buf.append("&comma;");
@@ -170,6 +170,7 @@ public class XmlBuffer {
 
     private static final char[] SLASH_R = "&#x0D;".toCharArray();
     private static final char[] NULL = "&#x0;".toCharArray();
+	public static final String SEMICOLON_STR = "%3B";
 
     /**
      * Escape predefined xml entities (&, <, >, ', ").

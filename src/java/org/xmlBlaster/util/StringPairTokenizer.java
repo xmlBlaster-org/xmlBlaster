@@ -434,7 +434,7 @@ public class StringPairTokenizer {
     * Counterpart to #mapToCSV(Map)
     * Fails if key contains token "&#061;"
     * and fails if value contains token "&#034;" 
-    * Fails if sep==';' and value contains a real token "%53"
+    * Fails if sep==';' and value contains a real token "%3B" (until 2014-08-27 it was  "%53")
     * @param csv
     * @param sep Defaults to ","
     * @param apos Only '"' or "'" is supported, defaults to '"'
@@ -458,7 +458,8 @@ public class StringPairTokenizer {
          //value = ReplaceVariable.replaceAll(value, "&#039;", "'");
          if (sep == ';') {
         	 // Is better than &#59; (which unfortunately contains again a ;)
-             value = ReplaceVariable.replaceAll(value, "%53", ";");
+        	 // "%3B" (until 2014-08-27 it was  "%53")
+             value = ReplaceVariable.replaceAll(value, XmlBuffer.SEMICOLON_STR, ";");
          }
          map.put(key, value);
       }
