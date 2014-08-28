@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="**/DebugConnection*|**/MainSvc.java|**/corba/*|**/j2me/**|**/mime/sql92/**|**/util/lexical/**|j2ee/**" kind="src" path=""/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="**/*.txt|**/.settings/**|**/DebugConnection*|**/Doxyfile|**/MainSvc.java|**/README|**/corba/*|**/j2me/**|j2ee/**" kind="src" path=""/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/activation.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.2.jar"/>
@@ -36,7 +35,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/naming-common.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/naming-java.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/omquery.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/postgresql.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/remotecons.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/servlet.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/test.jar"/>
