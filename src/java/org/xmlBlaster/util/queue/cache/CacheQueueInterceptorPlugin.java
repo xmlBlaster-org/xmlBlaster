@@ -79,6 +79,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
    }
    
+   public String toString() {
+	   return toXml();
+   }
+   
    public boolean isTransient() {
       return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
    }
