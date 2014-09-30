@@ -601,7 +601,23 @@ public class SocketConnection implements I_XmlBlasterConnection
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.setPluginConfig(this.pluginInfo);
          parser.addMessage(msgUnitArr);
-         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         SocketExecutor socketExecutor = getCbReceiver();
+         if (socketExecutor == null) {
+        	 // 2014-09-30 Introduced waiting loop if client connection is configured to never be sync
+        	 for (int i=0; i<50; i++) {
+                 socketExecutor = getCbReceiver();
+                 if (socketExecutor != null) {
+                	 log.warning("Waited " + (i*100) + "msec for CbReceiver");
+                	 break;
+                 }
+                 try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+        	 }
+         }
+         Object response = socketExecutor.requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {

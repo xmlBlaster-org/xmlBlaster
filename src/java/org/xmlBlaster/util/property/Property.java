@@ -874,7 +874,7 @@ public class Property implements Cloneable {
                if (verbose>=1) System.out.println("Property: No property file given.");
             }
          } else {
-            if (verbose>=0 && propertyFileName!=null) System.err.println("Property: Please copy " + propertyFileName + " to your home directory. We continue with default settings.");
+            if (verbose>0 && propertyFileName!=null) System.err.println("Property: Please copy " + propertyFileName + " to your home directory. We continue with default settings.");
          }
 
         // 2. Read system environment, e.g. java -Dname=joe

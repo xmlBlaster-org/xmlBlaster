@@ -289,6 +289,8 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
     */
    public static String getDirectoryForWrite() {
       java.net.URL classUrl = StandaloneClassLoaderFactory.class.getResource("StandaloneClassLoaderFactory.class");
+      if (classUrl == null)
+    	  return null;
       // classUrl.toString():
       // jar:file:/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar!/org/xmlBlaster/util/classloader/StandaloneClassLoaderFactory.class
       

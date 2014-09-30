@@ -464,8 +464,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
                this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
 
-               if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Switching to synchronous delivery mode ...");
-               this.dispatchManager.trySyncMode(true);
+               if (this.connectQos.isTrySyncMode()) {
+            	   if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Switching to synchronous delivery mode ...");
+            	   this.dispatchManager.trySyncMode(true);
+               }
 
                if (this.updateListener != null) { // Start a default callback server using same protocol
                   createDefaultCbServer();
@@ -501,7 +503,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.connectionListener != null) {
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
          }
-         log.info(glob.getReleaseId() + ": Successful " + this.connectQos.getAddress().getType() + " login as " + getId());
+         if (this.connectQos.getAddress() != null)
+        	 log.info(glob.getReleaseId() + ": Successful " + this.connectQos.getAddress().getType() + " login as " + getId());
 
          if (this.clientQueue.getNumOfEntries() > 0) {
             long num = this.clientQueue.getNumOfEntries();
@@ -511,7 +514,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                try { Thread.sleep(20L); } catch( InterruptedException i) {}
             }
             log.info((num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
-            this.dispatchManager.switchToSyncMode();
+            if (this.connectQos != null && this.connectQos.isTrySyncMode())
+            	this.dispatchManager.switchToSyncMode();
          }
          else {
             if (this.connectionListener != null)
@@ -1337,7 +1341,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                       " with " + this.clientQueue.getNumOfEntries() + " client side queued messages");
       }
       if (this.connectInProgress) {
-         dispatchManager.trySyncMode(true);
+    	 if (this.connectQos != null && this.connectQos.isTrySyncMode()) {    	 
+           dispatchManager.trySyncMode(true);
+    	 }
          if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
             try {
                MsgQueueEntry entry = (MsgQueueEntry)this.clientQueue.peek();

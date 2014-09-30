@@ -82,6 +82,7 @@ public final class DispatchWorker implements Runnable
 
    /**
     * Asynchronous pull mode, invoked by DispatchWorkerPool.execute() -> see DispatchManager calling it
+    * this.glob.getDispatchWorkerPool().execute(new DispatchWorker(glob, this));
     */
    public void run() {
       List<I_Entry> entryList = null;

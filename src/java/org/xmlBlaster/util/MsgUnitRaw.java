@@ -147,6 +147,10 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
    public Object getMsgUnit() {
       return this.msgUnit;
    }
+   
+   public String toString() {
+	   return toXml("");
+   }
 
    public String toXml(String contentCharset) {
       return toXml((String)null, contentCharset);
@@ -158,7 +162,7 @@ public final class MsgUnitRaw implements java.io.Serializable // Is serializable
     * @return
     */
    public String toXml(String extraOffset, String contentCharset) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;

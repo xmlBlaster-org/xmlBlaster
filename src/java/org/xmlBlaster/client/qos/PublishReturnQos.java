@@ -75,6 +75,12 @@ public final class PublishReturnQos
    public final String getStateInfo() {
       return this.statusQosData.getStateInfo();
    }
+   
+   public final boolean isQueued() {
+	   if (this.statusQosData.getStateInfo() == null)
+		   return false;
+	   return this.statusQosData.getStateInfo().startsWith("QUEUED");
+   }
 
    /**
     * Access key oid. 

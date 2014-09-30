@@ -193,6 +193,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       }
       this.checkPointContext = new String[] {"sessionName", qr.getSessionName().getAbsoluteName()};
    }
+   
+   public static boolean debugThrowArtificialCommunicationException = false;
+
 
    private void publish(MsgQueueEntry[] msgArr_) throws XmlBlasterException {
       
@@ -237,6 +240,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Before publish " + msgArr.length + " acknowledged messages ...");
 
       String[] rawReturnVal = this.driver.publishArr(msgUnitRawArr);
+
+      if (debugThrowArtificialCommunicationException)
+    	  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, "DEBUG ONLY: Artificial exception: ClientDispatchConnection.debugThrowArtificalCommunicationException=true");
+      
       if (rawReturnVal == null) {
          String text = "driver.publishArr len= " + msgUnitRawArr.length + " returned null: " + ((msgUnitRawArr.length>0)?msgUnitRawArr[0].getKey():"");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);

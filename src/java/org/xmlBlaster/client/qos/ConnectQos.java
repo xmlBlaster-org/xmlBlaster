@@ -32,6 +32,7 @@ public final class ConnectQos
    private final Global glob;
    private final ConnectQosData connectQosData;
    private boolean doSendConnect=true;
+   private boolean trySyncMode = true; // on client side the default
    /** Access to encrypt/decrypt framework, used by protocol plugins */
    //private I_MsgSecurityInterceptor securityInterceptor;
 
@@ -501,5 +502,19 @@ public final class ConnectQos
          ConnectQos qos =new ConnectQos(null);
          System.out.println("Minimal:" + qos.toXml());
       }
+   }
+
+   public boolean isTrySyncMode() {
+	  return trySyncMode;
+   }
+
+   /**
+    * Defaults to true on client side. If the connection is ALIVE
+    * messages are pushed directly into the socket. On connection failure
+    * (going to POLLING) they are put to client queue for later delivery.
+    * @param trySyncMode
+    */
+   public void setTrySyncMode(boolean trySyncMode) {
+	  this.trySyncMode = trySyncMode;
    }
 }
