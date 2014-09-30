@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18183 connectQos.setTrySyncMode() added
+     to force client side queue always to async delivery
+     Like this publishes are always locally queued and removed after server ACK
+
  o 18177  20154-08-27 StringPairTokenizer.java
           Changed semicolon ; escape to %3B, until 2014-08-27 it was %53
 
