@@ -8,9 +8,9 @@ package org.xmlBlaster.client.qos;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * This class encapsulates the QoS of an unSubcribe() request. 
@@ -28,9 +28,14 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public final class UnSubscribeQos
 {
-   private String ME = "UnSubscribeQos";
+   //private String ME = "UnSubscribeQos";
    private final Global glob;
    private final QueryQosData queryQosData;
+   /**
+    * ClientProperty key to avoid exception if UnSubscribeQos is client side queued and has no subscriptionId
+    * 2014-10-03 marcel
+    */
+   public static final String CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED = "__asyncUnsubscribeWithoutSubscriptionIdAllowed";
 
    /**
     * Constructor for default qos (quality of service).
@@ -70,7 +75,13 @@ public final class UnSubscribeQos
    
    /**
     * Sets a client property (an application specific property) to the
-    * given value
+    * given value, example:
+    * <pre>
+    * // avoid exception if UnSubscribe is queued on client side without subscriptionId
+    * // helpful if operating client in async mode even if connection is ALIVE
+    * // with connectQos.setTrySyncMode(false);
+    * unSubscribeQos.addClientProperty(UnSubscribeQos.CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED, true);
+    * </pre>
     * @param key
     * @param value
     */
@@ -78,7 +89,7 @@ public final class UnSubscribeQos
       this.queryQosData.addClientProperty(key, value);
    }
 
-   /**
+  /**
     * Read back a property. 
     * @return The client property or null if not found
     */

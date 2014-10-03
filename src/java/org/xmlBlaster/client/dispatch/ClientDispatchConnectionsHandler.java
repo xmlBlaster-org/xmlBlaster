@@ -28,6 +28,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -121,7 +122,8 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          else if (MethodName.UNSUBSCRIBE == msgQueueEntry.getMethodName()) {
             MsgQueueUnSubscribeEntry entry = (MsgQueueUnSubscribeEntry)msgQueueEntry;
             String id = entry.getUnSubscribeKey().getOid();
-            if (id != null && id.startsWith(Constants.SUBSCRIPTIONID_PREFIX)) {
+            boolean queueWithoutSubscriptionId = entry.getUnSubscribeQos().getData().getClientProperty(UnSubscribeQos.CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED, false);
+            if (id != null && (queueWithoutSubscriptionId || id.startsWith(Constants.SUBSCRIPTIONID_PREFIX))) {
                statRetQos.setSubscriptionId(id);
                UnSubscribeReturnQos[] unSubscribeReturnQosArr = new UnSubscribeReturnQos[] { new UnSubscribeReturnQos(glob, statRetQos) };
                entry.setReturnObj(unSubscribeReturnQosArr);

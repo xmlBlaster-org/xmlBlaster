@@ -7,6 +7,7 @@ package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -504,6 +505,9 @@ public final class ConnectQos
       }
    }
 
+   /**
+    * @return defaults to true
+    */
    public boolean isTrySyncMode() {
 	  return trySyncMode;
    }
@@ -512,6 +516,9 @@ public final class ConnectQos
     * Defaults to true on client side. If the connection is ALIVE
     * messages are pushed directly into the socket. On connection failure
     * (going to POLLING) they are put to client queue for later delivery.
+    * <p>
+    * Note: The synchronous {@link XmlBlasterAccess#get(org.xmlBlaster.client.key.GetKey, GetQos)} calls
+    * wont work anymore if trySyncMode is set to false
     * @param trySyncMode
     */
    public void setTrySyncMode(boolean trySyncMode) {

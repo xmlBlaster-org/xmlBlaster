@@ -154,7 +154,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private Object userObject;
    
    private XmlBlasterException toDeadXmlBlasterException;
-
+   
    /**
     * Create an xmlBlaster accessor.
     * Please don't create directly but use the factory instead:
@@ -518,8 +518,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             	this.dispatchManager.switchToSyncMode();
          }
          else {
-            if (this.connectionListener != null)
-               this.connectionListener.reachedAliveSync(ConnectionStateEnum.ALIVE, this);
+            if (this.connectionListener != null) {
+               if (this.connectQos.isTrySyncMode()) {
+                 this.connectionListener.reachedAliveSync(ConnectionStateEnum.ALIVE, this);
+               }
+            }
          }
       }
       else {
@@ -1373,6 +1376,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+	  if (this.connectQos != null && !this.connectQos.isTrySyncMode())
+		  return;
       if (this.connectionListener != null) {
          this.connectionListener.reachedAliveSync(oldState, this);
       }
