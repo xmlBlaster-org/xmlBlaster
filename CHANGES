@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18185 UnSubscribeQos.CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED 
+     and connectQos.setTrySyncMode(false) added to allow async client operation even if ALIVE
 
  o 18183 connectQos.setTrySyncMode() added
      to force client side queue always to async delivery
