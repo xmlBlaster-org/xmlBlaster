@@ -246,9 +246,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          else if (msgQueueEntry.getMethodName().equals(MethodName.GET)) {
             if (this.asyncGetLatch != null) {
                try {
-                   this.asyncGetMsgUnits = new MsgUnit[]{ msgQueueEntry.getMsgUnit() };
-	           } catch (XmlBlasterException e) {
-	               log.severe("get call with unexpected error, response is lost: " + e.toString());
+            	   this.asyncGetMsgUnits = (MsgUnit[])msgQueueEntry.getReturnObj();
+                   //this.asyncGetMsgUnits = new MsgUnit[]{ msgQueueEntry.getMsgUnit() };
+	           } catch (Throwable e) {
+	               log.severe("get call with unexpected error, response is lost: " + e.toString() + "\n" + msgQueueEntry.toXml());
                } 
                this.asyncGetLatch.countDown();
             }

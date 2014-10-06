@@ -3,7 +3,7 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
- o 18187 Implmented asynchronous sending of xmlBlaster.get() calls
+ o 18187 18188 Implmented asynchronous sending of xmlBlaster.get() calls
          The GET is put to client queue and asynchronously sent,
 	 the response is returned sync, with a default timeout of 10 sec
 	 You need to activate this behaviour with
