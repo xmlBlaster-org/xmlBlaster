@@ -1405,9 +1405,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                       " with " + this.clientQueue.getNumOfEntries() + " client side queued messages");
       }
       if (this.connectInProgress) {
-    	 if (isTrySyncMode()) {    	 
-           dispatchManager.trySyncMode(true);
-    	 }
+    	 //if (isTrySyncMode()) {
+    	 // until connecQos with prio MAX is in queue we MUST work in sync mode 
+         dispatchManager.trySyncMode(true);
+    	 //}
          if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
             try {
                MsgQueueEntry entry = (MsgQueueEntry)this.clientQueue.peek();
