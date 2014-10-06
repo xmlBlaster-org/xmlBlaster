@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -153,6 +155,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    
    private Object userObject;
    
+   private CountDownLatch asyncGetLatch;
+   
+   private MsgUnit[] asyncGetMsgUnits;
+
+   private Object asyncGetMonitor = new Object();
+   
    private XmlBlasterException toDeadXmlBlasterException;
    
    /**
@@ -233,6 +241,19 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             else {
                //log.warning("Expected connectReturnQos for " + msgQueueEntry.toXml() + " " + Global.getStackTraceAsString(null));
                if (log.isLoggable(Level.FINE)) log.fine("Expected connectReturnQos for " + msgQueueEntry.toXml() + " " + Global.getStackTraceAsString(null));
+            }
+         }
+         else if (msgQueueEntry.getMethodName().equals(MethodName.GET)) {
+            if (this.asyncGetLatch != null) {
+               try {
+                   this.asyncGetMsgUnits = new MsgUnit[]{ msgQueueEntry.getMsgUnit() };
+	           } catch (XmlBlasterException e) {
+	               log.severe("get call with unexpected error, response is lost: " + e.toString());
+               } 
+               this.asyncGetLatch.countDown();
+            }
+            else {
+               log.severe("get call with nobody interesed in, response is lost: " + msgQueueEntry.toXml());
             }
          }
       }
@@ -464,7 +485,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
                this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
 
-               if (this.connectQos.isTrySyncMode()) {
+               if (isTrySyncMode()) {
             	   if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Switching to synchronous delivery mode ...");
             	   this.dispatchManager.trySyncMode(true);
                }
@@ -514,12 +535,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                try { Thread.sleep(20L); } catch( InterruptedException i) {}
             }
             log.info((num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
-            if (this.connectQos != null && this.connectQos.isTrySyncMode())
+            if (isTrySyncMode())
             	this.dispatchManager.switchToSyncMode();
          }
          else {
             if (this.connectionListener != null) {
-               if (this.connectQos.isTrySyncMode()) {
+               if (isTrySyncMode()) {
                  this.connectionListener.reachedAliveSync(ConnectionStateEnum.ALIVE, this);
                }
             }
@@ -537,6 +558,16 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       return this.connectReturnQos; // new ConnectReturnQos(glob, "");
+   }
+   
+   /**
+    * @return defaults to true
+    */
+   private boolean isTrySyncMode() {
+	   ConnectQos qos = this.connectQos;
+	   if (qos != null)
+		   return qos.isTrySyncMode();
+	   return true;
    }
 
    /**
@@ -1177,7 +1208,36 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "get");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueGetEntry entry  = new MsgQueueGetEntry(glob,
-                                      this.clientQueue.getStorageId(), getKey, getQos);
+              this.clientQueue.getStorageId(), getKey, getQos);
+      
+      // !isTrySyncMode() && 
+      if (!dispatchManager.isSyncMode()) {
+         synchronized (asyncGetMonitor) {
+            try {
+               this.asyncGetLatch = new CountDownLatch(1);
+               MsgUnit[] arr = (MsgUnit[])queueMessage(entry);
+               try {
+            	   // timeout after 10sec
+            	   long asyncGetTimeoutMillis = getQos.getData().getClientProperty(GetQos.CP_ASYNC_GET_TIMEOUT_MILLIS, 10000);
+                   boolean responseOk = this.asyncGetLatch.await(asyncGetTimeoutMillis, TimeUnit.MILLISECONDS);
+                   if (responseOk) {
+                      return this.asyncGetMsgUnits;   
+                   }
+                   else {
+                	  //log.warning("Async get call response timed out, no response, GetQos.CP_ASYNC_GET_TIMEOUT_MILLIS=" + asyncGetTimeoutMillis);
+                      throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT,
+                    		  "get()", "async get() call timeoud out after " + GetQos.CP_ASYNC_GET_TIMEOUT_MILLIS + "=" + asyncGetTimeoutMillis + "millis");
+                   }
+               } catch(InterruptedException ie){
+                   ie.printStackTrace();
+               }
+            }
+            finally {
+                this.asyncGetLatch = null;
+                this.asyncGetMsgUnits = null;
+            }
+         }
+      }
       MsgUnit[] arr = (MsgUnit[])queueMessage(entry);
       return (arr == null) ? new MsgUnit[0] : arr;
    }
@@ -1344,7 +1404,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                       " with " + this.clientQueue.getNumOfEntries() + " client side queued messages");
       }
       if (this.connectInProgress) {
-    	 if (this.connectQos != null && this.connectQos.isTrySyncMode()) {    	 
+    	 if (isTrySyncMode()) {    	 
            dispatchManager.trySyncMode(true);
     	 }
          if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
@@ -1362,7 +1422,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          return;
       }
 
-      if (this.clientQueue == null || this.clientQueue.getNumOfEntries() == 0) {
+      if (isTrySyncMode() && (this.clientQueue == null || this.clientQueue.getNumOfEntries() == 0)) {
          dispatchManager.trySyncMode(true);
       }
 
@@ -1376,7 +1436,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    public void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-	  if (this.connectQos != null && !this.connectQos.isTrySyncMode())
+	  if (!isTrySyncMode())
 		  return;
       if (this.connectionListener != null) {
          this.connectionListener.reachedAliveSync(oldState, this);

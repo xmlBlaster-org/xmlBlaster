@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
@@ -21,11 +22,14 @@ import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
@@ -167,9 +171,23 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
 
          else if (MethodName.GET == msgQueueEntry.getMethodName()) {
             MsgQueueGetEntry entry = (MsgQueueGetEntry)msgQueueEntry;
-            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
-               "Synchronous GET on oid='" + entry.getGetKey().getOid() + "' is not possible in offline/polling mode. " +
-               "See 'http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html' for more details.");
+            boolean asyncGetAllowed = entry.getGetQos().getData().getClientProperty(GetQos.CP_ASYNC_GET_ALLOWED, false);
+            if (asyncGetAllowed) {
+               statRetQos.setKeyOid(entry.getGetKey().getOid());
+               MsgQosData msgQosData = new MsgQosData(glob, MethodName.GET);
+               msgQosData.setState(Constants.STATE_TIMEOUT);
+               msgQosData.setStateInfo(Constants.INFO_QUEUED);
+               //GetReturnQos[] getReturnQosArr = new GetReturnQos[] { new GetReturnQos(glob, msgQosData) };
+               //entry.setReturnObj(getReturnQosArr);
+               MsgUnit msgUnit = new MsgUnit(glob, entry.getGetKey().toXml(), new byte[0], msgQosData.toXml(), MethodName.GET);
+               MsgUnit[] getReturnQosArr = new MsgUnit[] { msgUnit };
+               entry.setReturnObj(getReturnQosArr);
+            }
+            else {
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
+                 "Synchronous GET on oid='" + entry.getGetKey().getOid() + "' is not possible in offline/polling mode. " +
+                 "See 'http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html' for more details.");
+            }
          }
 
          else {

@@ -41,6 +41,16 @@ public final class GetQos
    private String ME = "GetQos";
    private final Global glob;
    private final QueryQosData queryQosData;
+   /**
+    * ClientProperty key to avoid exception if xmlBlaster.get() call is client side queued and sent async
+    * 2014-10-06 marcel
+    */
+   public static final String CP_ASYNC_GET_ALLOWED = "__asyncGetAllowed";
+   /**
+    * If __asyncGetAllowed is true and xmlBlaster client is in async mode (for example polling)
+    * the timeout to wait for the server response, defaults to 10sec
+    */
+   public static final String CP_ASYNC_GET_TIMEOUT_MILLIS = "__asyncGetTimeoutMillis";
 
    /**
     * Constructor for default qos (quality of service).

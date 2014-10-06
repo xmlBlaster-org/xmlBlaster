@@ -3,6 +3,13 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18187 Implmented asynchronous sending of xmlBlaster.get() calls
+         The GET is put to client queue and asynchronously sent,
+	 the response is returned sync, with a default timeout of 10 sec
+	 You need to activate this behaviour with
+ 	   getQos.addClientProperty(GetQos.CP_ASYNC_GET_ALLOWED, true);
+	   getQos.addClientProperty(GetQos.CP_ASYNC_GET_TIMEOUT_MILLIS, 10000);
+
  o 18185 UnSubscribeQos.CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED 
      and connectQos.setTrySyncMode(false) added to allow async client operation even if ALIVE
 
