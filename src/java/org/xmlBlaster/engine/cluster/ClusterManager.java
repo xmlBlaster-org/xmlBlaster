@@ -173,7 +173,6 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (this.glob == null)
          throw new XmlBlasterException(globUtil, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
 
-      
       if (!this.glob.useCluster()) {
          log.info("Activating cluster is switched off with '-cluster false'");
          return;
@@ -181,14 +180,18 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       this.sessionInfo = this.glob.getInternalSessionInfo();
       this.glob.getRunlevelManager().addRunlevelListener(this);
       this.glob.setClusterManager(this);
-      
+
       // For JMX instanceName may not contain ","
       String vers = ("1.0".equals(getVersion())) ? "" : getVersion();
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "ClusterManager[" + getType() + vers + "]", this.glob.getContextNode());
       this.ME = this.contextNode.getRelativeName();
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
-      
+
+      String tmp = glob.get("lazyConnect", "false", null, pluginInfo);
+      lazyConnect = Boolean.parseBoolean(tmp.trim());
+      log.info("lazyConnect read out of property is '" + tmp + "'");
+      log.info("lazyConnect is set to '" + lazyConnect + "'");
       try {
          postInit();
       }
@@ -199,7 +202,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize ClusterManager.", ex);
       }
    }
-   
+
    /**
     * To initialize ClusterNode we need the addresses from the protocol drivers.
     */
