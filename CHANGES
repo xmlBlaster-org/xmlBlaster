@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18190 added lazyConnect configuration parameter to ClusterManager.
+
  o 18187-18189 Implmented asynchronous sending of xmlBlaster.get() calls
          The GET is put to client queue and asynchronously sent,
 	 the response is returned sync, with a default timeout of 10 sec
