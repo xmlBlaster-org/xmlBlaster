@@ -182,6 +182,9 @@ public final class StatusQosData extends QosData implements java.io.Serializable
       return super.clone();
    }
    
+   public String toString() {
+	   return toXml();
+   }
    
    /**
     * Setter for the exception 

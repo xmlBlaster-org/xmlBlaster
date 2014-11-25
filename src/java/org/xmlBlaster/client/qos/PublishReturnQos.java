@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
@@ -79,7 +80,7 @@ public final class PublishReturnQos
    public final boolean isQueued() {
 	   if (this.statusQosData.getStateInfo() == null)
 		   return false;
-	   return this.statusQosData.getStateInfo().startsWith("QUEUED");
+	   return this.statusQosData.getStateInfo().startsWith(Constants.INFO_QUEUED);
    }
 
    /**
