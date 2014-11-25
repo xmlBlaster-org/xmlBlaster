@@ -1272,6 +1272,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "publish");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
+      if (!isTrySyncMode() && dispatchManager != null) {
+    	  dispatchManager.trySyncMode(false);
+    	  dispatchManager.switchToASyncMode();
+      }
       MsgQueuePublishEntry entry  = new MsgQueuePublishEntry(glob, msgUnit, this.clientQueue.getStorageId());
       return (PublishReturnQos)queueMessage(entry);
    }
@@ -1412,7 +1416,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
             try {
                MsgQueueEntry entry = (MsgQueueEntry)this.clientQueue.peek();
-               if (entry.getMethodName() == MethodName.CONNECT) {
+               if (entry == null) {
+                   log.severe(getLogId()+"Removing connect entry is null in client tail back queue but numOfEntry=" + this.clientQueue.getNumOfEntries());
+                   //log.severe(getLogId()+"Removing connect entry is null in client tail back queue but numOfEntry=" + this.clientQueue.getNumOfEntries() + " clearing now queue");
+                   //this.clientQueue.clear();
+               }
+               if (entry != null && entry.getMethodName() == MethodName.CONNECT) {
                   this.clientQueue.remove();
                   log.info(getLogId()+"Removed queued connect message, our new connect has precedence");
                }
@@ -1420,6 +1429,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             catch (XmlBlasterException e) {
                log.severe(getLogId()+"Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
             }
+            catch (Throwable e) {
+            	e.printStackTrace();
+                log.severe(getLogId()+"Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
+             }
          }
          return;
       }
