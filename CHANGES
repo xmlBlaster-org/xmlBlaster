@@ -26,7 +26,7 @@ Changes for current svn
 
  o 18167  2014-06-24
           Added SubscribeQos ClientProperty __newestOnly
-          If set __newestOnly=true, xmlBlaster throws away all oder messages of this
+          If set __newestOnly=true, xmlBlaster throws away all other messages of this
           topic which are in the callback queue of the subscriber and delivers only the most current.
 	  This use case is useful for mobile clients being off line for longer periods and
 	  the topic delivers complete updates of some information.
