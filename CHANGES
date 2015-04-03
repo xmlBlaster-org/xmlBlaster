@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o 18185 Made parser a member variable based on Thierry Legrain's suggestion in SaxHandlerBase
+
  o 18193 Added fix for Java client side forced asynchronous mode
 
  o 18190 added lazyConnect configuration parameter to ClusterManager.
