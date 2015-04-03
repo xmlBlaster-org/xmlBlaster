@@ -58,6 +58,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 
    private boolean useLexicalHandler = false;
 
+   private SAXParser saxParser;
+   
    /**
     * Constructs an new object.
     * You need to call the init() method to parse the XML string.
@@ -71,6 +73,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       this.glob = (glob == null) ? Global.instance() : glob;
 
       if (log.isLoggable(Level.FINER)) log.fine("Creating new SaxHandlerBase");
+      
    }
 
    /*
@@ -150,13 +153,16 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    private void parse(InputSource xmlData) throws XmlBlasterException {
       try {
     	 character.setLength(0);
-         SAXParserFactory spf = glob.getSAXParserFactory();
-         boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
-         spf.setValidating(validate);
-         //if (log.isLoggable(Level.FINE)) log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
-
-         SAXParser sp = spf.newSAXParser();
-         XMLReader parser = sp.getXMLReader();
+    	 
+    	 if (saxParser == null) {
+        	 SAXParserFactory spf = glob.getSAXParserFactory();
+             boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
+             spf.setValidating(validate);
+             //if (log.isLoggable(Level.FINE)) log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
+             saxParser = spf.newSAXParser();
+    	 }
+    	 
+         XMLReader parser = saxParser.getXMLReader();
 
          //parser.setEntityResolver(EntityResolver resolver);
          //parser.setFeature("http://xml.org/sax/features/validation", true);
