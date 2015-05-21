@@ -435,6 +435,7 @@ public class StringPairTokenizer {
     * Fails if key contains token "&#061;"
     * and fails if value contains token "&#034;" 
     * Fails if sep==';' and value contains a real token "%3B" (until 2014-08-27 it was  "%53")
+    * trims keys and values
     * @param csv
     * @param sep Defaults to ","
     * @param apos Only '"' or "'" is supported, defaults to '"'
