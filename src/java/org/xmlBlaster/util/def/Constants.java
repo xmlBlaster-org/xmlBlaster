@@ -420,5 +420,26 @@ public class Constants {
       }
    }
 
+	/**
+	 * @param bytes
+	 *            28991029248
+	 * @param si
+	 *            SI units and binary units
+	 * @return "27.0 GiB" MiB MB ...
+	 */
+	public static String humanReadableByteCount(long bytes, boolean si) {
+		try {
+			int unit = si ? 1000 : 1024;
+			if (bytes < unit)
+				return bytes + " B";
+			int exp = (int) (Math.log(bytes) / Math.log(unit));
+			String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1)
+					+ (si ? "" : "i");
+			return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return "" + bytes;
+		}
+	}
 }
 

@@ -48,311 +48,322 @@ import org.xmlBlaster.util.def.Constants;
 
 /**
  * Usage:
+ * 
  * <pre>
  *  java javaclients.simplereader.SimpleReaderGui -dumpToFile true -directoryName /tmp
  *  java javaclients.simplereader.SimpleReaderGui -xpath "//key[starts-with(@oid,'com.')]"
  * </pre>
+ * 
  * -directoryName defaults to ${user.home}/FileDumper
  */
 public class SimpleReaderGui extends JFrame implements I_Callback {
-   /**
+	/**
     *
     */
-   private static final long serialVersionUID = 8368002446068669824L;
+	private static final long serialVersionUID = 8368002446068669824L;
 
-   private static final String ME = "SimpleReaderGui";
+	private static final String ME = "SimpleReaderGui";
 
-   private static final String USR_LOGIN  = ME;
+	private static final String USR_LOGIN = ME;
 
-   private FileDumper fileDumper;
-   private boolean dumpToFile;
+	private FileDumper fileDumper;
+	private boolean dumpToFile;
 
-   private ImageIcon image;
+	private ImageIcon image;
 
-   private I_XmlBlasterAccess xmlBlaster;
-   private SubscribeReturnQos subscribeReturnQos;
+	private I_XmlBlasterAccess xmlBlaster;
+	private SubscribeReturnQos subscribeReturnQos;
 
-   private DefaultListModel listModel = new DefaultListModel();
-   private JList jList1 = new JList();
-   private JScrollPane jScrollPane1 = new JScrollPane();
-   private JSplitPane jSplitPane1 = new JSplitPane();
-   private JPanel jPanel1 = new JPanel();
-   private JPanel jPanel2 = new JPanel();
-   private BorderLayout borderLayout1 = new BorderLayout();
-   private BorderLayout borderLayout2 = new BorderLayout();
-   private JScrollPane jScrollPane2 = new JScrollPane();
-   private JTextArea jTextArea1 = new JTextArea();
-   private JPanel jPanel4 = new JPanel();
-   private JTextField jTextField1 = new JTextField();
-   private JPanel jPanel3 = new JPanel();
-   private JButton jButton1 = new JButton();
-   private BorderLayout borderLayout3 = new BorderLayout();
-   private JButton jButton2 = new JButton();
-   private BorderLayout borderLayout4 = new BorderLayout();
+	private DefaultListModel listModel = new DefaultListModel();
+	private JList jList1 = new JList();
+	private JScrollPane jScrollPane1 = new JScrollPane();
+	private JSplitPane jSplitPane1 = new JSplitPane();
+	private JPanel jPanel1 = new JPanel();
+	private JPanel jPanel2 = new JPanel();
+	private BorderLayout borderLayout1 = new BorderLayout();
+	private BorderLayout borderLayout2 = new BorderLayout();
+	private JScrollPane jScrollPane2 = new JScrollPane();
+	private JTextArea jTextArea1 = new JTextArea();
+	private JPanel jPanel4 = new JPanel();
+	private JTextField jTextField1 = new JTextField();
+	private JPanel jPanel3 = new JPanel();
+	private JButton jButton1 = new JButton();
+	private BorderLayout borderLayout3 = new BorderLayout();
+	private JButton jButton2 = new JButton();
+	private BorderLayout borderLayout4 = new BorderLayout();
 
+	public SimpleReaderGui(I_XmlBlasterAccess _xmlBlaster) throws Exception {
+		this.xmlBlaster = _xmlBlaster;
+		try {
+			jbInit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-   public SimpleReaderGui(I_XmlBlasterAccess _xmlBlaster) throws Exception{
-      this.xmlBlaster = _xmlBlaster;
-      try {
-        jbInit();
-      }
-      catch(Exception e) {
-        e.printStackTrace();
-      }
+		this.dumpToFile = _xmlBlaster.getGlobal().getProperty()
+				.get("dumpToFile", false);
+		if (this.dumpToFile)
+			this.fileDumper = new FileDumper(_xmlBlaster.getGlobal());
 
-      this.dumpToFile = _xmlBlaster.getGlobal().getProperty().get("dumpToFile", false);
-      if (this.dumpToFile)
-         this.fileDumper = new FileDumper(_xmlBlaster.getGlobal());
+		// set the application icon
+		java.net.URL oUrl;
+		oUrl = this.getClass().getResource("AppIcon.gif");
+		Image img = null;
+		if (oUrl != null)
+			img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
+		if (img != null) {
+			this.setIconImage(img);
+			// System.out.println(img.toString());
+		} else {
+			System.out.println("AppIcon.gif not found");
+		} // -- if img != null
+		this.setTitle(ME);
+	}
 
-      // set the application icon
-      java.net.URL oUrl;
-      oUrl = this.getClass().getResource("AppIcon.gif");
-      Image img = null;
-      if (oUrl != null)
-         img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
-      if(img != null) {
-        this.setIconImage(img);
-        // System.out.println(img.toString());
-      } else {
-        System.out.println("AppIcon.gif not found");
-      } // -- if img != null
-      this.setTitle(ME);
-   }
+	public static void main(String[] args) {
+		SimpleReaderGui srGui = null;
+		try {
+			Global glob = new Global();
+			if (glob.init(args) != 0) { // Get help with -help
+				System.out.println(glob.usage());
+				System.err.println("Example:\n");
+				System.err
+						.println("java javaclients.simplereader.SimpleReaderGui -xpath '//key' -session.name simpleReader -passwd secret -protocol SOCKET -dispatch/connection/plugin/socket/hostname localhost -dumpToFile true -directoryName ${user.home}/FileDumper\n");
+				System.exit(1);
+			}
 
-   public static void main(String[] args) {
-      SimpleReaderGui srGui = null;
-      try {
-         Global glob = new Global();
-         if (glob.init(args) != 0) { // Get help with -help
-            System.out.println(glob.usage());
-            System.err.println("Example:\n");
-            System.err.println("java javaclients.simplereader.SimpleReaderGui -xpath '//key' -session.name simpleReader -passwd secret -protocol SOCKET -dispatch/connection/plugin/socket/hostname localhost -dumpToFile true -directoryName ${user.home}/FileDumper\n");
-            System.exit(1);
-         }
+			I_XmlBlasterAccess xmlBlaster = glob.getXmlBlasterAccess();
+			srGui = new SimpleReaderGui(xmlBlaster);
+			srGui.loadImage();
+			String loginName = glob.getProperty().get("session.name", "");
+			ConnectQos qos = (loginName.length() < 1) ? new ConnectQos(glob,
+					USR_LOGIN, null) : new ConnectQos(glob);
+			xmlBlaster.connect(qos, srGui);
+			srGui.setTitle(ME + "  "
+					+ xmlBlaster.getSessionName().getNodeIdStr()
+					+ "  <no subscription>");
+		} catch (Exception ex) {
+			log_error(ME, ex.toString(), "");
+			ex.printStackTrace();
+		}
+		if (srGui != null) {
+			srGui.setSize(640, 480);
+			srGui.show();
+		}
+	}
 
-         I_XmlBlasterAccess xmlBlaster = glob.getXmlBlasterAccess();
-         srGui = new SimpleReaderGui(xmlBlaster);
-         srGui.loadImage();
-         String loginName = glob.getProperty().get("session.name", "");
-         ConnectQos qos = (loginName.length() < 1) ? new ConnectQos(glob, USR_LOGIN, null) : new ConnectQos(glob);
-         xmlBlaster.connect(qos, srGui);
-         srGui.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr() + "  <no subscription>");
-      }
-      catch(Exception ex) {
-         log_error( ME, ex.toString(), "");
-         ex.printStackTrace();
-      }
-      if( srGui != null ) {
-         srGui.setSize(640,480);
-         srGui.show();
-      }
-   }
+	public String update(String secretCallbackSessionId, UpdateKey updateKey,
+			byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+		MessageWrapper messageWrapper = new MessageWrapper(
+				secretCallbackSessionId, updateKey, content, updateQos);
+		listModel.addElement(messageWrapper);
+		System.out.println("Key: " + updateKey.toXml() + " >>> Content: "
+				+ new String(content) + " >>> ---");
+		if (this.fileDumper != null) {
+			this.fileDumper.dumpMessage(updateKey.getData(), content,
+					updateQos.getData());
+		}
+		return "";
+	}
 
-   public String update(String secretCallbackSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
-   {
-      MessageWrapper messageWrapper = new MessageWrapper(secretCallbackSessionId, updateKey, content, updateQos);
-      listModel.addElement(messageWrapper);
-      System.out.println("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
-      if (this.fileDumper != null) {
-         this.fileDumper.dumpMessage(updateKey.getData(), content, updateQos.getData());
-      }
-      return "";
-   }
+	private void jbInit() throws Exception {
+		jList1.setFixedCellHeight(15);
+		jList1.setModel(listModel);
+		jList1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		jList1.setMaximumSize(new Dimension(1000, 1000));
+		jList1.setMinimumSize(new Dimension(100, 10));
+		jList1.setCellRenderer(new MyCellRenderer());
 
+		/*
+		 * this.setDefaultCloseOperation(EXIT_ON_CLOSE); EXIT_ON_CLOSE is not
+		 * working with JDK 1.2.2. EXIT_ON_CLOSE should be defined in the
+		 * interface javax.swing.WindowConstants but it isn't. The value is set
+		 * to 3, therefore we set it hard here.
+		 */
+		this.setDefaultCloseOperation(3);
+		jList1.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent evt) {
+				JList source = (JList) evt.getSource();
+				MessageWrapper selection = (MessageWrapper) source
+						.getSelectedValue();
+				if (selection != null) {
+					String secretCallbackSessionId = selection
+							.getSecretCallbackSessionId();
+					UpdateKey updateKey = selection.getUpdateKey();
+					byte[] content = selection.getContent();
+					UpdateQos updateQos = selection.getUpdateQos();
+					Properties props = new Properties();
+					props.put(Constants.TOXML_FORCEREADABLE, "" + true);
+					String contentStr = new String(content);
+					StringBuilder sb = new StringBuilder()
+							.append(" - - - secretCallbackSessionId: - - -\n")
+							.append(secretCallbackSessionId)
+							.append("\n - - - updateKey: - - -")
+							.append(updateKey.toXml())
+							.append("\n - - - content ")
+							.append(Constants.humanReadableByteCount(
+									contentStr.length(), false))
+							.append(": - - -\n").append(contentStr)
+							.append("\n - - - updateQos: - - -")
+							.append(updateQos.getData().toXml("", props))
+							.append("\n - - - end - - -\n");
+					sb.insert(
+							" - - - ".length(),
+							Constants.humanReadableByteCount(sb.length(), false)
+									+ " ");
+					jTextArea1.setText(sb.toString());
+				} else {
+					jTextArea1.setText("");
+				}
+			}
+		});
+		jPanel1.setLayout(borderLayout1);
+		jPanel2.setLayout(borderLayout2);
+		jTextArea1.setMinimumSize(new Dimension(20, 23));
+		jTextArea1.setEditable(false);
+		jPanel1.setMaximumSize(new Dimension(400, 300));
+		jPanel1.setMinimumSize(new Dimension(200, 300));
+		jPanel1.setPreferredSize(new Dimension(200, 300));
+		jScrollPane2.setAutoscrolls(true);
+		jScrollPane2.setPreferredSize(new Dimension(300, 26));
+		jSplitPane1.setMinimumSize(new Dimension(234, 400));
+		jSplitPane1.setPreferredSize(new Dimension(512, 400));
+		jTextField1.setText(this.xmlBlaster.getGlobal().getProperty()
+				.get("xpath", "//key"));
+		jPanel3.setLayout(borderLayout4);
+		jPanel3.setMaximumSize(new Dimension(120, 40));
+		jPanel3.setMinimumSize(new Dimension(120, 40));
+		jPanel3.setPreferredSize(new Dimension(120, 40));
+		jButton1.setSelected(true);
+		jButton1.setText("subscribe");
+		jButton1.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				jButton1_actionPerformed(e);
+			}
+		});
+		jPanel4.setLayout(borderLayout3);
+		jPanel4.setMaximumSize(new Dimension(32767, 70));
+		jPanel4.setMinimumSize(new Dimension(120, 70));
+		jPanel4.setPreferredSize(new Dimension(120, 70));
+		jScrollPane1.setAutoscrolls(true);
+		jButton2.setText("clear");
+		jButton2.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				jButton2_actionPerformed(e);
+			}
+		});
+		jPanel1.add(jScrollPane1, BorderLayout.CENTER);
+		jScrollPane1.getViewport().add(jList1);
+		jPanel1.add(jPanel4, BorderLayout.NORTH);
+		jPanel3.add(jButton1, BorderLayout.WEST);
+		jPanel3.add(jButton2, BorderLayout.CENTER);
+		jPanel4.add(jPanel3, BorderLayout.CENTER);
+		jPanel4.add(jTextField1, BorderLayout.NORTH);
+		jSplitPane1.add(jPanel2, JSplitPane.RIGHT);
+		jPanel2.add(jScrollPane2, BorderLayout.CENTER);
+		jSplitPane1.add(jPanel1, JSplitPane.LEFT);
+		jScrollPane2.getViewport().add(jTextArea1, null);
+		this.getContentPane().add(jSplitPane1, BorderLayout.CENTER);
+	}
 
-  private void jbInit() throws Exception {
-     jList1.setFixedCellHeight(15);
-     jList1.setModel(listModel);
-     jList1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-     jList1.setMaximumSize(new Dimension(1000, 1000));
-     jList1.setMinimumSize(new Dimension(100, 10));
-     jList1.setCellRenderer(new MyCellRenderer());
+	void jButton1_actionPerformed(ActionEvent e) {
+		String text = jTextField1.getText();
+		this.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr()
+				+ "  " + text);
 
-     /*
-     this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-     EXIT_ON_CLOSE is not working with JDK 1.2.2.
-     EXIT_ON_CLOSE should be defined in the interface javax.swing.WindowConstants
-     but it isn't.
-     The value is set to 3, therefore we set it hard here.
-     */
-     this.setDefaultCloseOperation(3);
-     jList1.addListSelectionListener(new ListSelectionListener() {
-         public void valueChanged(ListSelectionEvent evt) {
-            JList source = (JList) evt.getSource();
-            MessageWrapper selection = (MessageWrapper) source.getSelectedValue();
-            if (selection != null) {
-               String secretCallbackSessionId = selection.getSecretCallbackSessionId();
-               UpdateKey updateKey = selection.getUpdateKey();
-               byte[] content = selection.getContent();
-               UpdateQos updateQos = selection.getUpdateQos();
-               Properties props = new Properties();
-               props.put(Constants.TOXML_FORCEREADABLE, ""+true);
-               String text = (
-                  new StringBuffer()
-                     .append(" - - - secretCallbackSessionId: - - -\n")
-                     .append(secretCallbackSessionId)
-                     .append("\n - - - updateKey: - - -")
-                     .append(updateKey.toXml())
-                     .append("\n - - - content: - - -\n")
-                     .append(new String(content))
-                     .append("\n - - - updateQos: - - -")
-                     .append(updateQos.getData().toXml("", props)))
-                     .append("\n - - - end - - -\n")
-                     .toString();
-               jTextArea1.setText(text);
-            } else {
-               jTextArea1.setText("");
-            }
-         }
-      });
-      jPanel1.setLayout(borderLayout1);
-      jPanel2.setLayout(borderLayout2);
-      jTextArea1.setMinimumSize(new Dimension(20, 23));
-      jTextArea1.setEditable(false);
-      jPanel1.setMaximumSize(new Dimension(400, 300));
-      jPanel1.setMinimumSize(new Dimension(200, 300));
-      jPanel1.setPreferredSize(new Dimension(200, 300));
-      jScrollPane2.setAutoscrolls(true);
-      jScrollPane2.setPreferredSize(new Dimension(300, 26));
-      jSplitPane1.setMinimumSize(new Dimension(234, 400));
-      jSplitPane1.setPreferredSize(new Dimension(512, 400));
-      jTextField1.setText(this.xmlBlaster.getGlobal().getProperty().get("xpath", "//key"));
-      jPanel3.setLayout(borderLayout4);
-      jPanel3.setMaximumSize(new Dimension(120, 40));
-      jPanel3.setMinimumSize(new Dimension(120, 40));
-      jPanel3.setPreferredSize(new Dimension(120, 40));
-      jButton1.setSelected(true);
-      jButton1.setText("subscribe");
-      jButton1.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-           jButton1_actionPerformed(e);
-        }
-      });
-      jPanel4.setLayout(borderLayout3);
-      jPanel4.setMaximumSize(new Dimension(32767, 70));
-      jPanel4.setMinimumSize(new Dimension(120, 70));
-      jPanel4.setPreferredSize(new Dimension(120, 70));
-      jScrollPane1.setAutoscrolls(true);
-      jButton2.setText("clear");
-      jButton2.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-            jButton2_actionPerformed(e);
-         }
-      });
-      jPanel1.add(jScrollPane1,  BorderLayout.CENTER);
-      jScrollPane1.getViewport().add(jList1);
-      jPanel1.add(jPanel4, BorderLayout.NORTH);
-      jPanel3.add(jButton1,  BorderLayout.WEST);
-      jPanel3.add(jButton2, BorderLayout.CENTER);
-      jPanel4.add(jPanel3, BorderLayout.CENTER);
-      jPanel4.add(jTextField1,  BorderLayout.NORTH);
-      jSplitPane1.add(jPanel2, JSplitPane.RIGHT);
-      jPanel2.add(jScrollPane2,  BorderLayout.CENTER);
-      jSplitPane1.add(jPanel1, JSplitPane.LEFT);
-      jScrollPane2.getViewport().add(jTextArea1, null);
-      this.getContentPane().add(jSplitPane1, BorderLayout.CENTER);
-  }
+		if (this.subscribeReturnQos != null) {
+			try {
+				UnSubscribeKey key = new UnSubscribeKey(xmlBlaster.getGlobal(),
+						this.subscribeReturnQos.getSubscriptionId());
+				UnSubscribeQos qos = new UnSubscribeQos(xmlBlaster.getGlobal());
+				xmlBlaster.unSubscribe(key.toXml(), qos.toXml());
+				System.out.println(ME + " unSubscribe from "
+						+ this.subscribeReturnQos.getSubscriptionId());
+				this.subscribeReturnQos = null;
+			} catch (Throwable ex) {
+				System.err.println("error-error-error-error >>>"
+						+ ex.toString());
+				System.out.println(ME + " " + ex.getMessage());
+				ex.printStackTrace();
+			}
+		}
 
-   void jButton1_actionPerformed(ActionEvent e) {
-      String text = jTextField1.getText();
-      this.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr() + "  " + text);
+		try {
+			SubscribeKey key = new SubscribeKey(xmlBlaster.getGlobal(), text,
+					"XPATH");
+			SubscribeQos qos = new SubscribeQos(xmlBlaster.getGlobal());
+			this.subscribeReturnQos = xmlBlaster.subscribe(key.toXml(),
+					qos.toXml());
+			System.out.println(ME + " subscribe on " + text + "  ->  "
+					+ this.subscribeReturnQos.getSubscriptionId());
+		} catch (Exception ex) {
+			System.err.println("error-error-error-error >>>" + ex.toString());
+			System.out.println(ME + " " + ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
 
-      if (this.subscribeReturnQos != null) {
-         try {
-            UnSubscribeKey key = new UnSubscribeKey(xmlBlaster.getGlobal(), this.subscribeReturnQos.getSubscriptionId());
-            UnSubscribeQos qos = new UnSubscribeQos(xmlBlaster.getGlobal() );
-            xmlBlaster.unSubscribe(key.toXml(), qos.toXml());
-            System.out.println(ME + " unSubscribe from " + this.subscribeReturnQos.getSubscriptionId());
-            this.subscribeReturnQos = null;
-         }
-         catch( Throwable ex ) {
-            System.err.println("error-error-error-error >>>"+ex.toString());
-            System.out.println(ME + " " + ex.getMessage());
-            ex.printStackTrace();
-         }
-      }
+	void jButton2_actionPerformed(ActionEvent ae) {
+		try {
+			listModel.clear();
+		} catch (Exception e) {
+			System.err.println("error-error-error-error >>>" + e.toString());
+			System.out.println(ME + " " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
 
-      try {
-         SubscribeKey key = new SubscribeKey(xmlBlaster.getGlobal(), text, "XPATH");
-         SubscribeQos qos = new SubscribeQos(xmlBlaster.getGlobal() );
-         this.subscribeReturnQos = xmlBlaster.subscribe(key.toXml(), qos.toXml());
-         System.out.println(ME + " subscribe on " + text + "  ->  " + this.subscribeReturnQos.getSubscriptionId());
-      }
-      catch( Exception ex ) {
-         System.err.println("error-error-error-error >>>"+ex.toString());
-         System.out.println(ME + " " + ex.getMessage());
-         ex.printStackTrace();
-      }
-   }
+	public static void log_error(String ME, String text1, String text2) {
+		System.err.println("ME:" + ME + "text:" + text1 + text2);
+	}
 
-   void jButton2_actionPerformed(ActionEvent ae) {
-      try {
-         listModel.clear();
-      } catch (Exception e) {
-         System.err.println("error-error-error-error >>>"+e.toString());
-         System.out.println(ME + " " + e.getMessage());
-         e.printStackTrace();
-      }
-   }
+	public void loadImage() {
+		try {
+			String filename = "red.gif";
+			Image img = Toolkit.getDefaultToolkit().createImage(
+					getClass().getResource(filename));
+			image = new ImageIcon(img);
+		} catch (Exception ex) {
+			System.err.println("error-error-error-error >>>" + ex.toString());
+			System.out.println(ME + " " + ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
 
-   public static void log_error(String ME, String text1, String text2) {
-      System.err.println("ME:" + ME + "text:" + text1 +  text2);
-   }
-
-
-   public void loadImage() {
-      try {
-         String filename = "red.gif";
-         Image img = Toolkit.getDefaultToolkit().createImage(getClass().getResource(filename));
-         image = new ImageIcon( img );
-      }
-      catch (Exception ex) {
-         System.err.println("error-error-error-error >>>"+ex.toString());
-         System.out.println(ME + " " + ex.getMessage());
-         ex.printStackTrace();
-      }
-   }
-
-   class MyCellRenderer extends DefaultListCellRenderer {
-      /**
+	class MyCellRenderer extends DefaultListCellRenderer {
+		/**
        *
        */
-      private static final long serialVersionUID = 5678672570993331767L;
+		private static final long serialVersionUID = 5678672570993331767L;
 
-      public Component getListCellRendererComponent(
-          JList list,
-          Object value,
-          int index,
-          boolean isSelected,
-          boolean cellHasFocus)
-      {
-          this.setComponentOrientation(list.getComponentOrientation());
-     if (isSelected) {
-         this.setBackground(list.getSelectionBackground());
-         this.setForeground(list.getSelectionForeground());
-     }
-     else {
-         this.setBackground(list.getBackground());
-         this.setForeground(list.getForeground());
-     }
+		public Component getListCellRendererComponent(JList list, Object value,
+				int index, boolean isSelected, boolean cellHasFocus) {
+			this.setComponentOrientation(list.getComponentOrientation());
+			if (isSelected) {
+				this.setBackground(list.getSelectionBackground());
+				this.setForeground(list.getSelectionForeground());
+			} else {
+				this.setBackground(list.getBackground());
+				this.setForeground(list.getForeground());
+			}
 
-     if (value instanceof Icon) {
-         setIcon((Icon)value);
-         setText("");
-     }
-     else {
-         setIcon(image);
-         setText((value == null) ? "" : ( ((MessageWrapper) value).getUpdateKey().getOid()));
-     }
+			if (value instanceof Icon) {
+				setIcon((Icon) value);
+				setText("");
+			} else {
+				setIcon(image);
+				setText((value == null) ? "" : (((MessageWrapper) value)
+						.getUpdateKey().getOid()));
+			}
 
-     this.setEnabled(list.isEnabled());
-     this.setFont(list.getFont());
-     setBorder((cellHasFocus) ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
+			this.setEnabled(list.isEnabled());
+			this.setFont(list.getFont());
+			setBorder((cellHasFocus) ? UIManager
+					.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
 
-     return this;
-      }
-   }
-
+			return this;
+		}
+	}
 
 } // -- class
 
