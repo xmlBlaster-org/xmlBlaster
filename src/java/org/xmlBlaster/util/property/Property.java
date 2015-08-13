@@ -66,6 +66,10 @@ import org.xmlBlaster.util.def.ErrorCode;
  * NOTE: If a variable like ${XYZ} is not resolved an exception is thrown,
  * you can use the markup $_{XYZ} to avoid the exception in which case the
  * $_{XYZ} remains as is.
+ * If you set in your property file the following:
+ * property.keepUnresolvedProps=true
+ * then such values which can not be resolved are kept untouched and no exception
+ * will be thrown. This property defaults to false.
  * </p>
  *
  * <br />
@@ -220,7 +224,7 @@ public class Property implements Cloneable {
     */
    public int verbose = DEFAULT_VERBOSE;
 
-
+   public boolean keepUnresolvedProps;
 
    /**
    * Construct a property container from supplied property file and args array.
@@ -900,6 +904,8 @@ public class Property implements Cloneable {
         }
 
         // 4. Substitute dynamic variables, e.g. ${user.dir}
+        String tmp = properties.getProperty("property.keepUnresolvedProps", "false");
+        keepUnresolvedProps = tmp.trim().equals("true");
         if (replaceVariables == true)
          replaceVariables();
 
@@ -1033,7 +1039,8 @@ public class Property implements Cloneable {
      * @return The new value where all ${} are replaced.
      */
    private final String replaceVariable(String key, String value) throws XmlBlasterException {
-      value = replaceVariableWithException(key, value);
+      if (!keepUnresolvedProps)
+         value = replaceVariableWithException(key, value);
       return replaceVariableNoException(key, value);
    }
 
