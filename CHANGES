@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ 
+ o 18199 the property.keepUnresolvedProps has been added to inhibit throwing an exception if a
+   dynamic property value could not be assigned 
 
  o 18185 Made parser a member variable based on Thierry Legrain's suggestion in SaxHandlerBase
 
