@@ -517,7 +517,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          }
       } // synchronized
 
-      if (this.connectQos.getRefreshSession()) {
+      if (this.connectQos != null && this.connectQos.getRefreshSession()) {
          startSessionRefresher();
       }
 
