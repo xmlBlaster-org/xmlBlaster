@@ -481,6 +481,20 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+	public static final ErrorCode USER_SECURITY_AUTHENTICATION_NFC_DEVICETYPE = new ErrorCode(
+			"user.security.authentication.nfc_deviceType",
+			"Your NFC login is not allowed for this device type.",
+			new ResourceInfo[] {});
+
+	public static final ErrorCode USER_SECURITY_AUTHENTICATION_NFC_NOTREGISTERED = new ErrorCode(
+			"user.security.authentication.nfc_notRegistered", "Your NFC tagId is not known.",
+			new ResourceInfo[] {});
+
+	public static final ErrorCode USER_SECURITY_AUTHENTICATION_NFC_IMEI = new ErrorCode(
+			"user.security.authentication.nfc_imei",
+			"Your NFC tagId is used with unregistered device IMEI.",
+			new ResourceInfo[] {});
+
    public static final ErrorCode USER_SECURITY_AUTHENTICATION_ILLEGALDEVICEID = new ErrorCode("user.security.authentication.illegalDeviceId",
 	         "Login denied due to device identification failed. For example for invalid IMEI given.",
 	         new ResourceInfo[] {
