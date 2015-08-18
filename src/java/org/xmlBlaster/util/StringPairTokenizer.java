@@ -156,7 +156,7 @@ public class StringPairTokenizer {
     * @param innerSeparator is for example StringPairTokenizer.DEFAULT_INNER_SEPARATOR "=" or " "
     * @param wantClientProperties if set to <code>true</code> returns pairs 'String,ClientProperty', returns 'String,String' pairs otherwise.
     * @param trimValue If true the value is trimmed (removed white spaces in front and back)
-    * @return Never null,
+    * @return Never null, Map<String,String>
     * <pre>
     * classpath=xerces.jar:soap.jar,all
     * org.xmlBlaster.protocol.soap.SoapDriver=null
@@ -205,6 +205,7 @@ public class StringPairTokenizer {
     * Using default separator chars and quote chars:
     *  <code>return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, false);</code>
     * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimEmpty)
+    * @return Map<String,String>, never null
     */
    public static Map parseLineToProperties(String nextLine) {
       if (nextLine == null || nextLine.length()==0) return new HashMap();
