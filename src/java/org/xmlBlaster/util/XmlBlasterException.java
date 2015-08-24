@@ -201,7 +201,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
           && this.embeddedMessage.startsWith("Original errorCode=")
           && this.embeddedMessage.length() > "Original errorCode=".length()) {
           String errorCodeStr = this.embeddedMessage.substring("Original errorCode=".length());
-          return ErrorCode.toErrorCode(errorCodeStr);
+          return ErrorCode.toErrorCode(errorCodeStr, null);
 	   }
 	   return null;
    }
