@@ -1401,7 +1401,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             for (int ii=0; ii<oids.length; ii++) {
                TopicHandler topicHandler = this.glob.getTopicAccessor().access(oids[ii]);
                if (topicHandler == null) { // unSubscribe on a unknown message ...
-                  log.info("UnSubscribe on unknown topic "+oids[ii]+" from passed [" + xmlKey.getOid() + "] is ignored");
+                  log.info("UnSubscribe on unknown topic "+oids[ii]+" from [" + xmlKey.getOid() + "] is ignored");
                   continue;
                }
                SubscriptionInfo[] subs;
