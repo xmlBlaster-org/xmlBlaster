@@ -1523,7 +1523,7 @@ this.smtpDestinationHelper.getSubjectTemplate(), summary, description,
                      //this.callbackSessionStateSet.add(sessionName.getRelativeName());
                   }
                   else
-                     System.err.println("EventPlugin.sessionAdded: Unexpected missing of " + name);
+                     log.info("EventPlugin.sessionAdded: Session " + name + " unexpectedly not found, no event fired");
                }
             } catch (Throwable e) {
                e.printStackTrace();
@@ -1619,7 +1619,7 @@ this.smtpDestinationHelper.getSubjectTemplate(), summary, description,
                String name = clientEvent.getSessionInfo().getSessionName().getAbsoluteName();
                boolean isNew = this.pendingCallbackSessionInfoSet.add(name);
                if (!isNew)
-                  System.err.println("EventPlugin.sessionPreRemoved: Unexpected occurrence of " + name);
+            	   log.info("EventPlugin.sessionPreRemoved: Unexpected occurrence of " + name);
 
                // Remove the listener for now
                SessionName sessionName = new SessionName(this.engineGlob, name);
