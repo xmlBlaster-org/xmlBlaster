@@ -43,7 +43,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
 
    private CallbackXmlRpcDriverSingleChannel singleChannelDriver;
    private boolean contentAsString;
-   private boolean initializing = true;
+   private boolean initialized = false;
    
    /** Get a human readable name of this driver */
    public String getName() {
@@ -73,7 +73,6 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
-      initializing = true;
       if (log.isLoggable(Level.FINE))
          log.fine("init invoked");
    }
@@ -96,7 +95,6 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
     *                      the client
     */
    public void init(Global global, CallbackAddress cbAddress) throws XmlBlasterException {
-      initializing = true;
       this.glob = global;
       // workaround to pass this callback driver object to the other side (the AuthenticateImpl)
       glob.putInWeakRegistry(Thread.currentThread(), this);
@@ -132,7 +130,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          }
       }
       finally {
-         initializing = false;
+         initialized = true;
       }
    }
    
@@ -155,12 +153,18 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
       // wait until initialization process has been fully completed since we don't know yet how the
       // client will have it: singleChannel or not
       long count = 0L;
-      while (initializing) {
+      while (!initialized) {
          try {
             Thread.sleep(50L);
             count++;
-            if (count > 2400L) // try maximum 2 minutes
-               break;
+            if (count > 1200L) {
+            	// try maximum 1 minutes
+            	if (log.isLoggable(Level.FINE)) {
+            		log.fine("The callback is not initialized yet (from now on assuming multiChannel");
+            		initialized = true;
+            	}
+                break;
+            }
          }
          catch (Exception ex) {
          }
@@ -353,7 +357,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
     */
    public void shutdown() {
       //if (xmlRpcClient != null) xmlRpcClient.shutdown(); method is missing in XmlRpc package !!!
-      initializing = false;
+      initialized = false;
       if (singleChannelDriver != null) {
          singleChannelDriver.shutdown();
          singleChannelDriver = null;
