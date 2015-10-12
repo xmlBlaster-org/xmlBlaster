@@ -219,7 +219,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          // org.apache.xmlrpc.XmlRpcException: java.lang.Exception: RPC handler object not found for "update": no default handler registered.
          boolean isServerSide = ex.toString().indexOf("no default handler registered") != -1;
          
-         if (ex.linkedException != null && ex.linkedException instanceof ConnectException)
+         // if (ex.linkedException != null && ex.linkedException instanceof ConnectException)
+         if (isJavaNetEx(ex.linkedException))
             isServerSide = true;
          
          if (isServerSide) {
@@ -229,7 +230,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          if (start == -1) {
             ex.printStackTrace();
             String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed, received unexpected exception format from client";
-            XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, str, ex);
+            XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_HOLDBACK, ME, str, ex);
             e2.isServerSide(false);
             e2.setLocation("client");
             throw e2;
@@ -248,6 +249,14 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed", e);
       }
+   }
+
+   private boolean isJavaNetEx(Throwable ex) {
+	   boolean ret = false;
+	   if (ex != null) {
+		   ret  = ex.getClass().getName().startsWith("java.net.");
+	   }
+	   return ret;
    }
 
    /**
