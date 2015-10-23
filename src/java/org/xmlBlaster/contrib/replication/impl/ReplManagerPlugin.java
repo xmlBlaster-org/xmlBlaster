@@ -189,6 +189,7 @@ public class ReplManagerPlugin extends GlobalInfo
    private Map topicToPrefixMap;
    private Map counterMap;
    private Set initialDataTopicSet;
+   private boolean prioDeliveryOnInitial;
 
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -453,7 +454,7 @@ public class ReplManagerPlugin extends GlobalInfo
                      throw new Exception(ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop");
                      // return "error: " + ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop";
                }
-               
+               individualInfo.put(ReplSlave.PRIO_DELIVERY_INITIAL,"" + prioDeliveryOnInitial);
                boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId, cascadeReplicationPrefix, cascadeSlaveSessionName, false);
                if (isOkToStart == false) {
                   ret += " did fail since your status is '" + slave.getStatus() + "'. Please invoke first 'Cancel Update'";
@@ -557,6 +558,8 @@ public class ReplManagerPlugin extends GlobalInfo
          this.initialFilesLocation = this.get("replication.initialFilesLocation", "${user.home}/tmp");
 
          this.statusPollerInterval = this.getLong("replication.monitor.statusPollerInterval", STATUS_POLLER_INTERVAL_DEFAULT);
+         
+         this.prioDeliveryOnInitial = getBoolean("replication.prioDeliveryOnInitial", false);
          
          if (this.statusPollerInterval > 0)
             this.timeoutHandle = timeout.addTimeoutListener(this, this.statusPollerInterval, null);
@@ -1343,7 +1346,10 @@ public class ReplManagerPlugin extends GlobalInfo
       if (slave != null) {
          Map clientProperties = e.getSubscriptionInfo().getSubscribeQosServer().getData().getClientProperties();
          try {
-            slave.init(new ClientPropertiesInfo(clientProperties));
+            // add the client property coming from the own configuration (from the plugin)
+            I_Info tmpInfo = new ClientPropertiesInfo(clientProperties);
+            tmpInfo.put(ReplSlave.PRIO_DELIVERY_INITIAL,  "" + prioDeliveryOnInitial);
+            slave.init(tmpInfo);
          }
          catch (Exception ex) {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.subscriptionAdd", "", ex);

@@ -76,6 +76,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private final static String CONN_STALLED = "stalled";
    private final static String CONN_CONNECTED = "connected";
    private final static String CONN_DISCONNECTED = "disconnected";
+   public final static String PRIO_DELIVERY_INITIAL = "prioDeliveryOnInitial";
    
    private String slaveSessionId;
    private String name;
@@ -132,6 +133,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private boolean countSingleMessages;
    private int maxNumOfEntries;
    private String maxNumOfEntriesKey;
+   private boolean prioDeliveryOnInitial;
 
    public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId, ConnectQosData connQosData) throws XmlBlasterException {
       this.forcedCounter = 0L;
@@ -198,6 +200,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     */
    public void init(I_Info info) throws Exception {
       synchronized(this.initSync) {
+         prioDeliveryOnInitial = info.getBoolean(PRIO_DELIVERY_INITIAL, false);
          // we currently allow re-initialize since we can serve several dbWatchers for one DbWriter 
          this.replPrefix = info.get("_replName", null);
          if (this.replPrefix == null) 
@@ -224,9 +227,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          int tmp = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
          if (tmp > -1)
             setStatus(tmp);
-         
-         final boolean doPersist = false;
-         setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
+         if (!prioDeliveryOnInitial) {
+             final boolean doPersist = false;
+             boolean stat = persistentInfo.getBoolean(slaveSessionId + ".dispatcher", false);
+             setDispatcher(stat, doPersist);
+         }
 
          this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplData";
 
@@ -413,7 +418,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       if (this.statusTopic != null)
          sendStatusInformation("dbInitStart");
       final boolean doPersist = true;
-      doPause(doPersist); // stop the dispatcher
+      if (!prioDeliveryOnInitial)
+    	  doPause(doPersist); // stop the dispatcher
       
       I_AdminSession session = getSession();
       // first unsubscribe (in case it did already an initial update previously, this is needed to remove the subscription
@@ -643,13 +649,30 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          if (!this.initialized) {
             log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
             Thread.sleep(250L); // to avoid too fast looping
-            return new ArrayList();
+            return new ArrayList<I_Entry>();
          }
          if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
-            log.warning("check invoked in INITIAL STATUS. Will stop the dispatcher");
-            final boolean doPersist = true;
-            doPause(doPersist);
-            return new ArrayList();
+            if (prioDeliveryOnInitial) {
+            	// strip the array for entries which are low prio
+            	List<I_Entry> tmpList = new ArrayList<I_Entry>();
+            	for (I_Entry tmpEntry: entries) {
+            		if (tmpEntry.getPriority() >= PriorityEnum.HIGH_PRIORITY.getInt()) {
+            			tmpList.add(tmpEntry);
+            		}
+            	}
+            	if (!tmpList.isEmpty()) {
+            		entries = tmpList;
+            	}
+            	else {
+            		return new ArrayList<I_Entry>();
+            	}
+            }
+            else {
+            	log.warning("check invoked in INITIAL STATUS. Will stop the dispatcher");
+                final boolean doPersist = true;
+                doPause(doPersist);
+                return new ArrayList<I_Entry>();
+            }
          }
 
          // if (entries != null && entries.size() > 1)
