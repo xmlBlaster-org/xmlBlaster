@@ -224,17 +224,17 @@ public class AuthenticateImpl {
     * invokeSubscribe to messages.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
-   public Object xmlScriptInvoke(String literal) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("xmlScriptInvoke: " + literal);
-      
+   public Object xmlScriptInvoke(String literal) throws XmlBlasterException, XmlRpcException {
       XmlScriptParser parser = new XmlScriptParser();
-      final I_ProgressListener progressListener = null;
-      final I_PluginConfig pluginConfig = null;
-      parser.init(glob, progressListener, pluginConfig);
-      
-      InputStream is = new ByteArrayInputStream(literal.getBytes());
       try {
+         if (log.isLoggable(Level.FINER)) 
+            log.finer("xmlScriptInvoke: " + literal);
+      
+         final I_ProgressListener progressListener = null;
+         final I_PluginConfig pluginConfig = null;
+         parser.init(glob, progressListener, pluginConfig);
+      
+         InputStream is = new ByteArrayInputStream(literal.getBytes());
          MsgInfo[] msgInfoArr = parser.parse(is);
          if (msgInfoArr != null) {
             for (int i=0; i < msgInfoArr.length; i++) {
@@ -255,10 +255,16 @@ public class AuthenticateImpl {
          }
       }
       catch (IOException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+         log.severe(ex.getMessage());
+//        throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+         String code = parser.getErrorCode(ErrorCode.USER_ILLEGALARGUMENT, ex);
+         throw new XmlRpcException(code);
       }
       catch (XmlRpcException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+          log.severe(ex.getMessage());
+    	  // throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "An exception occured when parsing the string " + literal);
+         String code = parser.getErrorCode(ErrorCode.USER_ILLEGALARGUMENT, ex);
+         throw new XmlRpcException(code);
       }
       
       return null;

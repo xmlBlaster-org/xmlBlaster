@@ -246,6 +246,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer {
             factoryFactory.add(xblImpl);
             mapping.setRequestProcessorFactoryFactory(factoryFactory);
             mapping.addHandler("$default", xblImpl.getClass());      // register update() method
+            mapping.addHandler("", xblImpl.getClass());      // register update() method
 
             this.callbackAddress.setRawAddress(this.xmlRpcUrlCallback.getUrl()); // e.g. "http://127.168.1.1:8082/"
             this.ME = "XmlRpcCallbackServer-" + this.xmlRpcUrlCallback.getUrl();

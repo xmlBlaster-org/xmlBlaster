@@ -9,6 +9,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.client.protocol.xmlrpc;
 
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -105,9 +106,10 @@ public class XmlRpcCallbackImpl {
     */
    public String ping(String str)
    {
+      if (log.isLoggable(Level.FINEST))
+         log.severe("PING with " + str);
       return server.ping(str);
    }
-
    
    
 } // class XmlRpcCallbackImpl

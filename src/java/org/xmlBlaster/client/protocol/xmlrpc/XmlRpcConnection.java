@@ -720,16 +720,20 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String str) throws XmlBlasterException {
+      if (log.isLoggable(Level.FINEST))
+         log.severe(str);
       try {
          if (serializer != null) {
             String literal = serializer.getPing(str);
             final boolean singleChannel = false; // since no connect
-            return (String)sendXmlScript(literal, AUTH, singleChannel);
+            String ret = (String)sendXmlScript(literal, AUTH, singleChannel);
+     	   return ret;
          }
          else {
             Vector<String> args = new Vector<String>();
             args.addElement("");
-            return (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
+            String ret = (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
+            return ret;
          }
       }
       catch (ClassCastException e) {

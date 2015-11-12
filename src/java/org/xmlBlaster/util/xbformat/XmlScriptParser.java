@@ -139,7 +139,25 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       }
       super.forceReadable = glob.get("forceReadable", false, null, pluginConfig);
       super.inhibitContentCDATAWrapping = glob.get(Constants.INHIBIT_CONTENT_CDATA_WRAPPING, false, null, pluginConfig);
+      if (log.isLoggable(Level.FINE)) {
+    	  String txt = "";
+    	  if (pluginConfig != null) {
+    		  txt += pluginConfig.getType() + " " + pluginConfig.getVersion();
+    	  }
+    	  log.fine("sendSimpleExceptionFormat for " + txt + " is: " + sendSimpleExceptionFormat);
+    	  log.fine("forceReadable for " + txt + " is: " + forceReadable);
+    	  log.fine("inhibitContentCDATAWrapping for " + txt + " is: " + inhibitContentCDATAWrapping);
+      }
       super.initialize(glob, null, null);
+   }
+
+   public String getErrorCode(ErrorCode code, Exception ex) {
+      if (code == null)
+         code = ErrorCode.INTERNAL;
+      String ret = code.getErrorCode();
+      if (sendSimpleExceptionFormat)
+         ret = simplifiedErrorCode(simpleExceptionFormatList, ret);
+      return ret;
    }
 
    /**

@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
@@ -115,8 +117,12 @@ public class XmlScriptSerializer {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String getPing(String qos) throws XmlBlasterException {
-      return getLiteral(qos, MethodName.PING, MsgInfo.INVOKE_BYTE);
+
+	   String ret = getLiteral(qos, MethodName.PING, MsgInfo.INVOKE_BYTE);
+	   log.severe("LOG: (serializer) " + ret);
+	   return ret;
    }
+   private static Logger log = Logger.getLogger(XmlScriptSerializer.class.getName());
    
    public String getPingResponse(String qos) throws XmlBlasterException {
       return getLiteral(qos, MethodName.PING, MsgInfo.RESPONSE_BYTE);
