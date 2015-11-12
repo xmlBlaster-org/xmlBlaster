@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18214 modified error handling on xmlrpc when using xmlscript.
+
  o 18212 Replication: added replication.prioDeliveryOnInitial which allows to send high prio messages during initial phase 
 
  o 18210 XMLRPC fixed issue which leaded to a dead message instead of a Communication Exception when the client side callback driver was shutting down.
