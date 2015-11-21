@@ -95,8 +95,9 @@ public class StringPairTokenizer {
          return new String[0];
       int jj=0;
       String nextLine = nextLines[jj];
+      boolean first = true;
       do {
-         if (sb.length() > 0) {
+         if (!first) { //sb.length() > 0) {
             jj++;
             if (jj >= nextLines.length)
                break;
@@ -106,9 +107,22 @@ public class StringPairTokenizer {
             if (nextLine == null)
                continue;
          }
-         for (int i = 0; i < nextLine.length(); i++) {
+         first = false;
+         char cPrev = 0;
+         char cNext = 0;
+         int len = nextLine.length();
+         for (int i = 0; i < len; i++) {
             char c = nextLine.charAt(i);
-            if (c == quotechar) {
+            cNext = i < (len-1) ? nextLine.charAt(i+1) : 0;
+            if (c == '\\' && cNext == '\\') {
+            	sb.append(c);
+            	sb.append(c);
+            	i++;
+            }
+            else if (c == '\\') {
+            	; // Ignore, is escape char
+            }
+            else if (c == quotechar && cPrev != '\\') {
                inQuotes = !inQuotes;
                if (preserveInsideQuoteChar && sb.length()>0 && inQuotes) {
             	  inInsideQuotes = true;
@@ -132,6 +146,7 @@ public class StringPairTokenizer {
             } else {
                sb.append(c);
             }
+            cPrev = c;
          }
       } while (inQuotes);
       String tmp = sb.toString();
@@ -412,9 +427,18 @@ public class StringPairTokenizer {
     * @return never null
     */
    public static Map<String, String> CSVToMap(String csv) {
+	   final boolean unescapeSeparatorChars = true;
+	   return CSVToMap(csv, ',', unescapeSeparatorChars);
+   }
+   public static Map<String, String> CSVToMap(String csv, final char separator) {
+	   final boolean unescapeSeparatorChars = true;
+	   return CSVToMap(csv, separator, unescapeSeparatorChars);
+   }
+   public static Map<String, String> CSVToMap(String csv, final char separator, final boolean unescapeSeparatorChars) {
       if (csv == null || csv.length() < 1)
          return new HashMap<String, String>();
-      Map<String, String> map = parseLine(new String[] { csv }, ',', '"', '=', false, false, true);
+    @SuppressWarnings("unchecked")
+	Map<String, String> map = parseLine(new String[] { csv }, separator, '"', '=', false, false, true);
       String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
       for (int i=0; i<keys.length; i++) {
          String key = keys[i];
@@ -426,11 +450,26 @@ public class StringPairTokenizer {
          }
          value = ReplaceVariable.replaceAll(value, "&#034;", "\"");
          //value = ReplaceVariable.replaceAll(value, "&#039;", "'");
+         if (unescapeSeparatorChars) {
+	         if (separator == ',')
+	        	 value = ReplaceVariable.replaceAll(value, "&comma;", ",");
+	         else if (separator == ';')
+	        	 value = ReplaceVariable.replaceAll(value, "%3B", ";");
+	         else if (separator == ':')
+	        	 value = ReplaceVariable.replaceAll(value, "%3A", ":");
+	         else if (separator == '\n')
+	        	 value = ReplaceVariable.replaceAll(value, "&NL;", "\n");
+         }
          map.put(key, value);
       }
       return map;
    }
-      
+
+   public static Map<String, String> CSVToMap(String csv, char sep, char apos, char innerSeparator) {
+	   boolean unescapeSeparatorChars = true;
+	   return CSVToMap(csv, sep, apos, innerSeparator, unescapeSeparatorChars);
+}
+	   
    /**
     * Counterpart to #mapToCSV(Map)
     * Fails if key contains token "&#061;"
@@ -441,9 +480,10 @@ public class StringPairTokenizer {
     * @param sep Defaults to ","
     * @param apos Only '"' or "'" is supported, defaults to '"'
     * @param innerSeparator '='
+    * @param unescapeSeparatorChars if true eg "&comma;" -> ",". Else "" protection of columns is assumed
     * @return never null
     */
-   public static Map<String, String> CSVToMap(String csv, char sep, char apos, char innerSeparator) {
+   public static Map<String, String> CSVToMap(String csv, char sep, char apos, char innerSeparator, boolean unescapeSeparatorChars) {
       if (csv == null || csv.length() < 1)
          return new HashMap<String, String>();
       Map<String, String> map = parseLine(new String[] { csv }, sep, apos,  innerSeparator, false, false, true);
@@ -458,10 +498,24 @@ public class StringPairTokenizer {
          }
          value = ReplaceVariable.replaceAll(value, "&#034;", "\"");
          //value = ReplaceVariable.replaceAll(value, "&#039;", "'");
-         if (sep == ';') {
-        	 // Is better than &#59; (which unfortunately contains again a ;)
-        	 // "%3B" (until 2014-08-27 it was  "%53")
-             value = ReplaceVariable.replaceAll(value, XmlBuffer.SEMICOLON_STR, ";");
+         if (unescapeSeparatorChars) {
+			//             if (sep == ';') {
+			//            	 // Is better than &#59; (which unfortunately contains again a ;)
+			//            	 // "%3B" (until 2014-08-27 it was  "%53")
+			//                 value = ReplaceVariable.replaceAll(value, XmlBuffer.SEMICOLON_STR, ";");
+			//             }
+			//             else if (sep == ',') {
+			//            	 // Since 2015-11-21
+			//                 value = ReplaceVariable.replaceAll(value, "&comma;", ",");
+			//             }
+	         if (sep == ',')
+	        	 value = ReplaceVariable.replaceAll(value, "&comma;", ",");
+	         else if (sep == ';')
+	        	 value = ReplaceVariable.replaceAll(value, XmlBuffer.SEMICOLON_STR, ";"); // "%3B"
+	         else if (sep == ':')
+	        	 value = ReplaceVariable.replaceAll(value, "%3A", ":");
+	         else if (sep == '\n')
+	        	 value = ReplaceVariable.replaceAll(value, "&NL;", "\n");
          }
          map.put(key, value);
       }
