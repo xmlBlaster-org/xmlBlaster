@@ -55,41 +55,28 @@ public class FileWriterCallback implements I_Update, ContribConstants {
     */
    public FileWriterCallback(String dirName, String tmpDirName, String lockExtention, boolean overwrite, boolean keepDumpFiles) throws Exception {
       this.dirName = dirName;
-      if (dirName == null)
-         throw new Exception ("The directory where to store the files is null, can not continue");
-      this.lockExtention = lockExtention;
-      this.directory = new File(this.dirName);
-      if (this.directory == null)
-         throw new Exception("The created directory '" + dirName + "' resulted in a null File object");
-      if (!this.directory.exists()) {
-         if (this.directory.mkdir())
-            throw new Exception("The directory '" + dirName + "' could not be created");
-      }
-      if (!this.directory.canWrite())
-         throw new Exception("Can not write to the directory '" + dirName + "'");
-      if (!this.directory.isDirectory())
-         throw new Exception("'" + dirName + "' is not a directory, can not use it to store files");
       this.tmpDirName = tmpDirName;
-
+      this.directory = new File(this.dirName);
       this.tmpDirectory = new File(this.tmpDirName);
-
-      if (this.tmpDirectory == null)
-         throw new Exception("The created temporary directory '" + tmpDirName + "' resulted in a null File object");
-      if (!this.tmpDirectory.exists()) {
-         if (!this.tmpDirectory.mkdir())
-            throw new Exception("The temporary directory '" + tmpDirName + "' could not be created");
-      }
-      if (!this.tmpDirectory.canWrite())
-         throw new Exception("Can not write to the temporary directory '" + tmpDirName + "'");
-      if (!this.tmpDirectory.isDirectory())
-         throw new Exception("The temporary '" + tmpDirName + "' is not a directory, can not use it to store files");
-
+      this.lockExtention = lockExtention;
       this.overwrite = overwrite;
       this.keepDumpFiles = keepDumpFiles;
+
+      checkDirectories(this.directory, this.tmpDirectory);
    }
 
-
-   private static void storeChunk(File tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, InputStream is) throws Exception {
+   /**
+    * @param dir
+    * @param tmpDir
+    * @param fileName
+    * @param chunkNumber
+    * @param sep
+    * @param overwrite
+    * @param is
+    * @throws Exception
+    */
+   private static void storeChunk(File dir, File tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, InputStream is) throws Exception {
+      checkDirectories(dir, tmpDir);
       fileName = fileName + sep + chunkNumber;
       File file = new File(tmpDir, fileName);
       if (file == null)
@@ -120,6 +107,41 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       catch (IOException ex) {
          throw new Exception("update: an exception occured when storing the file '" + fileName + "'", ex);
       }
+   }
+
+   /**
+    * @param dirName
+    * @param tmpDirName
+    * @throws Exception
+    */
+   private static void checkDirectories(File dir, File tmpDir)
+      throws Exception {
+      String dirName = dir.getName();
+      String tmpDirName = tmpDir.getName();
+      if (dir.getName() == null)
+         throw new Exception ("The directory where to store the files is null, can not continue");
+
+         if (dir == null)
+            throw new Exception("The created directory '" + dirName + "' resulted in a null File object");
+         if (!dir.exists()) {
+            if (dir.mkdir())
+               throw new Exception("The directory '" + dirName + "' could not be created");
+         }
+         if (!dir.canWrite())
+            throw new Exception("Can not write to the directory '" + dirName + "'");
+         if (!dir.isDirectory())
+            throw new Exception("'" + dirName + "' is not a directory, can not use it to store files");
+
+         if (tmpDir == null)
+            throw new Exception("The created temporary directory '" + tmpDirName + "' resulted in a null File object");
+         if (!tmpDir.exists()) {
+            if (!tmpDir.mkdir())
+               throw new Exception("The temporary directory '" + tmpDirName + "' could not be created");
+         }
+         if (!tmpDir.canWrite())
+            throw new Exception("Can not write to the temporary directory '" + tmpDirName + "'");
+         if (!tmpDir.isDirectory())
+            throw new Exception("The temporary '" + tmpDirName + "' is not a directory, can not use it to store files");
    }
 
    /**
@@ -204,7 +226,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          dir = this.directory;
       else {
          List list = new ArrayList();
-         
+
          // check if the directory exists, if not go back recursively until it exists.
          dir = new File(this.directory, subDir);
          File tmp = dir;
@@ -218,14 +240,14 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             throw new Exception("File '" + subDir + "' in '" + directory.getAbsolutePath() + "' is not a directory");
          if (!tmp.canWrite())
             throw new Exception("Can not write in directory '" + subDir + "' in '" + directory.getAbsolutePath() + "'.");
-         
+
          for (int i=0; i < list.size(); i++) {
             tmp = new File(tmp, (String)list.get(i));
             tmp.mkdir();
          }
          dir = tmp;
       }
-      
+
       File file = new File(dir, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
@@ -357,6 +379,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
    }
 
 
+   @Override
    public void update(String topic, InputStream is, Map attrMap) throws Exception {
       String filename = null;
       String subDir = null;
@@ -412,7 +435,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          if (isLastMsg)
             putAllChunksTogether(filename, subDir, chunkCount, is, isCompleteMsg);
          else
-            storeChunk(this.tmpDirectory, filename, chunkCount, '.', this.overwrite, is);
+            storeChunk(this.directory, this.tmpDirectory, filename, chunkCount, '.', this.overwrite, is);
       }
       else if (!isCompleteMsg) { // clean up old chunks
          File[] files = getChunkFilenames(filename, '.'); // retrieves the chunks in correct order
