@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18219 StringPairTokenizer CSV parser fix to not loose escaped \n
+
  o 18217 now the /tmp/chunks is checked on every operation (and re-created if needed)
 
  o 18216 Fixes for StringPairTokenizer
