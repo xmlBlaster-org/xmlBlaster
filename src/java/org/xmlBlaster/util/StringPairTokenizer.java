@@ -119,7 +119,7 @@ public class StringPairTokenizer {
             	sb.append(c);
             	i++;
             }
-            else if (c == '\\') {
+            else if (c == '\\' && cNext == quotechar) {
             	; // Ignore, is escape char
             }
             else if (c == quotechar && cPrev != '\\') {
@@ -183,7 +183,11 @@ public class StringPairTokenizer {
     * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
     */
    public static Map parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimValue) {
-      String[] toks = parseLine(nextLines, separator, quotechar, trimEmpty, false);
+	   return parseLine(nextLines, separator, quotechar, innerSeparator, trimEmpty, wantClientProperties, trimValue, false);
+   }
+   
+   public static Map parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimValue, boolean preserveInsideQuoteChar) {
+      String[] toks = parseLine(nextLines, separator, quotechar, trimEmpty, preserveInsideQuoteChar);
       Map ret = new HashMap();
       for (int i=0; i<toks.length; i++) {
          String tok = toks[i];
@@ -484,9 +488,16 @@ public class StringPairTokenizer {
     * @return never null
     */
    public static Map<String, String> CSVToMap(String csv, char sep, char apos, char innerSeparator, boolean unescapeSeparatorChars) {
+	   return CSVToMap(csv, sep, apos, innerSeparator, unescapeSeparatorChars, false);
+   }
+   
+   public static Map<String, String> CSVToMap(String csv, char sep, char apos, char innerSeparator, boolean unescapeSeparatorChars, boolean preserveInsideQuoteChar) {
       if (csv == null || csv.length() < 1)
          return new HashMap<String, String>();
-      Map<String, String> map = parseLine(new String[] { csv }, sep, apos,  innerSeparator, false, false, true);
+      final boolean trimEmpty = false;
+      final boolean wantClientProperties = false;
+      final boolean trimValue = true;
+      Map<String, String> map = parseLine(new String[] { csv }, sep, apos,  innerSeparator, trimEmpty, wantClientProperties, trimValue, preserveInsideQuoteChar);
       String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
       for (int i=0; i<keys.length; i++) {
          String key = keys[i];

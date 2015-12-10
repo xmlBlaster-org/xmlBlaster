@@ -63,6 +63,25 @@ public class StringPairTokenizerTest extends TestCase {
 	public void testTokenizerApos() {
 		{
 			boolean preserveInsideQuoteChar = true;
+			String csv = "0,,0,\"1\",\"some ä,\",2429,,,";
+			String[] toks = StringPairTokenizer.parseLine(new String[] { csv },
+					',', '"', false, preserveInsideQuoteChar);
+			for (String tok : toks) {
+				System.out.println(">"+tok+"<");
+			}
+			assertEquals(9, toks.length);
+			assertEquals("0", toks[0]);
+			assertEquals("", toks[1]);
+			assertEquals("0", toks[2]);
+			assertEquals("1", toks[3]);
+			assertEquals("some ä,", toks[4]);
+			assertEquals("2429", toks[5]);
+			assertEquals("", toks[6]);
+			assertEquals("", toks[7]);
+			assertEquals("", toks[8]);
+		}
+		{
+			boolean preserveInsideQuoteChar = true;
 			String csv = "a=\"5\",b=\"6,7\"";
 			String[] toks = StringPairTokenizer.parseLine(new String[] { csv },
 					',', '"', false, preserveInsideQuoteChar);
