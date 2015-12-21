@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ 
+ o 18223 Replication: added replication.prioDeliveryOnInitial which allows to send high prio messages during initial phase also on very first time
 
  o 18221 Replication: now deletes export file even if the initial update has been interrupted
 
