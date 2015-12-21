@@ -232,7 +232,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
              boolean stat = persistentInfo.getBoolean(slaveSessionId + ".dispatcher", false);
              setDispatcher(stat, doPersist);
          }
-
+         else {
+            final boolean doPersist = true;
+            setDispatcher(true, doPersist);
+         }
+         
          this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplData";
 
          initTransactionSequenceIfNeeded(null);
