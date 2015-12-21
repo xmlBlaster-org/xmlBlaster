@@ -435,50 +435,54 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             msg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
             msg.setStringProperty(INITIAL_DATA_ID, dumpId);
          }
-         msg.setInputStream(fis);
-         producer.send(msg);
-         // make a version copy if none exists yet
-         boolean doDelete = true;
-         if (currentVersion != null) {
-            String backupFileName = this.initialCmdPath + File.separator + VersionTransformerCache.buildFilename(this.replPrefix, currentVersion);
-            File backupFile = new File(backupFileName);
-            if (!backupFile.exists()) {
-               final boolean copy = true;
-               if (copy) {
-                  BufferedInputStream bis = new BufferedInputStream(file.toURL().openStream());
-                  FileOutputStream os = new FileOutputStream(backupFileName);
-                  long length = file.length();
-                  long remaining = length;
-                  byte[] buf = new byte[this.initialDumpMaxSize];
-                  while (remaining > 0) {
-                     int tot = bis.read(buf);
-                     remaining -= tot;
-                     os.write(buf, 0, tot);
-                  }
-                  bis.close();
-                  os.close();
-               }
-               else {
-                  boolean ret = file.renameTo(backupFile);
-                  if (!ret)
-                     log.severe("could not move the file '" + filename + "' to '" + backupFileName + "' reason: could it be that the destination is not a local file system ? try the flag 'copyOnMove='true' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
-                  else
-                     doDelete = false;
-               }
-            }
+         try {
+             msg.setInputStream(fis);
+             producer.send(msg);
          }
-         else
-            log.severe("The version is not set. Can not make a backup copy of the version file");
-        
-         boolean isRequestingCurrentVersion = currentVersion.equalsIgnoreCase(requestedVersion); 
-         if (!this.keepDumpFiles && doDelete && isRequestingCurrentVersion) {
-            if (file.exists()) { 
-               boolean ret = file.delete();
-               if (!ret)
-                  log.warning("could not delete the file '" + filename + "'");
-            }
+         finally {
+             // make a version copy if none exists yet
+             boolean doDelete = true;
+             if (currentVersion != null) {
+                String backupFileName = this.initialCmdPath + File.separator + VersionTransformerCache.buildFilename(this.replPrefix, currentVersion);
+                File backupFile = new File(backupFileName);
+                if (!backupFile.exists()) {
+                   final boolean copy = true;
+                   if (copy) {
+                      BufferedInputStream bis = new BufferedInputStream(file.toURL().openStream());
+                      FileOutputStream os = new FileOutputStream(backupFileName);
+                      long length = file.length();
+                      long remaining = length;
+                      byte[] buf = new byte[this.initialDumpMaxSize];
+                      while (remaining > 0) {
+                         int tot = bis.read(buf);
+                         remaining -= tot;
+                         os.write(buf, 0, tot);
+                      }
+                      bis.close();
+                      os.close();
+                   }
+                   else {
+                      boolean ret = file.renameTo(backupFile);
+                      if (!ret)
+                         log.severe("could not move the file '" + filename + "' to '" + backupFileName + "' reason: could it be that the destination is not a local file system ? try the flag 'copyOnMove='true' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+                      else
+                         doDelete = false;
+                   }
+                }
+             }
+             else
+                log.severe("The version is not set. Can not make a backup copy of the version file");
+            
+             boolean isRequestingCurrentVersion = currentVersion.equalsIgnoreCase(requestedVersion); 
+             if (!this.keepDumpFiles && doDelete && isRequestingCurrentVersion) {
+                if (file.exists()) { 
+                   boolean ret = file.delete();
+                   if (!ret)
+                      log.warning("could not delete the file '" + filename + "'");
+                }
+             }
+             fis.close();
          }
-         fis.close();
       }
       else
          log.info("initial update requested with no real initial data for '" + SpecificDefault.toString(slaveSessionNames) + "' and for replication '" + this.replPrefix + "'");
