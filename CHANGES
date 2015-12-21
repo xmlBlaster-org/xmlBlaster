@@ -4,6 +4,8 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18221 Replication: now deletes export file even if the initial update has been interrupted
+
  o 18219 StringPairTokenizer CSV parser fix to not loose escaped \n
 
  o 18217 now the /tmp/chunks is checked on every operation (and re-created if needed)
