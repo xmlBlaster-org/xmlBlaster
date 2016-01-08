@@ -875,6 +875,9 @@ Expires: Tue, 21 Feb 2006 10:55:00 +0100 (CET)
 
 Some body text
 </pre>
+
+    * Try SSL (not tested):
+    * java -Dmail.debug=true -DisSSL=true -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost:465 org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost -expires +5000
     * @see #setSessionProperties(Properties) for other properties
     */
    public static void main(String[] args) {
