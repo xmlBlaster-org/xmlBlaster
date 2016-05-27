@@ -522,8 +522,13 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
          
          //"__subId:client/joe/session/1-[your-unqiue-postfix]"
          if (!subscriptionId.startsWith(Constants.SUBSCRIPTIONID_PREFIX)
-               || subscriptionId.length() < (Constants.SUBSCRIPTIONID_PREFIX.length()+5))
+               || subscriptionId.length() < (Constants.SUBSCRIPTIONID_PREFIX.length()+5)) {
             isOk = false;
+            throw new XmlBlasterException(subscribeQos.getGlobal(), ErrorCode.USER_SUBSCRIBE_ID,
+                   "Your subscriptionId '" + subscriptionId +
+                   "' is without proper " + Constants.SUBSCRIPTIONID_PREFIX + ", we expect something like '" +
+                   subscribeQos.getData().generateSubscriptionId(sessionName, xmlKey));
+         }
    
          String tail = subscriptionId.substring(Constants.SUBSCRIPTIONID_PREFIX.length());
          
