@@ -687,7 +687,19 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          AttachmentHolder[] holder = emailData.getAttachments();
 
          if (holder.length == 0 && emailData.getContent() != null && emailData.getContent().length() > 0) {
-            message.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+            if (emailData.isSendContentAsHtml()) {
+            	if (emailData.isEncodingUtf8() && emailData.getContentType().toLowerCase().contains(Constants.UTF8_ENCODING.toLowerCase())) {
+                   // "text/html; charset=utf-8"
+                   message.setContent(emailData.getContent(), emailData.getContentType());
+            	}
+            	else {
+                   message.setText(emailData.getContent(), emailData.getEncoding(), emailData.getContentType());
+            	}
+            }
+            else {
+               //Constants.UTF8_ENCODING);
+               message.setText(emailData.getContent(), emailData.getEncoding());
+            }
          }
          else {
             // create the Multipart and add its parts to it

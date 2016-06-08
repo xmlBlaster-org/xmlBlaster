@@ -56,6 +56,19 @@ public class EmailData {
    private static Logger log = Logger.getLogger(EmailData.class.getName());
 
    protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
+   public final static String CONTENTTYPE_TEXT = "text/plain";
+   public final static String CONTENTTYPE_HTML = "text/html";
+   public final static String CONTENTTYPE_HTML_UTF8 = "text/html; charset=utf-8";
+   /**
+    * For HTML content use "text/html; charset=utf-8"
+    * <p>
+    * For text use  "text/plain" ? 
+    * <pre>
+    * mimeMessage.setText(text, "utf-8", "html");
+    * mimeMessage.setContent(text, "text/html; charset=utf-8");
+    * </pre>
+    */
+   protected String contentType;
 
    protected InternetAddress[] recipients;
 
@@ -67,9 +80,6 @@ public class EmailData {
    
    protected String subject;
    
-   // TO DO: Not yet supported
-   protected boolean sendContentAsText;
-
    protected String content;
 
    /** Containts AttachmentHolder instances */
@@ -319,10 +329,14 @@ public class EmailData {
     * 
     * "ISO-8859-1" is good enough for German and English
     * 
-    * @return Never null, defaults to "ISO-8859-1"
+    * @return Never null, defaults to "UTF-8"
     */
    public String getEncoding() {
-      return this.encoding;
+      return this.encoding == null ? "" : this.encoding;
+   }
+   
+   public boolean isEncodingUtf8() {
+      return getEncoding().length() == 0 || Constants.UTF8_ENCODING.equalsIgnoreCase(getEncoding());
    }
 
    /**
@@ -909,11 +923,42 @@ public class EmailData {
       }
    }
 
-public boolean isSendContentAsText() {
-	return sendContentAsText;
-}
+   public boolean hasContentType() {
+      return this.contentType != null && this.contentType.length() > 0;
+   }
 
-public void setSendContentAsText(boolean sendContentAsText) {
-	this.sendContentAsText = sendContentAsText;
-}
+   public boolean isSendContentAsText() {
+      return !hasContentType() || CONTENTTYPE_TEXT.equals(getContentType());
+   }
+
+   public boolean isSendContentAsHtml() {
+      if (this.contentType == null)
+         return false;
+      return this.contentType.toLowerCase().contains(CONTENTTYPE_HTML);
+   }
+
+   public void setSendContentAsText(boolean sendContentAsText) {
+      if (sendContentAsText)
+         this.contentType = CONTENTTYPE_TEXT;
+      else
+         this.contentType = null;
+   }
+
+   public void setSendContentAsHtml(boolean sendContentAsHtml) {
+     if (sendContentAsHtml)
+        this.contentType = CONTENTTYPE_HTML_UTF8;
+     else
+        this.contentType = null;
+   }
+
+   /**
+    * @return never null, eg "text/plain" or "text/html; charset=utf-8"
+    */
+   public String getContentType() {
+      return this.contentType == null ? "" : this.contentType;
+   }
+
+   public void setContentType(String contentType) {
+      this.contentType = contentType;
+   }
 }
