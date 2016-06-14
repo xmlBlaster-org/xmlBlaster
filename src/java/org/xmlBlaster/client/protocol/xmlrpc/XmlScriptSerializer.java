@@ -117,9 +117,7 @@ public class XmlScriptSerializer {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String getPing(String qos) throws XmlBlasterException {
-
 	   String ret = getLiteral(qos, MethodName.PING, MsgInfo.INVOKE_BYTE);
-	   log.severe("LOG: (serializer) " + ret);
 	   return ret;
    }
    private static Logger log = Logger.getLogger(XmlScriptSerializer.class.getName());
