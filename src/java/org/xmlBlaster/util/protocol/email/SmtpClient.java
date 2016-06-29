@@ -686,10 +686,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
          AttachmentHolder[] holder = emailData.getAttachments();
 
+         // "text/html; charset=utf-8"
+         boolean useContentType = (emailData.isEncodingUtf8() && emailData.getContentType().toLowerCase().contains(Constants.UTF8_ENCODING.toLowerCase()));
+
          if (holder.length == 0 && emailData.getContent() != null && emailData.getContent().length() > 0) {
             if (emailData.isSendContentAsHtml()) {
-            	if (emailData.isEncodingUtf8() && emailData.getContentType().toLowerCase().contains(Constants.UTF8_ENCODING.toLowerCase())) {
-                   // "text/html; charset=utf-8"
+            	if (useContentType) {
                    message.setContent(emailData.getContent(), emailData.getContentType());
             	}
             	else {
@@ -707,8 +709,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    
             if (emailData.getContent() != null && emailData.getContent().length() > 0) {
                MimeBodyPart mbp = new MimeBodyPart();
-               mbp.setFileName("content.txt");
-               mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+               //mbp.setFileName("content.txt");
+               if (useContentType)
+                   mbp.setContent(emailData.getContent(), emailData.getContentType());
+               else
+            	   mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
                mbp.setDisposition(MimeBodyPart.INLINE);
                multi.addBodyPart(mbp);
             }
