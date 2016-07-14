@@ -578,6 +578,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_MAXSIZEEXCEED = new ErrorCode("user.maxSizeExceed",
+	         "You have invoked a server method with too big data.",
+	         new ResourceInfo[] {
+	         }
+	      );
+
    public static final ErrorCode USER_UPDATE_SECURITY_AUTHENTICATION_ACCESSDENIED = new ErrorCode("user.update.security.authentication.accessDenied",
          "The update method was invoked with an invalid callback session ID.",
          new ResourceInfo[] {
