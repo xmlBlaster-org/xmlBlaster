@@ -105,7 +105,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
    }
 
    /**
-    * Create a timer thread with a strong reference on the callback objects.
+    * Create a daemon timer thread with a strong reference on the callback objects.
     * 
     * @param name
     *           The name of the thread
@@ -115,6 +115,7 @@ public class Timeout extends Thread implements I_TimeoutManager {
    }
 
    /**
+    * Create a daemon timer thread
     * @param name
     *           The name of the thread
     * @param useWeakReference
