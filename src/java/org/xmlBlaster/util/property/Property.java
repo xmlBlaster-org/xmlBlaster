@@ -1193,6 +1193,8 @@ public class Property implements Cloneable {
       if (f.exists() && f.canRead()) {
     	 if (hint != null && hint.length() > 0)
            hint = ": " + hint;
+    	 else
+    	   hint = "";
          if (verbose>=1) System.out.println("Property: Loading " + fileName + " from directory " + currentPath + hint);
          info.path = currentPath;
          return info;
