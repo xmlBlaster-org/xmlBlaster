@@ -161,6 +161,8 @@ import org.xmlBlaster.util.def.ErrorCode;
 public class Property implements Cloneable {
    private final static String ME = "Property";
    //private static Logger log = Logger.getLogger(Property.class.getName());
+   
+   private boolean propertyFileArgGivenAndExists = false;
 
    private static String separator = null;
 
@@ -551,6 +553,17 @@ public class Property implements Cloneable {
           + ", supportArrays=" + supportArrays
           );
       }
+      
+      if (argsProps != null && argsProps.containsKey("propertyFile")) {
+    	  String propertyFile = argsProps.getProperty("propertyFile");
+    	  if (propertyFile != null && propertyFile.length() > 0) {
+    		  File f = new File(propertyFile);
+    		  if (f != null && f.exists() && f.canRead() && !f.isDirectory()) {
+    			  this.propertyFileArgGivenAndExists = true;
+    		  }
+    	  }
+      }
+      
       this.propertyFileName = fileName_;
       this.scanSystemProperties = scanSystemProperties;
       this.replaceVariables = replaceVariables;
@@ -878,7 +891,15 @@ public class Property implements Cloneable {
                if (verbose>=1) System.out.println("Property: No property file given.");
             }
          } else {
-            if (verbose>0 && propertyFileName!=null) System.err.println("Property: Please copy " + propertyFileName + " to your home directory. We continue with default settings.");
+        	if (this.propertyFileArgGivenAndExists) {
+               if (verbose >= 2) // info log trace only
+         		 System.out.println("Property: Consider to copy " + propertyFileName + " to your home directory. We use -propertyFile <> settings ... Used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html");
+        	}
+        	else {
+        	  if (verbose>0 && propertyFileName!=null)
+        		  System.err.println("Property: Please copy " + propertyFileName + " to your home directory. We continue with default settings. Used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html");
+        	}
+
          }
 
         // 2. Read system environment, e.g. java -Dname=joe
@@ -1159,6 +1180,9 @@ public class Property implements Cloneable {
     * @return     the path to file or null if not found
     *******************************************************************************************/
    public final FileInfo findPath(String fileName) {
+	   return findPath(fileName, null);
+   }
+   public final FileInfo findPath(String fileName, String hint) {
       if (fileName == null)
         return null;
 
@@ -1166,8 +1190,10 @@ public class Property implements Cloneable {
       FileInfo info = new FileInfo(fileName);
 
       f = new File(currentPath, fileName);
-      if (f.exists()) {
-         if (verbose>=1) System.out.println("Property: Loading " + fileName + " from directory " + currentPath);
+      if (f.exists() && f.canRead()) {
+    	 if (hint != null && hint.length() > 0)
+           hint = ": " + hint;
+         if (verbose>=1) System.out.println("Property: Loading " + fileName + " from directory " + currentPath + hint);
          info.path = currentPath;
          return info;
       }
@@ -1288,7 +1314,7 @@ public class Property implements Cloneable {
 
       String argsLocation = (String)argsProps.get("propertyFile");
       if (argsLocation != null) {
-         FileInfo info = findPath(argsLocation);
+         FileInfo info = findPath(argsLocation, "xmlBlaster.properties configuration given by '-propertyFile " + argsLocation + "'");
          if(info != null) {
             propertyFileName = argsLocation;
          }
@@ -1321,7 +1347,15 @@ public class Property implements Cloneable {
       // The method 'findPath' now return the full path including the filename
       FileInfo info = findPath(fileName);
       if(info == null) {
-        if (verbose>=1) System.err.println("Property: File '" + fileName + "' not found");
+        String text = "Property: File '" + fileName + "' not found, used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html";
+    	if (this.propertyFileArgGivenAndExists) {
+           if (verbose >= 2) // info log trace only
+        	 System.out.println(text);
+    	}
+    	else {
+          if (verbose>=1)
+        	System.err.println(text);
+    	}
       }
       return info;
    }
