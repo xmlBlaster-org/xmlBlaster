@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18235 Property.java 2016-08-16 marcel
+   Nicer logging during xmlBlaster.properties lookup"
+
  o 18232 email 2016-06-29
    Extended to support sending HTML emails "text/html; charset=utf-8" also if mail has attachments
 
