@@ -594,7 +594,7 @@ public class JmxWrapper
             ObjectName tmp = instance.getObjectName();
             JmxMBeanHandle mbeanHandle = (JmxMBeanHandle)this.mbeanMap.get(tmp.toString());
             if (mbeanHandle == null) {
-               log.severe("Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
+               log.warning("Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
                continue;
             }
             // /node/heron/connection/joe/session/2
@@ -631,7 +631,7 @@ public class JmxWrapper
          return count;
       }
       catch (Exception e) {
-         log.severe("JMX rename registration problem from '" + oldName + "' to '" + newRootName + "': " + e.toString());
+         log.warning("JMX rename registration problem from '" + oldName + "' to '" + newRootName + "': " + e.toString());
          e.printStackTrace();
          return count;
       }
@@ -669,7 +669,7 @@ public class JmxWrapper
             ObjectName tmp = instance.getObjectName();
             JmxMBeanHandle mbeanHandle = (JmxMBeanHandle)this.mbeanMap.get(tmp.toString());
             if (mbeanHandle == null) {
-               log.severe("Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
+               log.warning("Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
                continue;
             }
             this.mbeanServer.unregisterMBean(tmp);
@@ -684,7 +684,7 @@ public class JmxWrapper
          return count;
       }
       catch (Exception e) {
-         log.severe("JMX rename registration problem from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "': " + e.toString());
+         log.warning("JMX rename registration problem from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "': " + e.toString());
          e.printStackTrace();
          return count;
       }
@@ -952,10 +952,10 @@ didn't you have "state" as the name of the attribute?
          Object removed = this.mbeanMap.remove(objectName.toString());
          this.mbeanServer.unregisterMBean(objectName);
          if (removed == null)
-            log.severe("No JMX MBean instance of " + objectName.toString() + " removed");
+            log.warning("No JMX MBean instance of " + objectName.toString() + " removed");
       }
       catch (Exception e) {
-         log.severe("JMX unregistration problems: " + e.toString());
+         log.warning("JMX unregistration problems: " + e.toString());
          e.printStackTrace();
       }
    }
