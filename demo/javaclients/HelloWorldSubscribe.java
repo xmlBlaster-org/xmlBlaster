@@ -114,6 +114,7 @@ public class HelloWorldSubscribe implements I_Callback
    private boolean initialUpdate;
    private boolean updateOneway;
    private boolean wantContent;
+   private boolean contentHexDump;
    private boolean dumpToFile;
    // only IF dumpToFile==true:
    private String fileExtension;
@@ -163,6 +164,7 @@ public class HelloWorldSubscribe implements I_Callback
       this.initialUpdate = glob.getProperty().get("initialUpdate", true);
       this.updateOneway = glob.getProperty().get("updateOneway", false);
       this.wantContent = glob.getProperty().get("wantContent", true);
+      this.contentHexDump = glob.getProperty().get("contentHexDump", false);      
       this.dumpToFile = glob.getProperty().get("dumpToFile", false);
       // only IF dumpToFile==true:
       this.fileExtension = glob.getProperty().get("fileExtension", ""); // for example ".jpg"
@@ -247,6 +249,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info("   -historyNumUpdates " + historyNumUpdates);
          log.info("   -historyNewestFirst " + historyNewestFirst);
          log.info("   -wantContent       " + wantContent);
+         log.info("   -contentHexDump    " + contentHexDump);
          log.info("   -dumpToFile        " + dumpToFile);
          log.info("   -fileExtension     " + fileExtension);
          log.info("   -unSubscribe       " + unSubscribe);
@@ -488,11 +491,19 @@ public class HelloWorldSubscribe implements I_Callback
          System.out.println("");
          System.out.println("<content size='"+content.length+"'>");
          if (maxContentLength < 0 || content.length < maxContentLength) {
-            System.out.println(new String(content));
+        	 if (contentHexDump)
+        		 System.out.println(toHex(content, ' '));
+        	 else
+        		 System.out.println(new String(content));
          }
          else {
-            String str = new String(content, 0,maxContentLength-5);
-            System.out.println(str + " ...");
+            if (contentHexDump) {
+       	       System.out.println(toHex(content, ' ', maxContentLength-5) + " ...");
+            }
+            else {
+               String str = new String(content, 0,maxContentLength-5);
+               System.out.println(str + " ...");
+            }
          }
          System.out.println("</content>");
          System.out.println(updateQos.toXml());
@@ -612,6 +623,40 @@ public class HelloWorldSubscribe implements I_Callback
       }
       return this.formatter.format(new Date(timestamp));
    }
+
+	/**
+	 * Returns e.g. 0xd0 instead of 0xffffffd0
+	 * 
+	 * @param a
+	 * @param seperator
+	 * @return
+	 */
+	public String toHex(byte[] a, char seperator) {
+		if (a == null || a.length == 0)
+			return "";
+		StringBuilder sb = new StringBuilder(10+a.length);
+		for (byte b : a) {
+			if (sb.length() > 0) {
+				sb.append(seperator);
+			}
+			sb.append(String.format("0x%02x", b & 0xff));
+		}
+		return sb.toString();
+	}
+
+	public String toHex(byte[] a, char seperator, int max) {
+		if (a == null || a.length == 0)
+			return "";
+		StringBuilder sb = new StringBuilder(10+a.length);
+		for (int i=0; i<max && i<a.length; i++) {
+			byte b = a[i];
+			if (sb.length() > 0) {
+				sb.append(seperator);
+			}
+			sb.append(String.format("0x%02x", b & 0xff));
+		}
+		return sb.toString();
+	}
 
    /**
     * Try
