@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ 
+ o 18241 Replication: added interface I_StatementInjector to allow own implementations for objects of type OTHER (as for example SDO_GEOMETRY in ORACLE) 
+
  o 18235 Property.java 2016-08-16 marcel
    Nicer logging during xmlBlaster.properties lookup"
 
