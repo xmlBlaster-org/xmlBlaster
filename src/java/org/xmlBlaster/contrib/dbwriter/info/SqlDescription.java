@@ -28,15 +28,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.dbwriter.I_StatementInjector;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
+import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.impl.SearchableConfig;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -100,7 +104,13 @@ public class SqlDescription {
     * operation
     */
    private volatile Set configuredSearchableColumns;
-   
+
+   /**
+    * Used to perform specific tasks inherent to the OTHER sql type, like for example ORACLE's specific
+    * SDO_GEOMETRY type.
+    */
+   private I_StatementInjector statementInjector;
+
    /**
     * Gets the name of the schema. Since this information is not contained in the object iself but in the
     * Column information (since views could be a combination of more than one schema or catalog), this 
@@ -181,6 +191,42 @@ public class SqlDescription {
       }
       catch (Exception ex) {
          ex.printStackTrace();
+      }
+      statementInjector = getStInjector(info);
+   }
+
+   /**
+    * @param info
+    * to the registry, otherwise it only returns entries found in the registry (without initializing the object) or null if none is found.
+    * @return
+    * @throws Exception
+    */
+   private static I_StatementInjector getStInjector(I_Info info) {
+      String injectorClass = null; 
+      I_StatementInjector injector = null;
+      try {
+          injectorClass = info.get("org.xmlBlaster.contrib.dbwriter.I_StatementInjector.class", null);
+          if (injectorClass != null) {
+        	  injector = (I_StatementInjector)info.getObject(injectorClass + ".object");
+              if (injector == null) {
+                 if (injectorClass.length() > 0) {
+                    ClassLoader cl = ReplicationConverter.class.getClassLoader();
+                    injector = (I_StatementInjector)cl.loadClass(injectorClass).newInstance();
+                    if (log.isLoggable(Level.FINE)) 
+                       log.fine(injectorClass + " created and initialized");
+                    info.putObject(injectorClass + ".object" ,injector);
+                }
+                else
+                   log.info("Couldn't initialize I_StatementInjector for class " + injectorClass);
+              }
+              injector.init(info);
+          }
+          return injector;
+      }
+      catch (Exception ex) {
+         log.severe("The class " + injectorClass + " could not be loaded: " + ex.getMessage());
+         ex.printStackTrace();
+         return null;
       }
    }
 
@@ -520,18 +566,51 @@ public class SqlDescription {
          st.setBytes(pos, val);
       }
       else if (sqlType == Types.VARCHAR) {
+          if (isNull) {
+             st.setNull(pos, Types.VARCHAR);
+             return;
+          }
+          String val = prop.getStringValue();
+          log.fine("Handling insert column=" + colName + " as VARCHAR (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+          // if too log cut the end
+          if (col.getCharLength() > 0 && col.getCharLength() < val.length()) {
+             log.warning("The entry on column='" + colName + "' is too long: " + val.length() + " but should be max " + col.getCharLength() + ". Will cut the end");
+             val = val.substring(0, col.getCharLength());
+          }
+          st.setString(pos, val);
+      }
+      else if (sqlType == Types.SQLXML) {
+          if (isNull) {
+             st.setNull(pos, Types.SQLXML);
+             return;
+          }
+          String val = prop.getStringValue();
+          log.fine("Handling insert column=" + colName + " as SQLXML (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+          // if too log cut the end
+          if (col.getCharLength() > 0 && col.getCharLength() < val.length()) {
+             log.warning("The entry on column='" + colName + "' is too long: " + val.length() + " but should be max " + col.getCharLength() + ". Will cut the end");
+             val = val.substring(0, col.getCharLength());
+          }
+          st.setString(pos, val);
+      }
+      else if (sqlType == Types.OTHER && col.getTypeName() != null && col.getTypeName().contains("SDO_GEOMETRY")) {
          if (isNull) {
-            st.setNull(pos, Types.VARCHAR);
+            st.setNull(pos, Types.OTHER);
             return;
          }
-         String val = prop.getStringValue();
-         log.fine("Handling insert column=" + colName + " as VARCHAR (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
-         // if too log cut the end
-         if (col.getCharLength() > 0 && col.getCharLength() < val.length()) {
-            log.warning("The entry on column='" + colName + "' is too long: " + val.length() + " but should be max " + col.getCharLength() + ". Will cut the end");
-            val = val.substring(0, col.getCharLength());
+         if (statementInjector != null) {
+        	 boolean isInjected = statementInjector.insertIntoStatement(st, pos, prop, col, sqlType, isNull);
+        	 if (!isInjected) {
+                 String val = prop.getStringValue();
+                 log.fine("Handling insert column=" + colName + " as SDO_GEOMETRY (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+                 log.severe("THE SDO_GEOMETRY IS NOT IMPLEMENTED YET (or wrongly configured)  !!!");
+            }
          }
-         st.setString(pos, val);
+         else {
+             String val = prop.getStringValue();
+             log.fine("Handling insert column=" + colName + " as SDO_GEOMETRY (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+             log.severe("THE SDO_GEOMETRY IS NOT CONFIGURED !!!");
+         }
       }
       else if (sqlType == Types.CHAR) {
          if (isNull) {

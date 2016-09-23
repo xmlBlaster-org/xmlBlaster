@@ -538,6 +538,8 @@ public class SqlColumn {
          return "VARBINARY";
       if (sqlType == Types.VARCHAR)
          return "VARCHAR";
+      if (sqlType == Types.SQLXML)
+    	  return "SQLXML";
       return "UNKNOWN";
    }
 
@@ -616,6 +618,7 @@ public class SqlColumn {
       System.out.println("TINYINT\t" + Types.TINYINT);
       System.out.println("VARBINARY\t" + Types.VARBINARY);
       System.out.println("VARCHAR\t" + Types.VARCHAR);
+      System.out.println("SQLXML\t" + Types.SQLXML);
       System.out.println("=====================================");
    }
 
@@ -786,6 +789,8 @@ public class SqlColumn {
          return nextNumber(random, 256);
       if (sqlType == Types.TINYINT)
          return nextNumber(random, 256);
+      if (sqlType == Types.SQLXML)
+         return nextChar(random, 24);
 
       return null;
    }

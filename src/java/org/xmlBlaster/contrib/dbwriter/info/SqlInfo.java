@@ -8,10 +8,12 @@ package org.xmlBlaster.contrib.dbwriter.info;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -24,6 +26,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -748,12 +752,42 @@ public class SqlInfo implements ReplicationConstants {
             props.load(new FileInputStream(propFile));
          }
          I_Info info = new PropertiesInfo(props);
-         
-         boolean forceCreationAndInit = true;
-         ReplicationConverter.getDbSpecific(info, forceCreationAndInit);
-         
-         SqlInfo sqlInfo = SqlInfo.getStructure(info);
-         System.out.println(sqlInfo.toXml(""));
+
+         // boolean forceCreationAndInit = true;
+         // ReplicationConverter.getDbSpecific(info, forceCreationAndInit);
+
+         pool = new DbPool();
+         pool.init(info);
+         info.putObject("db.pool", pool);
+         Object[] objs = info.getKeys().toArray(new Object[info.getKeys().size()]);
+         HashMap<String, String> map = new HashMap<>();
+         for (int i=0; i < objs.length; i++) {
+           String key = (String)objs[i];
+            if (key.startsWith("table.")) {
+               String val = info.get(key, null);
+               map.put(key, val);
+               info.put(key, null); // remove it
+            }
+         }
+         String[] keys = map.keySet().toArray(new String[map.size()]);
+         for (int i=0; i < keys.length; i++) {
+            info.put(keys[i],  map.get(keys[i]));
+            SqlInfo sqlInfo = SqlInfo.getStructure(info);
+            String dir = info.get("outputDir", null);
+            if (dir != null) {
+               String name = "unknown";
+               SqlColumn[] cols = sqlInfo.getDescription().getColumns();
+               if (cols != null && cols.length > 0) {
+                  name = cols[0].getTable();
+               }
+               name = dir + name + ".xml";
+               FileOutputStream fos = new FileOutputStream(name);
+               fos.write(sqlInfo.toXml("").getBytes(Charset.forName("UTF-8")));
+               fos.close();
+            }
+            info.put(keys[i], null); // remove it
+            System.out.println(sqlInfo.toXml(""));
+         }
       } 
       catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
