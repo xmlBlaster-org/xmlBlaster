@@ -201,14 +201,36 @@ public class SpecificOracle extends SpecificDefault {
             else {
                if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                      || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
-                  buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
-                  buf.append("             fake := ").append(this.replPrefix);
-                  buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
+                  if (type == Types.OTHER && typeName != null && typeName.contains("SDO_GEOMETRY")) {
+                     log.info("The column " + description.getIdentity() + " " + varName + " is of type " + type);
+                     // SDO_UTIL.FROM_WKTGEOMETRY(geometry IN VARCHAR2) RETURN SDO_GEOMETRY;
+                     // SDO_UTIL.FROM_WKTGEOMETRY(geometry IN CLOB) RETURN SDO_GEOMETRY;
+                     // SDO_UTIL.TO_WKTGEOMETRY(geometry IN SDO_GEOMETRY) RETURN CLOB;
+                     buf.append("             fake := ").append(this.replPrefix);
+                     String extendedVarName = varName;
+                     extendedVarName = "SDO_UTIL.TO_GML311GEOMETRY(" + varName + ")";
+                     buf.append("fill_blob_char(").append(extendedVarName).append(", '").append(colName).append("',");
+                     buf.append(contName).append(");\n");
+                  }
+                  else {
+                     buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
+                     buf.append("             fake := ").append(this.replPrefix);
+                     buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
+                  }
                }
                else {
                   // buf.append("             tmpNum := ").append(varName).append(";\n");
                   buf.append("             fake := ").append(this.replPrefix);
-                  buf.append("fill_blob_char(").append(varName).append(", '").append(colName).append("',");
+                  String extendedVarName = varName;
+                  if (type == Types.SQLXML)
+                	  extendedVarName += ".getStringVal()";
+                  else if (type == Types.OTHER && typeName != null && typeName.contains("SDO_GEOMETRY")) {
+                     // SDO_UTIL.FROM_WKTGEOMETRY(geometry IN VARCHAR2) RETURN SDO_GEOMETRY;
+                     // SDO_UTIL.FROM_WKTGEOMETRY(geometry IN CLOB) RETURN SDO_GEOMETRY;
+                     // SDO_UTIL.TO_WKTGEOMETRY(geometry IN SDO_GEOMETRY) RETURN CLOB;
+                	  extendedVarName = "SDO_UTIL.TO_WKTGEOMETRY(" + varName + ")";
+                  }
+                  buf.append("fill_blob_char(").append(extendedVarName).append(", '").append(colName).append("',");
                   buf.append(contName).append(");\n");
                }
                

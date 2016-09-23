@@ -598,6 +598,29 @@ BEGIN
 END ${replPrefix}fill_blob_char;
 -- EOC (end of command: needed as a separator for our script parser)            
 
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}fill_blob_char                                                  
+-- (CLOB version) must be invoked as:                                                          
+-- repl_fill_blob_char(newCont, :new.SRWY_RWY_ID, 'SRWY_RWY_ID');               
+-- ---------------------------------------------------------------------------- 
+
+
+CREATE OR REPLACE FUNCTION ${replPrefix}fill_blob_char(val CLOB, 
+                           nameOfParam VARCHAR, res IN OUT NOCOPY CLOB) 
+   RETURN INTEGER AS
+   tmpCont CLOB;
+   fake    INTEGER;
+BEGIN
+   tmpCont := EMPTY_CLOB;
+   dbms_lob.createtemporary(tmpCont, TRUE);
+   dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);
+   dbms_lob.append(tmpCont, val);
+   fake := ${replPrefix}col2xml(nameOfParam, tmpCont, res);
+   dbms_lob.close(tmpCont);
+   dbms_lob.freetemporary(tmpCont);
+   RETURN 0;
+END ${replPrefix}fill_blob_char;
+-- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
