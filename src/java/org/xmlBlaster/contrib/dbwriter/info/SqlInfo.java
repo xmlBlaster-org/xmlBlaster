@@ -760,7 +760,7 @@ public class SqlInfo implements ReplicationConstants {
          pool.init(info);
          info.putObject("db.pool", pool);
          Object[] objs = info.getKeys().toArray(new Object[info.getKeys().size()]);
-         HashMap<String, String> map = new HashMap<>();
+         HashMap<String, String> map = new HashMap<String, String>();
          for (int i=0; i < objs.length; i++) {
            String key = (String)objs[i];
             if (key.startsWith("table.")) {
