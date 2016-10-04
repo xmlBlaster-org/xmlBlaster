@@ -45,7 +45,8 @@ public class SpecificOracle extends SpecificDefault {
    private boolean wipeoutExIfConnected;
    private boolean createDropAlterDetection;
    private boolean useOid;
-   
+   private boolean catchExceptions;
+
    /**
     * Not doing anything.
     */
@@ -71,6 +72,8 @@ public class SpecificOracle extends SpecificDefault {
       this.wipeoutSynonyms = this.info.getBoolean("replication.oracle.wipeoutSynonyms", true);
       this.wipeoutIndexes = this.info.getBoolean("replication.oracle.wipeoutIndexes", true);
       this.createDropAlterDetection = this.info.getBoolean("replication.createDropAlterDetection", true);
+      this.catchExceptions = this.info.getBoolean("replication.catchExceptions", true); // default
+      this.catchExceptions = this.info.getBoolean("replication.oracle.catchExceptions", this.catchExceptions);
       this.useOid = this.info.getBoolean("replication.oracle.useOid", true);
    }
    
@@ -327,6 +330,9 @@ public class SpecificOracle extends SpecificDefault {
          buf.append("   clientInfo VARCHAR2(100);\n");
       
       buf.append("BEGIN\n");
+      if (catchExceptions) {
+         buf.append("BEGIN  -- to catch exceptions\n");
+      }
       buf.append("\n");
       if (this.debug) {
          buf.append("    debug := ").append(this.replPrefix).append("debug_trigger('").append(schemaName).append("','").append(tableName).append("');\n");
@@ -373,6 +379,12 @@ public class SpecificOracle extends SpecificDefault {
       if (schemaName == null)
          schemaNameTmp = "NULL";
       else schemaNameTmp = "'" + schemaName + "'";
+      if (catchExceptions) {
+         buf.append("EXCEPTION\n");
+         buf.append("   WHEN OTHERS THEN\n");
+         buf.append("     op := 'EXCEPTION';\n");
+    	  buf.append("END; -- this is in the catch exception\n");
+      }
       buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
       
       buf.append("    INSERT INTO " + this.replPrefix + "items (repl_key, trans_key, dbId, tablename, guid,\n");
@@ -393,22 +405,32 @@ public class SpecificOracle extends SpecificDefault {
       // newClob has not been opened and shall therefore not be closed.
       if (containsLongs) {
          buf.append("    IF NOT INSERTING THEN\n");
-         buf.append("       dbms_lob.close(oldCont);\n");
-         buf.append("       dbms_lob.freetemporary(oldCont);\n");
+         buf.append("       IF oldCont IS NOT NULL THEN\n");
+         buf.append("          dbms_lob.close(oldCont);\n");
+         buf.append("          dbms_lob.freetemporary(oldCont);\n");
+         buf.append("       END IF;\n");
          buf.append("    END IF;\n");
       }
       else {
          buf.append("    IF INSERTING THEN\n");
-         buf.append("       dbms_lob.close(newCont);\n");
-         buf.append("       dbms_lob.freetemporary(newCont);\n");
+         buf.append("       IF newCont IS NOT NULL THEN\n");
+         buf.append("          dbms_lob.close(newCont);\n");
+         buf.append("          dbms_lob.freetemporary(newCont);\n");
+         buf.append("       END IF;\n");
          buf.append("    ELSIF DELETING THEN\n");
-         buf.append("       dbms_lob.close(oldCont);\n");
-         buf.append("       dbms_lob.freetemporary(oldCont);\n");
+         buf.append("       IF oldCont IS NOT NULL THEN\n");
+         buf.append("          dbms_lob.close(oldCont);\n");
+         buf.append("          dbms_lob.freetemporary(oldCont);\n");
+         buf.append("       END IF;\n");
          buf.append("    ELSE\n");
-         buf.append("       dbms_lob.close(oldCont);\n");
-         buf.append("       dbms_lob.close(newCont);\n");
-         buf.append("       dbms_lob.freetemporary(oldCont);\n");
-         buf.append("       dbms_lob.freetemporary(newCont);\n");
+         buf.append("       IF oldCont IS NOT NULL THEN\n");
+         buf.append("          dbms_lob.close(oldCont);\n");
+         buf.append("          dbms_lob.freetemporary(oldCont);\n");
+         buf.append("       END IF;\n");
+         buf.append("       IF newCont IS NOT NULL THEN\n");
+         buf.append("          dbms_lob.close(newCont);\n");
+         buf.append("          dbms_lob.freetemporary(newCont);\n");
+         buf.append("       END IF;\n");
          buf.append("    END IF;\n");
       }
       buf.append("END ").append(triggerName).append(";\n");

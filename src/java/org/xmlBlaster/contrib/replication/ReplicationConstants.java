@@ -52,6 +52,7 @@ public interface ReplicationConstants extends ContribConstants {
    // commands
     final static String REPLICATION_CMD = "REPLICATION";
     final static String INITIAL_XML_CMD = "INITIAL_DUMP_AS_XML";
+    final static String EXCEPTION_ACTION = "EXCEPTION";
     final static String INSERT_ACTION = "INSERT";
     final static String UPDATE_ACTION = "UPDATE";
     final static String DELETE_ACTION = "DELETE";

@@ -351,7 +351,27 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       // String newContent = rs.getString(9); // could be null
       String newContent = getContent(rs, 9);
       String oldContent = getContent(rs, 10);
+      String version = rs.getString(11);
 
+      // we now check if it is an exception, in which case we do not propagate: we only write a severe on the file system
+      if (EXCEPTION_ACTION.equals(action)) {
+         StringBuffer buf = new StringBuffer();
+         buf.append("An exception occured when executing the trigger and the exception was catched.");
+         buf.append(" The partial result is following:\n");
+         buf.append(" tableName=").append(tableName);
+         buf.append(" replKey=").append(this.newReplKey);
+         buf.append(" transKey=").append(transKey);
+         buf.append(" dbId=").append(dbId);
+         buf.append(" guid=").append(guid);
+         buf.append(" catalog=").append(catalog);
+         buf.append(" schema=").append(schema);
+         buf.append(" version=").append(version);
+         buf.append(" action(overwritten)=").append(action);
+         buf.append(" oldContent=").append(oldContent);
+         buf.append(" newContent=").append(newContent);
+         log.severe(buf.toString());
+         return;
+      }
       // check if it needs to read the new content explicitly, this is used for cases
       // where it was not possible to fill with meat in the synchronous PL/SQL part.
       if (newContent == null && (INSERT_ACTION.equals(action) || (UPDATE_ACTION.equals(action)))) {
@@ -360,8 +380,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          else
             newContent = this.dbSpecific.getContentFromGuid(guid, catalog, schema, tableName, this.transformer);
       }
-      
-      String version = rs.getString(11);
+
       if (this.sqlInfo.getRowCount() == 0L) {
 
          if (this.transformer != null) {
