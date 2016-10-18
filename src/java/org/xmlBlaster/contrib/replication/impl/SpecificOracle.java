@@ -233,8 +233,15 @@ public class SpecificOracle extends SpecificDefault {
                      // SDO_UTIL.TO_WKTGEOMETRY(geometry IN SDO_GEOMETRY) RETURN CLOB;
                 	  extendedVarName = "SDO_UTIL.TO_WKTGEOMETRY(" + varName + ")";
                   }
-                  buf.append("fill_blob_char(").append(extendedVarName).append(", '").append(colName).append("',");
-                  buf.append(contName).append(");\n");
+                  if (type == Types.CLOB) {
+                	  // buf.append("col2xml(").append(extendedVarName).append(", '").append(colName).append("',");
+                      buf.append("col2xml('").append(colName).append("', ").append(extendedVarName).append(",");
+                      buf.append(contName).append(");\n");
+                  }
+                  else {
+                      buf.append("fill_blob_char(").append(extendedVarName).append(", '").append(colName).append("',");
+                      buf.append(contName).append(");\n");
+                  }
                }
                
             }

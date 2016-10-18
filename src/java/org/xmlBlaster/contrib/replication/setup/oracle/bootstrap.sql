@@ -180,43 +180,51 @@ BEGIN
    increment := 32766;
    len := dbms_lob.getlength(content);
 
-   WHILE offset < len LOOP
-      dbms_lob.read(content, increment, offset, tmp);
-      offset := offset + increment; 
-      if len > increment THEN 
-         offset := offset - 3; -- overlap to be sure not to cut a token
-      END IF;
-      pos := INSTR(tmp, ']]>', 1, 1);
-      IF POS > 0 THEN
-         IF ret < 2 THEN
-            ret := 2;
+   BEGIN
+      WHILE offset < len LOOP
+         dbms_lob.read(content, increment, offset, tmp);
+         offset := offset + increment; 
+         if len > increment THEN 
+            offset := offset - 3; -- overlap to be sure not to cut a token
          END IF;
-      END IF;
-      -- this is for characters lower than 13
-      -- pos := REGEXP_COUNT(tmp, '[:cntrl:]', 1, 'c');
-      -- position of first occurence of the regex expr.
-      pos := REGEXP_INSTR(tmp, '[[:cntrl:]]', 1, 1);
-      IF POS > 0 THEN
-         IF ret < 2 THEN
-	    ret := 2;
-	 END IF;
-      END IF;	    	
-      pos := INSTR(tmp, '<', 1, 1);
-      IF POS > 0 THEN 
-         IF ret < 1 THEN
-            ret := 1;
+         pos := INSTR(tmp, ']]>', 1, 1);
+         IF POS > 0 THEN
+            IF ret < 2 THEN
+               ret := 2;
+            END IF;
          END IF;
-      END IF;
-      pos := INSTR(tmp, '&', 1, 1);
-      IF POS > 0 THEN 
-         IF ret < 1 THEN 
-            ret := 1;
+         -- this is for characters lower than 13
+         -- pos := REGEXP_COUNT(tmp, '[:cntrl:]', 1, 'c');
+         -- position of first occurence of the regex expr.
+         pos := REGEXP_INSTR(tmp, '[[:cntrl:]]', 1, 1);
+         IF POS > 0 THEN
+            IF ret < 2 THEN
+     	    ret := 2;
+     	 END IF;
+         END IF;	    	
+         pos := INSTR(tmp, '<', 1, 1);
+         IF POS > 0 THEN 
+            IF ret < 1 THEN
+               ret := 1;
+            END IF;
          END IF;
-      END IF;
-   END LOOP;
+         pos := INSTR(tmp, '&', 1, 1);
+         IF POS > 0 THEN 
+            IF ret < 1 THEN 
+               ret := 1;
+            END IF;
+         END IF;
+      END LOOP;
+   EXCEPTION
+      WHEN OTHERS THEN
+        ret := 2;
+   END; -- this is in the catch exception
+  
    RETURN ret;
 END ${replPrefix}needs_prot;
 -- EOC (end of command: needed as a separator for our script parser)            
+
+
 
 
                  
