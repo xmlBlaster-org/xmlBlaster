@@ -19,8 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.plugins.I_Session;
+import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
@@ -34,6 +36,7 @@ import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
+import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
@@ -986,6 +989,27 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
 
       return ret;
+   }
+
+   public final MsgUnit[] get(String url, String qos) throws XmlBlasterException {
+	      if (url == null) {
+	         log.info("Please pass a valid topic oid");
+	         return new MsgUnit[0];
+	      }
+
+	      log.info(ME+": Administrative get() of '" + url + "' for client '" + getId() + "' qos='" + qos + "'");
+	      GetKey uk = new GetKey(glob, url);
+	      GetQos uq;
+	      if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String")) {
+	         uq = new GetQos(glob);
+	      }
+	      else {
+	         uq = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
+	      }
+	      GetQosServer uqs = new GetQosServer(glob, uq.getData());
+
+	      MsgUnit[] ret = glob.getRequestBroker().get(this, uk.getData(), uqs);
+	      return ret;
    }
 
    public String[] unSubscribeByIndex(int index, String qos) throws XmlBlasterException {
