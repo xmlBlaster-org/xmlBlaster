@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18248 2016-11-26 Administrative SessionInfo MsgUnit[] get() added
+
+ o 18247 2016-11-26 startsWith events added "topicStartsWith/hello.2/event/subscribe"
  
  o 18241 Replication: added interface I_StatementInjector to allow own implementations for objects of type OTHER (as for example SDO_GEOMETRY in ORACLE) 
 
