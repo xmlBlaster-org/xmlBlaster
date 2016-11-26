@@ -1996,7 +1996,7 @@ public class Global implements Cloneable
     * <p />
     * 0=nothing, 1=info, 2=trace, configure with
     * <pre>
-    * java -Dproperty.verbose 2 ...
+    * java -Dproperty.verbose=2 ...
     *
     * java org.xmlBlaster.Main -property.verbose 2
     * </pre>
