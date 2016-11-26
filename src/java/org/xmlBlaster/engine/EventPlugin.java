@@ -616,6 +616,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   this.topicSet = new TreeSet<String>();
                this.topicSet.add(event);
             }
+            else if (event.startsWith(ContextNode.TOPIC_MARKER_TAG+"StartsWith"+ContextNode.SEP)) {
+                // "topicStartsWith/hello.1/event/alive", "topicStartsWith/hello.2/event/subscribe" ...
+                log.fine("Register topic event = " + event);
+                if (event.endsWith("/event/subscribe") || event.endsWith("/event/unSubscribe"))
+                   this.requestBroker.addSubscriptionListener(this);
+                else
+                   this.engineGlob.getTopicAccessor().addTopicListener(this);
+                if (this.topicSet == null)
+                   this.topicSet = new TreeSet<String>();
+                this.topicSet.add(event);
+             }
             else if (event.startsWith("heartbeat")) {
                // "heartbeat.360000
                log.fine("Register heartbeat event = " + event);
