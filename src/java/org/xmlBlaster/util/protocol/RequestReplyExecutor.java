@@ -690,6 +690,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          }
          if (e instanceof NullPointerException)
             e.printStackTrace();
+         log.warning(str);
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str, e);
       }
 
