@@ -161,7 +161,7 @@ public final class SubscribeQos
 
    /**
     * Adds your supplied get querySpec. 
-    * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/query.plugin.html">The query plugin requirement</a>
+    * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The query plugin requirement</a>
     */
    public void addQuerySpec(QuerySpecQos querySpec) {
       this.queryQosData.addQuerySpec(querySpec);
