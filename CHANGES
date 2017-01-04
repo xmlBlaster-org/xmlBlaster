@@ -3,6 +3,10 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18253 2017-01-03 Mime plugin DropIfNotDeliverableUniqueOnly supports MD5SUM check
+   MimeAccessPlugin[DropIfNotDeliverableUniqueOnly][1.0]=org.xmlBlaster.contrib.mime.DropIfNotDeliverableUniqueOnly,useMd5Sum=true
+   With useMd5Sum=true the content of most current message is checked if it is identical to previous and suppressed
+
  o 18248 2016-11-26 Administrative SessionInfo MsgUnit[] get() added
 
  o 18247 2016-11-26 startsWith events added "topicStartsWith/hello.2/event/subscribe"

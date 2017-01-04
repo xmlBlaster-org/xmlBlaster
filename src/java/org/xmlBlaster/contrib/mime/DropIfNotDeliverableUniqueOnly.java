@@ -36,6 +36,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * - If it is offline don't add messages to callback queue
  * - If it comes online again check if current message was delivered,
  *   if not send it initially (if redeliverNewestOnReconnect==false which is default; else on reconnect the newest is always send. Note: You can't use both variants simultaneously as it operates on the session Map)
+ * - Setting useMd5Sum=true will check of content of message was delivered already (checks latest message in history queue only)  
  * </pre>
  * <p>
  * If a client callback goes to polling, this plugin removes all existing subscriptions.
@@ -56,7 +57,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * </p>
  * <pre>
  * MimeAccessPlugin[DropIfNotDeliverableUniqueOnly][1.0]=\
- *   org.xmlBlaster.contrib.mime.DropIfNotDeliverableUniqueOnly,dropper.types=*,uniqueGroupIdKeyName=_myuniqueGroupId
+ *   org.xmlBlaster.contrib.mime.DropIfNotDeliverableUniqueOnly,dropper.types=*,uniqueGroupIdKeyName=_myuniqueGroupId,useMd5Sum=true
  * </pre>
  * <tt>dropper.types=*</tt> is default and activates the plugin
  * for any published message where a subscriber has set this filter,<br />
@@ -112,6 +113,7 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    public static final String MIME_TYPES = "dropper.types";
    private String uniqueGroupIdKeyName = "_uniqueGroupId";
    private boolean redeliverNewestOnReconnect;
+   private boolean useMd5Sum;
 
    /**
     * This is called after instantiation of the plugin 
@@ -133,7 +135,8 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
       // the client property key defaults to "_uniqueGroupId"
       this.uniqueGroupIdKeyName = prop.getProperty("uniqueGroupIdKeyName", this.uniqueGroupIdKeyName);
       this.redeliverNewestOnReconnect = Boolean.valueOf(prop.getProperty("redeliverNewestOnReconnect", ""+this.redeliverNewestOnReconnect));
-      log.info("Plugin " + getType() + " " + getVersion() + " loaded for mimeTypes '" + someMimeTypes + "' uniqueGroupIdKeyName=" + this.uniqueGroupIdKeyName + " redeliverNewestOnReconnect=" + this.redeliverNewestOnReconnect);
+      this.useMd5Sum = Boolean.valueOf(prop.getProperty("useMd5Sum", ""+this.useMd5Sum));
+      log.info("Plugin " + getType() + " " + getVersion() + " loaded for mimeTypes '" + someMimeTypes + "' uniqueGroupIdKeyName=" + this.uniqueGroupIdKeyName + " redeliverNewestOnReconnect=" + this.redeliverNewestOnReconnect + " useMd5Sum=" + this.useMd5Sum);
    }
 
    /**
@@ -205,21 +208,42 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
             return false;
          }
          
-         // Check if message instance was delivered already to callback queue
-         String topicId = msgUnit.getKeyOid();
-         long timestampMillisCurr = msgUnit.getQosData().getRcvTimestamp().getMillis();
-         // groupId is only check for newest, use &lt;history numEntries='10' newestFirst='false'/> to scan old messages as well
-         String groupId = msgUnit.getQosData().getClientProperty(this.uniqueGroupIdKeyName, topicId);
-         String key = getType() + ":" + groupId;// "DropIfNotDeliverableUniqueOnly:myTopic"
-         synchronized (receiver.getUserObjectMap()) {
-            Long timestampPrevious = (Long)receiver.getUserObject(key, null);
-            if (timestampPrevious != null) {
-               if (timestampMillisCurr <= timestampPrevious) {
-                  log.info("Message topicId=" + topicId + " received=" + msgUnit.getQosData().getRcvTimestamp().toString() + " " + this.uniqueGroupIdKeyName+ "=" + groupId + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
-                  return false;
+         {
+            // Check if message instance was delivered already to callback queue
+            String topicId = msgUnit.getKeyOid();
+            long timestampMillisCurr = msgUnit.getQosData().getRcvTimestamp().getMillis();
+            // groupId is only check for newest, use &lt;history numEntries='10' newestFirst='false'/> to scan old messages as well
+            String groupId = msgUnit.getQosData().getClientProperty(this.uniqueGroupIdKeyName, topicId);
+            String key = getType() + ":" + groupId;// "DropIfNotDeliverableUniqueOnly:myTopic"
+            synchronized (receiver.getUserObjectMap()) {
+               Long timestampPrevious = (Long)receiver.getUserObject(key, null);
+               if (timestampPrevious != null) {
+                  if (timestampMillisCurr <= timestampPrevious) {
+                     log.info("Message topicId=" + topicId + " received=" + msgUnit.getQosData().getRcvTimestamp().toString() + " " + this.uniqueGroupIdKeyName+ "=" + groupId + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
+                     return false;
+                  }
+               }
+               receiver.setUserObject(key, timestampMillisCurr);
+            }
+         }
+         
+         if (this.useMd5Sum) {
+            try {
+               String md5sum = Constants.md5sum(msgUnit.getContent());
+               //log.info("DEBUG ONLY useMd5Sum=" + md5sum + ": " + msgUnit.getContentStr());
+               String key = getType() + ":md5sum";// "DropIfNotDeliverableUniqueOnly:md5sum"
+               synchronized (receiver.getUserObjectMap()) {
+                   String md5sumPrevious = (String)receiver.getUserObject(key, null);
+                   if (md5sumPrevious != null && md5sum.equals(md5sumPrevious)) {
+                      log.info("Message topicId=" + msgUnit.getKeyOid() + " received md5sum=" + md5sum + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
+                      return false;
+                   }
+                   receiver.setUserObject(key, md5sum);
                }
             }
-            receiver.setUserObject(key, timestampMillisCurr);
+            catch (XmlBlasterException e) {
+               e.printStackTrace();
+            }
          }
          /* Does not work as the SubscriptionInfo disappears on unSubscribe
          ClientSubscriptions mgr = ((ServerScope)glob).getRequestBroker().getClientSubscriptions();

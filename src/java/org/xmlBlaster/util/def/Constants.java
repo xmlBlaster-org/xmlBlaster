@@ -7,9 +7,13 @@ Comment:   Holding destination address attributes
 package org.xmlBlaster.util.def;
 
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.jms.XBConnectionMetaData;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * Holding some Constants
@@ -441,5 +445,64 @@ public class Constants {
 			return "" + bytes;
 		}
 	}
+
+
+   public final static char[] hextable = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+   public static String byteArrayToHex(byte[] array) {
+      String s = "";
+      for (int i = 0; i < array.length; ++i) {
+	     int di = (array[i] + 256) & 0xFF; // Make it unsigned
+	     s = s + hextable[(di >> 4) & 0xF] + hextable[di & 0xF];
+     }
+     return s;
+   }
+
+	/**
+	 * @param algorithm
+	 *            "MD5"
+	 * @throws WatcheeRtException
+	 */
+   public static String digest(byte[] s, String algorithm) throws XmlBlasterException {
+		MessageDigest m = null;
+		try {
+			m = MessageDigest.getInstance(algorithm);
+		} catch (NoSuchAlgorithmException e) {
+			throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, "digest", "digest failed", e);
+		}
+
+		m.update(s);
+		// "123456" ->
+		// [-31, 10, -36, 57, 73, -70, 89, -85, -66, 86, -32, 87, -14, 15, -120,
+		// 62]
+		return byteArrayToHex(m.digest());
+   }
+
+	/**
+	 * md5sum: [ 5 millis ] for 1000 iterations -> 200 iterations/millisecond
+	 * 
+	 * @param s
+	 *            "123456"
+	 * @return "e10adc3949ba59abbe56e057f20f883e"
+	 */
+    public static String md5sum(String s) throws XmlBlasterException {
+		try {
+			if (s == null)
+				s = "";
+			return digest(s.getBytes("UTF-8"), "MD5");
+		} catch (UnsupportedEncodingException e) {
+			throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, "md5sum", "digest failed", e);
+		}
+   }
+
+	/**
+	 * @param s in case null: uses byte[0] with "d41d8cd98f00b204e9800998ecf8427e"
+	 * @return never null
+	 */
+   public static String md5sum(byte[] s) throws XmlBlasterException {
+      if (s == null)
+          s = new byte[0];
+      return digest(s, "MD5");
+   }
 }
 
