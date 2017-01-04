@@ -246,6 +246,10 @@ public abstract class QueryRefinementQos
 
       return sb.toString();
    }
+   
+   public String toString() {
+	   return "type=" + getType() + ",query=" + getQuery().toString();
+   }
 }
 
 

@@ -55,6 +55,10 @@ public class AccessFilterQos extends QueryRefinementQos {
    public AccessFilterQos(Global glob, String type, String version, Query query) {
       super(glob, type, version, query, "filter", "mime", "accessFilter.version");
    }
+   
+   public String toString() {
+	   return super.toString();
+   }
 }
 
 
