@@ -332,7 +332,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       // "mail.smtp.port", "587" TLS
       // true
       fillProperties("mail.smtp.starttls.enable", null, props, glob, pluginConfig);
-
+      fillProperties("mail.smtp.ssl.enable", null, props, glob, pluginConfig);
+      fillProperties("mail.smtp.ssl.checkserveridentity", null, props, glob, pluginConfig);
+      fillProperties("mail.smtp.ssl.trust", null, props, glob, pluginConfig);
+      
       if (props.getProperty("mail.debug") == null)
          props.put("mail.debug", glob.get("mail.debug", System.getProperty(
                "mail.debug", "false"), null, pluginConfig));
@@ -432,6 +435,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 	    	  String value = props.getProperty(key.toString());
 	    	  log.info("SMTP Property " + key +"=" + value);
 	      }
+	      log.info("Auth " + getUser() + " " + this.xbUri.getPassword());
       }
       
       // Setup asynchronous sending thread for outgoing emails
