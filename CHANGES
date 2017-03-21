@@ -3,6 +3,12 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18256 made the callback queue block (default 1 minute) in case the thread pool is exhausted. It
+   can be configured with:
+      dispatch/callback/maxWaitTime 60000
+   and should be used in conjunction with a customized specific pool size:
+      dispatch/callback/maximumPoolSize 20
+ 
  o 18255 2017-03-21 Avoid dependency on "org.apache.commons.lang"
    In JdbcConnectionPool.java replaced StrTokenizer with StringTokenizer
  
