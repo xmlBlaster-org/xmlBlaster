@@ -8,13 +8,14 @@ Author:    michele@laghi.eu
 
 package org.xmlBlaster.util.queue.jdbc;
 
-import org.apache.commons.lang.text.StrTokenizer;
+//import org.apache.commons.lang.text.StrTokenizer;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
@@ -756,10 +757,12 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       
       this.mapping = new Hashtable<String, String>();
       // StringTokenizer tokenizer = new StringTokenizer(mappingText, ",");
-      StrTokenizer tokenizer = new StrTokenizer(mappingText, ',', '"');
       XmlBlasterException ex = null;
-      while (tokenizer.hasNext()) {
-         String singleMapping = tokenizer.nextToken();
+      String[] arr = StringPairTokenizer.parseLine(mappingText, ',', '"', true);
+      //StrTokenizer tokenizer = new StrTokenizer(mappingText, ',', '"');
+      //while (tokenizer.hasNext()) {
+      //   String singleMapping = tokenizer.nextToken();
+      for (String singleMapping : arr) {
          int pos = singleMapping.indexOf("=");
          if (pos < 0)
             ex = new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "syntax in xmlBlaster.properties for " + singleMapping +
