@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
@@ -41,7 +43,8 @@ public class DispatchWorkerPool //implements I_RunlevelListener
    private PropInt createThreads = new PropInt(5);
    private boolean isShutdown = false;
    private final String poolId = "dispatch";
-
+   // 2017-03-21 Michele Laghi
+   private PropLong maxWaitTime = new PropLong(60000L);
 
    protected static class DeamonThreadFactory implements ThreadFactory {
       private final String id;
@@ -88,6 +91,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       //this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "minimumPoolSize");
       this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "createThreads");
       this.threadLifetime.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "threadLifetime");
+      this.maxWaitTime.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "maxWaitTime");
       if (log.isLoggable(Level.FINE)) log.fine("maximumPoolSize=" + this.maximumPoolSize.getValue()/* + " minimumPoolSize=" +
                     this.minimumPoolSize.getValue()*/ + " createThreads=" + this.createThreads.getValue() + " threadLifetime=" + this.threadLifetime + "' ms");
 
@@ -96,11 +100,19 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       ThreadFactory threadFactory = new DeamonThreadFactory(glob.getId(), this.threadPrio.getValue());
       // Default: corePoolSize=0, maximumPoolSize=Integer.MAX_VALUE, keepAliveTime=60L, TimeUnit.SECONDS
       // SynchronousQueue} that hands off tasks to threads without otherwise holding them. Here, an attempt to queue a task will fail if no threads are immediately available to run it, so a new thread will be constructed.
+
+      // BlockingQueue<Runnable> blockingQueue = new SynchronousQueue<Runnable>(); 
+      BlockingQueue<Runnable> blockingQueue = null;
+      if (maxWaitTime.getValue() > 0L)
+    	  blockingQueue = new BlockingOnOfferQueue<Runnable>(1, maxWaitTime.getValue());
+      else
+    	  blockingQueue = new SynchronousQueue<Runnable>();
+
       this.pool = new ThreadPoolExecutor(this.createThreads.getValue(), this.maximumPoolSize.getValue(),
     		  this.threadLifetime.getValue(), TimeUnit.MILLISECONDS,
-              new SynchronousQueue<Runnable>(),
+              blockingQueue,
               threadFactory);
-      
+
       this.pool.setRejectedExecutionHandler(new RejectedExecutionHandler() {
          // @Override
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
