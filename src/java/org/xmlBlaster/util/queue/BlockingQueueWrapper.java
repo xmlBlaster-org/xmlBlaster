@@ -121,16 +121,16 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
 	  I_Queue q = this.queue;
       if (q == null)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_JDBC_INVALID, "The invoked queue is null (already shutdown ?)");
-      List<I_Entry> ret = q.peek(numOfEntries, -1L);
+      //List<I_Entry> ret = q.peek(numOfEntries, -1L);
       // TODO: if numOfEntries == -1 und timeout > 0L we expect at least one
-      if ((ret.size() > 0 && ret.size() >= numOfEntries) || timeout == 0L) // should be sufficient a ==
-         return ret;
+      //if ((ret.size() > 0 && ret.size() >= numOfEntries) || timeout == 0L) // should be sufficient a ==
+      //   return ret;
 
       try {
          this.waiting = true;
          if (!this.isRegistered) {
-            this.isRegistered = true;
             q.addStorageSizeListener(this);
+            this.isRegistered = true;
          }
 
          long endTime = System.currentTimeMillis() + timeout;

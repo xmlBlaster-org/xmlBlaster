@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18257 2017-03-21 Fixed BlockingQueueWrapper.java to not peek any more with danger of loop
+
  o 18256 made the callback queue block (default 1 minute) in case the thread pool is exhausted. It
    can be configured with:
       dispatch/callback/maxWaitTime 60000
