@@ -220,7 +220,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
             cb.addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
             cb.setFromPersistenceRecovery(connectQos.isFromPersistenceRecovery());
          }
-         this.dispatchManager = new ServerDispatchManager(glob, this.msgErrorHandler,
+         this.dispatchManager = new ServerDispatchManager(this, glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 cba, this.sessionName);
       }
@@ -622,7 +622,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       else if (wantsCallbacks && !hasCallback()) {
          log.info(ME+": Successfully reconfigured and created dispatch manager with given callback address");
-         ServerDispatchManager tmpDispatchManager = new ServerDispatchManager(glob, this.msgErrorHandler,
+         ServerDispatchManager tmpDispatchManager = new ServerDispatchManager(this, glob, this.msgErrorHandler,
                               this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                               newConnectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
          ServerDispatchManager dispatchManager = this.dispatchManager;

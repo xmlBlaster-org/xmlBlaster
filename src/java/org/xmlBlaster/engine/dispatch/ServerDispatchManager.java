@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
@@ -95,15 +96,18 @@ public final class ServerDispatchManager implements I_DispatchManager
 
    private SessionName sessionName;
 
+   private SessionInfo sessionInfo;
+
    /**
     * @param msgQueue The message queue which i use (!!! TODO: this changes, we should pass it on every method where needed)
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */
-   public ServerDispatchManager(ServerScope glob, I_MsgErrorHandler failureListener,
+   public ServerDispatchManager(SessionInfo sessionInfo, ServerScope glob, I_MsgErrorHandler failureListener,
                           I_MsgSecurityInterceptor securityInterceptor,
                           I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener,
                           AddressBase[] addrArr, SessionName sessionName) throws XmlBlasterException {
+      this.sessionInfo = sessionInfo;
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
       this.inDispatchManagerCtor = true;
@@ -1138,10 +1142,16 @@ public final class ServerDispatchManager implements I_DispatchManager
     * Called locally and from TopicHandler when internal error (Throwable) occurred to avoid infinite looping
     */
    public void internalError(Throwable throwable) {
-      givingUpDelivery((throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
-                       new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable));
-      log.severe(ME+": PANIC: Internal error, doing shutdown: " + throwable.getMessage());
-      shutdown();
+      try {
+         XmlBlasterException ex = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
+         new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable);
+            shutdownFomAnyState(ConnectionStateEnum.ALIVE, ex); // ALIVE is workaround
+            // givingUpDelivery(ex);
+            log.severe(ME+": PANIC: Internal error, doing shutdown: " + throwable.getMessage());
+      }
+      finally {
+         shutdown();
+      }
    }
 
    /**
@@ -1187,6 +1197,18 @@ public final class ServerDispatchManager implements I_DispatchManager
             }
             //this.msgInterceptor = null;
          }
+
+         if (this.sessionInfo != null) {
+            try {
+               glob.getAuthenticate().disconnect(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), null);
+            }
+            catch (Exception e) {
+               log.severe("Disconnecting client with " + sessionInfo.toXml());
+               e.printStackTrace();
+            }
+            // this.sessionInfo.shutdown();
+         }
+
          if (this.dispatchConnectionsHandler != null) {
             this.dispatchConnectionsHandler.shutdown();
             //this.dispatchConnectionsHandler = null;
