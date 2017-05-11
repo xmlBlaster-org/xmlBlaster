@@ -3,8 +3,10 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o 18264 2017-05-11: fixed ServerDispatchManager.shutdown since it generated an exception on explicit logouts
  
- o 19261 2017-05-08: after exception leading to DEAD callback status the transient sessions where reconnected but did not get any updates anymore.
+ o 18261 2017-05-08: after exception leading to DEAD callback status the transient sessions where reconnected but did not get any updates anymore.
    This has now been fixed by shutting down the session info so that a reconnect leads to a new session info and thereby a new session
  
  o 18257 2017-03-21 Fixed BlockingQueueWrapper.java to not peek any more with danger of loop
