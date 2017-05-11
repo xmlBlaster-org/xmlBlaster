@@ -1198,8 +1198,9 @@ public final class ServerDispatchManager implements I_DispatchManager
             //this.msgInterceptor = null;
          }
 
-         if (this.sessionInfo != null) {
+         if (sessionInfo != null) {
             try {
+               if (!sessionInfo.isShutdown())
                glob.getAuthenticate().disconnect(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), null);
             }
             catch (Exception e) {
