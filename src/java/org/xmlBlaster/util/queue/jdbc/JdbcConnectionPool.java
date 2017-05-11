@@ -309,7 +309,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          addConnectionToPool(false);
       }
       catch (SQLException ex) {
-         log.warning("Could not close the connection to be discarded");
+         log.warning("Could not add a fresh connection to the pool after discarding");
       }
    }
    
