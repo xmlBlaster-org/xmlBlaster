@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18266 2017-05-19 marcel
+ Fixed race condition in QosData which could lead to ConcurrentModificationException during dead messages
+
  o 18264 2017-05-11: fixed ServerDispatchManager.shutdown since it generated an exception on explicit logouts
  
  o 18261 2017-05-08: after exception leading to DEAD callback status the transient sessions where reconnected but did not get any updates anymore.

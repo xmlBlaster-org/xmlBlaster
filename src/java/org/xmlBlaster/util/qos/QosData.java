@@ -76,6 +76,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    private MethodName methodName;
 
    private Map<String, ClientProperty> clientProperties;
+   private final Object clientPropertiesMutex = new Object();
 
    /**
     * Constructor, it does not parse the data, use a factory for this. 
@@ -467,9 +468,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
                newOne.routeNodeList = (ArrayList<RouteInfo>)this.routeNodeList.clone();
             }
             
-            if (this.clientProperties != null/* && this.clientProperties.size() > 0*/) {
+            synchronized (this.clientPropertiesMutex) {
                newOne.clientProperties = (HashMap<String, ClientProperty>)((HashMap<String, ClientProperty>)this.clientProperties).clone();
-            }
+			}
          }
       }
       catch (CloneNotSupportedException e) {
@@ -482,7 +483,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Sets the client property to the given value
     */   
    public final void addClientProperty(ClientProperty clientProperty) {
-      this.clientProperties.put(clientProperty.getName(), clientProperty);
+      synchronized (this.clientPropertiesMutex) {
+         this.clientProperties.put(clientProperty.getName(), clientProperty);
+      }
    }
 
    /**
@@ -495,7 +498,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       String encoding = null;
       String str = (value == null) ? null : value.toString();
       ClientProperty clientProperty = new ClientProperty(key, type, encoding, str);
-      this.clientProperties.put(clientProperty.getName(), clientProperty);
+      synchronized (this.clientPropertiesMutex) {
+         this.clientProperties.put(clientProperty.getName(), clientProperty);
+      }
    }
 
    /**
@@ -577,7 +582,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final ClientProperty getClientProperty(String name) {
       if (name == null) return null;
-      return (ClientProperty)this.clientProperties.get(name);
+      synchronized (this.clientPropertiesMutex) {
+         return (ClientProperty)this.clientProperties.get(name);
+      }
    }
    
    /**
@@ -587,7 +594,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final boolean propertyExists(String name) {
       if (name == null) return false;
-      return (this.clientProperties.get(name) != null);
+      synchronized (this.clientPropertiesMutex) {
+         return (this.clientProperties.get(name) != null);
+      }
    }
    
    /**
@@ -597,9 +606,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final String getClientProperty(String name, String defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getStringValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getStringValue();
+      }
    }
    
    /**
@@ -609,9 +620,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final int getClientProperty(String name, int defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getIntValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getIntValue();
+      }
    }
    
    /**
@@ -621,9 +634,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final boolean getClientProperty(String name, boolean defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getBooleanValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getBooleanValue();
+      }
    }
    
    /**
@@ -633,9 +648,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final double getClientProperty(String name, double defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getDoubleValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getDoubleValue();
+      }
    }
    
    /**
@@ -645,9 +662,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final float getClientProperty(String name, float defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getFloatValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getFloatValue();
+      }
    }
    
    /**
@@ -657,9 +676,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final byte getClientProperty(String name, byte defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getByteValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getByteValue();
+      }
    }
    
    /**
@@ -669,9 +690,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final byte[] getClientProperty(String name, byte[] defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getBlobValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getBlobValue();
+      }
    }
    
    /**
@@ -681,9 +704,11 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final long getClientProperty(String name, long defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getLongValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getLongValue();
+      }
    }
    
    /**
@@ -693,26 +718,40 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final short getClientProperty(String name, short defaultValue) {
       if (name == null) return defaultValue;
-      ClientProperty p = (ClientProperty)this.clientProperties.get(name);
-      if (p == null) return defaultValue;
-      return p.getShortValue();
+      synchronized (this.clientPropertiesMutex) {
+         ClientProperty p = (ClientProperty)this.clientProperties.get(name);
+         if (p == null) return defaultValue;
+         return p.getShortValue();
+      }
    }
    
    /**
     * Access all client properties. 
     * @return a map The return is unordered and the map values are of type ClientProperty. 
     * @see org.xmlBlaster.util.qos.ClientProperty
+    * @deprecated Not thread safe, use only with synchronize over getClientPropertiesMutex()
     */
    public final Map<String, ClientProperty> getClientProperties() {
       return this.clientProperties;
    }
    
+   public Object getClientPropertiesMutex() {
+      return clientPropertiesMutex;
+   }
+  
    /**
     * @return never null
     */
    public final ClientProperty[] getClientPropertyArr() {
-      if (this.clientProperties == null) return new ClientProperty[0];
-      return (ClientProperty[])this.clientProperties.values().toArray(new ClientProperty[this.clientProperties.size()]);
+      synchronized (this.clientPropertiesMutex) {
+         return (ClientProperty[])this.clientProperties.values().toArray(new ClientProperty[this.clientProperties.size()]);
+      }
+   }
+
+   public final int getClientPropertySize() {
+      synchronized (this.clientPropertiesMutex) {
+	    return this.clientProperties.size();
+      }
    }
 
    public final String writePropertiesXml(String offset) {
@@ -720,14 +759,16 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    public final String writePropertiesXml(String offset, boolean forceReadable) {
-      if (this.clientProperties.size() > 0) {
-         Object[] arr = this.clientProperties.keySet().toArray();
-         StringBuilder sb = new StringBuilder(arr.length*256);
-         for (int i=0; i < arr.length; i++) {
-        	ClientProperty p = this.clientProperties.get(arr[i]);
-            sb.append(p.toXml(offset, null, forceReadable));
+      synchronized (this.clientPropertiesMutex) {
+         if (this.clientProperties.size() > 0) {
+            Object[] arr = this.clientProperties.keySet().toArray();
+            StringBuilder sb = new StringBuilder(arr.length*256);
+            for (int i=0; i < arr.length; i++) {
+               ClientProperty p = this.clientProperties.get(arr[i]);
+               sb.append(p.toXml(offset, null, forceReadable));
+            }
+            return sb.toString();
          }
-         return sb.toString();
       }
       return "";
    }
@@ -767,5 +808,4 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
    }
 
-   
 }
