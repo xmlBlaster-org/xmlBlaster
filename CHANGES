@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18267 2017-05-29 marcel
+ Fixed DropIfNotDeliverableUniqueOnly md5sum check to avoid updates
+ 
  o 18266 2017-05-19 marcel
  Fixed race condition in QosData which could lead to ConcurrentModificationException during dead messages
 
