@@ -231,7 +231,9 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
             try {
                String md5sum = Constants.md5sum(msgUnit.getContent());
                //log.info("DEBUG ONLY useMd5Sum=" + md5sum + ": " + msgUnit.getContentStr());
-               String key = getType() + ":md5sum";// "DropIfNotDeliverableUniqueOnly:md5sum"
+               //String key = getType() + ":md5sum";// "DropIfNotDeliverableUniqueOnly:md5sum"
+               // "DropIfNotDeliverableUniqueOnly:md5sum:company.labk.PoiAttribConfigList.lukas_PgmGeraete"
+               String key = getType() + ":md5sum:" + msgUnit.getKeyOid();
                synchronized (receiver.getUserObjectMap()) {
                    String md5sumPrevious = (String)receiver.getUserObject(key, null);
                    if (md5sumPrevious != null && md5sum.equals(md5sumPrevious)) {
