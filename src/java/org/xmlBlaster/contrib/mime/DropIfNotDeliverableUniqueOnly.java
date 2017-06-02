@@ -146,6 +146,14 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    public String getType() {
       return (this.pluginInfo==null) ? "DropIfNotDeliverableUniqueOnly" : this.pluginInfo.getType();
    }
+   
+   public static String getMd5Key(String type, String topicId) {
+	   // probably fails for more than one plugin instance of DropIfNotDeliverableUniqueOnly
+	   if (type == null)
+		   type = "DropIfNotDeliverableUniqueOnly";
+	   String key = type + ":md5sum:" + topicId;
+	   return key;
+   }
 
    /**
     * Return plugin version for Plugin loader
@@ -233,11 +241,11 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
                //log.info("DEBUG ONLY useMd5Sum=" + md5sum + ": " + msgUnit.getContentStr());
                //String key = getType() + ":md5sum";// "DropIfNotDeliverableUniqueOnly:md5sum"
                // "DropIfNotDeliverableUniqueOnly:md5sum:company.labk.PoiAttribConfigList.lukas_PgmGeraete"
-               String key = getType() + ":md5sum:" + msgUnit.getKeyOid();
+               String key = getMd5Key(getType(), msgUnit.getKeyOid());
                synchronized (receiver.getUserObjectMap()) {
                    String md5sumPrevious = (String)receiver.getUserObject(key, null);
                    if (md5sumPrevious != null && md5sum.equals(md5sumPrevious)) {
-                      log.info("Message topicId=" + msgUnit.getKeyOid() + " received md5sum=" + md5sum + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
+                      log.info("Message topicId=" + msgUnit.getKeyOid() + " received md5sum=" + md5sum + ", len=" + msgUnit.getContent().length + " is delivered already to client " + receiver.getSessionName().getRelativeName() + ", not putting it to callback queue");
                       return false;
                    }
                    receiver.setUserObject(key, md5sum);
