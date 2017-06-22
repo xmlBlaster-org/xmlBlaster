@@ -302,7 +302,8 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
     	  while (en.hasMoreElements()) {
     		 String key = (String)en.nextElement();
     		 String value = props.getProperty(key);
-    		 ClientProperty cp = new ClientProperty(key, value, Constants.UTF8_ENCODING);
+    		 String type = Constants.TYPE_STRING;
+    		 ClientProperty cp = new ClientProperty(key, type, Constants.UTF8_ENCODING, value);
     		 // <clientProperty name='base' type='wt-bc-10001-d_88662_base' encoding='UTF-8'/>
     		 sb.append(offset).append(cp.toXml());
     	  }
