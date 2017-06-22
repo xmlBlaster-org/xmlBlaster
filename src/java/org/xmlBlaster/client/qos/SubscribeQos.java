@@ -44,6 +44,12 @@ public final class SubscribeQos
    private /*final*/ QueryQosData queryQosData;
 
    /**
+    * A subscribe can add such clientProperties, eg "_bounce:oid" = "100"
+    * and the SubscribeReturnQos will return the stripped clientProperty key "oid" and its value "100"
+    */
+   public static final String KEY_BOUNCE_CP = "_bounce:";
+   
+   /**
     * Constructor for default qos (quality of service).
     */
    public SubscribeQos(Global glob) {

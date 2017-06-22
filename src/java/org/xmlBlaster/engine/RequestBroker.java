@@ -41,6 +41,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
@@ -725,7 +726,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (!sessionInfo.hasCallback()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
-
+      boolean trimPrefix = true;
       try {
          SubscriptionInfo.verifySubscriptionId(sessionInfo.getConnectQos().isClusterNode(), sessionInfo.getSessionName(), xmlKey, subscribeQos);
 
@@ -747,7 +748,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
-               
+               qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
+
                if (this.subscribeMultipleClusterForward) {
                // If the cluster config has changed: we need to check if the master needs to be subscribed even that it is a duplicate subscription
                // Marcel 2011-06-14
@@ -851,6 +853,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             if (qos == null) qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
          }
+         qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
          if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                                           "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" +
                                           sessionInfo.getId() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");

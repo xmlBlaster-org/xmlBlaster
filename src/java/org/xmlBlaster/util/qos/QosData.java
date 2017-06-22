@@ -478,6 +478,25 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
       return newOne;
    }
+   
+   /**
+    * Sets the client property to the given value
+    * @param prefix "_bounce:"
+    */   
+   public final void addClientProperties(String prefix, ClientProperty[] clientProperties, boolean trimPrefix) {
+      for (ClientProperty p: clientProperties) {
+  	     String key = p.getName();
+  	     if (key.startsWith(prefix)) {
+  		     String value = p.getStringValue("");
+  		     if (trimPrefix) {
+  		    	 key = key.substring(prefix.length());
+  		    	 if (key == null || key.length() == 0)
+  		    		 continue;
+  		     }
+  		     addClientProperty(key, value);
+  	     }
+      }
+   }
 
    /**
     * Sets the client property to the given value
@@ -587,6 +606,21 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
    }
    
+   public final ClientProperty removeClientProperty(String name) {
+     if (name == null) return null;
+     synchronized (this.clientPropertiesMutex) {
+        return (ClientProperty)this.clientProperties.remove(name);
+     }
+   }
+   
+   public final int clearClientProperties() {
+      synchronized (this.clientPropertiesMutex) {
+         int count = this.clientProperties.size();
+         this.clientProperties.clear();
+         return count;
+      }
+   }
+	   
    /**
     * Check for client property. 
     * @param name The property key
