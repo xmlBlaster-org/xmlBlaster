@@ -72,7 +72,7 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     */
    public StatusQosData(Global glob, I_StatusQosFactory factory, String serialData, MethodName methodName) {
       super(glob, serialData, methodName);
-      this.factory = (factory==null) ? glob.getStatusQosFactory() : factory;
+      this.factory = (factory==null) ? glob.getStatusQosFactory(methodName) : factory;
    }
 
    /**
@@ -164,6 +164,10 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     */
    public String toXml(String extraOffset, Properties props) {
       return factory.writeObject(this, extraOffset, props);
+   }
+
+   public String toXml(String extraOffset, Properties props, boolean dumpClientProperties) {
+      return factory.writeObject(this, extraOffset, props, dumpClientProperties);
    }
 
    /*

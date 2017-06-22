@@ -47,7 +47,7 @@ public final class SubscribeReturnQos
     */
    public SubscribeReturnQos(Global glob, String xmlQos, boolean isFakedReturn) throws XmlBlasterException {
       this.isFakedReturn = isFakedReturn;
-      this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData = glob.getStatusQosFactory(MethodName.SUBSCRIBE).readObject(xmlQos);
       this.statusQosData.setMethod(MethodName.SUBSCRIBE);
    }
 
@@ -128,6 +128,10 @@ public final class SubscribeReturnQos
     */
    public final String toXml(String extraOffset) {
       return this.statusQosData.toXml(extraOffset, (Properties)null);
+   }
+
+   public final String toXml(String extraOffset, boolean dumpClientProperties) {
+      return this.statusQosData.toXml(extraOffset, (Properties)null, dumpClientProperties);
    }
 
    public final String toString() {

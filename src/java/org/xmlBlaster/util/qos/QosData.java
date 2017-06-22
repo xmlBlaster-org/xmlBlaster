@@ -482,20 +482,26 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * Sets the client property to the given value
     * @param prefix "_bounce:"
+    * @return can be null, the properties added
     */   
-   public final void addClientProperties(String prefix, ClientProperty[] clientProperties, boolean trimPrefix) {
+   public final Properties addClientProperties(String prefix, ClientProperty[] clientProperties, boolean trimPrefix) {
+      Properties properties = null;
       for (ClientProperty p: clientProperties) {
-  	     String key = p.getName();
-  	     if (key.startsWith(prefix)) {
+         String key = p.getName();
+         if (key.startsWith(prefix)) {
   		     String value = p.getStringValue("");
   		     if (trimPrefix) {
-  		    	 key = key.substring(prefix.length());
-  		    	 if (key == null || key.length() == 0)
-  		    		 continue;
+                key = key.substring(prefix.length());
+                if (key == null || key.length() == 0)
+                   continue;
   		     }
   		     addClientProperty(key, value);
-  	     }
+  		     if (properties == null)
+  		    	properties = new Properties();
+             properties.put(key, value);
+         }
       }
+      return properties;
    }
 
    /**

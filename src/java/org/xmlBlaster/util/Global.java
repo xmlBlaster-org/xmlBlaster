@@ -82,6 +82,7 @@ import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
+import org.xmlBlaster.util.qos.StatusQosSaxFactory;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
@@ -1104,13 +1105,37 @@ public class Global implements Cloneable
 
    /**
     * Return a factory parsing QoS XML strings from subcribe(), unSubscribe() and erase() returns.
+    * 
+    * Caution: Ignores ClientProperty, they are not parsed
     */
    public final I_StatusQosFactory getStatusQosFactory() {
       if (this.statusQosFactory == null) {
          synchronized (this) {
             if (this.statusQosFactory == null) {
                //this.statusQosFactory = new StatusQosSaxFactory(this);
+               // Caution: Ignores ClientProperty
                this.statusQosFactory = new StatusQosQuickParseFactory(this);
+            }
+         }
+      }
+      return this.statusQosFactory;
+   }
+
+   public final I_StatusQosFactory getStatusQosFactory(MethodName methodName) {
+      if (methodName == null) {
+         return getStatusQosFactory();
+      }
+
+      if (this.statusQosFactory == null) {
+         synchronized (this) {
+            if (this.statusQosFactory == null) {
+               if (methodName.isSubscribe()) { // Changed 2017 marcel as I need ClientProperty
+                  this.statusQosFactory = new StatusQosSaxFactory(this);
+               }
+               else {
+                  // Caution: Ignores ClientProperty
+                  this.statusQosFactory = new StatusQosQuickParseFactory(this);
+               }
             }
          }
       }

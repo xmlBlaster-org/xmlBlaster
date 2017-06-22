@@ -459,8 +459,8 @@ public class HelloWorldSubscribe implements I_Callback
 
          subscribeServerId = con.getConnectReturnQos().getSecretSessionId() + con.getConnectReturnQos().getServerInstanceId();
 
-         log.info("Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
-                        "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.toXml());
+         log.info("Subscribed to topic '" + ((oid.length() > 0) ? oid : xpath) +
+                        "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.toXml(null, true));
          if (log.isLoggable(Level.FINEST)) log.finest("Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
       }
       catch (XmlBlasterException e) {

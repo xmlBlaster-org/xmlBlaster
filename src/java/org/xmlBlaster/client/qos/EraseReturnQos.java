@@ -37,7 +37,7 @@ public final class EraseReturnQos
     * Constructor which parses XML string. 
     */
    public EraseReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData = glob.getStatusQosFactory(MethodName.ERASE).readObject(xmlQos);
       this.statusQosData.setMethod(MethodName.ERASE);
    }
 

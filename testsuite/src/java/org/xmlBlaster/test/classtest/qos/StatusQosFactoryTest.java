@@ -90,6 +90,7 @@ public class StatusQosFactoryTest extends TestCase {
             "   <state id='ERASED' info='QUEUED[bilbo]'/>\n" +
             "   <key oid='yourMessageOid'/>\n" +
             "   <subscribe id='_subId:1'/>\n" +
+            "   <clientProperty name='aKey' type='boolean'>true</clientProperty>\n" +
             "</qos>\n";
 
          StatusQosData qos = factory.readObject(xml);
@@ -105,6 +106,8 @@ public class StatusQosFactoryTest extends TestCase {
          assertEquals("", "QUEUED[bilbo]", qos.getStateInfo());
          assertEquals("", "yourMessageOid", qos.getKeyOid());
          assertEquals("", "_subId:1", qos.getSubscriptionId());
+         // TODO quickparse does not parse clientProperty
+         //assertTrue(qos.getClientProperty("aKey", false));
       }
       catch (XmlBlasterException e) {
          fail("testToXml failed: " + e.toString());
@@ -112,6 +115,44 @@ public class StatusQosFactoryTest extends TestCase {
 
       System.out.println("***StatusQosFactoryTest: testToXml [SUCCESS]");
    }
+   
+   public void testToXmlCp() {
+	      System.out.println("***StatusQosFactoryTest: testToXmlCp ...");
+	      
+	      try {
+	         String xml =
+	            "<qos>\n" +
+	            "   <state id='ERASED' info='QUEUED[bilbo]'/>\n" +
+	            "   <key oid='yourMessageOid'/>\n" +
+	            "   <subscribe id='_subId:1'/>\n" +
+	            "   <clientProperty name='aKey' type='boolean'>true</clientProperty>\n" +
+	            "   <clientProperty name='aKey2'>Bla</clientProperty>\n" +
+	            "</qos>\n";
+
+	         I_StatusQosFactory f = new org.xmlBlaster.util.qos.StatusQosSaxFactory(Global.instance());
+	         StatusQosData qos = f.readObject(xml);
+	         String newXml = qos.toXml(null, null, true);
+	         log.info("New XML=" + newXml);
+	         qos = f.readObject(newXml);
+
+	         assertEquals("", Constants.STATE_ERASED, qos.getState());
+	         assertEquals("", false, qos.isOk());
+	         assertEquals("", true, qos.isErased());
+	         assertEquals("", false, qos.isTimeout());
+	         assertEquals("", false, qos.isForwardError());
+	         assertEquals("", "QUEUED[bilbo]", qos.getStateInfo());
+	         assertEquals("", "yourMessageOid", qos.getKeyOid());
+	         assertEquals("", "_subId:1", qos.getSubscriptionId());
+	         assertTrue(qos.getClientProperty("aKey", false));
+	         assertEquals("Bla", qos.getClientProperty("aKey2", ""));
+	      }
+	      catch (XmlBlasterException e) {
+	         fail("testToXml failed: " + e.toString());
+	      }
+
+	      System.out.println("***StatusQosFactoryTest: testToXml [SUCCESS]");
+	   }
+   
 
    /**
     * Tests empty xml string
@@ -200,6 +241,7 @@ public class StatusQosFactoryTest extends TestCase {
          testSub.testParse();
          testSub.testPerformance();
          testSub.testToXml();
+         testSub.testToXmlCp();
          //testSub.tearDown();
       }
    }

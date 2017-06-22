@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
@@ -113,7 +114,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          }
          return;
       }
-
+      
       if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
          if (!inQos)
             return;
@@ -189,8 +190,14 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
     * @param name Tag name
     */
    public void endElement(String uri, String localName, String name) {
-      if (super.endElementBase(uri, localName, name) == true)
+      if (super.endElementBase(uri, localName, name) == true) {
+         if (name.equalsIgnoreCase(ClientProperty.CLIENTPROPERTY_TAG)) { // "clientProperty"
+           if (!inQos)
+             return;
+            statusQosData.addClientProperty(this.clientProperty);
+         }
          return;
+      }
 
       if (name.equalsIgnoreCase("state")) {
 //       this.inState = false;
@@ -247,10 +254,14 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String writeObject(StatusQosData statusQosData, String extraOffset, Properties props) {
-      return writeObject_(statusQosData, extraOffset, props);
+      return writeObject_(statusQosData, extraOffset, props, false);
    }
-
-   public static final String writeObject_(StatusQosData statusQosData, String extraOffset, Properties props) {
+   
+   public final String writeObject(StatusQosData statusQosData, String extraOffset, Properties props, boolean dumpClientProperties) {
+      return writeObject_(statusQosData, extraOffset, props, dumpClientProperties);
+   }
+	   
+   public static final String writeObject_(StatusQosData statusQosData, String extraOffset, Properties props, boolean dumpClientProperties) {
       XmlBuffer sb = new XmlBuffer(180);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -284,6 +295,24 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       }
       else if (statusQosData.getMethod() == MethodName.UPDATE) {
          sb.append(offset).append("<isUpdate/>");
+      }
+      
+      if (props != null) {
+    	  Enumeration en = props.propertyNames();
+    	  while (en.hasMoreElements()) {
+    		 String key = (String)en.nextElement();
+    		 String value = props.getProperty(key);
+    		 ClientProperty cp = new ClientProperty(key, value, Constants.UTF8_ENCODING);
+    		 // <clientProperty name='base' type='wt-bc-10001-d_88662_base' encoding='UTF-8'/>
+    		 sb.append(offset).append(cp.toXml());
+    	  }
+      }
+      
+      if (dumpClientProperties) {
+      // Would this probably also return secret server side properties?
+        for (ClientProperty cp: statusQosData.getClientPropertyArr()) {
+      	   sb.append(offset).append(cp.toXml());
+        }
       }
      
       sb.append(offset).append("</qos>");

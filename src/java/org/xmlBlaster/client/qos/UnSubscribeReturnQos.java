@@ -36,7 +36,7 @@ public final class UnSubscribeReturnQos
     * Constructor which parses XML string. 
     */
    public UnSubscribeReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData = glob.getStatusQosFactory(MethodName.UNSUBSCRIBE).readObject(xmlQos);
       this.statusQosData.setMethod(MethodName.UNSUBSCRIBE);
    }
 

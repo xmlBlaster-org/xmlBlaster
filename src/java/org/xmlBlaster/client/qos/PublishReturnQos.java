@@ -40,7 +40,7 @@ public final class PublishReturnQos
     * Constructor which parses XML string.
     */
    public PublishReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData = glob.getStatusQosFactory(MethodName.PUBLISH).readObject(xmlQos);
       this.statusQosData.setMethod(MethodName.PUBLISH);
    }
 

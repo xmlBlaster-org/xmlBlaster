@@ -727,6 +727,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
       boolean trimPrefix = true;
+      Properties propertiesBounced = null;
       try {
          SubscriptionInfo.verifySubscriptionId(sessionInfo.getConnectQos().isClusterNode(), sessionInfo.getSessionName(), xmlKey, subscribeQos);
 
@@ -748,7 +749,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
-               qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
+               propertiesBounced = qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
 
                if (this.subscribeMultipleClusterForward) {
                // If the cluster config has changed: we need to check if the master needs to be subscribed even that it is a duplicate subscription
@@ -774,7 +775,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 	               }
                }
 
-               return qos.toXml();
+               return qos.toXml((String)null, propertiesBounced);
             }
          }
 
@@ -853,11 +854,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             if (qos == null) qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
          }
-         qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
+         propertiesBounced = qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
          if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                                           "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" +
                                           sessionInfo.getId() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
-         return qos.toXml();
+         return qos.toXml((String)null, propertiesBounced);
       }
       catch (XmlBlasterException e) {
          log.warning(e.getMessage());

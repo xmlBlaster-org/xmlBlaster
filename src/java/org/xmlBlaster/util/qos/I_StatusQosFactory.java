@@ -34,6 +34,8 @@ public interface I_StatusQosFactory
     */
    String writeObject(StatusQosData statusQosData, String extraOffset, Properties props);
 
+   String writeObject(StatusQosData statusQosData, String extraOffset, Properties props, boolean dumpClientProperties);
+
    /** A human readable name of this factory */
    String getName();
 }

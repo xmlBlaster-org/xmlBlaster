@@ -94,7 +94,11 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String writeObject(StatusQosData statusQosData, String extraOffset, Properties props) {
-      return StatusQosSaxFactory.writeObject_(statusQosData, extraOffset, props);
+      return StatusQosSaxFactory.writeObject_(statusQosData, extraOffset, props, false);
+   }
+
+   public final String writeObject(StatusQosData statusQosData, String extraOffset, Properties props, boolean dumpClientProperties) {
+      return StatusQosSaxFactory.writeObject_(statusQosData, extraOffset, props, dumpClientProperties);
    }
 
    /**
