@@ -38,6 +38,7 @@ public class AllTests
       // So we currently switch off this test
       // suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestEmbeddedXmlBlaster.class));
       
+      suite.addTest(TestQosData.suite());
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());
       suite.addTest(TestGet.suite());
