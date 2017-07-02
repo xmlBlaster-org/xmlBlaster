@@ -114,6 +114,7 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    private String uniqueGroupIdKeyName = "_uniqueGroupId";
    private boolean redeliverNewestOnReconnect;
    private boolean useMd5Sum;
+   private boolean useTimestampCheck = true;
 
    /**
     * This is called after instantiation of the plugin 
@@ -135,8 +136,9 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
       // the client property key defaults to "_uniqueGroupId"
       this.uniqueGroupIdKeyName = prop.getProperty("uniqueGroupIdKeyName", this.uniqueGroupIdKeyName);
       this.redeliverNewestOnReconnect = Boolean.valueOf(prop.getProperty("redeliverNewestOnReconnect", ""+this.redeliverNewestOnReconnect));
+      this.useTimestampCheck = Boolean.valueOf(prop.getProperty("useTimestampCheck", ""+this.useTimestampCheck));
       this.useMd5Sum = Boolean.valueOf(prop.getProperty("useMd5Sum", ""+this.useMd5Sum));
-      log.info("Plugin " + getType() + " " + getVersion() + " loaded for mimeTypes '" + someMimeTypes + "' uniqueGroupIdKeyName=" + this.uniqueGroupIdKeyName + " redeliverNewestOnReconnect=" + this.redeliverNewestOnReconnect + " useMd5Sum=" + this.useMd5Sum);
+      log.info("Plugin " + getType() + " " + getVersion() + " loaded for mimeTypes '" + someMimeTypes + "' uniqueGroupIdKeyName=" + this.uniqueGroupIdKeyName + " redeliverNewestOnReconnect=" + this.redeliverNewestOnReconnect + " useTimestampCheck=" + useTimestampCheck + " useMd5Sum=" + this.useMd5Sum);
    }
 
    /**
@@ -216,8 +218,9 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
             return false;
          }
          
-         {
+         if (this.useTimestampCheck) {
             // Check if message instance was delivered already to callback queue
+        	// Caution: Fails in case Android App is newly installed, and data on client are lost but server still thinks the client is synched
             String topicId = msgUnit.getKeyOid();
             long timestampMillisCurr = msgUnit.getQosData().getRcvTimestamp().getMillis();
             // groupId is only check for newest, use &lt;history numEntries='10' newestFirst='false'/> to scan old messages as well

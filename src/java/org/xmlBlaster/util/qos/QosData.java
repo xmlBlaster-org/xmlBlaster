@@ -612,6 +612,13 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
    }
    
+   public final boolean hasClientProperty(String name) {
+     if (name == null) return false;
+       synchronized (this.clientPropertiesMutex) {
+         return this.clientProperties.containsKey(name);
+     }
+   }
+	   
    public final ClientProperty removeClientProperty(String name) {
      if (name == null) return null;
      synchronized (this.clientPropertiesMutex) {

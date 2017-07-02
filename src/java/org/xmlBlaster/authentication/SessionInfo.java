@@ -1427,6 +1427,10 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       Object obj = this.userMap.put(key, value);
       return obj;
    }
+   public Object removeUserObject(String key) {
+      Object obj = this.userMap.remove(key);
+      return obj;
+   }
    /**
     * Use carefully to not harm other plugins. 
     * @return of type Collections.synchronizedMap(new HashMap<String, Object>()

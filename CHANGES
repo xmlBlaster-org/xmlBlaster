@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18273 2017-07-02 marcel
+   QosData.hasClientProperty() added
+   SessionInfo.removeUserObject() added
+   DropIfNotDeliverableUniqueOnly.useTimestampCheck configuration property added
+   
  o 18270 18271 18272 2017-06-22 marcel
  Introduced SubscribeQos KEY_BOUNCE_CP = "_bounce:"
  ClientProperties with this prefix are bounced back with SubscribeReturnQos
