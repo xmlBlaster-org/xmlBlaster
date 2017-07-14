@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.dispatch;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,6 +18,7 @@ import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
@@ -1146,8 +1148,20 @@ public final class ServerDispatchManager implements I_DispatchManager
          XmlBlasterException ex = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
          new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable);
             shutdownFomAnyState(ConnectionStateEnum.ALIVE, ex); // ALIVE is workaround
-            // givingUpDelivery(ex);
-            log.severe(ME+": PANIC: Internal error, doing shutdown: " + throwable.getMessage());
+         // givingUpDelivery(ex);
+         String txt = throwable.getMessage() + "\n" + ServerScope.getStackTraceAsString(throwable);
+
+         Throwable parentEx = ex;
+         Throwable currentEx = ex.getEmbeddedException();
+         while (currentEx != null && currentEx != parentEx) {
+        	 txt += "\n" + ServerScope.getStackTraceAsString(currentEx);
+        	 if (currentEx instanceof ConcurrentModificationException) {
+                 txt += "\n" + ThreadLister.getAllStackTraces();
+              }
+        	 parentEx = currentEx;
+        	 currentEx = (currentEx instanceof XmlBlasterException) ? ((XmlBlasterException)currentEx).getEmbeddedException() : ex.getCause();
+         }
+         log.severe(ME+": PANIC: Internal error, doing shutdown: " + txt);
       }
       finally {
          shutdown();
