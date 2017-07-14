@@ -91,7 +91,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * Sets the global object (used when deserializing the object)
     */
-   public void setGlobal(Global glob) {
+   public synchronized void setGlobal(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
 
    }
@@ -99,7 +99,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * @param state The state of an update message
     */
-   public void setState(String state) {
+   public synchronized void setState(String state) {
       this.state = state;
    }
 
@@ -107,14 +107,14 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Access state of message on update().
     * @return Usually Constants.OK
     */
-   public String getState() {
+   public synchronized String getState() {
       return (this.state==null) ? Constants.STATE_OK : this.state;
    }
 
    /**
     * @param state The human readable state text of an update message
     */
-   public void setStateInfo(String stateInfo) {
+   public synchronized void setStateInfo(String stateInfo) {
       this.stateInfo = stateInfo;
    }
 
@@ -122,18 +122,18 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Access state of message on update().
     * @return The human readable info text
     */
-   public String getStateInfo() {
+   public synchronized String getStateInfo() {
       return this.stateInfo;
    }
 
-   public boolean hasStateInfo() {
+   public synchronized boolean hasStateInfo() {
       return this.stateInfo!=null && this.stateInfo.length()>0;
    }
 
    /**
     * True if the message is OK on update(). 
     */
-   public boolean isOk() {
+   public synchronized boolean isOk() {
       return this.state == null || this.state.length() < 0 || Constants.STATE_OK.equals(this.state);
    }
 
@@ -141,7 +141,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * True if the message was erased by timer or by a
     * client invoking erase(). 
     */
-   public boolean isErased() {
+   public synchronized boolean isErased() {
       return Constants.STATE_ERASED.equals(this.state);
    }
 
@@ -152,14 +152,14 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * on timeout to indicate for example
     * STALE messages or any other user problem domain specific event.
     */
-   public final boolean isTimeout() {
+   public synchronized final boolean isTimeout() {
       return Constants.STATE_TIMEOUT.equals(this.state);
    }
 
    /**
     * True on cluster forward problems
     */
-   public final boolean isForwardError() {
+   public synchronized final boolean isForwardError() {
       return Constants.STATE_FORWARD_ERROR.equals(this.state);
    }
 
@@ -167,7 +167,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Marker if the message comes from persistent store after recovery. 
     * NOTE: This information is not saved in to XML and is lost after a XML dump.
     */
-   public void isFromPersistenceRecovery(boolean fromPersistenceRecovery) {
+   public synchronized void isFromPersistenceRecovery(boolean fromPersistenceRecovery) {
       // AddressBase contains the same TODO: assure they are in sync or remove one
       this.fromPersistenceRecovery = fromPersistenceRecovery;
    }
@@ -175,7 +175,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * Flag if the message comes from persistent store after recovery. 
     */
-   public boolean isFromPersistenceRecovery() {
+   public synchronized boolean isFromPersistenceRecovery() {
       return this.fromPersistenceRecovery;
    }
 
@@ -187,7 +187,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @return sessionName of sender or null if not known
     * @todo Pass it with QueryQos XML to have more info in cluster environment
     */
-   public SessionName getSender() {
+   public synchronized SessionName getSender() {
       return sender;
    }
 
@@ -195,7 +195,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Access sender name.
     * @param loginName of sender
     */
-   public void setSender(SessionName senderSessionName) {
+   public synchronized void setSender(SessionName senderSessionName) {
       this.sender = senderSessionName;
    }
 
@@ -204,7 +204,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * when message arrived in requestBroker.publish() method.<br />
     * In milliseconds elapsed since midnight, January 1, 1970 UTC
     */
-   public void setRcvTimestamp(Timestamp rcvTimestamp) {
+   public synchronized void setRcvTimestamp(Timestamp rcvTimestamp) {
       this.rcvTimestamp = rcvTimestamp;
    }
 
@@ -228,7 +228,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * </pre>
     * @return can be null if not touchRcvTimestamp() was called
     */
-   public Timestamp getRcvTimestamp() {
+   public synchronized Timestamp getRcvTimestamp() {
       return rcvTimestamp;
    }
 
@@ -236,7 +236,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @see #getRcvTimestamp
     * @return Never null
     */
-   public Timestamp getRcvTimestampNotNull() {
+   public synchronized Timestamp getRcvTimestampNotNull() {
       if (this.rcvTimestamp == null)
          touchRcvTimestamp();
       return this.rcvTimestamp;
@@ -245,7 +245,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * Set timestamp to current time.
     */
-   public void touchRcvTimestamp() {
+   public synchronized void touchRcvTimestamp() {
       this.rcvTimestamp = new RcvTimestamp();
    }
 
@@ -255,25 +255,25 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * 2001-12-07 23:31:45.862000004
     * @deprecated Use getXmlRcvTimestamp()
     */
-   public String getRcvTime() {
+   public synchronized String getRcvTime() {
       return (rcvTimestamp != null) ? rcvTimestamp.toString() : "";
    }
 
    /**
     * @param persistent mark a message as persistent
     */
-   public void setPersistent(boolean persistent) {
+   public synchronized void setPersistent(boolean persistent) {
       this.persistent.setValue(persistent);
    }
 
    /**
     * @return true/false
     */
-   public boolean isPersistent() {
+   public synchronized boolean isPersistent() {
       return this.persistent.getValue();
    }
 
-   public PropBoolean getPersistentProp() {
+   public synchronized PropBoolean getPersistentProp() {
       return this.persistent;
    }
 
@@ -283,7 +283,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * So we will rearrange the stratum here. The given stratum in routeInfo
     * is used to recalculate the other nodes as well.
     */
-   public final void addRouteInfo(RouteInfo routeInfo) {
+   public synchronized final void addRouteInfo(RouteInfo routeInfo) {
       if (routeInfo == null) {
          log.severe("Adding null routeInfo");
          return;
@@ -308,14 +308,14 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * The number of hops
     */
-   public final int getNumRouteNodes() {
+   public synchronized final int getNumRouteNodes() {
       return (this.routeNodeList == null) ? 0 : this.routeNodeList.size();
    }
 
    /**
     * @return never null, but may have length==0
     */
-   public final RouteInfo[] getRouteNodes() {
+   public synchronized final RouteInfo[] getRouteNodes() {
       if (this.routeNodeList == null)
          this.routeNodes = ROUTE_INFO_ARR_DUMMY;
       if (this.routeNodes == null)
@@ -323,7 +323,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       return this.routeNodes;
    }
 
-   public final void clearRoutes() {
+   public synchronized final void clearRoutes() {
       this.routeNodes = null;
       if (this.routeNodeList != null)
          this.routeNodeList.clear();
@@ -333,7 +333,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
-   public int count(NodeId nodeId) {
+   public synchronized int count(NodeId nodeId) {
       int count = 0;
       if (routeNodeList == null)
          return count;
@@ -348,7 +348,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * Check if this message is at its master cluster location
     */
-   public final boolean isAtMaster() {
+   public synchronized final boolean isAtMaster() {
       if (routeNodeList == null || routeNodeList.size() == 0)
          return true;
       for (int ii=routeNodeList.size()-1; ii>=0; ii--) {
@@ -364,7 +364,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Check if the message has already been at the given node (circulating message). 
     * @return How often the message has travelled the node already
     */
-   public boolean dirtyRead(NodeId nodeId) {
+   public synchronized boolean dirtyRead(NodeId nodeId) {
       if (routeNodeList == null || nodeId == null)
          return false;
       for (int ii=0; ii<routeNodeList.size(); ii++) {
@@ -507,7 +507,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * Sets the client property to the given value
     */   
-   public final void addClientProperty(ClientProperty clientProperty) {
+   public synchronized final void addClientProperty(ClientProperty clientProperty) {
       synchronized (this.clientPropertiesMutex) {
          this.clientProperties.put(clientProperty.getName(), clientProperty);
       }
@@ -519,7 +519,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param type For example Constants.TYPE_FLOAT
     * @param value Of any type, it will be forced to the given <code>type</code>
     */   
-   public final void addClientProperty(String key, String type, Object value) {
+   public synchronized final void addClientProperty(String key, String type, Object value) {
       String encoding = null;
       String str = (value == null) ? null : value.toString();
       ClientProperty clientProperty = new ClientProperty(key, type, encoding, str);
@@ -605,7 +605,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @return The ClientProperty instance or null if not found
     */
-   public final ClientProperty getClientProperty(String name) {
+   public synchronized final ClientProperty getClientProperty(String name) {
       if (name == null) return null;
       synchronized (this.clientPropertiesMutex) {
          return (ClientProperty)this.clientProperties.get(name);
@@ -639,7 +639,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @return true if the property exists
     */
-   public final boolean propertyExists(String name) {
+   public synchronized final boolean propertyExists(String name) {
       if (name == null) return false;
       synchronized (this.clientPropertiesMutex) {
          return (this.clientProperties.get(name) != null);
@@ -651,7 +651,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final String getClientProperty(String name, String defaultValue) {
+   public synchronized final String getClientProperty(String name, String defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -665,7 +665,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final int getClientProperty(String name, int defaultValue) {
+   public synchronized final int getClientProperty(String name, int defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -679,7 +679,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final boolean getClientProperty(String name, boolean defaultValue) {
+   public synchronized final boolean getClientProperty(String name, boolean defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -693,7 +693,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final double getClientProperty(String name, double defaultValue) {
+   public synchronized final double getClientProperty(String name, double defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -707,7 +707,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final float getClientProperty(String name, float defaultValue) {
+   public synchronized final float getClientProperty(String name, float defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -721,7 +721,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final byte getClientProperty(String name, byte defaultValue) {
+   public synchronized final byte getClientProperty(String name, byte defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -735,7 +735,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final byte[] getClientProperty(String name, byte[] defaultValue) {
+   public synchronized final byte[] getClientProperty(String name, byte[] defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -749,7 +749,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final long getClientProperty(String name, long defaultValue) {
+   public synchronized final long getClientProperty(String name, long defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -763,7 +763,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @param name The property key
     * @param defaultValue The value to return if the property is not known
     */
-   public final short getClientProperty(String name, short defaultValue) {
+   public synchronized final short getClientProperty(String name, short defaultValue) {
       if (name == null) return defaultValue;
       synchronized (this.clientPropertiesMutex) {
          ClientProperty p = (ClientProperty)this.clientProperties.get(name);
@@ -778,7 +778,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @see org.xmlBlaster.util.qos.ClientProperty
     * @deprecated Not thread safe, use only with synchronize over getClientPropertiesMutex()
     */
-   public final Map<String, ClientProperty> getClientProperties() {
+   public synchronized final Map<String, ClientProperty> getClientProperties() {
       return this.clientProperties;
    }
    
@@ -789,7 +789,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /**
     * @return never null
     */
-   public final ClientProperty[] getClientPropertyArr() {
+   public synchronized final ClientProperty[] getClientPropertyArr() {
       synchronized (this.clientPropertiesMutex) {
          return (ClientProperty[])this.clientProperties.values().toArray(new ClientProperty[this.clientProperties.size()]);
       }
@@ -805,7 +805,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       return writePropertiesXml(offset, false);
    }
 
-   public final String writePropertiesXml(String offset, boolean forceReadable) {
+   public synchronized final String writePropertiesXml(String offset, boolean forceReadable) {
       synchronized (this.clientPropertiesMutex) {
          if (this.clientProperties.size() > 0) {
             Object[] arr = this.clientProperties.keySet().toArray();

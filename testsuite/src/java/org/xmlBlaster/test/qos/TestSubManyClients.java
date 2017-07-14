@@ -11,6 +11,7 @@ import org.xmlBlaster.util.StopWatch;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -26,7 +27,6 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.MsgUnit;
 
-import org.xmlBlaster.test.Util;
 import junit.framework.*;
 
 
@@ -54,14 +54,15 @@ public class TestSubManyClients extends TestCase implements I_Callback
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSubManyClients.class.getName());
 
-   private final String publishOid1 = "dummy1";
-   private final String publishOid2 = "dummy2";
+   private String publishOid1 = "dummy1";
+   private String publishOid2 = "dummy2";
    private I_XmlBlasterAccess oneConnection;
    private String oneName;
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
+   private int updatePublish = 0;
 
    class Client {
       String loginName;
@@ -70,9 +71,21 @@ public class TestSubManyClients extends TestCase implements I_Callback
    }
 
    private int numClients;
+   private int numExpectedUpd;
    private Client[] manyClients;
 
    private StopWatch stopWatch = new StopWatch();
+
+   private long loginsPerSec;
+   private long oneSubUpdPerSec;
+   private long pubMsgPerSec;
+   private long manySubUpdPerSec;
+   private long tmpUpdPerSec;
+   private String updateTopic;
+   private final boolean oneWay = false; 
+   private int contentLength = 0; // if you want to test bigger messages set the value here ...
+   private long updateSleep = -1L;
+   // private int contentLength = 10240; // if you want to test bigger messages set the value here ...
 
    /**
     * Constructs the TestSubManyClients object.
@@ -87,6 +100,13 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       this.oneName = loginName;
       numClients = glob.getProperty().get("numClients", 10);
+      updateSleep = glob.getProperty().get("updateSleep", updateSleep);
+      publishOid1 = glob.getProperty().get("publishOid1", publishOid1);
+      publishOid2 = glob.getProperty().get("publishOid2", publishOid2);
+      updatePublish = glob.getProperty().get("updatePublish", updatePublish);
+      updateTopic = glob.getProperty().get("updateTopic", publishOid1);
+
+      numExpectedUpd = numClients;
    }
 
 
@@ -121,9 +141,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      if (numReceived != numClients) {
-         log.severe("numClients=" + numClients + " but numReceived=" + numReceived);
-         assertEquals("numClients=" + numClients + " but numReceived=" + numReceived, numClients, numReceived);
+      if (numReceived != numExpectedUpd) {
+         log.severe("numClients=" + numClients + " expected " + numExpectedUpd + " but numReceived=" + numReceived);
+         assertEquals("numClients=" + numClients + " expected " + numExpectedUpd + " but numReceived=" + numReceived, numClients, numReceived);
       }
 
 
@@ -217,7 +237,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       log.info(numClients + " subscriber clients are ready.");
       log.info("Server memory per login consumed=" + memPerLogin);
-      log.info("Time " + (long)(numClients/timeForLogins) + " logins/sec");
+      loginsPerSec = (long)(numClients/timeForLogins);
+      log.info("Time " + loginsPerSec + " logins/sec");
    }
 
 
@@ -237,27 +258,41 @@ public class TestSubManyClients extends TestCase implements I_Callback
       }
    }
 
-
    /**
     * TEST: Construct a message and publish it.
     * <p />
     * The returned publishOid1 is checked
     */
-   public void publishOne()
+   public void publishOne(int nmax, String senderContent, String oid, boolean inUpdate)
    {
-      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
-
-      numReceived = 0;
+      if (log.isLoggable(Level.FINE))
+         log.fine("Publishing a message ... " + oid);
+      if (senderContent == null)
+         senderContent = "Yeahh, i'm the new content";
+      if (!inUpdate)
+         numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                      "<key oid='" + publishOid1 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+                      "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "</key>";
-      String senderContent = "Yeahh, i'm the new content";
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
-         stopWatch = new StopWatch();
-         String tmp = oneConnection.publish(msgUnit).getKeyOid();
-         assertEquals("Wrong publishOid1", publishOid1, tmp);
-         log.info("Success: Publishing done, returned oid=" + publishOid1);
+         if (!inUpdate)
+            stopWatch = new StopWatch();
+         if (oneWay || inUpdate) {
+            MsgUnit[] msgUnitArr = new MsgUnit[nmax];
+             for (int i=0; i < nmax; i++) {
+                msgUnitArr[i] = msgUnit.getClone();
+             }
+             oneConnection.publishOneway(msgUnitArr);
+         }
+         else {
+             for (int i=0; i < nmax; i++) {
+                 String tmp = oneConnection.publish(msgUnit).getKeyOid();
+                 assertEquals("Wrong topic", oid, tmp);
+                 if (log.isLoggable(Level.FINE))
+                	 log.fine("Success: Publishing done, returned oid=" + oid);
+             }
+         }
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
@@ -272,32 +307,66 @@ public class TestSubManyClients extends TestCase implements I_Callback
    public void testManyClients()
    {
       System.out.println("");
-      log.info("TEST 1, many publishers, one subscriber ...");
+      log.info("TEST 1, many subscribers, one publisher ...");
 
       subcribeMany();
       try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
-      assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
+      assertEquals("numReceived after (many) subscribe", 0, numReceived);  // there should be no Callback
 
-      publishOne();
+      int nmax = 400000 / numClients;
+      numExpectedUpd = numClients * nmax;
+      // old normal behaviour
+      String senderContent = null;
+      if (contentLength > 0) {
+          senderContent = "";
+          for (int i=0; i < contentLength; i++)
+        	  senderContent += (char)(32 + (i % 64));
+      }
+      publishOne(nmax, senderContent, publishOid1, false);
       log.info("Waiting long enough for updates ...");
-      Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
-      assertEquals("Wrong number of updates", numClients, numReceived);
-
+      // Util.delay(2000L + 10 * numExpectedUpd);                          // Wait some time for callback to arrive ...
+      delay(2000L + 10 * numExpectedUpd);                          // Wait some time for callback to arrive ...
+      oneSubUpdPerSec = tmpUpdPerSec;
+      assertEquals("Wrong number of updates", numExpectedUpd, numReceived);
+      // numExpectedUpd = numClients;
 
       System.out.println("");
       log.info("TEST 2, many publishers, one subscriber ...");
 
+      numReceived = 0;
       subcribeOne();
       try { Thread.sleep(100L); } catch( InterruptedException i) {}                                             // Wait some time ...
+      assertEquals("numReceived after (one) subscribe", 0, numReceived);  // there should be no Callback
 
-      numReceived = 0;
-      publishMany();
+      publishMany(nmax, senderContent);
       log.info("Waiting long enough for updates ...");
-      Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
-      assertEquals("Wrong number of updates", numClients, numReceived);
+      // Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
+      delay(2000L + 10 * numExpectedUpd);                          // Wait some time for callback to arrive ...
+      assertEquals("Wrong number of updates", numExpectedUpd, numReceived);
+      manySubUpdPerSec = tmpUpdPerSec;
+      log.info("CSVLOG;" + System.currentTimeMillis() + ";" + numClients + ";" + loginsPerSec + ";" + oneSubUpdPerSec + ";" + pubMsgPerSec + ";" + manySubUpdPerSec + ";" + numReceived);
+   
    }
 
 
+   private void delay(long maxTime) {
+	   long timeToSleep = 2000L;
+	   if (maxTime < timeToSleep)
+		   timeToSleep = maxTime;
+	   long t0 = System.currentTimeMillis();
+	   while (true) {
+		   try {
+			   Thread.sleep(timeToSleep);
+		   }
+		   catch (Exception ex) {
+		   }
+		   long t1 = System.currentTimeMillis() - t0;
+		   if (t1 >= maxTime)
+			   break;
+		   if (numReceived >= numExpectedUpd)
+			   break;
+	   }
+   }
    /**
     * One client subscribes to a message. 
     */
@@ -326,7 +395,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     * <p />
     * The returned publishOid1 is checked
     */
-   public void publishMany()
+   public void publishMany(int nmax, String content)
    {
       if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
@@ -338,21 +407,45 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       long usedBefore = getUsedServerMemory();
 
-      log.info(numClients + " clients are publishing one message each ...");
+      log.info(numClients + " clients are publishing " + nmax + " message(s) each ...");
 
       stopWatch = new StopWatch();
 
-      for (int ii=0; ii<numClients; ii++) {
-         Client client = manyClients[ii];
-         // The content changes, equal contents would not be updated to the subscriber without <forceUpdate/>
-         String senderContent = "New content from publisher " + client.loginName;
-         try {
-            MsgUnit msgUnit = new MsgUnit(pubKey, senderContent.getBytes(), pubQos);
-            PublishReturnQos tmp = oneConnection.publish(msgUnit);
-            assertEquals("Wrong publishOid2", publishOid2, tmp.getKeyOid());
-         } catch(XmlBlasterException e) {
-            log.warning("XmlBlasterException: " + e.getMessage());
-            assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
+      if (oneWay) {
+         for (int ii=0; ii<numClients; ii++) {
+            Client client = manyClients[ii];
+            // The content changes, equal contents would not be updated to the subscriber without <forceUpdate/>
+            String senderContent = content;
+            if (senderContent == null)
+            	senderContent = "New content from publisher " + client.loginName;
+            try {
+               MsgUnit msgUnit = new MsgUnit(pubKey, senderContent.getBytes(), pubQos);
+               MsgUnit[] msgUnitArr = new MsgUnit[nmax];
+               for (int i=0; i < nmax; i++) {
+                  msgUnitArr[i] = msgUnit.getClone();
+               }
+               oneConnection.publishOneway(msgUnitArr);
+            } catch(XmlBlasterException e) {
+              log.warning("XmlBlasterException: " + e.getMessage());
+              assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
+            }
+         }
+      }
+      else {
+         for (int i=0; i<nmax; i++) {
+            for (int ii=0; ii<numClients; ii++) {
+               Client client = manyClients[ii];
+               // The content changes, equal contents would not be updated to the subscriber without <forceUpdate/>
+               String senderContent = "New content from publisher " + client.loginName;
+               try {
+                  MsgUnit msgUnit = new MsgUnit(pubKey, senderContent.getBytes(), pubQos);
+                  PublishReturnQos tmp = oneConnection.publish(msgUnit);
+                  assertEquals("Wrong publishOid2", publishOid2, tmp.getKeyOid());
+               } catch(XmlBlasterException e) {
+                  log.warning("XmlBlasterException: " + e.getMessage());
+                  assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
+               }
+            }
          }
       }
 
@@ -364,7 +457,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       log.info(numClients + " have published their messages.");
       log.info("Server memory consumed=" + memPerLogin + " bytes.");
-      log.info("Time " + (long)(numClients/timeToPublish) + " publish/sec");
+      pubMsgPerSec = (long)(numClients*nmax/timeToPublish);
+      log.info("Time " + pubMsgPerSec + " publish/sec");
    }
 
    /**
@@ -375,13 +469,25 @@ public class TestSubManyClients extends TestCase implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       //log.info("Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
-      numReceived++;
-
-      if (numReceived == numClients) {
+      synchronized(this) {
+         if (updateSleep > -1L) {
+           try {
+              Thread.sleep(updateSleep);
+           }
+           catch (InterruptedException e) {
+           }
+         }
+         numReceived++;
+	  }
+      if (updatePublish > 0) {
+    	  publishOne(updatePublish, "updateContent", updateTopic, true);
+      }
+      if (numReceived == numExpectedUpd) {
          long avg = 0;
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numReceived / elapsed);
+         tmpUpdPerSec = avg;
          log.info(numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
       }
       return "";

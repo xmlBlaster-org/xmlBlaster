@@ -532,7 +532,6 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
-            
             // # cat /proc/sys/net/ipv4/tcp_keepalive_time (seconds-> 2hours until Linux kernel sends first keep alive)
             //7200
             //# cat /proc/sys/net/ipv4/tcp_keepalive_intvl
