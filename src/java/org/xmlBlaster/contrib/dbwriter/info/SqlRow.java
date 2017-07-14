@@ -373,5 +373,8 @@ public class SqlRow {
          throw new IllegalStateException("SqlRow.setColsRawContent can not be invoked since there are already '" + this.columns.size() + "' columns defined");
       this.colsRawContent = colsRawContent;
    }
-   
+
+   public int getRowNr() {
+      return position;
+   }
 }
