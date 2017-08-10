@@ -4,6 +4,18 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18279 2017-08-10 michele
+   fixed DB leak when logging out with more entries than the cache in callback queue
+
+ o 18277 2017-07-14 michele
+   Replication: added a getter for SqlRow
+
+ o 18276 2017-07-14 michele
+   handling multiple SSL certificates (if the client has to use another) 
+
+ o 18275 2017-07-14 michele
+   logging all threads in case of a concurrent exception leading to panic 
+
  o 18273 2017-07-02 marcel
    QosData.hasClientProperty() added
    SessionInfo.removeUserObject() added
