@@ -838,7 +838,8 @@ public class SqlDescription {
          return st.executeUpdate();
       }
       catch (Throwable ex) {
-         log.severe(" Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+    	  // log.severe(" Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+    	  log.log(Level.SEVERE, " Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage(), ex);
          if (ex instanceof Exception)
             throw (Exception)ex;
          else
