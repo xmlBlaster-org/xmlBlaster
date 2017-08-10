@@ -46,6 +46,7 @@ import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
  */
 public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_StorageProblemListener, CacheQueueInterceptorPluginMBean
 {
+   private static final int MAGIC_ALL_TRANSIENTS = -3333;
    private static Logger log = Logger.getLogger(CacheQueueInterceptorPlugin.class.getName());
    private String ME;
    private ContextNode contextNode;
@@ -834,6 +835,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
 
    /**
+    * If you use MAGIC_ALL_TRANSIENTS it will remove all transient messages and avoid loop through the persistence.
     * Removes max num messages.
     * This method does not block.
     * @param num Erase num entries or less if less entries are available, -1 erases everything
@@ -849,12 +851,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       int nmax = (int)numOfEntries;
 
       if (nmax < 0) nmax = Integer.MAX_VALUE;
-
+      
       I_Entry[] entries = null;
       List<I_Entry> list = null;
       boolean[] tmp = null;
       try {
          synchronized(this) {
+            if (numOfEntries == MAGIC_ALL_TRANSIENTS)
+              nmax = (int)transientQueue.getNumOfEntries();
             while ((nmax > 0)) {
                list = peek(nmax, -1L);
                if ((list == null) || (list.size() < 1)) break;
@@ -1152,7 +1156,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
 
    /**
-    * It returns the size of the queue. Note that this call will return the size
+    * It returns the size of the all the entries in the queue (transient only and persistent).
+    * queue. Note that this call will return the size
     * stored in cache, i.e. it will NOT make a call to the underlying DB.
     *
     * @see I_Queue#getNumOfEntries()
@@ -1259,7 +1264,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if (curr <= 0) break;
             //if (curr > 10000) curr = 10000; is protected by maxEntriesCached
             try {
-               long count = removeNum(curr); // with callback to Entry for reference counting
+               long count = removeNum(MAGIC_ALL_TRANSIENTS); // with callback to Entry for reference counting
                if (count == 0) break;
             }
             catch (Throwable e) {
