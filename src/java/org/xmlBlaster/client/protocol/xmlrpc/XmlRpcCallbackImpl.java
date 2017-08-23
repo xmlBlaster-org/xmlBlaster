@@ -107,7 +107,7 @@ public class XmlRpcCallbackImpl {
    public String ping(String str)
    {
       if (log.isLoggable(Level.FINEST))
-         log.severe("PING with " + str);
+         log.finest("PING with " + str);
       return server.ping(str);
    }
    
