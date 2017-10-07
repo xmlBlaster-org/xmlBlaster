@@ -7,11 +7,15 @@ Comment:   RmiUrl knows how to parse the URL notation of our RMI protocol
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.HelperIPv6And4;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.AddressBase;
+
 import java.net.InetAddress;
 
 /**
@@ -142,7 +146,7 @@ public class RmiUrl
          url = url.substring("rmi:".length());
       }
 
-      int pos = url.indexOf(":");
+      int pos = HelperIPv6And4.getIPv6OrIPv4PortPosition(url);
       String portStr = null;
       if (pos > -1) {
          this.hostname = url.substring(0, pos);

@@ -99,7 +99,8 @@ public class XbUri
       this.user = "";
       this.password = null;
       if (this.uri.getUserInfo() != null) {
-         int i = this.uri.getUserInfo().indexOf(":");
+         int i = HelperIPv6And4.getIPv6OrIPv4PortPosition(this.uri.getUserInfo());
+
          this.user = this.uri.getUserInfo();
          if (i != -1) {
             this.user = this.uri.getUserInfo().substring(0,i);

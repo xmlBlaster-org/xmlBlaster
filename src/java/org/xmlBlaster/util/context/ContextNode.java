@@ -13,7 +13,9 @@ import java.util.logging.Logger;
 
 //import javax.management.ObjectName;
 
+
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.HelperIPv6And4;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.def.Constants;
@@ -568,7 +570,7 @@ public final class ContextNode
       }
       if (url.startsWith(SCHEMA_JMX_DOMAIN+":")) { // SCHEMA_JMX
          // org.xmlBlaster:nodeClass=node,node="heron",clientClass=connection,connection="jack",queueClass=queue,queue="connection-99"
-         int index = url.indexOf(":");
+         int index = HelperIPv6And4.getIPv6OrIPv4PortPosition(url);
          String tmp = url.substring(index+1);
          String[] toks = StringPairTokenizer.parseLine(tmp, ',', QUOTE, true);
          ContextNode node = ROOT_NODE;

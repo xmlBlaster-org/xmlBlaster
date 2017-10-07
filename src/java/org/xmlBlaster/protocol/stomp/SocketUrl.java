@@ -152,7 +152,7 @@ public class SocketUrl
          url = url.substring("stomp:".length());
       }
 
-      int pos = url.indexOf(":");
+      int pos = url.lastIndexOf(":");
       String portStr = null;
       if (pos > -1) {
          this.hostname = url.substring(0, pos);
