@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18282 2017-10-06 michele
+   added IPv6 support by adding HelperIPv6And4.java and using it when parsing urls.
+
  o 18279 2017-08-10 michele
    fixed DB leak when logging out with more entries than the cache in callback queue
 
