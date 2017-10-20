@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AC9B7052-1889-4A65-9B34-15C373742E33}</ProjectGuid>
+    <RootNamespace>xmlBlasterClient</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.61030.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(XMLBLASTER_HOME)/src/c++;$(XMLBLASTER_HOME)/src/c;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;_WINDLL;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_CRT_SECURE_NO_DEPRECATE;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>zdll.lib;pthreadVC2.lib;sqlite.lib;xmlBlasterClientCD.lib;xerces-c_2D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)D.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(zlib_lib_dir);$(sqlite_lib_dir);$(xerces_lib_dir);$(XMLBLASTER_HOME)/src/c/socket;$(XMLBLASTER_HOME)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copy xmlBlasterClientD.dll to xmlBlaster\lib</Message>
+      <Command>call copy $(SolutionDir)\$(Configuration)\$(ProjectName)D.dll  $(XMLBLASTER_HOME)\lib</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(XMLBLASTER_HOME)/src/c;$(XMLBLASTER_HOME)/src/c++;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;_WINDLL;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32;_USRDLL;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>zdll.lib;pthreadVC2.lib;sqlite.lib;xmlBlasterClientC.lib;xerces-c_2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(zlib_lib_dir);$(sqlite_lib_dir);$(xerces_lib_dir);$(XMLBLASTER_HOME)/src/c/socket;$(XMLBLASTER_HOME)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copy xmlBlasterClient.dll to xmlBlaster\lib</Message>
+      <Command>call copy $(SolutionDir)\$(Configuration)\$(ProjectName).dll  $(XMLBLASTER_HOME)\lib</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\c++\client\XmlBlasterAccess.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\key\GetReturnKey.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\key\MsgKeyBase.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\key\PublishKey.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\key\SubscribeKey.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\key\UnSubscribeKey.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\key\UpdateKey.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\protocol\CbServerPluginManager.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\protocol\socket\SocketDriver.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\protocol\socket\SocketDriverFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\EraseQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\GetQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\GetReturnQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\PublishQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\PublishReturnQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\SubscribeQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\SubscribeReturnQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\UnSubscribeQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\UpdateQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\client\qos\UpdateReturnQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Base64.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Constants.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Destination.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\EmbeddedServer.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Global.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Log.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Log4cplus.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\LogManager.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\MessageUnit.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\MethodName.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\objman.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\PriorityEnum.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Property.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\ReferenceCounterBase.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\ServerRef.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\SessionName.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Timeout.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\Timestamp.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\XmlBlasterException.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\XmlQoSBase.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\cluster\NodeId.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\cluster\NodeInfo.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\cluster\RouteInfo.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\dispatch\ConnectionsHandler.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\dispatch\DispatchManager.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\key\KeyData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\key\MsgKeyData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\key\MsgKeyFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\key\QueryKeyData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\parser\ParserFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\parser\Sax2XercesParser.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\parser\XmlHandlerBase.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\AccessFilterQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\ClientProperty.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\ConnectQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\ConnectQosFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\DisconnectQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\HistoryQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\MsgQosData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\MsgQosFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\QosData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\Query.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\QueryQosData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\SessionQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\StatusQosData.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\StatusQosFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\TopicProperty.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\address\Address.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\address\AddressBase.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\address\AddressFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\address\CallbackAddress.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\storage\CbQueueProperty.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\storage\ClientQueueProperty.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\storage\HistoryQueueProperty.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\storage\MsgUnitStoreProperty.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\storage\QueuePropertyBase.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\qos\storage\QueuePropertyFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\CacheQueuePlugin.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\ConnectQueueEntry.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\EraseQueueEntry.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\MsgQueueEntry.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\PublishQueueEntry.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\QueueFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\RamQueuePlugin.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\SQLiteQueuePlugin.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\SubscribeQueueEntry.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\queue\UnSubscribeQueueEntry.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\util\thread\ThreadImpl.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\authentication\SecurityQos.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\authentication\SecurityQosFactory.cpp" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\appender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\appenderattachableimpl.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\configurator.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\consoleappender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\factory.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\fileappender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\filter.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\global-init.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\hierarchy.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\hierarchylocker.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\layout.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\logger.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\loggerimpl.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\loggingevent.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\loggingserver.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\loglevel.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\loglog.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\logloguser.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\ndc.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\nteventlogappender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\nullappender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\objectregistry.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\patternlayout.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\pointer.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\property.cxx">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\rootlogger.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\sleep.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\socket-win32.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\socket.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\socketappender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\socketbuffer.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\stringhelper.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\syslogappender.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\threads.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\log4cplus\timehelper.cxx" />
+    <ClCompile Include="..\..\..\..\src\c++\omnithread\xbThreads.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\xmlBlasterClientC\xmlBlasterClientC.vcxproj">
+      <Project>{bcfece96-beef-4592-b231-f0e15a0f077d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
