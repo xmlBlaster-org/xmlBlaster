@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18286 2017-11-01 marcel
+   Avoid that EvenPlugin triggers a remote cluster node connection if none existed
+
  o 18282 2017-10-06 michele
    added IPv6 support by adding HelperIPv6And4.java and using it when parsing urls.
 

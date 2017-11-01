@@ -590,20 +590,49 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * Directly from xmlBlasterAccess, may not contain clusterNodeId
     * 
+    * CAUTION: Triggers a connect to remote server if no connection existed. 
+    * 
     * @return null if not known
     */
    public SessionName getSessionName() {
+	   return getSessionName(true);
+   }
+   
+   public SessionName getSessionName(boolean triggerConnectionIfNotConnected) {
       if (isLocalNode())
          return null;
-      I_XmlBlasterAccess con = null;
-      try {
-         con = getXmlBlasterAccess();
-      } catch (XmlBlasterException e) {
-         e.printStackTrace();
-         return null;
+      
+	  I_XmlBlasterAccess xbl = this.xmlBlasterConnection;
+	  if (xbl != null) {
+		  SessionName sn =  xbl.getSessionName();
+		  if (sn != null)
+			  return sn;
+	  }
+	  
+	  if (triggerConnectionIfNotConnected) {
+	      // Caution: This triggers a connect to remote node
+	      I_XmlBlasterAccess con = null;
+	      try {
+	         con = getXmlBlasterAccess();
+	      } catch (XmlBlasterException e) {
+	         e.printStackTrace();
+	         return null;
+	      }
+	      if (con != null)
+	         return con.getSessionName();
+	  }
+
+	  NodeConnectQos nodeInfo = getNodeInfo();
+      if (nodeInfo != null) {
+    	  ConnectQosData connectQosData = getNodeInfo().getConnectQosData();
+    	  if (connectQosData != null) {
+    		  SessionName sn = connectQosData.getSessionName();
+    		  if (sn != null) {
+    			  return sn;
+    		  }
+    	  }
       }
-      if (con != null)
-         return con.getSessionName();
+      
       return null;
    }
 

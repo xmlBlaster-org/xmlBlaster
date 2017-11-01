@@ -508,7 +508,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                ClusterNode[] nodes = clusterManager.getClusterNodes();
                for (int ic=0; ic<nodes.length; ic++) {
                   ClusterNode node = nodes[ic];
-                  SessionName destination = node.getSessionName();
+                  SessionName destination = node.getSessionName(false);
                   if (destination != null && destination.matchRelativeName(name)) {
                      node.registerConnectionListener(this);
                   }
