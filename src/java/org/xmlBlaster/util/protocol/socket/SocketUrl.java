@@ -154,18 +154,18 @@ public class SocketUrl {
     * Invoked to serialize the setting of the SSL properties needed to create an SSL Socket with the XMLBLASTER properties.
     */
    public final static void checkoutSSLProps() {
-      synchronized(STORE_LOCK) {
+      // synchronized(STORE_LOCK) {
          STORE_LOCK.lock();
          STORE_DATA.clear();
          checkoutProp(STORE_DATA, KEY_STORE_PROP);
          checkoutProp(STORE_DATA, KEY_STORE_PWD_PROP);
          checkoutProp(STORE_DATA, TRUST_STORE_PROP);
          checkoutProp(STORE_DATA, TRUST_STORE_PWD_PROP);
-	   }
+	   // }
    }
 
    public final static void checkinSSLProps() {
-      synchronized(STORE_LOCK) {
+      // synchronized(STORE_LOCK) {
          try {
             checkinProp(STORE_DATA, KEY_STORE_PROP);
             checkinProp(STORE_DATA, KEY_STORE_PWD_PROP);
@@ -175,7 +175,7 @@ public class SocketUrl {
          finally {
             STORE_LOCK.unlock();
          }
-      }
+      // }
 }
 
    /** @return true if host or port was given by user configuration, false if default is chosen */
