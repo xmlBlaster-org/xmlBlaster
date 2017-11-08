@@ -3,6 +3,8 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18287 2017-11-08 michele
+   Removed sychronized in SocketUrl which led to a deadlock when multiple threads where creating a SSL Socket
 
  o 18286 2017-11-01 marcel
    Avoid that EvenPlugin triggers a remote cluster node connection if none existed
