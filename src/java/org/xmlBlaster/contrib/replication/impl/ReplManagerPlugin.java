@@ -1591,9 +1591,9 @@ public class ReplManagerPlugin extends GlobalInfo
       I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
       if (individualInfo == null)
          return "the replication with Id='" + replicationPrefix + "' was not found (has not been registered). Allowed ones are : " + getReplications();
-
+      String dbWatcherSessionId = null;
       try {
-         String dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
+         dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          // no oid for this ptp message 
          PublishKey pubKey = new PublishKey(this.global, SIMPLE_MESSAGE);
@@ -1605,20 +1605,22 @@ public class ReplManagerPlugin extends GlobalInfo
          conn.publish(msg);
       }
       catch (Exception ex) {
-         ex.printStackTrace();
-         return "Could not publish the message";
+    	  log.severe(ex.getMessage() + " " + Global.getStackTraceAsString(ex));
+         return "Could not publish the message for " + replicationPrefix + " and dbwatcher " +  dbWatcherSessionId;
       }
-      return "Successfully published message to replication '" + replicationPrefix + "'";
+      return "Successfully published message to replication '" + replicationPrefix + "' and dbwatcher " + dbWatcherSessionId;
    }
    
    public String startBatchUpdate(String replicationPrefix) {
-      log.info("for replication='" + replicationPrefix + "'");
-      return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_START_BATCH);
+      String ret = publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_START_BATCH);
+      log.info("for replication='" + replicationPrefix + "' " + ret);
+      return ret;
    }
    
    public String collectInitialUpdates(String replicationPrefix) {
-      log.info("for replication='" + replicationPrefix + "'");
-      return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_COLLECT);
+      String ret = publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_COLLECT);
+      log.info("for replication='" + replicationPrefix + "' " + ret);
+      return ret;
    }
    
    private final I_ReplSlave[] getAllSlaves() {
