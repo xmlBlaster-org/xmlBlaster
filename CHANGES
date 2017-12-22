@@ -5,7 +5,7 @@ Changes for current svn
 =======================
  o 18290 2017-12-22 marcel
    Added killSessionNoThrow and killClientNoThrow for JMX
-   NPE Fix in ContextNote.java
+   NPE Fix in ContextNode.java
  
  o 18287 2017-11-08 michele
    Removed sychronized in SocketUrl which led to a deadlock when multiple threads where creating a SSL Socket
