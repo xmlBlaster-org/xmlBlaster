@@ -90,6 +90,17 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
       return this.subjectInfo.killClient();
    }
 
+   /** Invoke operation to destroy the session (force logout) */
+   public final String killClientNoThrow() {
+	   try {
+	      return this.subjectInfo.killClient();
+	   }
+	   catch(Throwable e) {
+		  e.printStackTrace();
+		  return e.getMessage();
+	   }
+   }
+   
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
       return this.subjectInfo.peekSubjectMessages(numOfEntries);
    }

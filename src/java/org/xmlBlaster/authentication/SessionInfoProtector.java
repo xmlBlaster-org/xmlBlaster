@@ -218,6 +218,16 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.killSession();
    }
    
+   public final String killSessionNoThrow() {
+	   try {
+	      return this.sessionInfo.killSession();
+	   }
+	   catch(Throwable e) {
+		  e.printStackTrace();
+		  return e.getMessage();
+	   }
+   }
+   
    public String disconnectClientKeepSession() {
       return this.sessionInfo.disconnectClientKeepSession();
    }

@@ -196,6 +196,8 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public String getSubscriptionDump() throws XmlBlasterException;
    /** Invoke operation to destroy the session (force logout) */
    public String killSession() throws XmlBlasterException;
+   /** Invoke operation to destroy the session (force logout) */
+   public String killSessionNoThrow();
    public Map<String, Object> getUserObjectMap();
    /**
     * Activates/inhibits the dispatch of messages to this session.

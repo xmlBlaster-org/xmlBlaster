@@ -109,6 +109,7 @@ public interface I_AdminSubject extends I_AdminUsage {
     * @return The list of killed sessions (public session IDs)
     */
    public String killClient() throws XmlBlasterException;
+   public  String killClientNoThrow();
    /**
     * Peek point to point messages from subject queue, they are not removed
     * @param numOfEntries The number of messages to peek, taken from the front

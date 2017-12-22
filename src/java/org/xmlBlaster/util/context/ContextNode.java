@@ -577,6 +577,8 @@ public final class ContextNode
          for (int i=0; i<toks.length; i++) {
             index = toks[i].indexOf("=");
             String className = (index > 0) ? toks[i].substring(index+1) : null;
+            if (className == null)
+            	continue;
             if (className.startsWith("\""))
                 className = className.substring(1,className.length()-1);
             String instanceName = null;
