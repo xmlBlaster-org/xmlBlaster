@@ -225,7 +225,7 @@ int Property::readPropertyFile(const string &filename, bool overwrite)
    ifstream in(filename.c_str());
    string  line, tmp;
    int     count = 0;
-   if (in == 0) return -1;
+   if (!in) return -1;
    std::cout << "Reading property file " << filename << std::endl;
    while (!in.eof()) {
       getline(in, tmp);
@@ -262,7 +262,7 @@ Property::writePropertyFile(const char *filename) const
 {
    ofstream out(filename);
    int      count = 0;
-   if (out == 0) return count;
+   if (!out) return count;
    MapType::const_iterator iter = properties_.begin();
    while (iter != properties_.end()) {
      out << (*iter).first << "=" << (*iter).second << std::endl;

@@ -324,7 +324,7 @@ TODO
 
    <!-- Compile C++ -->
    <compiler id="g++" extends="gcc" if="use-gcc">
-      <compilerarg value="-ftemplate-depth-20" /> <!-- needed for cpp templates in boost -->
+      <compilerarg value="-ftemplate-depth=100" /> <!-- needed for cpp templates in boost -->
    </compiler>
 
    <!-- Compile Intel C++ -->
