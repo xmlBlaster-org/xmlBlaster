@@ -10,12 +10,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -314,7 +317,17 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    // @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
    public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       try {
-         I_AdminSession receiver = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(dispatchManager.getSessionName()).getSessionByPubSessionId(dispatchManager.getSessionName().getPublicSessionId());
+    	 SessionName sn = dispatchManager.getSessionName();
+    	 if (sn == null) {
+    		 log.severe("Failed to execute, sessionName is null");
+    		 return;
+    	 }
+    	 I_AdminSubject subjectInfo = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(sn);
+    	 if (subjectInfo == null) {
+    		 log.severe("Failed to execute, subjectInfo is null for " + sn);
+    		 return;
+    	 }
+         I_AdminSession receiver = subjectInfo.getSessionByPubSessionId(sn.getPublicSessionId());
          String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();
          if (log.isLoggable(Level.FINE))
             log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
