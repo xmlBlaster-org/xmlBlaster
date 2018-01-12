@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18294 2018-01-12 michele
+   on the replication fixed a loop occurring under specific circumstances in ORACLE when checking if to escape a column
+ 
  o 18290 2017-12-22 marcel
    Added killSessionNoThrow and killClientNoThrow for JMX
    NPE Fix in ContextNode.java
