@@ -209,15 +209,25 @@ public class SpecificOracle extends SpecificDefault {
                      // SDO_UTIL.FROM_WKTGEOMETRY(geometry IN VARCHAR2) RETURN SDO_GEOMETRY;
                      // SDO_UTIL.FROM_WKTGEOMETRY(geometry IN CLOB) RETURN SDO_GEOMETRY;
                      // SDO_UTIL.TO_WKTGEOMETRY(geometry IN SDO_GEOMETRY) RETURN CLOB;
-                     buf.append("             fake := ").append(this.replPrefix);
-                     String extendedVarName = varName;
-                     extendedVarName = "SDO_UTIL.TO_GML311GEOMETRY(" + varName + ")";
-                     buf.append("fill_blob_char(").append(extendedVarName).append(", '").append(colName).append("',");
-                     buf.append(contName).append(");\n");
+
+                     if (false) {
+                         buf.append("             fake := ").append(replPrefix);
+                         String extendedVarName = varName;
+                         extendedVarName = "SDO_UTIL.TO_GML311GEOMETRY(" + varName + ")";
+                         buf.append("fill_blob_char(").append(extendedVarName).append(", '").append(colName).append("',");
+                         buf.append(contName).append(");\n");
+                     }
+                     else {
+                    	 // buf.append("             tmpNum := 5;\n");
+                    	 buf.append("             tmpCont := SDO_UTIL.TO_GML311GEOMETRY(" + varName + ");\n");
+                    	 //buf.append("             fake := ").append(replPrefix).append("fill_blob_char(tmpCont, '").append(colName).append("',");
+                    	 buf.append("             fake := ").append(replPrefix).append("col2xml('").append(colName).append("',tmpCont,");
+                    	 buf.append(contName).append(");\n");
+                     }
                   }
                   else {
                      buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
-                     buf.append("             fake := ").append(this.replPrefix);
+                     buf.append("             fake := ").append(replPrefix);
                      buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
                   }
                }

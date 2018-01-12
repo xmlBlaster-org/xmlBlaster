@@ -174,8 +174,11 @@ RETURN INTEGER AS
    offset    INTEGER;
    tmp       VARCHAR(32766);
    increment INTEGER;
+   oldOffset INTEGER;
+
 BEGIN
    ret := 0;
+   oldOffset := 0;
    offset := 1;
    increment := 32766;
    len := dbms_lob.getlength(content);
@@ -184,7 +187,7 @@ BEGIN
       WHILE offset < len LOOP
          dbms_lob.read(content, increment, offset, tmp);
          offset := offset + increment; 
-         if len > increment THEN 
+         if len > increment AND increment > 3 THEN 
             offset := offset - 3; -- overlap to be sure not to cut a token
          END IF;
          pos := INSTR(tmp, ']]>', 1, 1);
@@ -201,7 +204,12 @@ BEGIN
             IF ret < 2 THEN
      	    ret := 2;
      	 END IF;
-         END IF;	    	
+         END IF;
+
+	 IF ret = 2 OR oldOffset >= offset THEN
+	    EXIT;
+	 END IF;
+	 	    	
          pos := INSTR(tmp, '<', 1, 1);
          IF POS > 0 THEN 
             IF ret < 1 THEN
