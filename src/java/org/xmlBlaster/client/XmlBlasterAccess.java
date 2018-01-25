@@ -404,6 +404,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
 
+      I_DispatchManager dispatchManagerStale = null;
       synchronized (this) {
 
          if (this.startupTime == 0) {
@@ -463,6 +464,20 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             try {
                ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
                StorageId storageId = createStorageId(Constants.RELATING_CLIENT);
+               if (this.clientQueue != null) {
+            	   log.severe(getLogId()+": clientQueue exists already " + this.clientQueue.getStorageId());
+            	   Thread.dumpStack();
+            	   if (false) { // was never in use, just to remember the decision:
+            		   // is probably dead lock prone when calling back to user code
+              	       try {
+               		     // Persistent entries will NOT be deleted.
+            	         this.clientQueue.shutdown();
+            	       }
+            	       catch (Throwable e) {
+            		      e.printStackTrace();
+            	       }
+            	   }
+               }
                this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), storageId,
                                                       this.connectQos.getClientQueueProperty());
                if (this.clientQueue == null) {
@@ -475,6 +490,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                }
 
                boolean forceCbAddressCreation = (updateListener != null);
+               if (this.dispatchManager != null) {
+            	   dispatchManagerStale = this.dispatchManager;
+               }
                this.dispatchManager = new ClientDispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses(forceCbAddressCreation), sn);
@@ -516,6 +534,16 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             this.connectInProgress = false;
          }
       } // synchronized
+      
+      if (dispatchManagerStale != null) {
+          try {
+             // Michele was scared to do it inside synchronized
+             dispatchManagerStale.shutdown();
+          }
+          catch (Throwable e) {
+             e.printStackTrace();
+          }
+      }
 
       if (this.connectQos != null && this.connectQos.getRefreshSession()) {
          startSessionRefresher();
@@ -528,14 +556,19 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.connectQos != null && this.connectQos.getAddress() != null)
         	 log.info(glob.getReleaseId() + ": Successful " + this.connectQos.getAddress().getType() + " login as " + getId());
 
-         if (this.clientQueue.getNumOfEntries() > 0) {
-            long num = this.clientQueue.getNumOfEntries();
+         I_Queue queue = this.clientQueue;
+         if (queue == null) {
+             if (isConnected()) disconnect((DisconnectQos)null);
+             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed, queue==null");
+         }
+         if (queue.getNumOfEntries() > 0) {
+            long num = queue.getNumOfEntries();
             log.info(getLogId()+"We have " + num + " client side queued tail back messages");
             this.dispatchManager.switchToASyncMode();
-            while (this.clientQueue.getNumOfEntries() > 0) {
+            while (queue.getNumOfEntries() > 0) {
                try { Thread.sleep(20L); } catch( InterruptedException i) {}
             }
-            log.info((num-this.clientQueue.getNumOfEntries()) + " client side queued tail back messages sent");
+            log.info((num-queue.getNumOfEntries()) + " client side queued tail back messages sent");
             if (isTrySyncMode())
             	this.dispatchManager.switchToSyncMode();
          }
