@@ -3,6 +3,11 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o 18296 2018-01-25 michele/marcel
+   Better cleanup of resources on java client side connection
+   to prevent a race condition loop of socket connection to server
+    
  o 18294 2018-01-12 michele
    on the replication fixed a loop occurring under specific circumstances in ORACLE when checking if to escape a column
  
