@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18298 2018-02-06 michele/marcel
+   Change default DispatchWorker pool thread size from 5 to 20(server side) and 2(client side)
+   Configure client side thread now with parameter "createThreadsClient"
+
  o 18296 2018-01-25 michele/marcel
    Better cleanup of resources on java client side connection
    to prevent a race condition loop of socket connection to server
