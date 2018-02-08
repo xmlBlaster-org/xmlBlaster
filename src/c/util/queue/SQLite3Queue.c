@@ -64,7 +64,8 @@ Testsuite: xmlBlaster/testsuite/src/c/TestQueue.c
 # define Dll_Export
 #endif*/
 
-# include "sqlite3.h"
+# include <sqlite3.h>
+
 static void xb_sqlite_free(char * pdata) { sqlite3_free(pdata); }
 
 static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
