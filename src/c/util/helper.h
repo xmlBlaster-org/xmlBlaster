@@ -160,9 +160,9 @@ Dll_Export extern char *strcatAlloc0(char **dest, const char *src, const size_t 
 Dll_Export extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 Dll_Export extern char *strncat0(char * const to, const char * const from, const size_t max);
 Dll_Export extern int snprintf0(char *buffer, size_t sizeOfBuffer, const char *format, ...);
-Dll_Export extern void trim(char *s);
-Dll_Export extern void trimStart(char *s);
-Dll_Export extern void trimEnd(char *s);
+Dll_Export extern char *trim(char *s);
+Dll_Export extern char *trimStart(char *s);
+Dll_Export extern char *trimEnd(char *s);
 Dll_Export extern bool startsWith(const char * const str, const char * const token);
 Dll_Export extern bool endsWith(const char * const str, const char * const token);
 Dll_Export extern void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum);

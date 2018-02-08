@@ -478,15 +478,17 @@ Dll_Export int snprintf0(char *buffer, size_t sizeOfBuffer, const char *format, 
 /**
  * strip leading and trailing spaces of the given string
  */
-Dll_Export void trim(char *s)
+Dll_Export char * trim(char *s)
 {
    size_t first=0;
    size_t len;
    int i;
 
-   if (s == (char *)0) return;
+   if (s == (char *)0) return s;
 
    len = strlen((char *) s);
+   if (len == 0)
+      return s;
 
    {  /* find beginning of text */
       while (first<len) {
@@ -498,30 +500,34 @@ Dll_Export void trim(char *s)
 
    if (first>=len) {
       *s = '\0';
-      return;
+      return s;
    }
-   else
+   else if (first > 0) {
       memmove((char *) s, (char *) s+first, strlen(s+first)+1); /* including '\0' */
+   }
 
    for (i=(int)strlen((char *) s)-1; i >= 0; i--)
       if (!isspace((unsigned char)s[i])) {
          s[i+1] = '\0';
-         return;
+         return s;
       }
    if (i<0) *s = '\0';
+   return s;
 }
 
 /**
  * strip leading spaces of the given string
  */
-Dll_Export void trimStart(char *s)
+Dll_Export char *trimStart(char *s)
 {
    size_t first=0;
    size_t len;
 
-   if (s == (char *)0) return;
+   if (s == (char *)0) return s;
 
    len = strlen((char *) s);
+   if (len == 0)
+      return s;
 
    {  /* find beginning of text */
       while (first<len) {
@@ -533,24 +539,28 @@ Dll_Export void trimStart(char *s)
 
    if (first>=len) {
       *s = '\0';
-      return;
+      return s;
    }
-   else
+   else if (first > 0) {
       memmove((char *) s, (char *) s+first, strlen(s+first)+1); /* including '\0' */
+   }
+   return s;
 }
 
 /**
  * strip trailing spaces of the given string
  */
-Dll_Export void trimEnd(char *s)
+Dll_Export char *trimEnd(char *s)
 {
    int i;
+   if (s == (char *)0) return s;
    for (i=(int)strlen((char *) s)-1; i >= 0; i--)
       if (!isspace((unsigned char)s[i])) {
          s[i+1] = '\0';
-         return;
+         return s;
       }
    if (i<0) *s = '\0';
+   return s;
 }
 
 Dll_Export
@@ -979,8 +989,9 @@ Dll_Export void freeBlobDump(char *blobDumpP)
 }
 
 # ifdef HELPER_UTIL_MAIN
+#include <assert.h>
 /*
- * gcc -g -Wall -DHELPER_UTIL_MAIN=1 -I../../ -o helper helper.c -I../
+ gcc -g -Wall -pedantic -DHELPER_UTIL_MAIN=1 -I../../ -o helper helper.c Timestampc.c -I../
  */
 int main()
 {
@@ -989,6 +1000,12 @@ int main()
    const char *location = __FILE__;
    const char *p = "OOOO";
    int i = 3;
+   char pTemp[4];
+
+   trim("");
+   strcpy(pTemp, "bla");
+   trim(pTemp);
+
    xmlBlasterDefaultLogging(0, currLevel, XMLBLASTER_LOG_WARN, location, "%s i=%d\n", p, i);
 
    printf("Sleeping now for %ld millis\n", millisecs);
@@ -1008,6 +1025,54 @@ int main()
       strncpy0(tr, ptr, 20);
       trim(tr);
       printf("Before '%s' after '%s'\n", ptr, tr);
+   }
+   {
+      const char *ptr = " 28316 ";
+      char tr[20];
+      strncpy0(tr, ptr, 20);
+      trim(tr);
+      printf("Before '%s' after '%s'\n", ptr, tr);
+   }
+   {
+      const char *ptr = "     28316  ";
+      char tr[20];
+      strncpy0(tr, ptr, 20);
+      trimStart(tr);
+      printf("trimStart: Before '%s' after '%s'\n", ptr, tr);
+   }
+   {
+      const char *ptr = "     28316  ";
+      char tr[20];
+      strncpy0(tr, ptr, 20);
+      trimEnd(tr);
+      printf("trimEnd: Before '%s' after '%s'\n", ptr, tr);
+   }
+   {
+      int i=0;
+      char pArr[2][256];
+      strcpy(pArr[0], "");
+      strcpy(pArr[1], "bla");
+      assert(trim(0)==0);
+      for (; i<2; i++) {
+         char *p = (char *)pArr[i];
+         printf("p='%s' trim to '%s'\n", p, trim(p));
+         assert(strcmp(p, trim(p)) == 0);
+      }
+   }
+   {
+      int i=0;
+      char pArr[2][256];
+      strcpy(pArr[0], "");
+      strcpy(pArr[1], "bla");
+      assert(trimStart(0) == 0);
+      assert(trimEnd(0) == 0);
+      for (; i<2; i++) {
+         char *p = (char *)pArr[i];
+         printf("p='%s' trimStart to '%s'\n", p, trimStart(p));
+         printf("p='%s' trimEnd to '%s'\n", p, trimEnd(p));
+         assert(strcmp(p, trimStart(p)) == 0);
+         assert(strcmp(p, trimEnd(p)) == 0);
+      }
    }
    {
       ExceptionStruct ex;
