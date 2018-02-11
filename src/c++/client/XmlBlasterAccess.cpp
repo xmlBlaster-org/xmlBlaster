@@ -12,6 +12,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/parser/ParserFactory.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/queue/I_Queue.h>
+#include <util/helper.h>
 
 
 namespace org { namespace xmlBlaster { namespace client {
@@ -515,6 +516,8 @@ vector<MessageUnit> XmlBlasterAccess::receive(string oid, int maxEntries, long t
 }
 
 vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout, int maxEntries) {
+   vector<MessageUnit> msgs;
+   long tryCount = (timeout < 0 ? -1L : (long)(timeout/10) + 1L);
    if (log_.call()) log_.call(ME, "request");
 
    // Create a temporary reply topic ...
@@ -528,7 +531,17 @@ vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout
       qos.addClientProperty(string(Constants::JMS_REPLY_TO), tempTopicOid);
       publish(msgUnit);
       // Access the reply ...
-      vector<MessageUnit> msgs = receive("topic/"+tempTopicOid, maxEntries, timeout, true);
+	  while (tryCount > 0 || tryCount == -1) {
+		  try {
+			msgs = receive("topic/"+tempTopicOid, maxEntries, timeout, true);
+			tryCount = 0;
+		  }
+		  catch (XmlBlasterException &ex) {
+			if (tryCount > 0) tryCount--;
+			if (tryCount == 0 || ex.getErrorCodeStr() != "user.illegalArgument") throw ex;
+            sleepMillis(10); // "user.illegalArgument" happens if server was not ready, try again ... (happens at clustering sometimes)
+		  }
+	  }
       {  // Clean up temporary topic ...
          EraseKey ek(global_, tempTopicOid);
          EraseQos eq(global_);
@@ -536,6 +549,15 @@ vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout
          erase(ek, eq);
       }
       return msgs;
+   }
+   catch (XmlBlasterException &ex) {
+      {  // Clean up temporary topic ...
+         EraseKey ek(global_, tempTopicOid);
+         EraseQos eq(global_);
+         eq.setForceDestroy(true);
+         erase(ek, eq);
+      }
+      throw ex;
    }
    catch (exception &ex) {
       {  // Clean up temporary topic ...
