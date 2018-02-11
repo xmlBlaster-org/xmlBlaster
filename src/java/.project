@@ -19,10 +19,4 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<variableList>
-		<variable>
-			<name>XMLBLASTER_HOME</name>
-			<value>file:/c:/c/xmlBlaster</value>
-		</variable>
-	</variableList>
 </projectDescription>
