@@ -1,0 +1,167 @@
+#------------------------------------------------------------------------------
+# Name:      build.properties
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Property file which is read by 'ant' when compiling
+#
+# Place environment settings here, this is more portable than in
+# your .bashrc or autoexec.bat
+# build.xml loads this file explicitly
+#
+# Precedence:
+#  1. Settings in your environment are strongest (command line settings)
+#  2. Settings in ${user.home}/build.properties file (your personal settings)
+#  3. Settings in this property file (default)
+#  4. Fallback settings in build.xml are weakest (default)
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Set this to classic for jdk1.2, modern for jdk1.3 and jikes if you have jikes.exe in the path
+# Note - this is an Ant 'magic property' that is read by the javac task directly
+build.compiler=modern
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# C and/or C++ settings
+# Adjust following settings to configure the logging library, the protocol
+# plugins (CORBA,SOCKET), the persistent queue plugin, threading and XML parser
+# See:
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.html
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.html
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# C client library compilation
+# For gcc on OSF suppress the stacktrace
+# To enable change -U... variant below to -D...
+gcc.enableStackTrace=-U_ENABLE_STACK_TRACE_
+
+# Force 32 bit compilation on a 64 bit machine, e.g. for gcc:
+#CFLAGS=-m32
+#LDFLAGS=-m32
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Switch debugging of C and C++ client library to true or false
+# The debugging shared library name has added a 'D' to its name
+c.debug       = false
+cpp.debug     = false
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Set to 1 if you want to use log4cplus instead of our primitive native logging
+# We provide the complete source code with xmlBlaster.
+# For configuration hints see http://log4cplus.sourceforge.net
+XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+# for VC11 xp compatible builds:
+CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR" "/DWINVER=0x0501" "/D_WIN32_WINNT=0x0501" "/D_USING_V110_SDK71_=1" "/arch:IA32
+# for VC10:
+#CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR
+
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Enable compression with zlib http://www.gzip.org/zlib/ (1.2.1)
+# The older version 1.1.4 does not seem to work properly in stream mode
+# You need to download zlib yourself.
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html
+#  http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#compress
+# - zlib.include.dir is the path to "zlib.h"
+# - zlib.lib.dir is on Unix the path to the shared library libz.so and
+#                on Windows to zlib.dll and zlib.lib (for compilation)
+# As many zlib versions may fly around on your PC you can add a zlib name
+# which contains all references for statical linkage (e.g. zlib.lib on Windows)
+#
+XMLBLASTER_ZLIB=1
+zlib.include.dir=/c/zlib
+zlib.lib.dir=/pialibs
+#zlib.include.dir=/opt/zlib-bin/include
+#zlib.lib.dir=/opt/zlib-bin/lib
+# On Windows you have to choose the name, usually 'zlib' or 'zlib1'
+# (defaults to 'z' for UNIX):
+#zlib.lib.name=zlib
+zlib.lib.name=zlibmd
+# Windows example:
+#zlib.include.dir=C:/zlib/include
+#zlib.lib.dir=C:/zlib/lib
+#zlib.lib.name=zdll
+#zlib.dll.name=zlib1.dll
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Settings of the Xerces-C++ validating XML parser.
+# THIS IS THE ONLY REQUIRED EXTERNAL LIBRARY FOR THE MINIMAL C++ CLIENT!
+# See http://xml.apache.org/xerces-c/ for more details.
+#
+# - xerces.include.dir is the path to the xercesc-include directry
+#                      (assumes ./xercesc subdirectory);
+#                      on Windows the setting could be: C:/xerces-c_2_6_0/src or
+#                      C:/xerces-c_2_6_0-windows_nt-msvc_60/include
+#                      (defaults to /usr/include)
+# - xerces.lib.dir is on Unix the path to the shared library libxerces-c.so and
+#                  on Windows to xerces-c_2.lib (for compilation)
+#                  (defaults to /usr/lib)
+# - xerces.lib.name=xerces-c
+#                  on Windows set to xerces-c_2
+#
+#xerces.include.dir=/usr/include
+#xerces.lib.dir=/usr/lib
+#xerces.lib.name=xerces-c
+xerces.include.dir=C:/externLibs/xerces-c-src_2_8_0/src
+xerces.lib.dir=C:/externLibs/xerces-c-src_2_8_0/lib
+xerces.lib.name=xerces-c_2
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Persistent queue support in C or C++ client library with http://www.sqlite.org
+# You need to download SQLite yourself, see:
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.queue.html
+# - sqlite.include.dir is the path to "sqlite3.h"
+# - sqlite.lib.dir is the path to the shared library (dll) libsqlite3.so (libsqlite3.dll)
+# If you want to use the deprecated sqlite2 interface, use XMLBLASTER_PERSISTENT_QUEUE=1
+XMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1
+sqlite.include.dir=c:/c/sqlite3
+sqlite.lib.dir=c:/c/sqlite3
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Compile the SOCKET plugin only, without CORBA.
+# Additionally choose a Xerces XML setting.
+# See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.socket.html
+COMPILE_SOCKET_PLUGIN = 1
+COMPILE_CORBA_PLUGIN  = 0
+corba.product         = NONE
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# C++ STLport is not tested yet:
+#STL_HOME      = ${user.home}/STLport-4.5.1
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Optionally set Intel icc C++ compiler HOME directory for Linux
+# This burns the Intel runtime library path into the executable so you don't
+# need to use LD_LIBRARY_PATH in your environment during execution.
+#ICC_HOME      = /opt/intel_cc_80
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Usage help:
+#
+# corba.product = MICO
+#
+#  Note: The code supports one of OMNIORB, ORBACUS, MICO, TAO, ORBIX
+#   Extend src/c++/client/protocol/corba/CompatibleCorba.h for another ORB
+#   Extend build.xml to compile another ORB
+#
+# thread.impl   = OMNITHREAD | BOOST
+#   The default is to link with the omniORB multi threading library.
+#------------------------------------------------------------------------------
+#thread.impl = BOOST
+
+#------------------------------------------------------------------------------
+# Note for Windows: You need to add the path to mico/bin/idl.exe
+# to your PATH environment
+#------------------------------------------------------------------------------
+
