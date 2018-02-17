@@ -4,6 +4,12 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18307 2018-02-17 marcel Release v2.2.1
+   Fix blocking 10 Minutes for many slow callback clients
+   Reworked DispatchWorkerPool.java, for new behaviour read its Javadoc
+   SocketCallbackImpl.java changed to be a daemon thread
+   log.warning reduced
+
  o 18298 2018-02-06 michele/marcel
    Change default DispatchWorker pool thread size from 5 to 20(server side) and 2(client side)
    Configure client side thread now with parameter "createThreadsClient"

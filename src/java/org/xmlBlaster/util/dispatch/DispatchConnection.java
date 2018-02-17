@@ -440,7 +440,17 @@ abstract public class DispatchConnection implements I_Timeout
       
       String origThreadName = Thread.currentThread().getName();
       Thread.currentThread().setName(PING_THREAD_NAME);
-      
+      /* ServletContextListener
+      try { // Result from tomcat war undeploy??
+         if (Thread.currentThread().isInterrupted()) {
+        	log.severe("Killing interrupted thread " + PING_THREAD_NAME);
+            shutdown(false);
+            return;
+         }
+      } catch (Throwable e) {
+    	 e.printStackTrace();
+      }
+      */
       try {
          //this.timerKey = null; Fix marcel 2008-08-18: seems to increase reconnect polling if server is in RL4
    

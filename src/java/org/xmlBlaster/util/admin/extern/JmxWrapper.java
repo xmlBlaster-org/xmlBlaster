@@ -313,7 +313,7 @@ public class JmxWrapper
             log.info("'java -Dcom.sun.management.jmxremote.port=" + port +
                          "' is specified, JMX is switched on, try to start 'jconsole " + loc + "'");
             if (!isAuthenticated)
-               log.warning("Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+               log.info("Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
             useJmx++;
          }
          else {
@@ -329,7 +329,7 @@ public class JmxWrapper
          if (supportsJconsole) {
             log.info("'java -Dcom.sun.management.jmxremote' is specified, JMX is switched on, try to start 'jconsole' or 'jconsole "+loc+"'");
             if (!isAuthenticated)
-               log.warning("Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+               log.info("Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
             useJmx++;
          }
          else {
@@ -745,7 +745,7 @@ public class JmxWrapper
                if (log.isLoggable(Level.FINE)) log.fine("JMX entry exists already, we replace it with new one: " + e.toString());
             }
             else {
-               log.warning("JMX entry exists already, we replace it with new one: " + e.toString());
+               log.info("JMX entry exists already, we replace it with new one: " + e.toString());
             }
             // this.mbeanMap.remove(objectName.toString()); is done in unregisterMBean
             unregisterMBean(objectName);
@@ -952,9 +952,12 @@ didn't you have "state" as the name of the attribute?
          Object removed = this.mbeanMap.remove(objectName.toString());
          this.mbeanServer.unregisterMBean(objectName);
          if (removed == null)
-            log.warning("No JMX MBean instance of " + objectName.toString() + " removed");
+            log.info("No JMX MBean instance of " + objectName.toString() + " removed");
       }
-      catch (Exception e) {
+      catch (javax.management.InstanceNotFoundException e) {
+          log.info("JMX unregistration failed: " + e.toString());
+      }
+      catch (Throwable e) {
          log.warning("JMX unregistration problems: " + e.toString());
          //e.printStackTrace();
       }

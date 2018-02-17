@@ -343,6 +343,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   // Parse the message and invoke callback to client code in a separate thread
                   // to avoid dead lock when client does a e.g. publish() during this update()
                   WorkerThread t = new WorkerThread(glob, this, receiver);
+                  t.setDaemon(true);
                   // -dispatch/callback/plugin/socket/invokerThreadPrio 5
                   t.setPriority(this.callbackAddress.getEnv("invokerThreadPrio", Thread.NORM_PRIORITY).getValue());
                   t.start();
