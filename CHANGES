@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18309 2018-02-21 marcel
+   Avoid loop in XmlBlasterAccess.java client library default error handler on server exception ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED
+
  o 18307 2018-02-17 marcel Release v2.2.1
    Fix blocking 10 Minutes for many slow callback clients
    Reworked DispatchWorkerPool.java, see Javadoc

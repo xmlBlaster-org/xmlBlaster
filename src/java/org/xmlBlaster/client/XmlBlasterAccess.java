@@ -284,6 +284,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   log.severe("Async sending of message failed: " + entries[i].toXml() + ": " + exception.getMessage());
                }
             }
+            if (exception.isErrorCode(ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED)) {
+               // true: default error handler removes from queue
+               // false: It will loop as DispatchWorkerPool retries immediately
+           	   return true;
+            }
          }
          else {
             return l.sendingFailed(entries, exception);
@@ -294,6 +299,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          for (int i=0; i<entries.length; i++)
             log.severe("Async sending of message failed for message " + entries[i].toXml() +"\nreason is: " + exception.getMessage());
       }
+      // Caution: loops forever with default error handler, how to fix this default behavior?
+      // Future: Two proper ways: 1. Go in stand by or 2. Discard message
       return false;
    }
    
