@@ -555,13 +555,13 @@ public class Property implements Cloneable {
       }
       
       if (argsProps != null && argsProps.containsKey("propertyFile")) {
-    	  String propertyFile = argsProps.getProperty("propertyFile");
-    	  if (propertyFile != null && propertyFile.length() > 0) {
-    		  File f = new File(propertyFile);
-    		  if (f != null && f.exists() && f.canRead() && !f.isDirectory()) {
-    			  this.propertyFileArgGivenAndExists = true;
-    		  }
-    	  }
+         String propertyFile = argsProps.getProperty("propertyFile");
+         if (propertyFile != null && propertyFile.length() > 0) {
+            File f = new File(propertyFile);
+            if (f != null && f.exists() && f.canRead() && !f.isDirectory()) {
+               this.propertyFileArgGivenAndExists = true;
+            }
+         }
       }
       
       this.propertyFileName = fileName_;
@@ -591,7 +591,7 @@ public class Property implements Cloneable {
    
    public boolean supportsApplet() {
       try {
-		return Class.forName("java.applet.Applet") != null;
+      return Class.forName("java.applet.Applet") != null;
       } catch (ClassNotFoundException e) {
          return false;
       }
@@ -599,9 +599,9 @@ public class Property implements Cloneable {
 
    public void setApplet(Object/* java.applet.Applet*/ applet)
    {
-	  if (!supportsApplet()) {
+     if (!supportsApplet()) {
          return;
-	  }
+     }
       this.applet = applet;
       java.applet.Applet ap = (java.applet.Applet)this.applet;
       if (ap.getParameter("--help")!=null || ap.getParameter("-?")!=null || ap.getParameter("-h")!=null || ap.getParameter("-help")!=null)
@@ -618,9 +618,9 @@ public class Property implements Cloneable {
       }
       Object obj = properties.get(key);
       if (obj == null)
-    	  return null;
+         return null;
       else if (obj instanceof String)
-    	  return (String)obj;
+         return (String)obj;
       return ""+obj;
       //return (String)properties.get(key);
    }
@@ -891,14 +891,14 @@ public class Property implements Cloneable {
                if (verbose>=1) System.out.println("Property: No property file given.");
             }
          } else {
-        	if (this.propertyFileArgGivenAndExists) {
+           if (this.propertyFileArgGivenAndExists) {
                if (verbose >= 2) // info log trace only
-         		 System.out.println("Property: Consider to copy " + propertyFileName + " to your home directory. We use -propertyFile <> settings ... Used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html");
-        	}
-        	else {
-        	  if (verbose>0 && propertyFileName!=null)
-        		  System.err.println("Property: Please copy " + propertyFileName + " to your home directory. We continue with default settings. Used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html");
-        	}
+                System.out.println("Property: Consider to copy " + propertyFileName + " to your home directory. We use -propertyFile <> settings ... Used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html");
+           }
+           else {
+             if (verbose>0 && propertyFileName!=null)
+                System.err.println("Property: Please copy " + propertyFileName + " to your home directory. We continue with default settings. Used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html");
+           }
 
          }
 
@@ -908,8 +908,10 @@ public class Property implements Cloneable {
          for (Enumeration e = env.propertyNames(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
             String value = System.getProperty(key);
-            properties.put(key, value);
-            fireChangeEvent(key, null, value);
+            if (value != null) {
+                properties.put(key, value);
+                fireChangeEvent(key, null, value);
+            }
          }
         }
         else {
@@ -1180,7 +1182,7 @@ public class Property implements Cloneable {
     * @return     the path to file or null if not found
     *******************************************************************************************/
    public final FileInfo findPath(String fileName) {
-	   return findPath(fileName, null);
+      return findPath(fileName, null);
    }
    public final FileInfo findPath(String fileName, String hint) {
       if (fileName == null)
@@ -1191,10 +1193,10 @@ public class Property implements Cloneable {
 
       f = new File(currentPath, fileName);
       if (f.exists() && f.canRead()) {
-    	 if (hint != null && hint.length() > 0)
+        if (hint != null && hint.length() > 0)
            hint = ": " + hint;
-    	 else
-    	   hint = "";
+        else
+          hint = "";
          if (verbose>=1) System.out.println("Property: Loading " + fileName + " from directory " + currentPath + hint);
          info.path = currentPath;
          return info;
@@ -1350,14 +1352,14 @@ public class Property implements Cloneable {
       FileInfo info = findPath(fileName);
       if(info == null) {
         String text = "Property: File '" + fileName + "' not found, used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html";
-    	if (this.propertyFileArgGivenAndExists) {
+       if (this.propertyFileArgGivenAndExists) {
            if (verbose >= 2) // info log trace only
-        	 System.out.println(text);
-    	}
-    	else {
+            System.out.println(text);
+       }
+       else {
           if (verbose>=1)
-        	System.err.println(text);
-    	}
+           System.err.println(text);
+       }
       }
       return info;
    }
