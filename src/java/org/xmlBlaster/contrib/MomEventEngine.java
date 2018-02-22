@@ -8,10 +8,12 @@ package org.xmlBlaster.contrib;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +34,8 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -186,7 +190,11 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       String timestamp = null;
       try {
-         InputStream is = decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
+         if (log.isLoggable(Level.FINEST)) {
+            
+         }
+         ByteArrayInputStream bais = new ByteArrayInputStream(content);
+         InputStream is = decompress(bais, updateQos.getClientProperties());
          timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
          updateQos.getData().addClientProperty(ContribConstants.TIMESTAMP_ATTR, timestamp);
          
@@ -473,5 +481,36 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          }
       }
       return is;
+   }
+
+   public static void main(String[] args) {
+      try {
+         if (args.length < 1) {
+            System.err.println("usage: filename");
+            System.exit(-1);
+         }
+         String filename = args[0];
+         Map<String, Charset> map = Charset.availableCharsets();
+         String[] keys = map.keySet().toArray(new String[map.size()]);
+         for (int i=0; i< keys.length; i++) {
+            if (keys[i].contains("UTF"))
+               log.info(keys[i]);
+         }
+         for (int i=0; i < 3; i++) {
+            FileInputStream fis = new FileInputStream(filename);
+              GZIPInputStream ret = new GZIPInputStream(fis);
+              PropertiesInfo info = new PropertiesInfo(System.getProperties());
+              // info.put("useReaderCharset",  "true");
+              SqlInfoParser parser = new SqlInfoParser();
+              parser.init(info);
+              // SqlInfo sqlInfo = parser.readObject(ret, "iso-8859-1");
+              // SqlInfo sqlInfo = parser.readObject(ret, "AL32UTF8");
+              SqlInfo sqlInfo = parser.readObject(ret, "UTF-8");
+              // SqlInfo sqlInfo = parser.readObject(ret, "UTF-8");
+         }
+      }
+      catch(Exception ex) {
+         ex.printStackTrace();
+      }
    }
 }

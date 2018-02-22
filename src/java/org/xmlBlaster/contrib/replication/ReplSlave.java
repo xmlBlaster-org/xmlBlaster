@@ -423,7 +423,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          sendStatusInformation("dbInitStart");
       final boolean doPersist = true;
       if (!prioDeliveryOnInitial)
-    	  doPause(doPersist); // stop the dispatcher
+         doPause(doPersist); // stop the dispatcher
       
       I_AdminSession session = getSession();
       // first unsubscribe (in case it did already an initial update previously, this is needed to remove the subscription
@@ -657,22 +657,22 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          }
          if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
             if (prioDeliveryOnInitial) {
-            	// strip the array for entries which are low prio
-            	List<I_Entry> tmpList = new ArrayList<I_Entry>();
-            	for (I_Entry tmpEntry: entries) {
-            		if (tmpEntry.getPriority() >= PriorityEnum.HIGH_PRIORITY.getInt()) {
-            			tmpList.add(tmpEntry);
-            		}
-            	}
-            	if (!tmpList.isEmpty()) {
-            		entries = tmpList;
-            	}
-            	else {
-            		return new ArrayList<I_Entry>();
-            	}
+               // strip the array for entries which are low prio
+               List<I_Entry> tmpList = new ArrayList<I_Entry>();
+               for (I_Entry tmpEntry: entries) {
+                  if (tmpEntry.getPriority() >= PriorityEnum.HIGH_PRIORITY.getInt()) {
+                     tmpList.add(tmpEntry);
+                  }
+               }
+               if (!tmpList.isEmpty()) {
+                  entries = tmpList;
+               }
+               else {
+                  return new ArrayList<I_Entry>();
+               }
             }
             else {
-            	log.warning("check invoked in INITIAL STATUS. Will stop the dispatcher");
+               log.warning("check invoked in INITIAL STATUS. Will stop the dispatcher");
                 final boolean doPersist = true;
                 doPause(doPersist);
                 return new ArrayList<I_Entry>();
@@ -1197,7 +1197,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                   MsgUnit msgUnit = processedMsgUnits[i];
 
                   long numOfTransactions = msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
-                  if (numOfTransactions > 0L) {
+                  if (numOfTransactions >= 0L) {
                      long tmpTransactionSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, -1L);
                      int prio = ((MsgQosData)msgUnit.getQosData()).getPriority().getInt();
                      

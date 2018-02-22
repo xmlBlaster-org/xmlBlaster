@@ -27,6 +27,8 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 
+import com.oracle.jrockit.jfr.UseConstantPool;
+
 
 /**
  * @author michele@laghi.eu
@@ -136,7 +138,7 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
          return this.updateRecord;
       }
       catch (XmlBlasterException ex) {
-         log.fine("SqlInfoParser.readObject: could not parse input stream");
+         log.fine("SqlInfoParser.readObject: could not parse input stream with encoding " + encoding + " useReaderCharset=" + useReaderCharset);
          throw ex;
       }
    }

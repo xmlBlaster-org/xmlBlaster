@@ -274,7 +274,7 @@ public class DbWatcher implements I_ChangeListener {
       hasChanged(changeEvent, false);
    }
    
-   private final void clearMessageAttributesAfterPublish(Map attributeMap) {
+   public static final void clearMessageAttributesAfterPublish(Map attributeMap) {
       // we need to remove this since if several transactions are detected in the same 
       // detector sweep the same Event is used, so we would not send subsequent messages
       attributeMap.remove(I_DataConverter.IGNORE_MESSAGE);

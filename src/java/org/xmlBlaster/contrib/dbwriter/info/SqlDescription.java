@@ -207,7 +207,7 @@ public class SqlDescription {
       try {
           injectorClass = info.get("org.xmlBlaster.contrib.dbwriter.I_StatementInjector.class", null);
           if (injectorClass != null) {
-        	  injector = (I_StatementInjector)info.getObject(injectorClass + ".object");
+             injector = (I_StatementInjector)info.getObject(injectorClass + ".object");
               if (injector == null) {
                  if (injectorClass.length() > 0) {
                     ClassLoader cl = ReplicationConverter.class.getClassLoader();
@@ -430,7 +430,9 @@ public class SqlDescription {
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
          ClientProperty colContent = row.getColumn(colNames[i]);
-         if (!colNames[i].startsWith(I_Mapper.COLUMN_TO_IGNORE)) {
+         boolean isNull = colContent != null && Constants.TYPE_NULL.equals(colContent.getType());
+         // new behaviour 2018-02-16 we now do not add null columns since problems with SDO_GEOMETRY
+         if (!colNames[i].startsWith(I_Mapper.COLUMN_TO_IGNORE) && !isNull) {
          // if (true) { // we need all entries
             searchEntries.add(colContent);
             if (firstHit)
@@ -595,12 +597,13 @@ public class SqlDescription {
       }
       else if (sqlType == Types.OTHER && col.getTypeName() != null && col.getTypeName().contains("SDO_GEOMETRY")) {
          if (isNull) {
-            st.setNull(pos, Types.OTHER);
+            log.fine("Setting the SDO_GEOMETRY content to null");
+            statementInjector.insertIntoStatement(st, pos, prop, col, sqlType, isNull);
             return;
          }
          if (statementInjector != null) {
-        	 boolean isInjected = statementInjector.insertIntoStatement(st, pos, prop, col, sqlType, isNull);
-        	 if (!isInjected) {
+            boolean isInjected = statementInjector.insertIntoStatement(st, pos, prop, col, sqlType, isNull);
+            if (!isInjected) {
                  String val = prop.getStringValue();
                  log.fine("Handling insert column=" + colName + " as SDO_GEOMETRY (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
                  log.severe("THE SDO_GEOMETRY IS NOT IMPLEMENTED YET (or wrongly configured)  !!!");
@@ -772,14 +775,9 @@ public class SqlDescription {
       PreparedStatement st = null;
       String sql = "";
       try {
-         ArrayList entries = new ArrayList();
-         String setSt = createSetStatement(newRow, entries);
-         int setSize = entries.size();
-         if (setSize < 1)
-            throw new Exception("SqlDescription.update: could not update since the row did generate an empty set of columns to update. Row: " + newRow.toXml("") + " cols: " + toXml(""));
          if (parserForOld == null)
             throw new Exception("SqlDescription.update: the parser is null. It is needed to parse the old value");
-         
+
          ClientProperty prop = newRow.getAttribute(ReplicationConstants.OLD_CONTENT_ATTR);
          if (prop == null || prop.getValueRaw() == null)
             throw new Exception("The attribute '" + ReplicationConstants.OLD_CONTENT_ATTR + "' was not defined for '" + newRow.toXml("") + "'");
@@ -787,6 +785,12 @@ public class SqlDescription {
          String xmlLiteral = OLD_PREFIX + prop.getStringValue() + OLD_POSTFIX;
          ByteArrayInputStream bais = new ByteArrayInputStream(xmlLiteral.getBytes());
          SqlInfo sqlInfo = parserForOld.parse(bais, this.charSet);
+         
+         ArrayList entries = new ArrayList();
+         String setSt = createSetStatement(newRow, entries);
+         int setSize = entries.size();
+         if (setSize < 1)
+            throw new Exception("SqlDescription.update: could not update since the row did generate an empty set of columns to update. Row: " + newRow.toXml("") + " cols: " + toXml(""));
          
          // CONVERT
          
@@ -838,8 +842,8 @@ public class SqlDescription {
          return st.executeUpdate();
       }
       catch (Throwable ex) {
-    	  // log.severe(" Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
-    	  log.log(Level.SEVERE, " Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage(), ex);
+         // log.severe(" Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         log.log(Level.SEVERE, " Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage(), ex);
          if (ex instanceof Exception)
             throw (Exception)ex;
          else

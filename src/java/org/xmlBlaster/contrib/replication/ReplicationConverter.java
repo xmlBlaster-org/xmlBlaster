@@ -8,7 +8,6 @@ package org.xmlBlaster.contrib.replication;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,11 +16,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
@@ -70,7 +71,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private boolean sendUnchangedUpdates = true;
    private boolean useReaderCharset;
    private long size;
-   
+   // these are needed for interTx messages (i.e. chunked transactions)
+   private String currentIdent;
+   private int maxRowsInTx;
+  // need to be loaded lazily since it is not yet configured in init
+   private I_ChangePublisher publisher;
+ 
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
@@ -121,6 +127,9 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     */
    public synchronized void init(I_Info info) throws Exception {
       this.info = info;
+      // maxCollectedMessages = this.info.getInt("dbWatcher.maxCollectedStatements", 0);
+      maxRowsInTx = this.info.getInt("replication.maxRowsInTx", 0);
+      log.info("The property 'replication.maxRowsInTx' is set to " + maxRowsInTx);
       String propsToConnect = this.info.get(DbWatcherConstants.MOM_PROPS_TO_ADD_TO_CONNECT, null);
       if (propsToConnect == null) {
          // String val = REPL_PREFIX_KEY + "," + REPL_VERSION;
@@ -174,7 +183,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
       // end of recreating the triggers (if neeed)
       this.useReaderCharset = this.info.getBoolean("useReaderCharset", false);
-      
+      log.info("useReaderCharset: "  + useReaderCharset);
       
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
@@ -265,8 +274,11 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             }
             */
             // !TODO CHECK THIS ACCORDING TO SqlInfo.java encoding issue
-            content = new String(buf);
+            content = new String(buf, Charset.forName("UTF-8"));
          }
+      }
+      if (log.isLoggable(Level.FINEST)) {
+         log.finest("using charset " + useReaderCharset + " " + content);
       }
       return content;
    }
@@ -294,6 +306,10 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (numberOfColumns < 11)
          throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be at least 11 but was " + numberOfColumns);
       
+      // this check is used for intra transactional messages
+      if (maxRowsInTx > 0 && maxRowsInTx < sqlInfo.getRowCount()) {
+         sendIntraTxMsg();  
+      }
       /*
        * Note that this test implies that the replKeys come in a growing sequence. If this is not the case, this test is useless.
        */
@@ -483,7 +499,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    /**
     * This method is invoked before sending the message over the mom.
     */
-   public int done() throws Exception {
+   private int prepareDone(boolean isIntraTx) {
       int ret = this.sqlInfo.getRowCount();
       boolean doSend = true;
       if (ret < 1) {
@@ -497,7 +513,10 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          }
       }
       if (doSend) { // we put it in the attribute map not in the message itself
-         int numOfTransactions = this.allTransactions.size(); 
+         int numOfTransactions = this.allTransactions.size();
+         // in case we are inside a transaction and need to chunk it the current will be zero
+         if (isIntraTx && numOfTransactions > 0)
+            numOfTransactions--;
          this.transSeq += numOfTransactions;
          this.messageSeq++;
          this.persistentInfo.put(this.transSeqPropertyName, "" + this.transSeq);
@@ -507,7 +526,14 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          this.persistentInfo.put(this.messageSeqPropertyName, "" + this.messageSeq);
          this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
       }
-         
+      return ret;
+   }
+
+   /**
+    * This method is invoked before sending the message over the mom.
+    */
+   public int done() throws Exception {
+      int ret = prepareDone(false);
       String tmp = this.sqlInfo.toXml("");
       byte[] data = tmp.getBytes();
       size += data.length;
@@ -517,8 +543,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       return ret;
    }
 
-   public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
-      this.out = out;
+   private void resetMsg(String ident) {
       size = 0;
       this.transactionId = null;
       this.allTransactions.clear();
@@ -528,7 +553,41 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (ident != null)
          description.setIdentity(ident);
       this.sqlInfo.setDescription(description);
+   }
+
+   private boolean sendIntraTxMsg() {
+      if (publisher == null)
+         publisher = (I_ChangePublisher)info.getObject("mom.publisher");
+      boolean ret = true;
+      if (publisher != null) {
+         prepareDone(true);
+         String content = this.sqlInfo.toXml("");
+         // check the charset
+         byte[] data = content.getBytes(Charset.forName("UTF-8"));
+         size += data.length;
+         this.sqlInfo = null;
+         try {
+             publisher.publish(event.getGroupColValue(), data, event.getAttributeMap());
+             DbWatcher.clearMessageAttributesAfterPublish(event.getAttributeMap());
+             resetMsg(currentIdent);
+         }
+         catch(Exception ex) {
+            ret = false;
+            log.log(Level.WARNING, "Could not publish the intraTx message due to " + ex.getMessage(), ex);
+         }
+      }
+      else {
+         ret = false;
+         log.warning("The publisher is null: can not send intraTx (transaction) message");
+      }
+      return ret;
+   }
+
+   public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
+      this.out = out;
       this.event = event;
+      this.currentIdent = ident;
+      resetMsg(ident);
    }
 
    public String getPostStatement() {
