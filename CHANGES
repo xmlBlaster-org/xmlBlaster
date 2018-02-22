@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18311 2018-02-22 michele
+   added the possibility to replicate huge transactions in different chunks: now you can specify a maximum amount of operations
+   in one single message even if the transaction is not complete. Also added some logging and fixed issues related to the SDO_GEOMETRY objects
+
  o 18309 2018-02-21 marcel
    Avoid loop in XmlBlasterAccess.java client library default error handler on server exception ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED
 
