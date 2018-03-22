@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18313 2018-03-22 marcel
+   Extended DispatchStatistic to allow better analysis for security plugins (for pubSessionId>0 only)
+
  o 18311 2018-02-22 michele
    added the possibility to replicate huge transactions in different chunks: now you can specify a maximum amount of operations
    in one single message even if the transaction is not complete. Also added some logging and fixed issues related to the SDO_GEOMETRY objects

@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
@@ -47,6 +48,8 @@ public class DispatchStatistic implements I_ProgressListener
    protected long pingRoundTripDelay;
    protected long roundTripDelay;
    private boolean stalled;
+   private long firstLoginMillis;
+   private long lastLoginMillis;
    
    
    /* The time-stamp when the last message was fully written */
@@ -72,6 +75,12 @@ public class DispatchStatistic implements I_ProgressListener
       }
       this.currBytesWritten = currBytesWritten;
       this.numBytesToWrite = numBytes;
+   }
+   
+   public void touchLastLoginMillis() {
+	   this.lastLoginMillis = System.currentTimeMillis();
+	   if (this.firstLoginMillis == 0)
+		   this.firstLoginMillis = this.lastLoginMillis;
    }
 
    /** The number of bytes read from the currently incoming message */
@@ -394,7 +403,29 @@ public class DispatchStatistic implements I_ProgressListener
    public void setStalled(boolean stalled) {
       this.stalled = stalled;
    }
+
+   public long getLastLoginMillis() {
+	  return lastLoginMillis;
+   }
    
+   public String getLastLogin() {
+      if (this.lastLoginMillis <= 0)
+         return "";
+	  return IsoDateParser.getUTCTimestamp(this.lastLoginMillis);
+   }
    
+   public String toString() {
+      return "firstLogin=" + getFirstLogin() + ",lastLogin=" + getLastLogin() + ",numConnect=" + getNumConnect() + ",currBytesRead=" + getCurrBytesRead() + ",currBytesWritten=" + getCurrBytesWritten();
+   }
+
+   public long getFirstLoginMillis() {
+      return firstLoginMillis;
+   }
+
+   public String getFirstLogin() {
+      if (this.firstLoginMillis <= 0)
+         return "";
+      return IsoDateParser.getUTCTimestamp(this.firstLoginMillis);
+   }   
 }
 

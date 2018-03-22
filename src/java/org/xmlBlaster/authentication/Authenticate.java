@@ -328,6 +328,8 @@ final public class Authenticate implements I_RunlevelListener
                returnQos.getSessionQos().setSessionName(info.getSessionName());
                returnQos.setReconnected(true);
                returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
+               info.getDispatchStatistic().incrNumConnect(1);
+               info.getDispatchStatistic().touchLastLoginMillis();
                log.info("Reconnected with given publicSessionId to '" + info.getSessionName() + "'.");
                return returnQos;
             }
@@ -602,6 +604,7 @@ final public class Authenticate implements I_RunlevelListener
             log.info("Sleeping cb.disconnect.pending.sleep=" + sleep + " millis in disconnect(" + sessionInfo.getId() + ") to deliver " + sessionInfo.getCbQueueNumMsgs() + " pending messages ...");
             try { Thread.sleep(sleep); } catch( InterruptedException i) {}
          }
+         sessionInfo.getDispatchStatistic().incrNumDisconnect(1);
 
          SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
 
