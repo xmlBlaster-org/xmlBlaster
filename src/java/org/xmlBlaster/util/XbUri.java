@@ -205,7 +205,8 @@ public class XbUri
     * @return
     */
    public String getUrlWithoutPassword() {
-      return getScheme() + "://" + getUserInfo() + "@"
+      String userInfo = (this.user != null) ? this.user : "";
+      return getScheme() + "://" + userInfo + "@"
             + getHost()
             + ((getPort() > 0) ? (":" + getPort()) : "");
       // TODO: Add the path
