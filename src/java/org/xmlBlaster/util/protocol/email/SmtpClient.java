@@ -638,7 +638,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       } catch (Exception e) {
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
-               "Email sending failed, no mail sent to " + to.toString(), e);
+               "Email sending failed, no mail sent to " + to.toString() + " with uri " + this.xbUri.getUrlWithoutPassword(), e);
       }
    }
    
@@ -799,7 +799,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
                "Email sending failed, no mail sent from=" + emailData.getFrom() + " to="
-                  + emailData.getRecipientsList(), e);
+                  + emailData.getRecipientsList() + " with uri=" + this.xbUri.getUrlWithoutPassword(), e);
       }
    }
 
