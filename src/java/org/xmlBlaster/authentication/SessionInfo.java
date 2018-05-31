@@ -1097,7 +1097,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 	  }
 	  catch (XmlBlasterException e) {
 		 String key = getSubjectInfo().lookupSessionKey(this);
-		 log.severe("Faild to kill " + getId() + ", found in SubjectInfo.sessionMap key=" + key + ", trying further cleanup: " + e.toString());
+		 log.severe("Failed to kill " + getId() + ", found in SubjectInfo.sessionMap key=" + key + ", trying further cleanup: " + e.toString());
          if (key != null) {
             getSubjectInfo().notifyAboutLogout(key, false, true, false);
          }
