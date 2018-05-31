@@ -942,6 +942,24 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          this.glob.getSubjectInfoShuffler().shuffle(this); // Background thread
       }
    }
+   
+   /**
+    * @param sessionInfo
+    * @return sessionName.getAbsoluteName() or null if not found
+    */
+   public final String lookupSessionKey(SessionInfo sessionInfo) {
+	  if (sessionInfo == null)
+         return null;
+      synchronized (this.sessionMap) {
+         for (Map.Entry<String, SessionInfo> entry: this.sessionMap.entrySet()) {
+        	 if (entry.getValue() != sessionInfo)
+        		 continue;
+        	 // == sessionName.getAbsoluteName()
+        	 return entry.getKey();
+         }
+      }
+      return null;
+   }
 
    /**
     * Get notification that the client did a logout.
@@ -951,9 +969,12 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * @param clearQueue Shall the message queue of the client be cleared&destroyed as well (e.g. disconnectQos.deleteSubjectQueue())?
     * @param forceShutdownEvenIfEntriesExist on last session
     */
-   public final void notifyAboutLogout(String absoluteSessionName, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist) throws XmlBlasterException {
+   public final void notifyAboutLogout(String absoluteSessionName, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist, boolean onlyIfAlive) throws XmlBlasterException {
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, no logout");
+         if (onlyIfAlive)
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo " + absoluteSessionName + " is shutdown, no logout");
+         else
+        	log.severe("SubjectInfo " + absoluteSessionName +" is shutdown, forcing logout nevertheless, clearQueue=" + clearQueue + ", forceShutdownEvenIfEntriesExist=" + forceShutdownEvenIfEntriesExist);
       }
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering notifyAboutLogout(" + absoluteSessionName + ", " + clearQueue + ")");
       SessionInfo sessionInfo = null;

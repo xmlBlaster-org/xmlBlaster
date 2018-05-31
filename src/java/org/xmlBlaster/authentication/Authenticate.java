@@ -857,7 +857,7 @@ final public class Authenticate implements I_RunlevelListener
       fireClientEvent(sessionInfo, false); // informs all I_ClientListener
 
       SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
-      subjectInfo.notifyAboutLogout(sessionInfo.getId(), clearQueue, forceShutdownEvenIfEntriesExist);
+      subjectInfo.notifyAboutLogout(sessionInfo.getId(), clearQueue, forceShutdownEvenIfEntriesExist, true);
       //if (subjectInfo.isShutdown()) {
       //   subjectInfo = null; // Give GC a hint
       //}
