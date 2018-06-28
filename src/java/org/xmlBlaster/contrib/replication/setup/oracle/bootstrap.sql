@@ -172,7 +172,7 @@ RETURN INTEGER AS
    ret       INTEGER;
    len       INTEGER;
    offset    INTEGER;
-   tmp       VARCHAR(32766);
+   tmp       VARCHAR(20000);
    increment INTEGER;
    oldOffset INTEGER;
 
@@ -180,7 +180,7 @@ BEGIN
    ret := 0;
    oldOffset := 0;
    offset := 1;
-   increment := 32766;
+   increment := 20000;
    len := dbms_lob.getlength(content);
 
    BEGIN
