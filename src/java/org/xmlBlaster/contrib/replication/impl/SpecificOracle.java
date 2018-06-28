@@ -400,7 +400,8 @@ public class SpecificOracle extends SpecificDefault {
          buf.append("EXCEPTION\n");
          buf.append("   WHEN OTHERS THEN\n");
          buf.append("     op := 'EXCEPTION';\n");
-    	  buf.append("END; -- this is in the catch exception\n");
+         buf.append("     dbms_lob.writeappend(newCont, LENGTH(dbms_utility.format_error_backtrace), dbms_utility.format_error_backtrace);\n");
+         buf.append("END; -- this is in the catch exception\n");
       }
       buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
       
