@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1686,6 +1687,20 @@ public class ReplManagerPlugin extends GlobalInfo
     */
    public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
       try {
+			if (log.isLoggable(Level.FINEST)) {
+				try {
+					String topic = msgUnit.getKeyData().getOid();
+					FileOutputStream fos = new FileOutputStream("replManagerPluginIntercept-" + topic + ".dat");
+					byte[] cont = msgUnit.getContent();
+					if (cont != null && cont.length > 0) {
+						fos.write(cont, 0, cont.length);
+						fos.close();
+					}
+				}
+				catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
          String topicName = msgUnit.getKeyOid();
          // check first if deadLetter ...
          if (Constants.OID_DEAD_LETTER.equals(topicName))

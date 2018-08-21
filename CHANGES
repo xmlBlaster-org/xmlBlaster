@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18320 2018-08-21 michele
+   fixed a bug in replication (oracle SQL functions) which caused removal of last byte for base64 encoded columns and forced to use base64 for all
+   text (to avoid XML way of handling whitespaces and other special characters)
+
  o 18313 2018-03-22 marcel
    Extended DispatchStatistic to allow better analysis for security plugins (for pubSessionId>0 only)
 

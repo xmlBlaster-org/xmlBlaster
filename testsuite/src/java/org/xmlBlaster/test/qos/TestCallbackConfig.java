@@ -22,6 +22,7 @@ import org.xmlBlaster.test.Util;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 
@@ -71,6 +72,11 @@ public class TestCallbackConfig extends TestCase
          // We configure detailed how our callback is handled by xmlBlaster
          // In connect() a default callback server is created and its address is added to cbProps
          CallbackAddress cbProps = new CallbackAddress(new Global());
+         String tmp = glob.getProperty().getProperties().getProperty("dispatch/callback/retries");
+         int ret = cbProps.getRetries();
+         long delay = cbProps.getDelay();
+         long pinginterval = cbProps.getPingInterval();
+         
          cbProps.setCollectTime(0L); // dispatch/callback/burstMode/collectTime"
          cbProps.setSecretSessionId(cbSessionId);
          cbProps.setPingInterval(10000);
