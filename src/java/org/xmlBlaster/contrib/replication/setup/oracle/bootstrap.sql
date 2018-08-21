@@ -376,7 +376,7 @@ BEGIN
    increment := 2400;
    len := utl_raw.length(msg);
 
-   WHILE offset < len LOOP
+   WHILE offset <= len LOOP
       helper := utl_raw.substr(dest, offset, increment);
       offset := offset + increment;
       str := utl_raw.cast_to_varchar2(utl_encode.base64_encode(helper));
@@ -427,7 +427,7 @@ BEGIN
    increment := 2400;
    len := utl_raw.length(dest);
 
-   WHILE offset < len LOOP
+   WHILE offset <= len LOOP
       rest := len - offset;
       IF increment > rest THEN 
          increment := rest + 1;
@@ -476,7 +476,7 @@ BEGIN
    offset := 1;
    increment := 2400;
    len := dbms_lob.getlength(msg);
-   WHILE offset < len LOOP
+   WHILE offset <= len LOOP
       dbms_lob.read(msg, increment, offset, inRaw);
       offset := offset + increment;
       outVar := utl_raw.cast_to_varchar2(utl_encode.base64_encode(inRaw));
@@ -506,7 +506,7 @@ BEGIN
    offset := 1;
    increment := 32766;
    len := dbms_lob.getlength(msg);
-   WHILE offset < len LOOP
+   WHILE offset <= len LOOP
       dbms_lob.read(msg, increment, offset, tmp);
       offset := offset + increment;
       -- the next line would be used for oracle from version 9 up.              
@@ -559,7 +559,9 @@ CREATE OR REPLACE FUNCTION ${replPrefix}col2xml(name VARCHAR, content CLOB,
    ch   VARCHAR(40);
    fake INTEGER;
 BEGIN
-   pos := ${replPrefix}needs_prot(content);
+-- pos := ${replPrefix}needs_prot(content);
+-- we always force base64 now
+   pos := 2;
    IF pos = 0 THEN
       ch := '<col name="';
       dbms_lob.writeappend(tmp, length(ch), ch);
