@@ -300,15 +300,15 @@ int main(int argc, const char* const* argv) {
     
    {  /* unSubscribe ... */
       QosArr *resp;
-      char key[256];
+      char key[512];
       const char *qos = "<qos/>";
       /* TODO: use subscriptionId */
       if (!strcmp(queryType, "EXACT"))
          sprintf(key, "<key oid='%.200s'/>", subscribeToken);
       else if (!strcmp(queryType, "DOMAIN"))
-         sprintf(key, "<key domain='%.512s'/>", subscribeToken);
+         sprintf(key, "<key domain='%.511s'/>", subscribeToken);
       else
-         sprintf(key, "<key queryType='XPATH'>%.512s</key>", subscribeToken);
+         sprintf(key, "<key queryType='XPATH'>%.511s</key>", subscribeToken);
       printf("[client] UnSubscribe topic '%s' ...\n", subscribeToken);
       resp = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
       if (resp) {
