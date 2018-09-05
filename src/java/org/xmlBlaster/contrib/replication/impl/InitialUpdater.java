@@ -79,6 +79,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
        */
       // @Override
       public void stop() {
+         if (initialCmdStop != null)
+            process = null; // to avoid invocation of destroy
          super.stop();
          if (name != null && initialCmdStop != null) {
             String cmd = initialCmdStop + " " + name;        	 
@@ -298,6 +300,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       if (this.initialCmd != null && this.initialCmd.trim().isEmpty()) // if emtpy
          this.initialCmd = null;
       this.initialCmdStop = this.info.get("replication.initialCmdStop", null);
+      log.info("initialCmdStop is '" + initialCmdStop + "'");
       if (this.initialCmdStop != null && this.initialCmdStop.trim().isEmpty()) // if emtpy
          this.initialCmdStop = null;
       this.initialCmdPre = info_.get("replication.initialCmdPre", null);
@@ -581,15 +584,22 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
                         log.warning("A new request for an initial update has come for '" + slaveName + "' but there is one already running. Will shut down the running one first");
                         oldExecute.stop();
                         log.info("old initial request for '" + slaveName + "' has been shut down");
-                        runningExecutes.put(slaveName, execute);
                      }
+                     runningExecutes.put(slaveName, execute);
                   }
                }
             }
          }
          ExecuteListener listener = new ExecuteListener(this.stringToCheck, connInfo);
          execute.setExecuteListener(listener);
-         execute.run(); // blocks until finished
+         log.info("Starting the initial cmd " + cmd);
+         try {
+             execute.run(); // blocks until finished
+             log.info("Finished the initial cmd " + cmd);
+         }
+         catch(Exception ex) { // can occur if we interrupt the invocation
+            log.warning("The job has been interrupted: " + cmd);
+         }
          if (execute.getExitValue() != 0) {
             throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
          }
@@ -792,11 +802,22 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    }
    
    public void cancelUpdate(String slaveName) {
+      log.info("cancel update for '" + slaveName + "' is about be processed");	   
       dbSpecific.cancelUpdate(slaveName);
       synchronized (this) {
-         NamedExecute exec = (NamedExecute)runningExecutes.remove(slaveName);
+          NamedExecute exec = (NamedExecute)runningExecutes.remove(slaveName);
          if (exec != null)
             exec.stop();
+         else {
+           	String[] names = (String[])runningExecutes.keySet().toArray(new String[runningExecutes.size()]);
+           	StringBuffer buf = new StringBuffer();
+           	for (int i=0; i < names.length; i++) {
+           		if (i > 0)
+           			buf.append(";");
+           		buf.append(names[i]);
+           	}
+           	log.info("No executer found for slave name '" + slaveName + "' when cancelling, known are " + buf.toString());
+         }
       }
    }
 

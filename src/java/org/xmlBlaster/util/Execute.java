@@ -38,7 +38,7 @@ public class Execute {
    public final static String WIN_NT = "Windows NT";
    public final static String WIN_XP = "Windows XP";
    
-   private Process process;
+   protected Process process;
    private String[] commandArr;
    private String[] envArr;
    private String errorText;
