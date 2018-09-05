@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
@@ -59,6 +60,41 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener, I_ReplaceContent, ReplicationConstants, I_ReplSource {
+ 
+   public class NamedExecute extends Execute {
+
+      private String name;
+      public NamedExecute(String name, String[] commandArr, String[] envArr, long sleepDelay) {
+         super(commandArr, envArr, sleepDelay);
+         this.name = name;
+      }
+
+      public NamedExecute(String name, String[] commandArr, String[] envArr) {
+         super(commandArr, envArr);
+         this.name = name;
+      }
+
+      /**
+       * @see org.xmlBlaster.util.Execute#stop()
+       */
+      // @Override
+      public void stop() {
+         super.stop();
+         if (name != null && initialCmdStop != null) {
+            String cmd = initialCmdStop + " " + name;        	 
+            String[] args = ReplaceVariable.toArray(cmd, " ");
+            log.info("running stop command '" + cmd + "'");
+
+            Execute execute = new Execute(args, null, initialCmdSleepDelay);
+            ExecuteListener listener = new ExecuteListener(stringToCheck, null);
+            execute.setExecuteListener(listener);
+            execute.run(); // blocks until finished
+            if (execute.getExitValue() != 0) {
+               log.severe("An exception occurred when processing '" + cmd + "':" + listener.getErrors());
+            }
+         }
+      }
+   }
 
    public class ConnectionInfo {
       private Connection connection;
@@ -209,6 +245,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private String initialCmd;
    private String initialCmdPre;
    private String initialCmdPath;
+   private String initialCmdStop;
    private boolean keepDumpFiles;
    private String replPrefix;
    private I_DbSpecific dbSpecific;
@@ -258,8 +295,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
       log.fine("replication.path='" + this.initialCmdPath + "'");
       this.initialCmd = this.info.get("replication.initialCmd", null);
-      if (this.initialCmd != null && this.initialCmd.trim().length() < 1) // if emtpy
+      if (this.initialCmd != null && this.initialCmd.trim().isEmpty()) // if emtpy
          this.initialCmd = null;
+      this.initialCmdStop = this.info.get("replication.initialCmdStop", null);
+      if (this.initialCmdStop != null && this.initialCmdStop.trim().isEmpty()) // if emtpy
+         this.initialCmdStop = null;
       this.initialCmdPre = info_.get("replication.initialCmdPre", null);
       this.keepDumpFiles = info_.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
@@ -525,23 +565,23 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param cmd
     * @throws Exception
     */
-   private void osExecute(String[] slaveNames, String cmd, ConnectionInfo connInfo) throws Exception {
+   private void osExecute(String name, String[] slaveNames, String cmd, ConnectionInfo connInfo) throws Exception {
       try {
          // if (Execute.isWindows()) cmd = "cmd " + cmd;
          String[] args = ReplaceVariable.toArray(cmd, " ");
          log.info("running for '" + SpecificDefault.toString(slaveNames) + "' for cmd '" + cmd + "'");
-         Execute execute = new Execute(args, null, this.initialCmdSleepDelay);
+         NamedExecute execute = new NamedExecute(name, args, null, initialCmdSleepDelay);
          synchronized (this) {
             if (slaveNames != null) {
                for (int i=0; i < slaveNames.length; i++) {
                   String slaveName = slaveNames[i];
                   if (slaveName != null) {
-                     Execute oldExecute = (Execute)this.runningExecutes.remove(slaveName);
+                     NamedExecute oldExecute = (NamedExecute)runningExecutes.remove(slaveName);
                      if (oldExecute != null) {
                         log.warning("A new request for an initial update has come for '" + slaveName + "' but there is one already running. Will shut down the running one first");
                         oldExecute.stop();
                         log.info("old initial request for '" + slaveName + "' has been shut down");
-                        this.runningExecutes.put(slaveName, execute);
+                        runningExecutes.put(slaveName, execute);
                      }
                   }
                }
@@ -624,7 +664,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       String cmd = this.initialCmd + " " + completeFilename;
       if (version != null)
          cmd += " " + version;
-      osExecute(slaveNames, cmd, connInfo);
+      osExecute(completeFilename, slaveNames, cmd, connInfo);
       return filename;
    }
 
@@ -645,7 +685,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public final void initialCommandPre() throws Exception {
       if (this.initialCmdPre == null)
          return;
-      osExecute(null, this.initialCmdPre, null);
+      osExecute(null, null, this.initialCmdPre, null);
    }
    
    /**
@@ -752,9 +792,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    }
    
    public void cancelUpdate(String slaveName) {
-      this.dbSpecific.cancelUpdate(slaveName);
+      dbSpecific.cancelUpdate(slaveName);
       synchronized (this) {
-         Execute exec = (Execute)this.runningExecutes.remove(slaveName);
+         NamedExecute exec = (NamedExecute)runningExecutes.remove(slaveName);
          if (exec != null)
             exec.stop();
       }
