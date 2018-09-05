@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18323 2018-09-05 michele
+   added the configuration property initialCmdStop to the replication to allow scripts to be executed if you interrupt the initialCmd
+
  o 18320 2018-08-21 michele
    fixed a bug in replication (oracle SQL functions) which caused removal of last byte for base64 encoded columns and forced to use base64 for all
    text (to avoid XML way of handling whitespaces and other special characters)
