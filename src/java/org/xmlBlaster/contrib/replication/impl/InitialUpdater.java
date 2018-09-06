@@ -800,14 +800,40 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       final boolean forceSend = false;
       this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
    }
-   
+
+   /**
+    * checks if there are still instances of this value in the map, in which case we shall
+    * not interrupt the export job. 
+    * @param exec
+    * @return
+    */
+   private boolean instancesLeft(Execute exec) {
+      boolean ret = false;
+      if (exec != null && runningExecutes != null && !runningExecutes.isEmpty()) {
+         String[] keys = (String[])runningExecutes.keySet().toArray(new String[runningExecutes.size()]);
+         for (int i=0; i < keys.length; i++) {
+		    Execute tmpExec = (Execute)runningExecutes.get(keys[i]);
+            if (tmpExec != null && tmpExec == exec)
+               return true;
+         }
+         ret = true;
+      }
+      return ret;
+   }
+
    public void cancelUpdate(String slaveName) {
       log.info("cancel update for '" + slaveName + "' is about be processed");	   
       dbSpecific.cancelUpdate(slaveName);
       synchronized (this) {
           NamedExecute exec = (NamedExecute)runningExecutes.remove(slaveName);
-         if (exec != null)
-            exec.stop();
+         if (exec != null) {
+            if (instancesLeft(exec))
+               log.warning("There are other slaves receiving data from this export, not stopping it");
+            else {
+               log.info("There are no other slaves receiving data from this export, will stop it");
+               exec.stop();
+            }
+         }
          else {
            	String[] names = (String[])runningExecutes.keySet().toArray(new String[runningExecutes.size()]);
            	StringBuffer buf = new StringBuffer();
