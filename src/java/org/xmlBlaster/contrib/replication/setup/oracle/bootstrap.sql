@@ -175,6 +175,7 @@ RETURN INTEGER AS
    tmp       VARCHAR(20000);
    increment INTEGER;
    oldOffset INTEGER;
+   tmpOffs   INTEGER;
 
 BEGIN
    ret := 0;
@@ -186,7 +187,8 @@ BEGIN
    BEGIN
       WHILE offset < len LOOP
          dbms_lob.read(content, increment, offset, tmp);
-         offset := offset + increment; 
+         tmpOffs := offset + increment; 
+	 offset := tmpOffs;
          if len > increment AND increment > 3 THEN 
             offset := offset - 3; -- overlap to be sure not to cut a token
          END IF;
@@ -362,23 +364,25 @@ END ${replPrefix}base64_helper;
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW, res IN OUT NOCOPY CLOB)
    RETURN INTEGER AS
 -- divisible by 3 (to avoid '=' characters at end of chunks)                    
-     source     RAW(32766); 
+     source     RAW(24000); 
      dest       RAW(32766); 
-     helper     RAW(2400);
-     str        VARCHAR(4000);
+     helper     RAW(3000);
+     str        VARCHAR(8000);
      len        INTEGER;
      increment  INTEGER;
      offset     INTEGER;
+     tmpOffs    INTEGER;
 BEGIN
    source := msg;
    dest := utl_encode.base64_encode(source);
    offset := 1;
-   increment := 2400;
+   increment := 3000;
    len := utl_raw.length(msg);
 
    WHILE offset <= len LOOP
       helper := utl_raw.substr(dest, offset, increment);
-      offset := offset + increment;
+      tmpOffs := offset + increment;
+      offset := tmpOffs;
       str := utl_raw.cast_to_varchar2(utl_encode.base64_encode(helper));
       dbms_lob.writeappend(res, length(str), str); 
    END LOOP;
@@ -412,19 +416,20 @@ END ${replPrefix}base64_enc_raw_t;
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_vch(msg VARCHAR2, 
                                         res IN OUT NOCOPY CLOB)
    RETURN INTEGER AS
-     source RAW(32766); 
-     dest   RAW(32766); 
-     helper RAW(2400);
-     str   VARCHAR(4000);
+     source RAW(12000); 
+     dest   RAW(24000); 
+     helper RAW(3000);
+     str   VARCHAR(8000);
      increment INTEGER;
      offset    INTEGER;
      len       INTEGER;
      rest      INTEGER;
+     tmpOffs   INTEGER;
 BEGIN
    source := utl_raw.cast_to_raw(msg);
    dest := utl_encode.base64_encode(source);
    offset := 1;
-   increment := 2400;
+   increment := 3000;
    len := utl_raw.length(dest);
 
    WHILE offset <= len LOOP
@@ -433,7 +438,8 @@ BEGIN
          increment := rest + 1;
       END IF; 
       helper := utl_raw.substr(dest, offset, increment);
-      offset := offset + increment;
+      tmpOffs := offset + increment;
+      offset := tmpOffs;
       str := utl_raw.cast_to_varchar2(helper);
       dbms_lob.writeappend(res, length(str), str); 
    END LOOP;
@@ -469,16 +475,18 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_blob(msg BLOB,
    RETURN INTEGER AS
      len       INTEGER;
      offset    INTEGER;
-     outVar    VARCHAR2(4000);
-     inRaw     RAW(2400);
+     outVar    VARCHAR2(8000);
+     inRaw     RAW(3000);
      increment INTEGER;
+     tmpOffs   INTEGER;
 BEGIN
    offset := 1;
-   increment := 2400;
+   increment := 3000;
    len := dbms_lob.getlength(msg);
    WHILE offset <= len LOOP
       dbms_lob.read(msg, increment, offset, inRaw);
-      offset := offset + increment;
+      tmpOffs := offset + increment;
+      offset := tmpOffs;
       outVar := utl_raw.cast_to_varchar2(utl_encode.base64_encode(inRaw));
       dbms_lob.writeappend(res, length(outVar), outVar); 
    END LOOP;
@@ -499,16 +507,19 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_clob(msg CLOB,
    RETURN INTEGER AS
      len        INTEGER;
      offset     INTEGER;
-     tmp        VARCHAR2(32766);
+     tmp        VARCHAR2(12000);
      increment  INTEGER;
      fake       INTEGER;
+     tmpOffs    INTEGER;
 BEGIN
    offset := 1;
-   increment := 32766;
+   increment := 6000;
    len := dbms_lob.getlength(msg);
    WHILE offset <= len LOOP
+      tmp := '';
       dbms_lob.read(msg, increment, offset, tmp);
-      offset := offset + increment;
+      tmpOffs := offset + increment;
+      offset := tmpOffs;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
       fake := ${replPrefix}base64_enc_vch(tmp, res);
