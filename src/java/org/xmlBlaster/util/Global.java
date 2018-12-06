@@ -946,6 +946,12 @@ public class Global implements Cloneable
       return firstInstance;
    }
 
+   public static boolean hasInstance() {
+      synchronized (Global.class) {
+         return (firstInstance != null);
+      }
+   }
+   
    /**
     * Get a cloned instance.
     * <p>
