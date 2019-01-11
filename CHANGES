@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18329 2019-01-11 michele
+   In the replication fixed a loop which arose when using prioDeliveryOnInitial due to the fact that low prio messages are kept in
+   the holdback: it now loops at a 1000L frequency
+
  o 18323 2018-09-05 michele
    added the configuration property initialCmdStop to the replication to allow scripts to be executed if you interrupt the initialCmd
 
