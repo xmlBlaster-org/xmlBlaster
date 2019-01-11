@@ -657,17 +657,28 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          }
          if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
             if (prioDeliveryOnInitial) {
+            	boolean hasLowPrio = false;
                // strip the array for entries which are low prio
                List<I_Entry> tmpList = new ArrayList<I_Entry>();
                for (I_Entry tmpEntry: entries) {
                   if (tmpEntry.getPriority() >= PriorityEnum.HIGH_PRIORITY.getInt()) {
                      tmpList.add(tmpEntry);
                   }
+                  else
+                     hasLowPrio = true;
                }
                if (!tmpList.isEmpty()) {
                   entries = tmpList;
                }
-               else {
+               else { // then the list is empty
+                  if (hasLowPrio) { // then we sleep to avoid a fast loop since we leave entries in the callback queue
+                     try {
+                        Thread.sleep(1000L);
+                     }
+                     catch(InterruptedException e) {
+                        e.printStackTrace();
+                     }
+                  }
                   return new ArrayList<I_Entry>();
                }
             }
