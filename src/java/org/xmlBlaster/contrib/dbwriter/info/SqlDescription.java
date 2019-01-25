@@ -12,6 +12,9 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,7 +40,6 @@ import org.xmlBlaster.contrib.dbwriter.I_StatementInjector;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
-import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
@@ -649,7 +651,8 @@ public class SqlDescription {
          byte[] val = prop.getBlobValue();
          val = cutEndIfTooLong(col, colName, val);
          ByteArrayInputStream bais = new ByteArrayInputStream(val);
-         st.setAsciiStream(pos, bais, val.length);
+         Reader reader = new StringReader(new String(val, Charset.forName("UTF-8")));
+         st.setCharacterStream(pos, reader);
       }
       else if (isBinaryType(sqlType)) {
          if (isNull) {
