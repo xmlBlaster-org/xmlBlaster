@@ -496,35 +496,40 @@ END ${replPrefix}base64_enc_blob;
 
 
 -- ---------------------------------------------------------------------------- 
+-- ${replPrefix}blob_to_clob converts a CLOB to a BLOB.                         
+-- ---------------------------------------------------------------------------- 
+CREATE OR REPLACE FUNCTION ${replPrefix}clob2blob(aClob CLOB) return BLOB is
+  Result BLOB;
+  o1 integer;
+  o2 integer;
+  c integer;
+  w integer;
+begin
+  o1 := 1;
+  o2 := 1;
+  c := 0;
+  w := 0;
+  DBMS_LOB.CreateTemporary(Result, true);
+  DBMS_LOB.ConvertToBlob(Result, aClob, length(aClob), o1, o2, 0, c, w);
+  return(Result);
+end ${replPrefix}clob2blob;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
 -- ${replPrefix}base64_enc_clob converts a CLOB msg to a base64 encoded string. 
 -- This is needed for ORACLE versions previous to Oracle9.                      
 -- content will be encoded to base64.                                           
 --   name: the name of content to be encoded.                                   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_clob(msg CLOB, 
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_clob(clobMsg CLOB, 
                            res IN OUT NOCOPY CLOB)
    RETURN INTEGER AS
-     len        INTEGER;
-     offset     INTEGER;
-     tmp        VARCHAR2(12000);
-     increment  INTEGER;
-     fake       INTEGER;
-     tmpOffs    INTEGER;
+     msg        BLOB;
 BEGIN
-   offset := 1;
-   increment := 6000;
-   len := dbms_lob.getlength(msg);
-   WHILE offset <= len LOOP
-      tmp := '';
-      dbms_lob.read(msg, increment, offset, tmp);
-      tmpOffs := offset + increment;
-      offset := tmpOffs;
-      -- the next line would be used for oracle from version 9 up.              
-      -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      fake := ${replPrefix}base64_enc_vch(tmp, res);
-   END LOOP;
-   RETURN 0;
+    msg:= ${replPrefix}clob2blob(clobMsg);
+    return ${replPrefix}base64_enc_blob(msg, res);
 END ${replPrefix}base64_enc_clob;
 -- EOC (end of command: needed as a separator for our script parser)            
 
