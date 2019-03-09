@@ -97,6 +97,14 @@ public class Session implements I_Session, I_Subject {
       }
       this.authenticated = false;
       this.loginName = securityQos.getUserId();
+      if (this.loginName != null) {
+        int lastIndex = this.loginName.lastIndexOf("/"); // "_watcheeService/1" strip /1
+        if (lastIndex > 0) {
+          String s = this.loginName;
+          this.loginName = this.loginName.substring(0, lastIndex);
+          log.warning("Trimmed " + s + " to loginName " + this.loginName);
+        }
+      }
       this.passwd = securityQos.getCredential();
       
       ConnectQosServer qos = this.connectQosServer;

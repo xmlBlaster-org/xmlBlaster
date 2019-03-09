@@ -23,6 +23,38 @@ public class SessionNameTest extends TestCase {
       this.glob = Global.instance();
    }
 
+   public void testTooLong() {
+	  // expect to strip trailing /
+      System.out.println("***SessionNameTest: testTooLong ...");
+      try {
+        SessionName sessionName = new SessionName(glob, "/node/sauron/client/jack/1/99");
+        assertEquals("", "jack", sessionName.getLoginName());
+        assertEquals("", 1, sessionName.getPublicSessionId());
+      }
+      catch (IllegalArgumentException e) {
+        fail("testMatch failed: " + e.toString());
+      }
+      try {
+        SessionName sessionName = new SessionName(glob, null, "jack/1", 99);
+        assertEquals("", "jack/1", sessionName.getLoginName());
+        assertEquals("", 99, sessionName.getPublicSessionId());
+      }
+      catch (IllegalArgumentException e) {
+        fail("testMatch failed: " + e.toString());
+      }
+      try {
+        SessionName sessionName = new SessionName(glob, null, "jack/1", 99);
+        String absolute = sessionName.getAbsoluteName();
+        sessionName = new SessionName(glob, absolute);
+        assertEquals("", "jack", sessionName.getLoginName());
+        assertEquals("", 1, sessionName.getPublicSessionId());
+      }
+      catch (IllegalArgumentException e) {
+        fail("testMatch failed: " + e.toString());
+      }
+      System.out.println("***SessionNameTest: testMatch done");
+   }
+	   
    public void testMatch() {
       System.out.println("***SessionNameTest: testMatch ...");
       try {
