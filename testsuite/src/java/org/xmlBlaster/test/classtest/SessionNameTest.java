@@ -36,7 +36,7 @@ public class SessionNameTest extends TestCase {
       }
       try {
         SessionName sessionName = new SessionName(glob, null, "jack/1", 99);
-        assertEquals("", "jack/1", sessionName.getLoginName());
+        assertEquals("", "jack", sessionName.getLoginName());
         assertEquals("", 99, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
@@ -47,7 +47,7 @@ public class SessionNameTest extends TestCase {
         String absolute = sessionName.getAbsoluteName();
         sessionName = new SessionName(glob, absolute);
         assertEquals("", "jack", sessionName.getLoginName());
-        assertEquals("", 1, sessionName.getPublicSessionId());
+        assertEquals("", 99, sessionName.getPublicSessionId());
       }
       catch (IllegalArgumentException e) {
         fail("testMatch failed: " + e.toString());

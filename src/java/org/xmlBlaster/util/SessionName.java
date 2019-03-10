@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.plugins.htpasswd.Session;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
@@ -22,6 +25,7 @@ import org.xmlBlaster.util.def.Constants;
  */
 public final class SessionName implements java.io.Serializable {
    private static final long serialVersionUID = 2684742715895586788L;
+   private static Logger log = Logger.getLogger(SessionName.class.getName());
    /** Name for logging output */
    private static String ME = "SessionName";
    private transient final Global glob;
@@ -83,7 +87,17 @@ public final class SessionName implements java.io.Serializable {
       if (nodeId != null) {
          this.nodeIdExplicitlyGiven = true;
       }
-      this.subjectId = subjectId;
+      String loginName = subjectId;
+      if (loginName != null) {
+         int lastIndex = loginName.lastIndexOf("/"); // "_watcheeService/1" strip /1
+         if (lastIndex > 0) {
+            String s = loginName;
+            loginName = loginName.substring(0, lastIndex);
+            log.warning("Trimmed " + s + " to subjectId " + loginName);
+          }
+      }
+      this.subjectId = loginName;
+
       this.pubSessionId = pubSessionId;
    }
 

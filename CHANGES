@@ -4,8 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o 18333 2019-03-09 marcel
+ o 18333-18335 2019-03-09 marcel
    htPasswd Session.java now strips pubSessionId if such is inside a securityQos.getUserId() (eg "_myService/1" -> "_myService")
+   SessionName ctor now assures correct subjectId
 
  o 18329 2019-01-11 michele
    In the replication fixed a loop which arose when using prioDeliveryOnInitial due to the fact that low prio messages are kept in
