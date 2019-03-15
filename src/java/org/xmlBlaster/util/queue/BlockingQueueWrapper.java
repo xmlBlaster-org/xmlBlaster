@@ -23,7 +23,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 public class BlockingQueueWrapper implements I_StorageSizeListener {
 
    private static Logger log = Logger.getLogger(BlockingQueueWrapper.class.getName());
-   private long pollInterval = 1000L;
+   private long pollIntervalMillis = 1000L;
    private I_Queue queue;
    private boolean isRegistered;
    private boolean waiting;
@@ -35,14 +35,14 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
 
    /**
     * Constructor
-    * @param pollInterval time in milliseconds to wait before a check about the
+    * @param pollIntervalMillis time in milliseconds to wait before a check about the
     * queue size is done.
     */
-   public BlockingQueueWrapper(long pollInterval) {
-      if (pollInterval > 0L)
-         this.pollInterval = pollInterval;
+   public BlockingQueueWrapper(long pollIntervalMillis) {
+      if (pollIntervalMillis > 0L)
+         this.pollIntervalMillis = pollIntervalMillis;
       else
-         log.warning("The requested pollInterval is negative, will set it to the default value '" + this.pollInterval + "'");
+         log.warning("The requested pollInterval is negative, will set it to the default value '" + this.pollIntervalMillis + "'");
    }
 
    public BlockingQueueWrapper() {
@@ -141,7 +141,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
             		numOfEntries == -1 && q.getNumOfEntries() > 0) {
                return cb.queueOperation(q, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
             }
-            long sleepTime = Math.max(remainingTime, this.pollInterval);
+            long sleepTime = Math.max(remainingTime, this.pollIntervalMillis);
             this.wait(sleepTime);
          }
          return cb.queueOperation(q, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
