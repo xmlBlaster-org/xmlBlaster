@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.mime;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,8 +29,12 @@ import org.xmlBlaster.util.dispatch.I_DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
+ * Singleton for each type/version. 
+ * Stateless for Sessions
  * <p>
  * Sometimes we need to support this subscribe pattern:
  * A client only wants the newest message with this details:
@@ -118,12 +123,21 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    private boolean redeliverNewestOnReconnect;
    private boolean useMd5Sum;
    private boolean useTimestampCheck = true;
+   private static int instanceCounter;
+   
+   public DropIfNotDeliverableUniqueOnly() {
+	   synchronized (DropIfNotDeliverableUniqueOnly.class) {
+		   instanceCounter++;
+		   log.info("create instance " + instanceCounter);
+	   }
+   }
 
    /**
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
    public void initialize(ServerScope serverScope) {
+	   log.info("init server scope");
    }
    
    /**
@@ -208,16 +222,7 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
       dm.addConnectionStatusListener(this); // register for toAlive() and toPolling() events (multiple calls don't harm)
       try {
          if (dm.isPolling() || dm.isShutdown()) {
-            String[] subIds = receiver.getSubscriptions();
-            if (log.isLoggable(Level.FINE))
-               log.fine(dm.getSessionName().getAbsoluteName() + " is not reachable, cleaning "
-                     + subIds.length + " subscriptions and "
-                     + dm.getQueue().getNumOfEntries() + " callbackQueue entries");
-            for (int i=0; i<subIds.length; i++) {
-               receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subIds[i], null);
-            }
-            //Can cause deadlock between CacheQueueInterceptor.clear sync and TopicHandler sync (see from toPolling or toAlive below) 
-            //dm.getQueue().clear();
+        	toPolling(getType(), getVersion(), (ServerScope)glob, dm.getSessionName());
             return false;
          }
          
@@ -318,36 +323,61 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
    public void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       try {
     	 SessionName sn = dispatchManager.getSessionName();
-    	 if (sn == null) {
-    		 log.severe("Failed to execute, sessionName is null");
-    		 return;
-    	 }
-    	 I_AdminSubject subjectInfo = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(sn);
-    	 if (subjectInfo == null) {
-    		 log.severe("Failed to execute, subjectInfo is null for " + sn);
-    		 return;
-    	 }
-         I_AdminSession receiver = subjectInfo.getSessionByPubSessionId(sn.getPublicSessionId());
-         String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();
-         if (log.isLoggable(Level.FINE))
-            log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
-         for (int i=0; i<subIds.length; i++) {
-        	 String subId = subIds[i];
-        	// __subId:marcelruff-XPATH1306100581978000000 (and its childs like __subId:marcelruff-XPATH1306100866146000000:1306100866148000000')
-            // __subId:marcelruff-1306100582129000000
-        	 if (subId.startsWith("__subId")) {
-                 receiver.unSubscribe(subId, null);
-        	 }
-        	 else {
-        		// SUBSCRIPTIONID_URL_PREFIX=subscriptionId is optional, it is stripped internally
-                receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subId, null);
-        	 }
-         }
+    	 toPolling(getType(), getVersion(), (ServerScope)glob, sn);
+    	 
          if (this.redeliverNewestOnReconnect) {
+        	 I_AdminSubject subjectInfo = ((ServerScope)glob).getAuthenticate().getSubjectInfoByName(sn);
+        	 if (subjectInfo == null)
+        		 return;
+             I_AdminSession receiver = subjectInfo.getSessionByPubSessionId(sn.getPublicSessionId());
+             if (receiver == null)
+            	 return;
         	 receiver.getUserObjectMap().clear();
          }
+         
       } catch (Throwable e) {
          e.printStackTrace();
       }
    }
+   
+   public static void toPolling(String type, String version, ServerScope serverScope, SessionName sn) {
+      //Can cause deadlock between CacheQueueInterceptor.clear sync and TopicHandler sync (see from toPolling or toAlive below) 
+      //dm.getQueue().clear();
+	   
+	  try {
+	  	 if (sn == null) {
+	   		 log.severe("Failed to execute, sessionName is null");
+	   		 return;
+	   	 }
+	   	 I_AdminSubject subjectInfo = serverScope.getAuthenticate().getSubjectInfoByName(sn);
+	   	 if (subjectInfo == null) {
+	   		 log.severe("Failed to execute, subjectInfo is null for " + sn);
+	   		 return;
+	   	 }
+	     I_AdminSession receiver = subjectInfo.getSessionByPubSessionId(sn.getPublicSessionId());
+	     List<QueryQosData> queryQosDatas = receiver.getSubscriptionQos();
+	     String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();
+	     if (log.isLoggable(Level.FINE))
+	        log.fine(receiver.getLoginName() + "/" + receiver.getPublicSessionId() + " toPolling, removing " + subIds.length + " subscriptions");
+	     for (QueryQosData qosData: queryQosDatas) {
+	        AccessFilterQos qos = qosData.getAccessFilterQos(type, version);
+	        if (qos == null) {
+	        	// not our subscription, ignore sind 2019-03-14
+	        	continue;
+	        }
+	      	 String subId = qosData.getSubscriptionId();
+	       	// __subId:marcelruff-XPATH1306100581978000000 (and its childs like __subId:marcelruff-XPATH1306100866146000000:1306100866148000000')
+	        // __subId:marcelruff-1306100582129000000
+	     	 if (subId.startsWith("__subId")) {
+	             receiver.unSubscribe(subId, null);
+	       	 }
+	       	 else {
+	       		// SUBSCRIPTIONID_URL_PREFIX=subscriptionId is optional, it is stripped internally
+	               receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subId, null);
+	       	 }
+	        }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }   
 }
