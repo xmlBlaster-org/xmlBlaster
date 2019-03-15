@@ -5,12 +5,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.List;
 import java.util.Map;
 
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * SessionInfoProtector protects SessionInfo.java from direct access by administrative tasks.
@@ -200,7 +202,16 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
          throw new Exception(e.toString());
       }
    }
-
+   
+   public final List<QueryQosData> getSubscriptionQos() throws Exception {
+      try {
+          return this.sessionInfo.getSubscriptionQos();
+       }
+       catch (XmlBlasterException e) {
+          throw new Exception(e.toString());
+       }
+   }
+   
    public final String[] getRootSubscriptions() throws Exception {
 	      try {
 	         return this.sessionInfo.getRootSubscriptions();

@@ -7,9 +7,11 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -57,6 +59,7 @@ import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -1051,6 +1054,15 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
 
       return ret;
+   }
+   
+   public final List<QueryQosData> getSubscriptionQos() throws XmlBlasterException {
+      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+      List<QueryQosData> arr = new ArrayList<QueryQosData>();
+      for (SubscriptionInfo sub: subs) {
+         arr.add(sub.getQueryQosData());
+      }
+      return arr;
    }
 
    public final String[] getSubscriptions() throws XmlBlasterException {

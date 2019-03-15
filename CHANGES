@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18336 2019-03-15 adrian marcel
+   Added convenience methods for AccessFilter and SubscribeQos access
+
  o 18333-18335 2019-03-09 marcel
    htPasswd Session.java now strips pubSessionId if such is inside a securityQos.getUserId() (eg "_myService/1" -> "_myService")
    SessionName ctor now assures correct subjectId

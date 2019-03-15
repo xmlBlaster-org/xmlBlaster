@@ -308,6 +308,23 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       return this.filters;
    }
 
+   public AccessFilterQos getAccessFilterQos(String type, String version) {
+      if (this.filters == null)
+    	  return null;
+      if (type == null) {
+    	 type = "";
+      }
+      if (version == null) {
+    	  version = "";
+      }
+      for (AccessFilterQos qos: (ArrayList<AccessFilterQos>)this.filters) {
+    	  if (type.equals(qos.getType()) && version.equals(qos.getVersion())) {
+    		  return qos;
+    	  }
+      }
+      return null;
+   }
+
    /**
     * Return the subscribe filters or null if none is specified.
     */

@@ -6,6 +6,7 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import java.util.List;
 import java.util.Map;
 
 import org.xmlBlaster.engine.qos.ConnectQosServer;
@@ -13,6 +14,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.I_AdminUsage;
 import org.xmlBlaster.util.qos.ConnectQosDataMBean;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * Declares available methods of a session for administration.
@@ -186,6 +188,7 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @return An array with subscriptionId
     */
    public String[] getSubscriptions() throws Exception;
+   public List<QueryQosData> getSubscriptionQos() throws Exception;
    /**
     * If XPATH, the parent XPATH is returned and not all its children
     * @return
