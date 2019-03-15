@@ -28,6 +28,9 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
+ * Singleton for each type/version. 
+ * Stateless for Sessions
+ *  
  * Throw away callback messages and unsubscribe all subscriptions if a client
  * gows to polling.
  * <p>
