@@ -306,9 +306,9 @@ int main(int argc, const char* const* argv) {
       if (!strcmp(queryType, "EXACT"))
          sprintf(key, "<key oid='%.200s'/>", subscribeToken);
       else if (!strcmp(queryType, "DOMAIN"))
-         sprintf(key, "<key domain='%.511s'/>", subscribeToken);
+         SNPRINTF(key, 511, "<key domain='%.400s'/>", subscribeToken);
       else
-         sprintf(key, "<key queryType='XPATH'>%.511s</key>", subscribeToken);
+         SNPRINTF(key, 511, "<key queryType='XPATH'>%.400s</key>", subscribeToken);
       printf("[client] UnSubscribe topic '%s' ...\n", subscribeToken);
       resp = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
       if (resp) {
