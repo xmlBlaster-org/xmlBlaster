@@ -586,7 +586,8 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
       return true;
    msgRequestInfoP->responseMutexIsValid = false;
    if ((retVal = pthread_mutex_unlock(&msgRequestInfoP->responseMutex)) != 0) {
-      char embeddedText[XMLBLASTEREXCEPTION_MESSAGE_LEN];
+      const int LEN = EXCEPTIONSTRUCT_ERRORCODE_LEN + EXCEPTIONSTRUCT_MESSAGE_LEN;
+      char embeddedText[LEN];
       if (exception == 0) {
          if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
             xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
@@ -595,7 +596,7 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
          return false;
       }
       if (*exception->errorCode != 0) {
-         SNPRINTF(embeddedText, XMLBLASTEREXCEPTION_MESSAGE_LEN, "{%s:%s}", exception->errorCode, exception->message);
+         SNPRINTF(embeddedText, LEN, "{%s:%s}", exception->errorCode, exception->message);
          if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Ignoring embedded exception %s: %s", exception->errorCode, exception->message);
       }
       else
