@@ -11,7 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -378,8 +377,13 @@ public class Constants {
          log.fine("JMS Property '" + key + "' is already starting with '" + JMS_PREFIX + "'");
          return key;
       }
-      if (XBConnectionMetaData.getReservedProps().contains(key) || XBConnectionMetaData.getStandardProps().contains(key))
-         key = JMS_PREFIX + key;
+      try {
+         if (org.xmlBlaster.jms.XBConnectionMetaData.getReservedProps().contains(key) || org.xmlBlaster.jms.XBConnectionMetaData.getStandardProps().contains(key))
+            key = JMS_PREFIX + key;
+      }
+      catch (Throwable e) {
+         log.warn("JSM failed: " + e.toString);
+      }
       return key;
    }
 
