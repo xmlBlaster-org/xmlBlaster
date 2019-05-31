@@ -33,6 +33,12 @@ MsgKeyData MsgKeyFactory::readObject(const string& xmlKey)
    clientTags_        = "";
    clientTagsOffset_  = "";
    clientTagsDepth_   = 0;
+   msgKeyData_.setOid("");
+//   msgKeyData_.setQueryType("");
+   msgKeyData_.setContentMime("");
+   msgKeyData_.setContentMimeExtended("");
+   msgKeyData_.setDomain("");
+
    if (xmlKey.empty()) init("<key/>");
    else init(xmlKey);      
 
