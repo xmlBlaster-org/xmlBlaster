@@ -382,7 +382,7 @@ public class Constants {
             key = JMS_PREFIX + key;
       }
       catch (Throwable e) {
-         log.warn("JSM failed: " + e.toString);
+    	  System.err.println("JSM failed: " + e.toString());
       }
       return key;
    }
