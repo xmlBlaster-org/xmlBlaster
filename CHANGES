@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18346 2019-06-17 michele
+   corrected error causing the counter to be reset for the replication dumper
+
  o 18338 2019-03-15 adrian marcel
    Incompatible change of DropIfNotDeliverable DropIfNotDeliverableUniqueOnly
    Only unsubscribe subscriptions which have declared the above plugins in AccessFilterQos
