@@ -45,6 +45,7 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
    private I_Parser parserForOldInUpdates;
    private FileWriter dumper;
    private String dumperFilename;
+   private String localDumperFilename;
    private int count = 0;
    private long changeDumpFrequency = 21600000L; // default: every 6 Hours
    private long nextChangeDate;
@@ -106,7 +107,9 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
       File tmpFile = new File(dumperFilename);
       if (!tmpFile.isAbsolute())
          dumperFilename = this.importLocation + "/" + dumperFilename;
-      
+      int pos = dumperFilename.lastIndexOf("/");
+      if (pos > -1)
+    	  localDumperFilename = dumperFilename.substring(pos+1);
       
       changeDumpFrequency = info_.getLong("dumper.changeDumpFrequency", 21600000L);
       startDate = System.currentTimeMillis();
@@ -159,12 +162,12 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
    }
    
    private int getIndex(String filename) {
-      if (filename == null || dumperFilename == null)
+      if (filename == null || localDumperFilename == null)
          return -1;
-      int pos = filename.indexOf(dumperFilename);
+      int pos = filename.indexOf(localDumperFilename);
       if (pos < 0)
          return -1;
-      String tmp = filename.substring(pos + dumperFilename.length());
+      String tmp = filename.substring(pos + localDumperFilename.length());
       tmp = tmp.trim();
       int length = formatTxt.length();
       if (tmp.length() > length)
@@ -235,7 +238,7 @@ public class ReplicationDumper implements I_Writer, ReplicationConstants, I_Time
       // TODO STORE THE ENTRY HERE
       final String extraOffset = "";
       final boolean doTruncate = false;
-      final boolean forceReadable = true;
+      final boolean forceReadable = false;
       final boolean omitDecl = true;
       if (dbInfo == null)
          return;
