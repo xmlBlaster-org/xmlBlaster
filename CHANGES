@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18348 2019-08-25 marcel
+   Log where xmlBlasterPlugins.xml is loaded from
+
  o 18346 2019-06-17 michele
    corrected error causing the counter to be reset for the replication dumper
 

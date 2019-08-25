@@ -227,7 +227,10 @@ public class FileLocator
             if (log.isLoggable(Level.FINE)) log.fine("findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
    //         ret = findFileInSinglePath(path, filename);
             ret = findFileInSinglePath(null, path);
-            if (ret != null) return ret;
+            if (ret != null) {
+               log.info("Using " + ret.toString());
+               return ret;
+            }
             urlStr = path;
          }
       }
@@ -236,6 +239,7 @@ public class FileLocator
          int schema = urlStr.indexOf("://"); // http:// or file:// or ftp://
          if (schema != -1 || urlStr.startsWith("file:")) {
             try {
+               log.info("Using " + urlStr);
                return new URL(urlStr);
             } catch (MalformedURLException e) {
                log.warning("The given filename is an invalid url: " + toString());
@@ -253,31 +257,46 @@ public class FileLocator
       // user.dir
       path = System.getProperty("user.dir", ".");
       ret = findFileInSinglePath(path, filename);
-      if (ret != null) return ret;
+      if (ret != null) {
+    	  log.info("Using " + ret.toString());
+    	  return ret;
+      }
 
       // full name (complete with path)
       ret = findFileInSinglePath(null, filename);
-      if (ret != null) return ret;
+      if (ret != null) {
+    	  log.info("Using " + ret.toString());
+    	  return ret;
+      }
 
       // PROJECT_HOME global property
       path = this.glob.getProperty().get("PROJECT_HOME", (String)null);
       if (path != null) {
          ret = findFileInSinglePath(path, filename);
-         if (ret != null) return ret;
+         if (ret != null) {
+       	  log.info("Using " + ret.toString());
+       	  return ret;
+         }
       }
 
       // user.home
       path = System.getProperty("user.home", (String)null);
       if (path != null) {
          ret = findFileInSinglePath(path, filename);
-         if (ret != null) return ret;
+         if (ret != null) {
+            log.info("Using " + ret.toString());
+            return ret;
+         }
       }
 
       // classpath
       if (this.glob.getClassLoaderFactory() != null) {
          try {
             URL url = this.glob.getClassLoaderFactory().getXmlBlasterClassLoader().getResource(filename);
-            if (url != null) return url;
+            if (url != null) {
+                log.info("Using " + url.toString());
+                return url;
+            }
          }
          catch (XmlBlasterException ex) {
             log.warning("findFileInXmlBlasterSearchPath: " + ex.getMessage());
@@ -287,7 +306,10 @@ public class FileLocator
       try {
          // default (system) classpath
          URL url = this.glob.getClass().getClassLoader().getResource(filename);
-         if (url != null) return url;
+         if (url != null) {
+             log.info("Using " + url.toString());
+             return url;
+         }
       }
       catch (Throwable ex) {
          ex.printStackTrace();
@@ -295,7 +317,10 @@ public class FileLocator
       try {
          // context classpath
          URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
-         if (url != null) return url;
+         if (url != null) {
+            log.info("Using " + url.toString());
+            return url;
+         }
       }
       catch (Throwable ex) {
          ex.printStackTrace();
@@ -305,14 +330,22 @@ public class FileLocator
       path = System.getProperty("java.ext.dirs", (String)null);
       if (path != null) {
          ret = findFileInSinglePath(path, filename);
-         if (ret != null) return ret;
+         if (ret != null) {
+             log.info("Using " + ret.toString());
+             return ret;
+         }
       }
 
       // java.home
       path = System.getProperty("java.home", (String)null);
       if (path != null) {
-         return findFileInSinglePath(path, filename);
+         URL url = findFileInSinglePath(path, filename);
+         if (url != null) {
+            log.info("Using " + url.toString());
+            return url;
+         }
       }
+      log.warning(" " + propertyName + " fileName=" + filename + " not found");
       return null;
     }
 
