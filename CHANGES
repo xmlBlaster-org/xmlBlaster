@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 15350 2019-09-24 michele
+   Commented out resetting of xmlRpcClient since causing problems when only communication from callback to client was broken
+   while communication from client to server was still ok
+
  o 18348 2019-08-25 marcel
    Log where xmlBlasterPlugins.xml is loaded from
 
