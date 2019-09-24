@@ -45,6 +45,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
    private boolean contentAsString;
    private boolean initialized = false;
    
+   public CallbackXmlRpcDriver() {
+      if (log.isLoggable(Level.FINE))
+         log.fine("Constructor invoked");
+   }
+
    /** Get a human readable name of this driver */
    public String getName() {
       return ME;
@@ -96,6 +101,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
     */
    public void init(Global global, CallbackAddress cbAddress) throws XmlBlasterException {
       this.glob = global;
+      if (log.isLoggable(Level.FINE))
+          log.fine("init invoked " + cbAddress);
       // workaround to pass this callback driver object to the other side (the AuthenticateImpl)
       glob.putInWeakRegistry(Thread.currentThread(), this);
       this.callbackAddress = cbAddress;
@@ -372,7 +379,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver {
          singleChannelDriver = null;
       }
       //callbackAddress = null; If the callback driver keeps reconnect polling we need the address
-      xmlRpcClient = null;
+// xmlRpcClient = null;
       if (log.isLoggable(Level.FINE)) log.fine("Shutdown implementation is missing");
    }
 
