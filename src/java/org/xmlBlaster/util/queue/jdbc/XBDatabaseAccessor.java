@@ -721,9 +721,9 @@ public class XBDatabaseAccessor extends XBFactoryBase implements I_StorageProble
             }
          }
          if (meat != null)
-            log.severe("Could not insert entry '" + meat.getDataType() + "'-'" + logId + "': " + ex.toString());
+            log.severe("Could not insert entry '" + meat.getDataType() + "'-'" + logId + "': storeId='" + meat.getStoreId() + "' "+ ex.toString());
          else if (ref != null)
-            log.severe("Could not insert entry '" + ref.getMethodName() + "'-'" + logId + "': " + ex.toString());
+            log.severe("Could not insert entry '" + ref.getMethodName() + "'-'" + logId + "': storeId='" + ref.getStoreId() + "' " + ex.toString());
          else
             log.severe("Could not insert null entry " + logId + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(store.toString(), "addEntry"), ex)) {
