@@ -540,8 +540,16 @@ TODO
       <echo message="Build timestamp = ${build.timestamp} version = ${version}"/>
 
       <echo message="xmlBlaster.home=${xmlBlaster.home}"/>
+      
+      <echo message="java.specification.version=${java.specification.version}"/>
 
       <switch value="${java.specification.version}">
+         <case value="13">
+            <property name="isJdk15" value="true" />
+            <property name="JVM.target" value="1.7" />
+            <property name="JVM.source" value="1.7" />
+            <property name="DO_FILTERING" value="true" />
+         </case>
          <case value="1.8">
             <property name="isJdk15" value="true" />
             <property name="JVM.target" value="1.5" />
