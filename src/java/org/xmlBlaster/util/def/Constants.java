@@ -254,6 +254,9 @@ public class Constants {
    /** ConnectReturnQos their QoS clientProperty the rcvTimestampStr in '__rcvTimestampStr' */
    public final static String CLIENTPROPERTY_RCVTIMESTAMPSTR = INTERNAL_OID_PREFIX_FOR_CORE + "rcvTimestampStr";
 
+   /** Number of queue entries for ConnectReturnQos */
+   public final static String CLIENTPROPERTY_CALLBACK_QUEUE_NUM_OF_ENTRIES = INTERNAL_OID_PREFIX_FOR_CORE + "cbQueueNumOfEntries";
+
    /** Used in Client Properties to define that the content is encoded with the specified value (default to UTF-8) */
    public final static String CLIENTPROPERTY_CONTENT_CHARSET = "__contentCharset";
    

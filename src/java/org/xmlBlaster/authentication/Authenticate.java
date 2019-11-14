@@ -273,6 +273,8 @@ final public class Authenticate implements I_RunlevelListener
                returnQos.getSessionQos().setSessionName(info.getSessionName());
                returnQos.setReconnected(true);
                returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
+               if (info.getSessionQueue() != null)
+                  returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_CALLBACK_QUEUE_NUM_OF_ENTRIES, info.getSessionQueue().getNumOfEntries());
                log.info("Reconnected with given secretSessionId.");
                return returnQos;
             }
@@ -330,6 +332,8 @@ final public class Authenticate implements I_RunlevelListener
                returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
                info.getDispatchStatistic().incrNumConnect(1);
                info.getDispatchStatistic().touchLastLoginMillis();
+               if (info.getSessionQueue() != null)
+                  returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_CALLBACK_QUEUE_NUM_OF_ENTRIES, info.getSessionQueue().getNumOfEntries());
                log.info("Reconnected with given publicSessionId to '" + info.getSessionName() + "'.");
                return returnQos;
             }
@@ -496,6 +500,8 @@ final public class Authenticate implements I_RunlevelListener
          returnQos.getSessionQos().setSecretSessionId(secretSessionId); // securityInfo is not coded yet !
          returnQos.getSessionQos().setSessionName(sessionInfo.getSessionName());
          returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
+         if (sessionInfo.getSessionQueue() != null)
+            returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_CALLBACK_QUEUE_NUM_OF_ENTRIES, sessionInfo.getSessionQueue().getNumOfEntries());
 
 
          // Now some nice logging ...
