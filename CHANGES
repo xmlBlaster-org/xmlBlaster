@@ -4,6 +4,9 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o 18356 2019-11-14 adrian
+   ConnectReturnQos delivers now __cbQueueNumOfEntries
+
  o 15350 2019-09-24 michele
    Commented out resetting of xmlRpcClient since causing problems when only communication from callback to client was broken
    while communication from client to server was still ok
