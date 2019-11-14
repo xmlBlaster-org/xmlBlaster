@@ -47,7 +47,7 @@ public final class DispatchWorker implements Runnable
       try {
          I_MsgDispatchInterceptor msgInterceptor = dispatchManager.getMsgDispatchInterceptor();
          if (msgInterceptor != null) {
-            log.severe("Communication dispatch plugin support is missing in sync mode - not implemented");
+            log.info("Communication dispatch plugin support is missing in sync mode - not implemented");
             /*!!! filter or whatever
             try {
                entryList = msgInterceptor.handleNextMessages(dispatchManager, entryList); // should call prepareMsgsFromQueue() immediately
