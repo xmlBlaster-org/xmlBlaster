@@ -572,12 +572,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             long num = queue.getNumOfEntries();
             log.info(getLogId()+"We have " + num + " client side queued tail back messages");
             this.dispatchManager.switchToASyncMode();
-            while (queue.getNumOfEntries() > 0) {
-               try { Thread.sleep(20L); } catch( InterruptedException i) {}
+
+            if (isTrySyncMode()) {
+               while (queue.getNumOfEntries() > 0) {
+                  try { Thread.sleep(20L); } catch( InterruptedException i) {}
+               }
+               log.info((num-queue.getNumOfEntries()) + " client side queued tail back messages sent");
+               this.dispatchManager.switchToSyncMode();
             }
-            log.info((num-queue.getNumOfEntries()) + " client side queued tail back messages sent");
-            if (isTrySyncMode())
-            	this.dispatchManager.switchToSyncMode();
          }
          else {
             if (this.connectionListener != null) {
