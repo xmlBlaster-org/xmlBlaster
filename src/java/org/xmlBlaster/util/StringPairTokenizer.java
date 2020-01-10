@@ -111,6 +111,7 @@ public class StringPairTokenizer {
          char cPrev = 0;
          char cNext = 0;
          int len = nextLine.length();
+         sb.ensureCapacity(len);
          for (int i = 0; i < len; i++) {
             char c = nextLine.charAt(i);
             cNext = i < (len-1) ? nextLine.charAt(i+1) : 0;
