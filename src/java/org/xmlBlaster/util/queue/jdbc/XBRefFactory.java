@@ -96,7 +96,10 @@ public class XBRefFactory extends XBFactory {
          buf.append("xbprio int4,\n");
          buf.append("xbmethodname varchar(32) default '',\n");
          buf.append("constraint xbrefpk primary key(xbrefid, xbstoreid));\n");
-         
+
+         // Optional, additional indexes on xbref (Marcel 2020-03-07)
+         buf.append("create index ${table}_xbstoreid_idx ON ${table}(xbstoreid);\n");
+
          buf.append("    alter table ${table} \n");
          buf.append("            add constraint fkxbstoreref\n");
          buf.append("            foreign key (xbstoreid) \n");

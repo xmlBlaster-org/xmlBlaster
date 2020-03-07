@@ -1,8 +1,13 @@
-Release notes for xmlBlaster (http://www.xmlBlaster.org)
+XbRelease notes for xmlBlaster (http://www.xmlBlaster.org)
 The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18359 2020-03-07 marcel
+   Creating two optional, additional indexes on xbref and xbmeat DB tables
+   create index xbref_xbstoreid_idx ON xbref(xbstoreid);
+   create index xbmeat_xbstoreid_idx ON xbmeat(xbstoreid);
+   Creates only on empty database and for postgresql.
 
  o 18356 2019-11-14 adrian
    ConnectReturnQos delivers now __cbQueueNumOfEntries

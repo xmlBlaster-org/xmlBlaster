@@ -95,6 +95,9 @@ public class XBMeatFactory extends XBFactory {
          buf.append("      xbmsgkey text default '',\n");
          buf.append("      xbstoreid int8 not null,\n");
          buf.append("      constraint xbmeatpk primary key(xbmeatid, xbstoreid));\n");
+         
+         // Optional, additional indexes on xbmeat (Marcel 2020-03-07)
+         buf.append("create index ${table}_xbstoreid_idx ON ${table}(xbstoreid);\n");
 
          buf.append("alter table ${table} \n");
          buf.append("      add constraint fkxbstoremeat\n");
