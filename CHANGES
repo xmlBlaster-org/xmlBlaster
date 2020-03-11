@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18361 2020-03-11 marcel
+   xmlBlasterAccess.request() avoid memory leak of response topic which is now destroyed directly after response
+   
  o 18359 2020-03-07 marcel
    Creating two optional, additional indexes on xbref and xbmeat DB tables
    create index xbref_xbstoreid_idx ON xbref(xbstoreid);

@@ -2340,12 +2340,24 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    // TODO: add other properties, add documentation requirement
    //       Add own class to support multiple request/reply over same temporary topic
    /**
+    * Send a PtP message and block for response via a temporary topic.
+    * 
+    * @param msgUnit
+    * @param timeout
+    * @param maxEntries
+    * @param eraseTopicOnFirstResponse
+    *           or on timeout, to avoid topic memory leak if topic is not reused
+    * @return never null
+    * @throws XmlBlasterException
+    *            in case msgUnit is null or other problems
     * @see org.xmlBlaster.test.client.TestRequestResponse
+    * @see HelloWorld8
     */
    public MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Entering request with timeout=" + timeout);
       if (msgUnit == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please supply a valid msgUnit to request()");
+      boolean eraseTopicOnFirstResponse = false;
 
       // Create a temporary reply topic ...
       long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
@@ -2362,11 +2374,17 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
           // "device.joe.response" -> can be useful for authorization, must be distinguishable to other clients
           String responseTopicIdPrefix = msgUnit.getQosData().getClientProperty("__responseTopicIdPrefix", "");
           if (responseTopicIdPrefix.length() > 0) {
+             if (createResponseTopic) {
+                eraseTopicOnFirstResponse = true; // avoid leak in any case
+             }
              responseTopicId = responseTopicIdPrefix + new Timestamp().getTimestamp(); // now thread safe for request()s in parallel
              msgUnit.getQosData().getClientProperties().remove("__responseTopicIdPrefix");
           }
       }
       if (createResponseTopic) {
+          if (responseTopicId.length() == 0) {
+             eraseTopicOnFirstResponse = true; // avoid leak, is temporary topic
+          }
     	  PublishReturnQos tempTopic = createTemporaryTopic(responseTopicId, destroyDelay, maxEntries);
           responseTopicId = tempTopic.getKeyOid();
       }
@@ -2379,6 +2397,18 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       
          // Access the reply ...
          MsgUnit[] msgs = receive("topic/"+responseTopicId, maxEntries, timeout, true);
+
+         if (eraseTopicOnFirstResponse) {
+            try {
+               EraseKey eraseKey = new EraseKey(this.glob, responseTopicId, Constants.EXACT);
+               EraseQos eraseQos = new EraseQos(this.glob);
+               eraseQos.setForceDestroy(true);
+               erase(eraseKey, eraseQos);
+            } catch (Throwable e) {
+               e.printStackTrace();
+               log.warning(getLogId() + "Can't destroy topic " + responseTopicId);
+            }
+         }
 
          return msgs;
       }
