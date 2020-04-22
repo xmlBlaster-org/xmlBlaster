@@ -3,6 +3,10 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18362 2020-04-22 michele
+   implemented a new checkpoint 'update.send' which acts once the entries are extracted from the callback queue and are
+   ready to be sent to the client. It currently only acts on non-oneway updates.
+
  o 18361 2020-03-11 marcel
    xmlBlasterAccess.request() avoid memory leak of response topic which is now destroyed directly after response
    
