@@ -323,12 +323,21 @@ public final class CbDispatchConnection extends DispatchConnection
       if (responders != null) {
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Before update " + responders.size() + " acknowledged messages ...");
          MsgUnitRaw[] raws = new MsgUnitRaw[responders.size()];
+         I_Checkpoint cp = glob.getCheckpointPlugin();
+
          for (int i=0; i<responders.size(); i++) {
             raws[i] = ((Holder)responders.get(i)).msgUnitRaw;
+
+            if (cp != null) {
+            	cp.passingBy(I_Checkpoint.CP_UPDATE_SEND, (MsgUnit)raws[i].getMsgUnit(),
+            			sessionName, null);
+            }
+         
+         
          }
          String[] rawReturnVal = null;
          try {
-            rawReturnVal = cbDriver.sendUpdate(raws);
+        	 rawReturnVal = cbDriver.sendUpdate(raws);
          }
          catch (Throwable t) {
             // http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html#exception
@@ -352,7 +361,7 @@ public final class CbDispatchConnection extends DispatchConnection
          connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
-         I_Checkpoint cp = glob.getCheckpointPlugin();
+         // I_Checkpoint cp = glob.getCheckpointPlugin();
          if (cp != null) {
             for (int i=0; i<raws.length; i++) {
                cp.passingBy(I_Checkpoint.CP_UPDATE_ACK, (MsgUnit)raws[i].getMsgUnit(),

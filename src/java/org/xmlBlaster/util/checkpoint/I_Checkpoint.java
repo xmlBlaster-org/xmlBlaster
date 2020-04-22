@@ -50,8 +50,14 @@ public interface I_Checkpoint extends I_Plugin, CheckpointMBean {
     */
    public static final int CP_CONNECTION_PUBLISH_ACK = 5;
    
+   /**
+    * The message was extracted from the callback queue and is ready to be sent to
+    * the client.
+    */
+   public static final int CP_UPDATE_SEND = 6;
+
    public static final String[] CP_NAMES = { "publish.enter", "publish.ack", "update.queue.add", "update.ack",
-      "client.publish.enter", "client.publish.ack" };
+      "client.publish.enter", "client.publish.ack", "update.send" };
 
    /**
     * A message is passing a checkpoint.
