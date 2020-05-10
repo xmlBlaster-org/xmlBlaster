@@ -5,11 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.script;
 
-import java.util.logging.Logger;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.XmlBlasterException;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -21,18 +23,17 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.OutputStream;
-import java.util.HashMap;
 
 /**
  * XmlScriptClient
@@ -140,8 +141,28 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
       this.glob.getProperty().set(key, value);
    }
    
-   public boolean fireMethod(MethodName methodName,
-         String sessionId, String requestId, byte type)
+   /**
+    * Derived classes may intercept the message. 
+    * @param sessionId
+    * @param type 'I'=invoke 'R'=response 'E'=exception
+    * @return processed true to send the message
+    */
+   public boolean onPreSend(String sessionId, MethodName methodName, QosData qosData, byte type) {
+	   return true;
+   }
+
+   /**
+    * Derived classes may intercept the message. 
+    * @param sessionId
+    * @param type 'I'=invoke 'R'=response 'E'=exception
+    * @return processed true to send the message
+    */
+   public boolean onPreSend(String sessionId, MethodName methodName, MsgUnit msgUnit, byte type) {
+	   return true;
+   }
+
+   public boolean fireMethod(final MethodName methodName,
+         final String sessionId, final String requestId, final byte type)
          throws XmlBlasterException {
       if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("fireMethod "
             + MsgInfo.getTypeStr(type)
@@ -162,10 +183,16 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             if (implicitConnect || this.qos.length() < 1) {
                log.warning("Doing implicit xmlBlaster.connect() as no valid <connect/> markup is in the script");
                ConnectQos connectQos = new ConnectQos(this.glob);
+               if (!onPreSend(sessionId, methodName, connectQos.getData(), type)) {
+            	   return false;
+               }
                ret = this.access.connect(connectQos, cb).toXml();
             }
             else {
                ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
+               if (!onPreSend(sessionId, methodName, data, type)) {
+            	   return false;
+               }
                // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
                ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), cb);
                if (tmp != null) ret = tmp.toXml("  ");
@@ -180,6 +207,9 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
          if (MethodName.DISCONNECT.equals(methodName)) {
             if (this.qos.length() < 1) this.qos.append("<qos />");
             DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
+            if (!onPreSend(sessionId, methodName, disconnectQosData, type)) {
+         	   return false;
+            }
             boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
             writeResponse(methodName, "\n"+ret);
             return true;
@@ -193,6 +223,9 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             if (this.msgUnitCb != null) {
                this.msgUnitCb.intercept(msgUnit);
             }
+            if (!onPreSend(sessionId, methodName, msgUnit, type)) {
+         	   return false;
+            }
             if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publish: " + msgUnit.toXml());
             PublishReturnQos ret = this.access.publish(msgUnit);
             writeResponse(methodName, (ret != null)?ret.toXml("  "):null);
@@ -204,6 +237,9 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             for (int i=0; i < size; i++) {
                if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
                msgs[i] = (MsgUnit)this.messageList.get(i);
+               if (!onPreSend(sessionId, methodName, msgs[i], type)) {
+             	   return false;
+               }
             }
             PublishReturnQos[] ret = this.access.publishArr(msgs);
             String[] retStr = new String[ret.length];
@@ -217,33 +253,54 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             for (int i=0; i < size; i++) {
                if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
                msgs[i] = (MsgUnit)this.messageList.get(i);
+               if (!onPreSend(sessionId, methodName, msgs[i], type)) {
+                 return false;
+               }
             }
             this.access.publishOneway(msgs);
             return true;
          }
          if (MethodName.SUBSCRIBE.equals(methodName)) {
             SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
+            if (!onPreSend(sessionId, methodName, ret.getData(), type)) {
+              return false;
+            }
             writeResponse(methodName, ret.toXml("    "));
             return true;
          }
          if (MethodName.UNSUBSCRIBE.equals(methodName)) {
             UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
             String[] retStr = new String[ret.length];
-            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            for (int i=0; i < ret.length; i++) {
+              if (!onPreSend(sessionId, methodName, ret[i].getData(), type)) {
+                return false;
+              }
+              retStr[i] = ret[i].toXml("    ");
+            }
             writeResponse(methodName, retStr);
             return true;
          }
          if (MethodName.ERASE.equals(methodName)) {
             EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
             String[] retStr = new String[ret.length];
-            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            for (int i=0; i < ret.length; i++) {
+              if (!onPreSend(sessionId, methodName, ret[i].getData(), type)) {
+                return false;
+              }
+              retStr[i] = ret[i].toXml("    ");
+            }
             writeResponse(methodName, retStr);
             return true;
          }
          if (MethodName.GET.equals(methodName)) {
             MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
             String[] retStr = new String[ret.length];
-            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            for (int i=0; i < ret.length; i++) {
+              if (!onPreSend(sessionId, methodName, ret[i], type)) {
+                return false;
+              }
+              retStr[i] = ret[i].toXml("    ");
+            }
             writeResponse(methodName, retStr);
             return true;
          }
