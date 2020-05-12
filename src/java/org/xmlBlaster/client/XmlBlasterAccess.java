@@ -364,6 +364,19 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    
+   public boolean forceReconnectForTesting() {
+      DispatchConnection dcon = this.dispatchManager.getDispatchConnectionsHandler().getAliveDispatchConnection();
+      if (dcon == null)
+         return false;
+      try {
+         dcon.timeout("poll");
+      } catch (Throwable e1) {
+         e1.printStackTrace();
+         return false;
+      }
+      return true;
+   }
+
    public ConnectReturnQos connect(ConnectQos qos, I_StreamingCallback streamingUpdateListener, boolean withQueue) throws XmlBlasterException {
       if (streamingUpdateListener == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, "connect", "the streamingUpdateListener is null, you must provide one");
