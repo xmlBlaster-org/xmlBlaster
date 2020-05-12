@@ -365,7 +365,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    
    public boolean forceReconnectForTesting() {
-      DispatchConnection dcon = this.dispatchManager.getDispatchConnectionsHandler().getAliveDispatchConnection();
+      DispatchConnection dcon = this.dispatchManager.getDispatchConnectionsHandler().getCurrentDispatchConnection();
       if (dcon == null)
          return false;
       try {
