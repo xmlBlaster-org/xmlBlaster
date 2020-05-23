@@ -1102,32 +1102,43 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
 
       if (log.isLoggable(Level.FINE)) log.fine(ME+": addSubscriber("+sub.getId()+")");
-      if (subscribeQosServer.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
-         MsgUnitWrapper[] wrappers = null;
-         if (hasHistoryEntries())
-            wrappers = getMsgUnitWrapperArr(subscribeQosServer.getData().getHistoryQos().getNumEntries(),
-                                            subscribeQosServer.getData().getHistoryQos().getNewestFirst());
-
-         if (wrappers != null && wrappers.length > 0) {
-            int count = 0, currentCount = 0;
-            for (int i=0; i < wrappers.length; i++) {
-               if (this.distributor == null || wrappers[i].isInternal()) {
-            	  if (wrappers[i].getMsgQosData() != null)
-                     wrappers[i].getMsgQosData().addClientProperty(Constants.CLIENTPROPERTY_ISINITIALUPDATE, true); // "__isInitialUpdate"
-                  currentCount = invokeCallback(null, sub, wrappers[i], true);
-               }
-               if (currentCount == -1) break;
-               count += currentCount;
-            }
-            count++;
-            if (count < 1) {
-               Set removeSet = new HashSet();
-               removeSet.add(sub);
-               handleCallbackFailed(removeSet);
-            }
-         }
+      if (subscribeQosServer.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) {
+         // wantInitial==false is only checked if this is a subcribe() thread of
+         // a client
+         sendInitialUpdate(sub);
       }
       return;
+   }
+
+   public void sendInitialUpdate(SubscriptionInfo sub) throws XmlBlasterException {
+      SubscribeQosServer subscribeQosServer = sub.getSubscribeQosServer();
+      if (subscribeQosServer == null) {
+         return;
+      }
+      MsgUnitWrapper[] wrappers = null;
+      if (hasHistoryEntries())
+         wrappers = getMsgUnitWrapperArr(subscribeQosServer.getData().getHistoryQos().getNumEntries(),
+               subscribeQosServer.getData().getHistoryQos().getNewestFirst());
+
+      if (wrappers != null && wrappers.length > 0) {
+         int count = 0, currentCount = 0;
+         for (int i = 0; i < wrappers.length; i++) {
+            if (this.distributor == null || wrappers[i].isInternal()) {
+               if (wrappers[i].getMsgQosData() != null)
+                  wrappers[i].getMsgQosData().addClientProperty(Constants.CLIENTPROPERTY_ISINITIALUPDATE, true); // "__isInitialUpdate"
+               currentCount = invokeCallback(null, sub, wrappers[i], true);
+            }
+            if (currentCount == -1)
+               break;
+            count += currentCount;
+         }
+         count++;
+         if (count < 1) {
+            Set removeSet = new HashSet();
+            removeSet.add(sub);
+            handleCallbackFailed(removeSet);
+         }
+      }
    }
 
    /**

@@ -738,13 +738,26 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          if (subscribeQos.getMultiSubscribe() == false) {
             ArrayList<SubscriptionInfo> vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey, subscribeQos.getData());
             if (vec != null && vec.size() > 0) {
+
                for (int i=0; i<vec.size(); i++) {
                   SubscriptionInfo sub = vec.get(i);
                   sub.update(subscribeQos);
+
+                  if (subscribeQos.getWantInitialUpdate() && xmlKey.isExact()) {
+                     TopicHandler topicHandler = this.glob.getTopicAccessor().access(xmlKey.getOid());
+                     if (topicHandler != null) {
+                        log.info("Duplicate subscription '"
+                              + ((xmlKey.getOid() == null) ? ((xmlKey.getDomain() == null) ? xmlKey.getQueryString() : xmlKey.getDomain()) : xmlKey.getOid())
+                              + "' sending initialUpdate now ...");
+                        topicHandler.sendInitialUpdate(sub);
+                     }
+                  }
                }
+
                log.info("Ignoring duplicate subscription '" +
                        ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
                         "' as you have set multiSubscribe to false" + (subscribeQos.isRecoveredFromPersistenceStore() ? ", recovered from persistenceStore=true" : ""));
+
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
                SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);

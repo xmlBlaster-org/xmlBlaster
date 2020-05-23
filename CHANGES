@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18368 2020-05-23 marcel
+   Fixed subscribeQos.getWantInitialUpdate() to send update for re-susbcribes with subscribeQos.getMultiSubscribe() == false
+   
  o 18362 2020-04-22 michele
    implemented a new checkpoint 'update.send' which acts once the entries are extracted from the callback queue and are
    ready to be sent to the client. It currently only acts on non-oneway updates.
