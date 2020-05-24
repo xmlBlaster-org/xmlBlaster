@@ -743,7 +743,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   SubscriptionInfo sub = vec.get(i);
                   sub.update(subscribeQos);
 
-                  if (subscribeQos.getWantInitialUpdate() && xmlKey.isExact()) {
+                  if (false && subscribeQos.getWantInitialUpdate() && xmlKey.isExact()) {
+                	 // deactivated with false again: Seems to deadlock in TopicContainer.lock(TopicAccessor.java:416)
                      TopicHandler topicHandler = this.glob.getTopicAccessor().access(xmlKey.getOid());
                      if (topicHandler != null) {
                         log.info("Duplicate subscription '"
