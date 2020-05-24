@@ -743,14 +743,24 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   SubscriptionInfo sub = vec.get(i);
                   sub.update(subscribeQos);
 
-                  if (false && subscribeQos.getWantInitialUpdate() && xmlKey.isExact()) {
-                	 // deactivated with false again: Seems to deadlock in TopicContainer.lock(TopicAccessor.java:416)
-                     TopicHandler topicHandler = this.glob.getTopicAccessor().access(xmlKey.getOid());
-                     if (topicHandler != null) {
-                        log.info("Duplicate subscription '"
+                  if (subscribeQos.getWantInitialUpdate() && xmlKey.isExact()) {
+                     TopicHandler topicHandler = null;
+                     try {
+                        topicHandler = this.glob.getTopicAccessor().access(xmlKey.getOid());
+                        if (topicHandler != null) {
+                           log.info("Duplicate subscription '"
                               + ((xmlKey.getOid() == null) ? ((xmlKey.getDomain() == null) ? xmlKey.getQueryString() : xmlKey.getDomain()) : xmlKey.getOid())
                               + "' sending initialUpdate now ...");
-                        topicHandler.sendInitialUpdate(sub);
+                           topicHandler.sendInitialUpdate(sub);
+                        }
+                     }
+                     catch (Throwable e) {
+                        e.printStackTrace();
+                     }
+                     finally {
+                        if (topicHandler != null) {
+                           this.glob.getTopicAccessor().release(topicHandler);
+                        }
                      }
                   }
                }
