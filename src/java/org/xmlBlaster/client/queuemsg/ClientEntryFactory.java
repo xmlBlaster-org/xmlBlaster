@@ -15,9 +15,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -138,7 +140,16 @@ public class ClientEntryFactory implements I_EntryFactory
 
          }
          else if (methodName == MethodName.GET) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Object '" + type + "' not implemented, you can't use synchronous GET requests in queues.");
+             if (obj.length != 2) {
+                 throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                    "Expected 2 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
+              }
+        	 String qos = (String)obj[0];
+             String key = (String)obj[1];
+             return new MsgQueueGetEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
+                        new Timestamp(timestamp), sizeInBytes,
+                        new GetKey(glob, glob.getQueryKeyFactory().readObject(key)),
+                        new GetQos(glob, glob.getQueryQosFactory().readObject(qos)) );
          }
          else if (methodName == MethodName.CONNECT) {
             if (obj.length != 1) {
