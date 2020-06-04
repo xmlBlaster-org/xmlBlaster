@@ -16,6 +16,7 @@ import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.ThreadLister;
@@ -128,7 +129,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       this.connectionStatusListeners = new HashSet<I_ConnectionStatusListener>();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
 
-      initDispatcherActive(addrArr);
+      initDispatcherActive(addrArr, null);
 
       /*
        * Check i a plugin is configured ("DispatchPlugin/defaultPlugin")
@@ -173,7 +174,7 @@ public final class ServerDispatchManager implements I_DispatchManager
       this.trySyncMode = trySyncMode;
       switchToSyncMode();
    }
-
+   
    /**
     * Reconfigure dispatcher with given properties.
     *
@@ -181,7 +182,18 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @param addressArr The new configuration
     */
    public final void updateProperty(CallbackAddress[] addressArr) throws XmlBlasterException {
-      initDispatcherActive(addressArr);
+	   updateProperty(addressArr, null);
+   }
+
+   /**
+    * Reconfigure dispatcher with given properties.
+    *
+    * Note that only a limited re-configuration is supported
+    * @param addressArr The new configuration
+    */
+   public final void updateProperty(CallbackAddress[] addressArr, ConnectQosServer connectQos) throws XmlBlasterException {
+      initDispatcherActive(addressArr, connectQos);
+      
       this.dispatchConnectionsHandler.initialize(addressArr);
       if (this.dispatcherThreadWorkaround) {
          if (this.dispatchWorkerIsActive) {
@@ -1098,7 +1110,7 @@ public final class ServerDispatchManager implements I_DispatchManager
    /**
     * Switch on/off the sending of messages.
     */
-   private void initDispatcherActive(AddressBase[] addrArr) {
+   private void initDispatcherActive(AddressBase[] addrArr, ConnectQosServer connectQos) {
       if (addrArr != null) {
          for (int ii=0; ii<addrArr.length; ii++) { // TODO: How to handle setting of multiple addresses??
             if (addrArr[ii].isDispatcherActive() == false && this.dispatcherActive == true) {
@@ -1106,7 +1118,8 @@ public final class ServerDispatchManager implements I_DispatchManager
               //pos = ": " + ServerScope.getStackTraceAsString(null);
               log.warning(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + addrArr[ii].isDispatcherActive() + pos);
             }
-            this.dispatcherActive = addrArr[ii].isDispatcherActive();
+            boolean activeAllowed = connectQos == null || !connectQos.isInhibitDispatcherActiveOnConnect();
+            this.dispatcherActive = addrArr[ii].isDispatcherActive() && activeAllowed;
          }
       }
    }

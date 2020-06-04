@@ -618,7 +618,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (wantsCallbacks && hasCallback()) {
          ServerDispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null) {
-            dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
+            dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses(), newConnectQos);
             log.info(ME+": Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
             dispatchManager.notifyAboutNewEntry();
          }

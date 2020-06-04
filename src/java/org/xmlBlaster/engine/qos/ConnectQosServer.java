@@ -44,7 +44,9 @@ public final class ConnectQosServer
    private AddressServer addressServer;
    
    /** E.g. mobile phones don't know what to do with it */
-   private boolean allowExceptionsThrownToClient = true;;
+   private boolean allowExceptionsThrownToClient = true;
+   
+   private boolean inhibitDispatcherActiveOnConnect = false;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
       this.connectQosData = connectQosData;
@@ -113,6 +115,14 @@ public final class ConnectQosServer
 
    public void isFromPersistenceRecovery(boolean fromPersistenceRecovery) {
       this.connectQosData.isFromPersistenceRecovery(fromPersistenceRecovery);
+   }
+   
+   public boolean isInhibitDispatcherActiveOnConnect() {
+      return inhibitDispatcherActiveOnConnect;
+   }
+
+   public void setInhibitDispatcherActiveOnConnect(boolean inhibitDispatcherActiveOnConnect) {
+      this.inhibitDispatcherActiveOnConnect = inhibitDispatcherActiveOnConnect;
    }
 
    /**

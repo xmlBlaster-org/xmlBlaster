@@ -14,6 +14,9 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -263,12 +266,27 @@ public class HandleClient extends SocketExecutor implements Runnable
 //                  }
                }
 
+               conQos.setInhibitDispatcherActiveOnConnect(true);
                ConnectReturnQosServer retQos = authenticate.connect(conQos);
                this.addressServer.setSessionName(retQos.getSessionName());
                this.secretSessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
                driver.addClient(this.secretSessionId, this);
+               
+               // TODO: authenticate plugin may disable the dispatcher, and we enable it here again? Is ConnectQosServer a clone?
+               if (conQos.getData().getCurrentCallbackAddress().isDispatcherActive()) {
+                  try {
+                     I_AdminSubject sub = authenticate.getSubjectInfoByName(conQos.getSessionName());
+                     I_AdminSession sess = sub.getSessionByPubSessionId(conQos.getSessionName().getPublicSessionId());
+                     sess.setDispatcherActive(true);
+                  } catch (Throwable e) {
+                     String msg = "Unexpected: no session info after connect: " + conQos.getSessionName();
+                     log.severe(msg);
+                     e.printStackTrace();
+                     throw new XmlBlasterException(glob, ErrorCode.INTERNAL, ME+".handleMessage()", msg, e);
+                  }
+               }
              }
             else if (MethodName.DISCONNECT == receiver.getMethodName()) {
                this.disconnectIsCalled = true;
