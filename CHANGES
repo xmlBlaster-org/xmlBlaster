@@ -3,6 +3,12 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18373 2020-06-04 michele, adrian, marcel
+   Fixed for socket protocol: A client reconnect is guaranteed to receive ConnectReturnQos before pending callback messages are sent
+   
+ o 18371 2020-05-26  adrian
+   Java client: Implemented ClientEntryFactory.createEntry for MsgQueueGetEntry to avoid exception on client queued get()
+ 
  o 18368-18370 2020-05-23 marcel
    Fixed subscribeQos.getWantInitialUpdate() to send update for re-susbcribes with subscribeQos.getMultiSubscribe() == false
    
