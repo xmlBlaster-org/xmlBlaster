@@ -266,7 +266,10 @@ public class HandleClient extends SocketExecutor implements Runnable
 //                  }
                }
 
+               // long pubSessionId = conQos.getSessionName().getPublicSessionId();
+               // if (pubSessionId > 0)
                conQos.setInhibitDispatcherActiveOnConnect(true);
+               
                ConnectReturnQosServer retQos = authenticate.connect(conQos);
                this.addressServer.setSessionName(retQos.getSessionName());
                this.secretSessionId = retQos.getSecretSessionId();
@@ -277,12 +280,13 @@ public class HandleClient extends SocketExecutor implements Runnable
                // TODO: authenticate plugin may disable the dispatcher, and we enable it here again? Is ConnectQosServer a clone?
                if (conQos.getData().getCurrentCallbackAddress().isDispatcherActive()) {
                   try {
-                     I_AdminSubject sub = authenticate.getSubjectInfoByName(conQos.getSessionName());
-                     I_AdminSession sess = sub.getSessionByPubSessionId(conQos.getSessionName().getPublicSessionId());
+                     I_AdminSubject sub = authenticate.getSubjectInfoByName(retQos.getSessionName());
+                     long pubSessionIdGenerated = retQos.getSessionName().getPublicSessionId();
+                     I_AdminSession sess = sub.getSessionByPubSessionId(pubSessionIdGenerated);
                      sess.setDispatcherActive(true);
                   } catch (Throwable e) {
-                     String msg = "Unexpected: no session info after connect: " + conQos.getSessionName();
-                     log.severe(msg);
+                     String msg = "Unexpected: no session info after connect: " + conQos.getSessionName() + " -> connectReturn: " + retQos.getSessionName();
+                     log.severe(msg + ": " + e.toString());
                      e.printStackTrace();
                      throw new XmlBlasterException(glob, ErrorCode.INTERNAL, ME+".handleMessage()", msg, e);
                   }
