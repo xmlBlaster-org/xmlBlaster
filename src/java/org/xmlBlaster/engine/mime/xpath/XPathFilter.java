@@ -214,6 +214,8 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     */
    public String[] getMimeTypes() {
       //String[] mimeTypes = { "text/xml", "image/svg+xml" };
+      if (this.mimeTypes == null)
+         return new String[0];
       return mimeTypes;
    }
 

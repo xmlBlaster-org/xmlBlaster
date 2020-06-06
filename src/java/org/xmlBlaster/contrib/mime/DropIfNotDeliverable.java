@@ -134,6 +134,8 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
     * @return { "*" } This plugin handles all mime types
     */
    public String[] getMimeTypes() {
+      if (this.mimeTypes == null)
+         return new String[0];
       return this.mimeTypes;
    }
 
@@ -142,7 +144,7 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
     * @return "1.0" (this is the default version number)
     */
    public String[] getMimeExtended() {
-      String[] mimeExtended = new String[this.mimeTypes.length];
+      String[] mimeExtended = new String[getMimeTypes().length];
       for (int i=0; i<mimeExtended.length; i++)
          mimeExtended[i] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
       return mimeExtended;

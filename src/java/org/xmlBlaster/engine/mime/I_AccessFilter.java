@@ -61,7 +61,7 @@ public interface I_AccessFilter
 
    /**
     * Get the content MIME types for which this plugin applies, "*" is for all mime types
-    * @return The supported mime types, for example  return { "text/plain", "text/xml", "application/mytext" };
+    * @return never null. The supported mime types, for example  return { "text/plain", "text/xml", "application/mytext" };
     */
    public String[] getMimeTypes();
 

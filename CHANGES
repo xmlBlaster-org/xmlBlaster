@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 18376 marcel
+   Changed I_AccessFilter#getMimeTypes() plugins to never return null
+ 
  o 18374,18375 2020-06-04 michele, adrian, marcel
    Fixed for socket protocol: A client reconnect is guaranteed to receive ConnectReturnQos before pending callback messages are sent
    
