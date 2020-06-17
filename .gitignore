@@ -1,0 +1,8 @@
+build.tmp
+lib/xmlBlaster.jar
+src/java/class
+authenticateIdl/
+clientIdl
+serverIdl
+src/java/org/xmlBlaster/util/lexical/Sql92Parser.java
+src/java/org/xmlBlaster/util/lexical/Sql92Symbols.java
