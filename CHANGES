@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o feature/ml-replagent-log michele
+   added logs / warnings on connection changes
+
  o 18376 marcel
    Changed I_AccessFilter#getMimeTypes() plugins to never return null
  
