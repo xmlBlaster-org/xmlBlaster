@@ -3,7 +3,7 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
- o feature/ml-replagent-log michele
+ o ea4fbb3c30be6dca005dec9555e6204a722e91e9 (feature/ml-replagent-log) michele
    added logs / warnings on connection changes
 
  o 18376 marcel
