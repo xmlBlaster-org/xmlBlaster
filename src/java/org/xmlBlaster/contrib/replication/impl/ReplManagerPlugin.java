@@ -1203,9 +1203,8 @@ public class ReplManagerPlugin extends GlobalInfo
          return true;
       return false;
    }
-   
-   // For I_ClientListener ...
 
+   // For I_ClientListener ...
    /**
     * The part of this code inherent to the slave could be moved to the addDispatchManager since that method would 
     * always invoked too. This method is only invoked on the first connect, which is when the client connects the
@@ -1233,17 +1232,17 @@ public class ReplManagerPlugin extends GlobalInfo
       log.fine("Connecting with qos : " + connQos.toXml());
       String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
       log.info("addition of session for '" + sessionName +"' occured");
-      synchronized (this.replSlaveMap) {
-         if (!this.replSlaveMap.containsKey(sessionName)) {
-            I_ReplSlave slave = new ReplSlave(this.global, this, sessionName, connQos.getData());
+      synchronized (replSlaveMap) {
+         if (!replSlaveMap.containsKey(sessionName)) {
+            I_ReplSlave slave = new ReplSlave(global, this, sessionName, connQos.getData());
             try {
-               slave.setDispatcher(false, false); // stop dispatcher without persisting the information
+               slave.setDispatcher(I_ReplSlave.DISPATCH_STANDBY_EX, false); // stop dispatcher without persisting the information
             }
             catch (Exception ex) {
                log.warning("Could not set the dispatcher for '" + sessionName + "' to false when adding the session");
                ex.printStackTrace();
             }
-            this.replSlaveMap.put(sessionName, slave);
+            replSlaveMap.put(sessionName, slave);
          }
       }
    }
@@ -1253,7 +1252,22 @@ public class ReplManagerPlugin extends GlobalInfo
     */
    public void sessionUpdated(ClientEvent e) throws XmlBlasterException
    {
-      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString() + ", nothing to do");
+      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString());
+      String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+      synchronized (replSlaveMap) {
+         I_ReplSlave slave = (I_ReplSlave)replSlaveMap.get(sessionName);
+         if (slave != null) {
+            try {
+               // in case it is an old client first stop it.
+               slave.setDispatcher(I_ReplSlave.DISPATCH_STANDBY_EX, false);
+               slave.setDispatcher(I_ReplSlave.DISPATCH_ACTIVE, false);
+            }
+            catch (Exception ex) {
+               log.warning("Could not set the dispatcher for '" + sessionName + "' to false when adding the session");
+               ex.printStackTrace();
+            }
+         }
+      }
    }
 
    /**
@@ -1687,20 +1701,20 @@ public class ReplManagerPlugin extends GlobalInfo
     */
    public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
       try {
-			if (log.isLoggable(Level.FINEST)) {
-				try {
-					String topic = msgUnit.getKeyData().getOid();
-					FileOutputStream fos = new FileOutputStream("replManagerPluginIntercept-" + topic + ".dat");
-					byte[] cont = msgUnit.getContent();
-					if (cont != null && cont.length > 0) {
-						fos.write(cont, 0, cont.length);
-						fos.close();
-					}
-				}
-				catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
+         if (log.isLoggable(Level.FINEST)) {
+            try {
+               String topic = msgUnit.getKeyData().getOid();
+               FileOutputStream fos = new FileOutputStream("replManagerPluginIntercept-" + topic + ".dat");
+               byte[] cont = msgUnit.getContent();
+               if (cont != null && cont.length > 0) {
+                  fos.write(cont, 0, cont.length);
+                  fos.close();
+               }
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+            }
+         }
          String topicName = msgUnit.getKeyOid();
          // check first if deadLetter ...
          if (Constants.OID_DEAD_LETTER.equals(topicName))
