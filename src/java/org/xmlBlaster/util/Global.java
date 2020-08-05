@@ -1401,6 +1401,9 @@ public class Global implements Cloneable
                this.ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
             } catch (java.net.UnknownHostException e) {
                log.warning("Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
+            } catch (Throwable e) {
+               // NetworkOnMainThread exception on android
+               log.warning("Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
             }
             if (this.ip_addr == null) this.ip_addr = "127.0.0.1";
          }

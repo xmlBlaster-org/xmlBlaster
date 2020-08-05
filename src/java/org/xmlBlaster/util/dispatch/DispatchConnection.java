@@ -134,6 +134,9 @@ abstract public class DispatchConnection implements I_Timeout
          logInterval = (int)(this.logEveryMillis / address.getDelay());
 
       try {
+         if (connectionsHandler.dispatchManager.isForceAsyncConnect()) {
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION, "Forcing async connect initially");
+         }
          connectLowlevel();
          handleTransition(true, null);
       }

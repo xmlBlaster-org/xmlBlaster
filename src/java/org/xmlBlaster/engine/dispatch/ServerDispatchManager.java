@@ -164,6 +164,10 @@ public final class ServerDispatchManager implements I_DispatchManager
    public boolean isSyncMode() {
       return this.isSyncMode;
    }
+   
+   public boolean isForceAsyncConnect() {
+      return false;
+   }
 
    /**
     * Set behavior of dispatch framework.
