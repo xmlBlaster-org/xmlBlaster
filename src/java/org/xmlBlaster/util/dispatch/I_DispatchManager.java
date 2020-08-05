@@ -37,7 +37,9 @@ public interface I_DispatchManager extends I_Timeout, I_QueuePutListener {
     */
    SessionName getSessionName();
 
-    boolean isSyncMode();
+   boolean isSyncMode();
+   
+   boolean isForceAsyncConnect();
 
    /**
     * Set behavior of dispatch framework.

@@ -515,7 +515,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                }
                this.dispatchManager = new ClientDispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
-                                       this.connectQos.getAddresses(forceCbAddressCreation), sn);
+                                       this.connectQos.getAddresses(forceCbAddressCreation), sn, !this.isTrySyncMode());
                // the above can call toDead() and the client may have called shutdown(): this.connectQos == null again
                if (this.dispatchManager.isDead())
                    throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "connect call failed, your toDead() code did shutdown?");
