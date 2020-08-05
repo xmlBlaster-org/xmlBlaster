@@ -253,7 +253,7 @@ public class SocketUrl {
       try {
          this.inetAddress = java.net.InetAddress.getByName(this.hostname);
       } catch(java.net.UnknownHostException e) {
-         Thread.dumpStack();
+         //Thread.dumpStack();
          String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/socket/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
          log.warning(txt);
