@@ -208,13 +208,15 @@ public final class ClientDispatchManager implements I_DispatchManager
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
     * @return true if we did not already contain the specified element.
     */
-   public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-      return this.connectionStatusListeners.add(connectionStatusListener);
+   public boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      synchronized (this.connectionStatusListeners) {
+         return this.connectionStatusListeners.add(connectionStatusListener);
+      }
    }
 
    public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener, boolean fireInitial) {
       if (connectionStatusListener == null) return true;
-      boolean ret = this.connectionStatusListeners.add(connectionStatusListener);
+      boolean ret = addConnectionStatusListener(connectionStatusListener);
       if (fireInitial) {
          if (isDead())
             connectionStatusListener.toDead(this, ConnectionStateEnum.DEAD, null/*"Initial call"*/);
@@ -232,14 +234,18 @@ public final class ClientDispatchManager implements I_DispatchManager
     * @param connectionStatusListener
     * @return true if it was removed
     */
-   public synchronized boolean removeConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-      return this.connectionStatusListeners.remove(connectionStatusListener);
+   public boolean removeConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      synchronized (this.connectionStatusListeners) {
+         return this.connectionStatusListeners.remove(connectionStatusListener);
+      }
    }
 
-   public synchronized I_ConnectionStatusListener[] getConnectionStatusListeners() {
-      if (this.connectionStatusListeners.size() == 0)
-         return new I_ConnectionStatusListener[0];
-      return (I_ConnectionStatusListener[])this.connectionStatusListeners.toArray(new I_ConnectionStatusListener[this.connectionStatusListeners.size()]);
+   public I_ConnectionStatusListener[] getConnectionStatusListeners() {
+      synchronized (this.connectionStatusListeners) {
+         if (this.connectionStatusListeners.size() == 0)
+            return new I_ConnectionStatusListener[0];
+         return (I_ConnectionStatusListener[]) this.connectionStatusListeners.toArray(new I_ConnectionStatusListener[this.connectionStatusListeners.size()]);
+      }
    }
 
    /**
@@ -388,8 +394,12 @@ public final class ClientDispatchManager implements I_DispatchManager
    /** Call by DispatchConnectionsHandler on state transition */
    public void shutdownFomAnyState(ConnectionStateEnum oldState, XmlBlasterException ex) {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Switch from " + oldState + " to DEAD");
-      if (oldState == ConnectionStateEnum.DEAD) return;
-      if (this.isShutdown) return;
+      if (oldState == ConnectionStateEnum.DEAD) {
+         return;
+      }
+      if (this.isShutdown) {
+         return;
+      }
       if (ex != null) { // Very dangerous code! The caller ends up with changed Exception type
          ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       }
@@ -427,7 +437,7 @@ public final class ClientDispatchManager implements I_DispatchManager
          // The error handler flushed the queue and does error handling with them
          getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
       }
-      
+
       shutdown();
    }
    
@@ -1010,7 +1020,8 @@ public final class ClientDispatchManager implements I_DispatchManager
       if (this.dispatchConnectionsHandler.isDead() && !isPublisherThread) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
          if (log.isLoggable(Level.FINE)) log.fine(ME+": "+text);
-         givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text));
+         //givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text));
+         shutdownFomAnyState(this.dispatchConnectionsHandler.getState(), new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text));
          return false;
       }
 
@@ -1138,8 +1149,9 @@ public final class ClientDispatchManager implements I_DispatchManager
 
          this.msgQueue.removePutListener(this);
 
-         // remove all ConnectionStatusListeners
-         this.connectionStatusListeners.clear();
+         synchronized (this.connectionStatusListeners) {
+            this.connectionStatusListeners.clear();
+         }
 
          removeBurstModeTimer();
 

@@ -2,6 +2,8 @@ package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -55,12 +57,19 @@ public class ConnectReturnQos {
    public static final String ME = "ConnectReturnQos";
    private Global glob;
    private ConnectQosData connectQosData;
+   private final StatusQosData statusQosData;
 
    public ConnectReturnQos(Global glob, ConnectQosData connectQosData) throws XmlBlasterException {
+      this(glob, connectQosData, null);
+   }
+
+   public ConnectReturnQos(Global glob, ConnectQosData connectQosData, StatusQosData statusQosData) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
       //this.log = glob.getLog("client");
       this.connectQosData = connectQosData;
+      this.statusQosData = statusQosData;
    }
+
    public ConnectReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
       this(glob, glob.getConnectQosFactory().readObject(xmlQos));
    }
@@ -70,6 +79,23 @@ public class ConnectReturnQos {
     */
    public ConnectQosData getData() {
       return this.connectQosData;
+   }
+
+   public StatusQosData getStatusQosData() {
+      return this.statusQosData;
+   }
+
+   /** Return "QUEUED" in async mode */
+   public final String getStateInfo() {
+      if (this.statusQosData != null)
+         return this.statusQosData.getStateInfo();
+      return "";
+   }
+
+   public final boolean isQueued() {
+      if (this.statusQosData == null || this.statusQosData.getStateInfo() == null)
+         return false;
+      return this.statusQosData.getStateInfo().startsWith(Constants.INFO_QUEUED);
    }
 
    /**

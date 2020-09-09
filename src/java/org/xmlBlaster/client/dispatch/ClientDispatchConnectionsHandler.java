@@ -154,7 +154,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
 
          else if (MethodName.CONNECT == msgQueueEntry.getMethodName()) {
-            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData());
+            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData(), statRetQos);
             if (!connectReturnQos.getSessionName().isPubSessionIdUser()) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                   "Can't find an xmlBlaster server. Try to provide the server host/port as described in " +

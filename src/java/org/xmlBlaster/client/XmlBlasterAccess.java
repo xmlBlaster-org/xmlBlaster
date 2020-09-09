@@ -1628,7 +1628,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @return true if we have definitely lost the connection to xmlBlaster and gave up
     */
    public boolean isDead() {
-      if (!isConnected()) return false;
+      if (this.dispatchManager == null)
+         return false;
       return this.dispatchManager.getDispatchConnectionsHandler().isDead();
    }
 

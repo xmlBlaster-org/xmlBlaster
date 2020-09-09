@@ -344,42 +344,58 @@ abstract public class DispatchConnectionsHandler
     */
    private final void updateState(XmlBlasterException ex) {
       ConnectionStateEnum oldState = this.state;
-      ConnectionStateEnum tmp = ConnectionStateEnum.DEAD;
-      
-      if (oldState == ConnectionStateEnum.DEAD) {
-         log.warning("Ignoring state change as we are in DEAD: " + ((ex == null) ? "" : ex.getMessage()));
-         return;
-      }
-      
-      if (log.isLoggable(Level.FINE)) log.fine(ME+": updateState() oldState="+oldState+" conList.size="+
-            getCountDispatchConnection());
-      DispatchConnection[] arr = getDispatchConnectionArr();
-      for (int ii=0; ii<arr.length; ii++) {
-         if (arr[ii].isAlive()) {
-            this.state = ConnectionStateEnum.ALIVE;
-            if (oldState != this.state)
-               dispatchManager.toAlive(oldState);
-            return;
+      ConnectionStateEnum newState = null;
+      try {
+         synchronized (this) {
+            oldState = this.state;
+            ConnectionStateEnum tmp = ConnectionStateEnum.DEAD;
+
+            if (oldState == ConnectionStateEnum.DEAD) {
+               log.warning("Ignoring state change as we are in DEAD: " + ((ex == null) ? "" : ex.getMessage()));
+               return;
+            }
+
+            if (log.isLoggable(Level.FINE))
+               log.fine(ME + ": updateState() oldState=" + oldState + " conList.size=" +
+                       getCountDispatchConnection());
+            DispatchConnection[] arr = getDispatchConnectionArr();
+            for (int ii = 0; ii < arr.length; ii++) {
+               if (arr[ii].isAlive()) {
+                  this.state = ConnectionStateEnum.ALIVE;
+                  if (oldState != this.state) {
+                     newState = this.state;
+                  }
+                  return;
+               } else if (arr[ii].isPolling()) {
+                  tmp = ConnectionStateEnum.POLLING;
+               }
+            }
+            if (tmp == ConnectionStateEnum.POLLING) {
+               this.state = ConnectionStateEnum.POLLING;
+               if (oldState != this.state) {
+                  newState = this.state;
+               }
+            } else if (tmp == ConnectionStateEnum.DEAD) {
+               this.state = ConnectionStateEnum.DEAD;
+               if (oldState != this.state) {
+                  newState = this.state;
+               }
+            } else {
+               this.state = tmp;
+               log.severe(ME + ": Internal error in updateState(oldState=" + oldState + "," + this.state + ") " + toXml(""));
+               Thread.dumpStack();
+            }
          }
-         else if (arr[ii].isPolling()) {
-            tmp = ConnectionStateEnum.POLLING;
-         }
-      }
-      if (tmp == ConnectionStateEnum.POLLING) {
-         this.state = ConnectionStateEnum.POLLING;
-         if (oldState != this.state)
+      } finally {
+         if (newState == ConnectionStateEnum.ALIVE) {
+            dispatchManager.toAlive(oldState);
+         } else if (newState == ConnectionStateEnum.POLLING) {
             dispatchManager.toPolling(oldState);
-      }
-      else if (tmp == ConnectionStateEnum.DEAD) {
-         this.state = ConnectionStateEnum.DEAD;
-         if (oldState != this.state)
+         } else if (newState == ConnectionStateEnum.DEAD) {
             dispatchManager.shutdownFomAnyState(oldState, ex);
+         }
       }
-      else {
-         this.state = tmp;
-         log.severe(ME+": Internal error in updateState(oldState="+oldState+","+this.state+") " + toXml(""));
-         Thread.dumpStack();
-      }
+
    }
 
    /**
