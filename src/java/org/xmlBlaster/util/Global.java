@@ -2011,7 +2011,7 @@ public class Global implements Cloneable
               "-dispatch/connection/burstMode/collectTime", "0",
               "-dispatch/callback/protocol", "LOCAL",
               "-dispatch/callback/pingInterval", "10000", // For low run levels and persistent connections like DbWatcher
-              "-dispatch/callback/retries", "-1",
+              "-dispatch/callback/retries", "-1", // -1 would issue log.severe memory leak for negative session id
               "-dispatch/callback/burstMode/collectTime", "0",
               "-queue/connection/defaultPlugin", "RAM,1.0",
               /*"-queue/callback/defaultPlugin", "CACHE,1.0", is already default */
