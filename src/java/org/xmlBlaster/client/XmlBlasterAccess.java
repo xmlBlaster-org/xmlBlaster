@@ -509,7 +509,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   this.msgErrorHandler = new ClientErrorHandler(glob, this);
                }
 
-               boolean forceCbAddressCreation = (updateListener != null);
+               boolean forceCbAddressCreation = (updateListener != null) || this.connectQos.getAddress().getType().equals("LOCAL");
                if (this.dispatchManager != null) {
             	   dispatchManagerStale = this.dispatchManager;
                }
@@ -529,7 +529,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             	   this.dispatchManager.trySyncMode(true);
                }
 
-               if (this.updateListener != null) { // Start a default callback server using same protocol
+               if (forceCbAddressCreation) { // Start a default callback server using same protocol
                   createDefaultCbServer();
                }
 
