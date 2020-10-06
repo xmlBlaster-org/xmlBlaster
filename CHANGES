@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 0d6e45b34
+   Bugfix: LOCAL protocol needs callback implementation
+   
  o 8b3ba9770 michele
    added a property mom.initialDispatcherActive which is false per default for the ReplAgent
 
