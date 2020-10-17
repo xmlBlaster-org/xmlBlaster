@@ -509,13 +509,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   this.msgErrorHandler = new ClientErrorHandler(glob, this);
                }
 
-               boolean forceCbAddressCreation = (updateListener != null);
+               boolean forceCbAddressCreation = (updateListener != null) || this.connectQos.getAddress().getType().equals("LOCAL");
                if (this.dispatchManager != null) {
             	   dispatchManagerStale = this.dispatchManager;
                }
                this.dispatchManager = new ClientDispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
-                                       this.connectQos.getAddresses(forceCbAddressCreation), sn);
+                                       this.connectQos.getAddresses(forceCbAddressCreation), sn, !this.isTrySyncMode());
                // the above can call toDead() and the client may have called shutdown(): this.connectQos == null again
                if (this.dispatchManager.isDead())
                    throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "connect call failed, your toDead() code did shutdown?");
@@ -529,7 +529,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             	   this.dispatchManager.trySyncMode(true);
                }
 
-               if (this.updateListener != null) { // Start a default callback server using same protocol
+               if (forceCbAddressCreation) { // Start a default callback server using same protocol
                   createDefaultCbServer();
                }
 

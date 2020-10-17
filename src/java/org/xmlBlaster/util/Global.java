@@ -1401,6 +1401,9 @@ public class Global implements Cloneable
                this.ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
             } catch (java.net.UnknownHostException e) {
                log.warning("Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
+            } catch (Throwable e) {
+               // NetworkOnMainThread exception on android
+               log.warning("Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
             }
             if (this.ip_addr == null) this.ip_addr = "127.0.0.1";
          }
@@ -2008,7 +2011,7 @@ public class Global implements Cloneable
               "-dispatch/connection/burstMode/collectTime", "0",
               "-dispatch/callback/protocol", "LOCAL",
               "-dispatch/callback/pingInterval", "10000", // For low run levels and persistent connections like DbWatcher
-              "-dispatch/callback/retries", "-1",
+              "-dispatch/callback/retries", "-1", // -1 would issue log.severe memory leak for negative session id
               "-dispatch/callback/burstMode/collectTime", "0",
               "-queue/connection/defaultPlugin", "RAM,1.0",
               /*"-queue/callback/defaultPlugin", "CACHE,1.0", is already default */

@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
@@ -35,6 +37,7 @@ import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
@@ -50,9 +53,9 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * 
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
-public class ReplicationAgent implements I_InitialUpdateListener {
+public class ReplicationAgent implements I_InitialUpdateListener, I_ConnectionStateListener {
    
-   private static Logger log = Logger.getLogger(ReplicationAgent.class.getName());
+   private static Logger LOG = Logger.getLogger(ReplicationAgent.class.getName());
    
    // private I_Info readerInfo;
    // private I_Info writerInfo;
@@ -92,7 +95,38 @@ public class ReplicationAgent implements I_InitialUpdateListener {
       return new OwnGlobalInfo(global, additionalInfo, infoId);
    }
    
-   
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedAlive(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   @Override
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      LOG.info(String.format("The connection '%s' is now alive", connection.getId()));
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedAliveSync(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   @Override
+   public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      LOG.info(String.format("The connection '%s' is now alive (sync)", connection.getId()));
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedPolling(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   @Override
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      LOG.warning(String.format("The connection '%s' is now polling", connection.getId()));
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   @Override
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      LOG.warning(String.format("The connection '%s' is now dead", connection.getId()));
+   }
+
    public GlobalInfo prepare(String[] args) throws Exception {
       cmdLineArgs = args;
       Global global = new Global(cmdLineArgs);
@@ -126,7 +160,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
          boolean isInteractive = cfgInfo.getBoolean("interactive", false);
          agent.init(readerInfo, writerInfo);
 
-         log.info("REPLICATION AGENT IS NOW READY");
+         LOG.info("REPLICATION AGENT IS NOW READY");
          if (isInteractive)
             agent.process(readerInfo, writerInfo);
          else {
@@ -143,7 +177,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
 
       } 
       catch (Throwable ex) {
-         log.severe("An exception occured when starting '" + ex.getMessage() + "'");
+         LOG.severe("An exception occured when starting '" + ex.getMessage() + "'");
          ex.printStackTrace();
       }
    }
@@ -227,6 +261,9 @@ public class ReplicationAgent implements I_InitialUpdateListener {
          is.close();
       }
       I_Info readerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "reader", null);
+
+      readerInfo.putObject("_connectionStateListener", this);
+
       Map defaultMap = getReaderDefaultMap(readerInfo);
       
       String[] keys = (String[])defaultMap.keySet().toArray(new String[defaultMap.size()]);
@@ -271,10 +308,10 @@ public class ReplicationAgent implements I_InitialUpdateListener {
       Enumeration enm = clazz.getClassLoader().getResources(filename);
       if(enm.hasMoreElements()) {
          URL url = (URL)enm.nextElement();
-         log.fine(" loading file '" + url.getFile() + "'");
+         LOG.fine(" loading file '" + url.getFile() + "'");
          while(enm.hasMoreElements()) {
             url = (URL)enm.nextElement();
-            log.warning("init: an additional matching file has been found in the classpath at '"
+            LOG.warning("init: an additional matching file has been found in the classpath at '"
                + url.getFile() + "' please check that the correct one has been loaded (see info above)"
             );
          }
@@ -310,7 +347,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
             ReplSourceEngine.sendInitReplMsg(publisher, new String[] { slaveName }, prefixWithVersion, null, null, null, true);
          }
          else {
-            log.warning("The publisher has not been initialized");
+            LOG.warning("The publisher has not been initialized");
          }
       }
    }
@@ -328,7 +365,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
       if (readerInfo != null && writerInfo != null && readerInfo == writerInfo)
          throw new Exception("ReplicationAgent.init: the info objects are the same instance. This will lead to problems. Check your code and make sure they are separate instances");
       if (writerInfo != null) {
-         log.info("setUp: Instantiating DbWriter");
+         LOG.info("setUp: Instantiating DbWriter");
          GlobalInfo.setStrippedHostname(writerInfo, GlobalInfo.UPPER_CASE);
          this.dbWriter = new DbWriter();
          this.dbWriter.init(writerInfo);
@@ -348,7 +385,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
          GlobalInfo cfgInfo = prepare(cmdLineArgs);
          I_Info readerInfo = createReaderInfo(cfgInfo);
          startDbWatcher(readerInfo);
-         log.info("The DbWatcher has been successfully restarted");
+         LOG.info("The DbWatcher has been successfully restarted");
       }
    }
 
@@ -356,7 +393,7 @@ public class ReplicationAgent implements I_InitialUpdateListener {
       DbWatcher dbWatcher = null;
       if (readerInfo != null) {
          try {
-            log.info("setUp: Instantiating DbWatcher");
+            LOG.info("setUp: Instantiating DbWatcher");
             GlobalInfo.setStrippedHostname(readerInfo, GlobalInfo.UPPER_CASE);
             dbWatcher = new DbWatcher();
             dbWatcher.init(readerInfo);
@@ -417,10 +454,10 @@ public class ReplicationAgent implements I_InitialUpdateListener {
    public void shutdown() {
       try {
          shutdownDbWatcher();
-         log.info("The DbWatcher has been shut down");
+         LOG.info("The DbWatcher has been shut down");
       }
       catch (Exception ex) {
-         log.severe("An exception occured when shutting down the agent");
+         LOG.severe("An exception occured when shutting down the agent");
          ex.printStackTrace();
       }
       finally {

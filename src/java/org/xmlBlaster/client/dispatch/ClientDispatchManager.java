@@ -77,6 +77,8 @@ public final class ClientDispatchManager implements I_DispatchManager
    private boolean isShutdown = false;
    private boolean isSyncMode = false;
    private boolean trySyncMode = false; // true: client side queue embedding, false: server side callback queue
+   /** Use case android: allow queue initialization with unstable/slow internet connection */
+   private final boolean forceAsyncConnect;
 
    private boolean inAliveTransition = false;
    private final Object ALIVE_TRANSITION_MONITOR = new Object();
@@ -100,7 +102,7 @@ public final class ClientDispatchManager implements I_DispatchManager
    public ClientDispatchManager(Global glob, I_MsgErrorHandler failureListener,
                           I_MsgSecurityInterceptor securityInterceptor,
                           I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener,
-                          AddressBase[] addrArr, SessionName sessionName) throws XmlBlasterException {
+                          AddressBase[] addrArr, SessionName sessionName, boolean forceAsyncConnect) throws XmlBlasterException {
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
       this.inDispatchManagerCtor = true;
@@ -108,6 +110,7 @@ public final class ClientDispatchManager implements I_DispatchManager
       this.glob = glob;
 
       this.sessionName = sessionName;
+      this.forceAsyncConnect = forceAsyncConnect;
 
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Loading DispatchManager ...");
 
@@ -138,7 +141,7 @@ public final class ClientDispatchManager implements I_DispatchManager
       }
 
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
-
+      
       this.dispatchConnectionsHandler.initialize(addrArr);
       this.inDispatchManagerCtor = false;
    }
@@ -152,6 +155,11 @@ public final class ClientDispatchManager implements I_DispatchManager
 
    public boolean isSyncMode() {
       return this.isSyncMode;
+   }
+   
+   @Override
+   public boolean isForceAsyncConnect() {
+      return forceAsyncConnect;
    }
 
    /**

@@ -75,6 +75,7 @@ public class Publisher implements I_Timeout {
       ME += "-" + name;
       this.name = name;
       this.isShutdown = false;
+      // Sets  "-protocol LOCAL" etc.
       this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
       // this.pluginConfig = pluginConfig;
 

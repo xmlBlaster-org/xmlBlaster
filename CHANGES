@@ -3,6 +3,15 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o 0d6e45b34
+   Bugfix: LOCAL protocol needs callback implementation
+   
+ o 8b3ba9770 michele
+   added a property mom.initialDispatcherActive which is false per default for the ReplAgent
+
+ o ea4fbb3c30be6dca005dec9555e6204a722e91e9 (feature/ml-replagent-log) michele
+   added logs / warnings on connection changes
+
  o 18376 marcel
    Changed I_AccessFilter#getMimeTypes() plugins to never return null
  

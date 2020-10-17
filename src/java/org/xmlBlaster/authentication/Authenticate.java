@@ -352,8 +352,14 @@ final public class Authenticate implements I_RunlevelListener
 
       // [3] Generate a secret session ID
       if (forcedSecretSessionId == null || forcedSecretSessionId.length() < 2) {
-         if (connectQos.getSessionName().getPublicSessionId() <= 0 && connectQos.getData().getCurrentCallbackAddress().getRetries() == -1)
-            log.severe(connectQos.getSessionName().getAbsoluteName() + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId!");
+         if (connectQos.getSessionName().getPublicSessionId() <= 0 && connectQos.getData().getCurrentCallbackAddress().getRetries() == -1) {
+            if (connectQos.getData().getCurrentCallbackAddress().getType().equals("LOCAL")) {
+               log.info(connectQos.getSessionName().getAbsoluteName() + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId, LOCAL protocol should not cause a problem");
+            }
+            else {
+               log.severe(connectQos.getSessionName().getAbsoluteName() + " -dispatch/callback/retries=-1 causes a memory leak on re-connect with negative sessionId!");
+            }
+         }
          secretSessionId = createSessionId("null" /*subjectCtx.getName()*/);
          connectQos.getSessionQos().setSecretSessionId(secretSessionId); // assure consistency
          if (log.isLoggable(Level.FINE)) log.fine("Empty secretSessionId - generated secretSessionId=" + secretSessionId);

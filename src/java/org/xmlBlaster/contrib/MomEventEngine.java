@@ -162,6 +162,9 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          if (info.getBoolean("mom.updateBulkAck", false))
             this.connectQos.addClientProperty(Constants.UPDATE_BULK_ACK, "true");
          CallbackAddress cbAddr = new CallbackAddress(this.glob);
+         if (!info.getBoolean("mom.initialDispatcherActive", false)) {
+            cbAddr.setDispatcherActive(false);
+         }
          cbAddr.setRetries(-1);
          String dispatcherPlugin = info.get("mom.dispatcherPlugin", null);
          if (dispatcherPlugin != null)
@@ -234,7 +237,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    /**
     * @param changeKey The topic of the message as a string.
     * @param message the content of the message to publish.
-    * @þaram attrMap an attribute map which can be null. A single attribute
+    * @param attrMap an attribute map which can be null. A single attribute
     * is currently used: qos, containing the qos literal.
     * @return the PublishQos as a string.
     */
