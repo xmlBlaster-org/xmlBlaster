@@ -54,6 +54,11 @@ public interface I_ConnectionStateListener
     * Invoked when the dispatcher goes to synch again after having delivered entries which where
     * in the queue when the state changed to ALIVE. Note that this could take some time or in
     * the worst case it could never been invoked if the queue is never completely processed.
+    *
+    * In Async mode, this callback is called when authentication with the server was successful.
+    * While readAlive will only indicate a physical connection (polling->alive), this callback is used
+    * to indicate a logical connection. An async connection will therefore look like this:
+    * connect()->POLLING->reachedAlive()->ALIVE->reachedAliveSync()|reachedDead()
     * 
     * @param oldState is always ALIVE.
     * @param connection

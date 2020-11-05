@@ -73,6 +73,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -236,6 +237,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             this.connectReturnQos = (ConnectReturnQos)msgQueueEntry.getReturnObj();
             if (this.connectReturnQos != null) {
                setContextNodeId(this.connectReturnQos.getServerInstanceId());
+               StatusQosData qosData = this.connectReturnQos.getStatusQosData();
+               // In case of Async mode, reachedAliveSync is our indicator that authentication was successful.
+               if (!isTrySyncMode() && (qosData == null || !qosData.getClientProperty(Constants.IS_FAKE_RETURN_QOS_OBJECT, false))) {
+                  connectionListener.reachedAliveSync(getState(), this);
+               }
                // break; Loop to the latest if any
             }
             else {

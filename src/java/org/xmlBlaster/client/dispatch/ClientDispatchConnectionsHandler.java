@@ -85,6 +85,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          StatusQosData statRetQos = new StatusQosData(glob, MethodName.UNKNOWN);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
+         statRetQos.addClientProperty(Constants.IS_FAKE_RETURN_QOS_OBJECT, true);
          if (log.isLoggable(Level.FINE)) log.fine("Creating faked return for '" + msgQueueEntry.getMethodName() + "' invocation");
 
          if (MethodName.PUBLISH_ONEWAY == msgQueueEntry.getMethodName()) {

@@ -200,6 +200,9 @@ public class Constants {
    /** ClientProperty of QoS for messages from persistent store */
    public final static String PERSISTENCE_ID = "__persistenceId";
 
+   /** ClientProperty indicating if ReturnQos is a fake return object generated locally */
+   public final static String IS_FAKE_RETURN_QOS_OBJECT = "__isFakeReturnQosObject";
+
    /** Prefix to create a sessionId */
    public final static String SESSIONID_PREFIX = "sessionId:";
    public final static String SUBSCRIPTIONID_PREFIX = "__subId:";
