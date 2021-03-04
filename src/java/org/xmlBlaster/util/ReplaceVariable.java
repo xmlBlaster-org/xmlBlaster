@@ -148,23 +148,7 @@ public final class ReplaceVariable
    public final static String replaceAll(String str, String from, String to) {
       if (str == null || str.length() < 1 || from == null || to == null)
          return str;
-      if (str.indexOf(from) == -1)
-         return str;
-      StringBuilder buf = new StringBuilder(str.length() + to.length() + 16);
-      String tail = str;
-      while (true) {
-         int index = tail.indexOf(from);
-         if (index >= 0) {
-            if (index > 0)
-               buf.append(tail.substring(0, index));
-            buf.append(to);
-            tail = tail.substring(index + from.length());
-         }
-         else
-            break;
-      }
-      buf.append(tail);
-      return buf.toString();
+      return str.replace(from, to);
    }
 
    /**
