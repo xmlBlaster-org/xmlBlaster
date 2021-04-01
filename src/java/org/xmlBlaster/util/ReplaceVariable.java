@@ -272,7 +272,7 @@ public final class ReplaceVariable
       int end = xml.indexOf(endToken);
       if (start != -1 && end != -1) {
          String tok = attributeName+"=";
-         int attrStart = xml.indexOf(attributeName, start);
+         int attrStart = xml.indexOf(tok, start);
          if (attrStart == -1) return null;
          char apo = xml.charAt(attrStart+tok.length());
          int attrEnd = xml.indexOf(apo, attrStart+tok.length()+1);
