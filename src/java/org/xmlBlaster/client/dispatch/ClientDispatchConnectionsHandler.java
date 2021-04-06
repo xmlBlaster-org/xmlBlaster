@@ -157,7 +157,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          else if (MethodName.CONNECT == msgQueueEntry.getMethodName()) {
             ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData(), statRetQos);
             if (!connectReturnQos.getSessionName().isPubSessionIdUser()) {
-               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_CONNECT_NOPUBSESS, ME,
                   "Can't find an xmlBlaster server. Try to provide the server host/port as described in " +
                   "http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html " +
                   "or provide a public session ID to support polling for xmlBlaster without an initial connection. " +

@@ -453,6 +453,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+    public static final ErrorCode USER_CONFIGURATION_CONNECT_NOPUBSESS = new ErrorCode("user.configuration.connectNoPubSess",
+            "Failed due to negative pubSessionId and no initial connection",
+            new ResourceInfo[] {
+                    new ResourceInfo(ResourceInfo.REQ, "client.failsafe", "client.failsafe"),
+                    new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+            }
+    );
+
    public static final ErrorCode USER_CONFIGURATION_IDENTICALCLIENT = new ErrorCode("user.configuration.identicalClient",
          "Login to xmlBlaster failed, reconnect for other client instance on existing public session is switched off, see connect QoS reconnectSameClientOnly=true setting.",
          new ResourceInfo[] {

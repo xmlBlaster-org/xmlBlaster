@@ -533,7 +533,14 @@ public final class ClientDispatchManager implements I_DispatchManager
 
          // Simulate return values, and manipulate missing informations into entries ...
          I_QueueEntry[] entries = (I_QueueEntry[])entryList.toArray(new I_QueueEntry[entryList.size()]);
-         getDispatchConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
+         try {
+            getDispatchConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
+         } catch (XmlBlasterException e) {
+            if (e.isErrorCode(ErrorCode.USER_CONFIGURATION_CONNECT_NOPUBSESS)) {
+               shutdown();
+               throw e;
+            }
+         }
          msgQueue.put(entries, I_Queue.IGNORE_PUT_INTERCEPTOR);
 
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Delivery failed, pushed " + entries.length + " entries into tail back queue");
