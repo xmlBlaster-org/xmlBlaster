@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o ee3e0840b 2021-06-07 marcel
+   merged async-client-connection-todead to master
+
  o 0d6e45b34
    Bugfix: LOCAL protocol needs callback implementation
    
