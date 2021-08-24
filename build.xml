@@ -178,6 +178,7 @@ TODO
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
    <property name="svnversion.exe" value="svnversion"/>  <!-- On UNIX: /usr/bin/svnversion -->
+   <property name="git.exe" value="git"/>
    <!--
    <path id="svn.classpath">
          <pathelement location="${svnant.jar}" />
@@ -607,12 +608,21 @@ TODO
       <!--
       svnversion xmlBlaster svn://www.xmlBlaster.org/trunk/xmlBlaster
       12683:12702M
-      -->
       <exec executable="${svnversion.exe}" failonerror="false" failifexecutionfails="false">
          <redirector outputproperty="revision.number"/>
          <arg line="-n ."/>
       </exec>
-      <echo message="Subversion revision number is '${revision.number}'."/>
+      -->
+      <!--
+      git describe - -always
+      git rev-parse - -short HEAD
+      458950bee
+      -->
+      <exec executable="${git.exe}" failonerror="false" failifexecutionfails="false">
+         <redirector outputproperty="revision.number"/>
+         <arg line="rev-parse --short HEAD"/>
+      </exec>
+      <echo message="git revision number is '${revision.number}'."/>
    </target> <!-- revision -->
 
    <!-- =================================================================== -->
