@@ -3,13 +3,20 @@ package org.xmlBlaster.contrib.scheduler;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
+import org.quartz.CronScheduleBuilder;
 import org.quartz.Job;
+import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import static org.quartz.DateBuilder.*;
+import static org.quartz.TriggerBuilder.*;
+import static org.quartz.CronScheduleBuilder.*;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
@@ -200,7 +207,7 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
       try {
          log.info("Starting scheduler " + data.toString());
          Class clazz = Class.forName(data.getCommand());
-         JobDetail jobDetail = new JobDetail(name, null, clazz);
+         JobDetail jobDetail = JobBuilder.newJob(clazz).withIdentity(name).build();
          Object obj = global.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
          if (obj != null)
             jobDetail.getJobDataMap().put(ORIGINAL_ENGINE_GLOBAL, obj);
@@ -220,8 +227,8 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
                throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On monthly triggers the hour must be specified");
             if (min < 0)
                throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On monthly triggers the min must be specified");
-            trigger = TriggerUtils.makeMonthlyTrigger(triggerName, dayOfMonth, hour, min);
-            trigger.setStartTime(new Date());  // start now
+            trigger = newTrigger().withIdentity(triggerName).withSchedule(monthlyOnDayAndHourAndMinute(dayOfMonth, hour, min))
+            		.startAt(new Date()).build(); // start now
          }
          else {
             int dayOfWeek = data.getDayOfWeek();
@@ -230,22 +237,24 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
                   throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On weekly triggers the hour must be specified");
                if (min < 0)
                   throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On weekly triggers the min must be specified");
-               trigger = TriggerUtils.makeWeeklyTrigger(triggerName, dayOfWeek+1, hour, min);
-               trigger.setStartTime(new Date());  // start now
+               trigger = newTrigger().withIdentity(triggerName).withSchedule(weeklyOnDayAndHourAndMinute(dayOfWeek+1, hour, min))
+               		.startAt(new Date()).build(); // start now
             }
             else {
                if (hour > -1) {
                   if (min < 0)
                      throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On daily triggers the min must be specified");
-                  trigger = TriggerUtils.makeDailyTrigger(triggerName, hour, min);
-                  trigger.setStartTime(new Date());  // start now
+                  trigger = newTrigger().withIdentity(triggerName).withSchedule(dailyAtHourAndMinute(hour, min))
+                     		.startAt(new Date()).build(); // start now
                }
                else {
                   if (min > -1) {
-                     trigger = TriggerUtils.makeHourlyTrigger(1);
-                     trigger.setName(triggerName);
-                     Date startTime = TriggerUtils.getNextGivenMinuteDate(new Date(), min);
-                     trigger.setStartTime(startTime);
+                	 // TODO proper quartz 2 migration?
+                	 trigger = newTrigger().withIdentity(triggerName).withSchedule(cronSchedule("0 * * * *")).startAt(new Date()).build();
+                     //trigger = TriggerUtils.makeHourlyTrigger(1);
+                     //trigger.setName(triggerName);
+                     //Date startTime = TriggerUtils.getNextGivenMinuteDate(new Date(), min);
+                     //trigger.setStartTime(startTime);
                   }
                   else {
                      throw new XmlBlasterException(global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "No time has been specified in the configuration");
@@ -277,7 +286,7 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
    
    public synchronized String removeScheduler(String name) {
       try {
-         boolean ret = sched.deleteJob(name, null);
+         boolean ret = sched.deleteJob(new JobKey(name));
          String val = null;
          if (ret)
             val = "Scheduler '" + name + "' successfully removed";
@@ -318,8 +327,8 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
    }
   
    public void execute(JobExecutionContext context) throws JobExecutionException {
-      String jobName = context.getJobDetail().getName();
-      String triggerName = context.getTrigger().getName();
+      String jobName = context.getJobDetail().getKey().getName();
+      String triggerName = context.getTrigger().getKey().getName();
       Date date = context.getFireTime();
       
       log.severe("");
@@ -367,10 +376,10 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
    }
    
    public String getJobNames() throws SchedulerException {
-      String[] names = this.sched.getJobNames(null);
+      Set<JobKey> names = this.sched.getJobKeys(null);
       StringBuffer buf = new StringBuffer(128);
-      for (int i=0; i < names.length; i++)
-         buf.append(names[i]).append(" ");
+      for (JobKey name : names)
+         buf.append(name.getName()).append(" ");
       return buf.toString();
    }
    
