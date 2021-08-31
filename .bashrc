@@ -186,9 +186,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/stompconnect-1.0.jar
 
    # quartz scheduler
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/quartz-all-1.6.5.jar
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/commons-dbcp-1.2.2.jar
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/commons-pool-1.3.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/quartz-2.3.2-full.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-collections-3.2.jar
 
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
