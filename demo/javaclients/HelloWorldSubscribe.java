@@ -319,10 +319,10 @@ public class HelloWorldSubscribe implements I_Callback
                qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
             }
          }
-         log.info("ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          // crq can be null if '-dispatch/connection/doSendConnect false' is set
-         log.info("Connect success as " + ((crq==null)?" faked connect":crq.toXml()));
+         log.info("Connect success as " + ((crq==null)?" faked connect":crq.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>")));
 
          subscribe(); // first time
 
