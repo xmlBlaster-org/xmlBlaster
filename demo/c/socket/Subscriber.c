@@ -175,7 +175,7 @@ int main(int argc, const char* const* argv) {
                " <securityService type='htpasswd' version='1.0'>"
                "  <![CDATA["
                "   <user>%.80s</user>"
-               "   <passwd>%.30s</passwd>"
+               "   <passwd>%.40s</passwd>"
                "  ]]>"
                " </securityService>"
                " <session name='%.80s' timeout='%ld' maxSessions='%d' clearSessions='false' reconnectSameClientOnly='false'/>"
