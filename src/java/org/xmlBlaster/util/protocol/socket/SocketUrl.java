@@ -253,7 +253,7 @@ public class SocketUrl {
       try {
          this.inetAddress = java.net.InetAddress.getByName(this.hostname);
       } catch(java.net.UnknownHostException e) {
-         //Thread.dumpStack();
+         Thread.dumpStack();
          String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/socket/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
          log.warning(txt);
@@ -476,8 +476,14 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
                   log.warning("SSL client socket can't find trustStore=" + trustStore + " in xmlBlaster search pathes, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
                }
             }
+            String clientSSLProtocol = address.getEnv("clientSSLProtocol", "SSLv3").getValue();
+            log.info("'clientSSLProtocol' is set to '" + clientSSLProtocol + "'");
+            String allowedClientProtocols = System.getProperty("jdk.tls.client.protocols", null);
+            if (allowedClientProtocols != null && !allowedClientProtocols.contains(clientSSLProtocol)) {
+            	log.warning("'jdk.tls.client.protocols' specified as '" + allowedClientProtocols + "' but 'clientSSLProtocol' is set to '" + clientSSLProtocol + "'");
+            }
 
-            javax.net.ssl.SSLContext ctx = javax.net.ssl.SSLContext.getInstance("SSLv3");
+            javax.net.ssl.SSLContext ctx = javax.net.ssl.SSLContext.getInstance(clientSSLProtocol);
             java.security.SecureRandom random = null; // since JDK 1.2
             ctx.init((kmf==null)?null:kmf.getKeyManagers(), (tmf==null)?null:tmf.getTrustManagers(), random);
             ssf = ctx.getSocketFactory(); // since JDK 1.4
