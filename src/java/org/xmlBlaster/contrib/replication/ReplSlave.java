@@ -1260,6 +1260,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       long ret = getSession().removeFromCallbackQueue(entries);
       if (ret > 0)
          setStatus(STATUS_INCONSISTENT);
+      checkStatus(); // to refresh queue counting
       return ret;
    }
 
