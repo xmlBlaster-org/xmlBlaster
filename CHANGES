@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
+ o e92e52bd2 2021-11-16 michele
+   added checkStatus() when deleting entries in ReplSlave to update queue counting.
+
  o 4b72707c1 2021-11-09 michele
    added property clientSSLProtocol to SocketUrl to enforce a particular SSL protocol: it is used the same way as other 
    socket plugin properties and defaults to SSLv3 for backwards compatibility.
