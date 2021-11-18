@@ -3,7 +3,7 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
- o e92e52bd2 2021-11-18 michele
+ o fcd39b077 2021-11-18 michele
    fixed getQueueEntries to return right value even when deleting entries in ReplSlave.
 
  o 4b72707c1 2021-11-09 michele
