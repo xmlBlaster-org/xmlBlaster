@@ -913,6 +913,9 @@ public class EmailData {
       if (replyTo.contains(";")) {
          setReplyTo(replyTo.split(";"));
       }
+      else if (replyTo.contains(",")) {
+         setReplyTo(replyTo.split(","));
+      }
       else
          setReplyTo(new String[] {replyTo});
    }
