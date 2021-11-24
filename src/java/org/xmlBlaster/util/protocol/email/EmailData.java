@@ -441,6 +441,11 @@ public class EmailData {
          sb.append(offset).append("  <to>").append(XmlNotPortable.escape(this.recipients[i].toString()))
                .append("</to>");
       }
+      InternetAddress[] replyTos = this.getReplyToAddresses();
+      for (int i = 0; i < replyTos.length; i++) {
+         sb.append(offset).append("  <replyTo>").append(XmlNotPortable.escape(replyTos[i].toString()))
+                .append("</replyTo>");
+      }
       if (this.recipients.length == 0) {
          sb.append(offset).append("  <to></to>");
       }
@@ -880,11 +885,46 @@ public class EmailData {
    }
 
    /**
-    * Currenlty not supported!
+    * Not tested
     * @param replyTo The address to set.
     */
    public void setReplyTo(InternetAddress[] replyTo) {
       this.replyTo = replyTo;
+   }
+   
+   public boolean hasReplyTo() {
+	  return this.replyTo != null && this.replyTo.length > 0;
+   }
+   
+   /**
+    * @return never null
+    */
+   public InternetAddress[] getReplyToAddresses() {
+	   if (this.replyTo == null)
+		   return new InternetAddress[0];
+	   return this.replyTo;
+   }
+
+   public void setReplyTo(String replyTo) {
+      if (replyTo == null || replyTo.length() == 0) {
+         this.replyTo = new InternetAddress[0];
+          return;
+      }
+      if (replyTo.contains(";")) {
+         setReplyTo(replyTo.split(";"));
+      }
+      else
+         setReplyTo(new String[] {replyTo});
+   }
+   
+   public void setReplyTo(String[] replyTo) {
+      if (replyTo == null) {
+         this.replyTo = new InternetAddress[0];
+      } else {
+         this.replyTo = new InternetAddress[replyTo.length];
+         for (int i = 0; i < replyTo.length; i++)
+            this.replyTo[i] = toInternetAddress(replyTo[i]);
+      }
    }
 
    /**

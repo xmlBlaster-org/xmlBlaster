@@ -687,6 +687,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             message.setRecipients(Message.RecipientType.CC, emailData.getCc());
          if (emailData.getBcc().length > 0)
             message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
+         if (emailData.hasReplyTo())
+             message.setReplyTo(emailData.getReplyToAddresses());
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
          AttachmentHolder[] holder = emailData.getAttachments();
 
@@ -916,6 +918,7 @@ Some body text
          mail.setSessionProperties(props, glob, null);
          String from = glob.getProperty().get("from", "blue@localhost");
          String to = glob.getProperty().get("to", "blue@localhost");
+         String replyTo = glob.getProperty().get("replyTo", "replyTo@localhost");
          String subject = glob.getProperty().get("subject", "Hi from java");
          String content = glob.getProperty().get("content", "Some body text");
          String expires = glob.getProperty().get("expires", ""); // "+5000" means lives 5 sec from now on
@@ -932,6 +935,7 @@ Some body text
 
          EmailData msg = new EmailData(to, from, subject, content);
          if (ts != null) msg.setExpiryTime(ts);
+         msg.setReplyTo(replyTo);
          System.out.println("Sending message " + msg.toXml(true));
          mail.setSessionProperties(null, glob, null);
          mail.sendEmail(msg, null);
