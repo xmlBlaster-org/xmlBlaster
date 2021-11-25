@@ -168,14 +168,8 @@ public class EmailData {
     */
    public EmailData(String recipient, String from, String subject,
          String content) {
-      this.recipients = new InternetAddress[0];
-      if (recipient != null) {
-   	     String[] arr = StringPairTokenizer.toArray(recipient, ",");
-         this.recipients = new InternetAddress[arr.length];
-         for (int i=0; i<arr.length; i++)
-        	 this.recipients[i] = toInternetAddress(arr[i].trim());
-      }
-      this.from = toInternetAddress(from);
+      setRecipients(recipient);	   
+      setFromAddress(from);
       this.subject = subject;
       this.content = content;
    }
@@ -195,7 +189,7 @@ public class EmailData {
          for (int i=0; i<recipients.length; i++)
             this.recipients[i] = toInternetAddress(recipients[i]);
       }
-      this.from = toInternetAddress(from);
+      setFromAddress(from);
       this.subject = subject;
       this.content = content;
    }
@@ -213,12 +207,43 @@ public class EmailData {
       this.content = null;
    }
    
+   /**
+    * <pre>
+    *  InternetAddress[] arr = InternetAddress.parse("team@xmlBlaster.org");
+    *  arr[0].getAddress();  // "team@xmlBlaster.org"
+    *  arr[0].getPersonal(); // is null
+    * </pre>
+    * <pre>
+    *  InternetAddress[] arr = InternetAddress.parse("XmlBlaster Team <team@xmlBlaster.org>");
+    *  arr[0].getAddress(); // "team@xmlBlaster.org"
+    *  arr[0].getPersonal(); // "XmlBlaster Team"
+    * </pre>
+    * @param address e.g. "XmlBlaster Team <team@xmlBlaster.org>" or "team@xmlBlaster.org"
+    */
    private InternetAddress toInternetAddress(String address) throws IllegalArgumentException {
       try {
-         return new InternetAddress(address);
+         boolean strict = false;
+         InternetAddress[] arr = InternetAddress.parse(address, strict);
+         if (arr == null || arr.length == 0 || arr[0] == null) {
+            throw new IllegalArgumentException("Illegal email address '" + address + "'");
+         }
+         return arr[0];
       } catch (AddressException e) {
          throw new IllegalArgumentException("Illegal email address '" + address + "': " + e.toString());
       }
+   }
+
+   private InternetAddress[] toInternetAddresses(String addresses) throws IllegalArgumentException {
+      if (addresses == null || addresses.length() == 0)
+         return new InternetAddress[0];
+	  // String sep = addresses.contains("\n") ? "\n" : ",";
+      // String[] arr = StringPairTokenizer.parseLine(addresses);
+	  String sep = ",";
+      String[] arr = StringPairTokenizer.toArray(addresses, sep);
+      InternetAddress[] ret = new InternetAddress[arr.length];
+      for (int i=0; i<arr.length; i++)
+         ret[i] = toInternetAddress(arr[i].trim());
+     return ret;
    }
 
    public void addAttachment(AttachmentHolder attachmentHolder) {
@@ -296,6 +321,10 @@ public class EmailData {
       return buf.toString();
    }
    
+   public void setRecipients(String recipients) {
+     this.recipients = toInternetAddresses(recipients);
+   }
+   
    /**
     * Comma separated value list of all recipient email addresses for logging. 
     * @return For example "joe@locahost,demo@localhost"
@@ -350,10 +379,35 @@ public class EmailData {
    }
 
    /**
+    * <pre>
+    *  InternetAddress[] arr = InternetAddress.parse("team@xmlBlaster.org");
+    *  arr[0].getAddress();  // "team@xmlBlaster.org"
+    *  arr[0].getPersonal(); // is null
+    * </pre>
+    * <pre>
+    *  InternetAddress[] arr = InternetAddress.parse("XmlBlaster Team <team@xmlBlaster.org>");
+    *  arr[0].getAddress(); // "team@xmlBlaster.org"
+    *  arr[0].getPersonal(); // "XmlBlaster Team"
+    * </pre>
+    * @param address e.g. "XmlBlaster Team <team@xmlBlaster.org>" or "team@xmlBlaster.org"
+    */
+   public void setFromAddress(String address) {
+      this.from = toInternetAddress(address); 
+   }
+
+   /**
     * @return The from of the message, never null
     */
    public String getFrom() {
       return (this.from == null) ? "" : this.from.getAddress();
+   }
+
+   /**
+    * Convert this address into a RFC 822 / RFC 2047 encoded address. 
+    * @return "XmlBlaster Team <info@xmlBlaster.org> 
+    */
+   public String getFromFull() {
+      return (this.from == null) ? "" : this.from.toString();
    }
 
    /**
@@ -778,10 +832,11 @@ public class EmailData {
     * @param bcc The bcc to set.
     */
    public void setBcc(String bcc) {
-      String[] bccs = StringPairTokenizer.parseLine(bcc);
-      this.bcc = new InternetAddress[bccs.length];
-      for (int i=0; i<bccs.length; i++)
-         this.bcc[i] = toInternetAddress(bccs[i]);
+      this.bcc = toInternetAddresses(bcc);
+      //String[] bccs = StringPairTokenizer.parseLine(bcc);
+      //this.bcc = new InternetAddress[bccs.length];
+      //for (int i=0; i<bccs.length; i++)
+      //   this.bcc[i] = toInternetAddress(bccs[i]);
    }
 
    /**
@@ -795,10 +850,11 @@ public class EmailData {
     * @param cc The cc to set.
     */
    public void setCc(String cc) {
-      String[] ccs = StringPairTokenizer.parseLine(cc);
-      this.cc = new InternetAddress[ccs.length];
-      for (int i=0; i<ccs.length; i++)
-         this.cc[i] = toInternetAddress(ccs[i]);
+      this.cc = toInternetAddresses(cc);
+      //String[] ccs = StringPairTokenizer.parseLine(cc);
+      //this.cc = new InternetAddress[ccs.length];
+      //for (int i=0; i<ccs.length; i++)
+      //   this.cc[i] = toInternetAddress(ccs[i]);
    }
 
    /**
