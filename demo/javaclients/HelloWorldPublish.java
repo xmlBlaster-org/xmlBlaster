@@ -301,7 +301,7 @@ public class HelloWorldPublish
                qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
             }
          }
-         log.info("ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
          ConnectReturnQos crq = con.connect(qos, new I_Callback() {
 			public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
 				try {
@@ -318,7 +318,7 @@ public class HelloWorldPublish
 				return "";
 			}
          });  // Login to xmlBlaster, register for updates
-         log.info("Connect success as " + crq.toXml());
+         log.info("Connect success as " + crq.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
 
          String[] lines = null;
          if (contentFileLines != null && contentFileLines.length() > 0) {

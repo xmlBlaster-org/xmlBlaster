@@ -146,6 +146,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private int maxNumOfEntries;
    private String maxNumOfEntriesKey;
    private boolean prioDeliveryOnInitial;
+   private long explicitlyRemovedMsgs;
 
    public ReplSlave(Global global, ReplManagerPlugin manager,
          String slaveSessionId, ConnectQosData connQosData)
@@ -776,6 +777,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     */
    public ArrayList check(List<I_Entry> entries, I_Queue queue)
          throws Exception {
+      explicitlyRemovedMsgs = 0;
       this.queue = queue;
       synchronized (this.initSync) {
          this.tmpStatus = -1;
@@ -1260,6 +1262,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       long ret = getSession().removeFromCallbackQueue(entries);
       if (ret > 0)
          setStatus(STATUS_INCONSISTENT);
+      if (!countSingleMessages) {
+          explicitlyRemovedMsgs += ret;
+      }
       return ret;
    }
 
@@ -1358,7 +1363,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             if (maxTransSeq < transactionCountBeforeQueue[i])
                maxTransSeq = transactionCountBeforeQueue[i];
          }
-         this.queueEntries = pubSubQueueEntries + this.ptpQueueEntries;
+         this.queueEntries = pubSubQueueEntries + this.ptpQueueEntries - explicitlyRemovedMsgs;
          this.transactionSeqVisible = maxTransSeq - pubSubQueueEntries;
 
          if (this.queueEntries != 0 && session != null

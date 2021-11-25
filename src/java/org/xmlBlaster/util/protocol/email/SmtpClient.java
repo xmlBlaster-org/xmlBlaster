@@ -163,7 +163,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             } catch (XmlBlasterException ex) {
                // no log.severe or log.warning because of recursion
                if (log.isLoggable(Level.INFO))
-                  log.info("Sending asynchronously of mail failed from=" + emailData.getFrom() + " to="
+                  log.info("Sending asynchronously of mail failed from=" + emailData.getFromFull() + " to="
                      + emailData.getRecipientsList() + ": " + ex.toString());
                if (log.isLoggable(Level.FINE)) {
                   String dump = (emailData == null) ? "" : emailData.toXml(true);
@@ -681,12 +681,20 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
       try {
          MimeMessage message = new MimeMessage(getSession());
+         // "XmlBlaster Team <team@xmlBlaster.org>"
+         //boolean strict = false;
+         //InternetAddress[] arr2 = InternetAddress.parse("team@xmlBlaster.org", strict); // getPersonal() is null
+         //InternetAddress[] arr = InternetAddress.parse("XmlBlaster Team <team@xmlBlaster.org>", strict);
+         //arr[0].getAddress(); // "team@xmlBlaster.org"
+         //arr[0].getPersonal(); // "XmlBlaster Team"
          message.setFrom(emailData.getFromAddress());
          message.setRecipients(Message.RecipientType.TO, emailData.getToAddresses());
          if (emailData.getCc().length > 0)
             message.setRecipients(Message.RecipientType.CC, emailData.getCc());
          if (emailData.getBcc().length > 0)
             message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
+         if (emailData.hasReplyTo())
+             message.setReplyTo(emailData.getReplyToAddresses());
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
          AttachmentHolder[] holder = emailData.getAttachments();
 
@@ -785,12 +793,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          }
 
          if (log.isLoggable(Level.FINE))
-            log.fine("Trying send email from=" + emailData.getFrom() + " to="
+            log.fine("Trying send email from=" + emailData.getFromFull() + " to="
                + emailData.getRecipientsList());
          //if (log.isLoggable(Level.FINEST)) log.finest("Trying to send email" + emailData.toXml(true));
          send(message);
          if (log.isLoggable(Level.FINE))
-            log.fine("Successful send email from=" + emailData.getFrom() + " to="
+            log.fine("Successful send email from=" + emailData.getFromFull() + " to="
                   + emailData.getRecipientsList());
          if (log.isLoggable(Level.FINER))
             log.finer("Successful send email" + emailData.toXml(true));
@@ -798,7 +806,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          log.fine("Can't send mail: " + e.toString() + ": " + emailData.toXml(true));
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
-               "Email sending failed, no mail sent from=" + emailData.getFrom() + " to="
+               "Email sending failed, no mail sent from=" + emailData.getFromFull() + " to="
                   + emailData.getRecipientsList() + " with uri=" + this.xbUri.getUrlWithoutPassword(), e);
       }
    }
@@ -916,6 +924,7 @@ Some body text
          mail.setSessionProperties(props, glob, null);
          String from = glob.getProperty().get("from", "blue@localhost");
          String to = glob.getProperty().get("to", "blue@localhost");
+         String replyTo = glob.getProperty().get("replyTo", "replyTo@localhost");
          String subject = glob.getProperty().get("subject", "Hi from java");
          String content = glob.getProperty().get("content", "Some body text");
          String expires = glob.getProperty().get("expires", ""); // "+5000" means lives 5 sec from now on
@@ -932,6 +941,7 @@ Some body text
 
          EmailData msg = new EmailData(to, from, subject, content);
          if (ts != null) msg.setExpiryTime(ts);
+         msg.setReplyTo(replyTo);
          System.out.println("Sending message " + msg.toXml(true));
          mail.setSessionProperties(null, glob, null);
          mail.sendEmail(msg, null);

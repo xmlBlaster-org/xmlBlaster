@@ -1,8 +1,18 @@
 XbRelease notes for xmlBlaster (http://www.xmlBlaster.org)
 The "r99999" numbers are Subversion revision numbers.
 
-Changes for current svn
-=======================
+Changes for current git (previous svn)
+======================================
+ o 1c54d57ab 2021-11-24 marcel
+   added replyTo markup support for emails
+
+ o fcd39b077 2021-11-18 michele
+   fixed getQueueEntries to return right value even when deleting entries in ReplSlave.
+
+ o 4b72707c1 2021-11-09 michele
+   added property clientSSLProtocol to SocketUrl to enforce a particular SSL protocol: it is used the same way as other 
+   socket plugin properties and defaults to SSLv3 for backwards compatibility.
+
  o ee3e0840b 2021-06-07 marcel
    merged async-client-connection-todead to master
 
