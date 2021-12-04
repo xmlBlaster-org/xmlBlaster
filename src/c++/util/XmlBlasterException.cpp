@@ -259,7 +259,7 @@ string XmlBlasterException::toXml() const
    if (getLang() != "en")          buf += "   <lang>" + getLang() + "</lang>\n";
    if (getRawMessage() != "")      buf += "   <message><![CDATA[" + getRawMessage() + "]]></message>\n";
    if (getVersionInfo() != "")     buf += "   <versionInfo>" + getVersionInfo() + "</versionInfo>\n";
-                                   buf += "   <timestamp>" + getTimestamp() + "</timestamp>\n";
+   buf += "   <timestamp>" + getTimestamp() + "</timestamp>\n";
    if (getStackTraceStr() != "")   buf += "   <stackTrace><![CDATA[" + getStackTraceStr() + "]]></stackTrace>\n";
    if (getEmbeddedMessage() != "") buf += "   <embeddedMessage><![CDATA[" + getEmbeddedMessage() + "]]></embeddedMessage>\n";
    //                              buf += "   <transactionInfo><![CDATA[" + getTransactionInfo() + "]]></transactionInfo>\n";

@@ -277,13 +277,13 @@ public:
             try {
                Thread::sleepSecs(1);
             }
-            catch(XmlBlasterException e) {
+            catch(const XmlBlasterException &e) {
                cout << e.toXml() << endl;
             }
 
          }
       }
-      catch (XmlBlasterException& ex) {
+      catch (const XmlBlasterException& ex) {
          log_.error(ME, string("exception occurred in testFailSafe. ") + ex.toXml());
          assert(0);
       }
@@ -316,7 +316,7 @@ public:
          DisconnectQos disconnectQos(global_);
          connection_.disconnect(disconnectQos);
       }
-      catch (XmlBlasterException& ex) {
+      catch (const XmlBlasterException& ex) {
          log_.error(ME, string("exception occurred in tearDown. ") + ex.toXml());
          assert(0);
       }
@@ -378,7 +378,7 @@ int main(int args, char ** argv)
       testFailsafe = 0; 
       org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
-   catch (XmlBlasterException& ex) {
+   catch (const XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
    }
    catch (bad_exception& ex) {

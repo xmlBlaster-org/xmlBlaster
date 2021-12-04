@@ -20,16 +20,16 @@
 # NOTE: If you uncomment the following 7 lines for the server, and the next 1 for the client, xmlBlaster
 # will run RAM based only (without any database)
 # Server side
-#persistence/msgUnitStore/defaultPlugin=RAM,1.0
-#persistence/session/defaultPlugin=RAM,1.0
-#persistence/subscribe/defaultPlugin=RAM,1.0
-#queue/subject/defaultPlugin=RAM,1.0
-#queue/history/defaultPlugin=RAM,1.0
-#queue/callback/defaultPlugin=RAM,1.0
-#useTopicStore=false
+persistence/msgUnitStore/defaultPlugin=RAM,1.0
+persistence/session/defaultPlugin=RAM,1.0
+persistence/subscribe/defaultPlugin=RAM,1.0
+queue/subject/defaultPlugin=RAM,1.0
+queue/history/defaultPlugin=RAM,1.0
+queue/callback/defaultPlugin=RAM,1.0
+useTopicStore=false
 
 # Client side
-#queue/connection/defaultPlugin=RAM,1.0
+queue/connection/defaultPlugin=RAM,1.0
 
 # NOTE: If you don't want the embedded hsqldb database to handle persistence you need to install a
 # Postgres, Oracle, Firebird or MS-SQLServer database

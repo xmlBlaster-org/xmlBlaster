@@ -2702,6 +2702,9 @@ TODO
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <compiler refid="g++"/>  <!-- GCC -->
+     	 <!-- compilerarg value="-Wno-deprecated-declarations" if="g++" / -->
+      	 <!-- log4cplus/appender.h:190:14: warning: ‘template<class> class std::auto_ptr’ is deprecated -->
+     	 <compilerarg value="-Wno-deprecated-declarations"/>
          <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
@@ -2735,7 +2738,6 @@ TODO
          <includepath location="${build.src.c.dir}" />   <!-- Using the C SOCKET client library -->
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
-
            <define name="XBL_IDL_WITH_WSTRING" value="1" if="XBL_IDL_WITH_WSTRING" />
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
@@ -3033,14 +3035,14 @@ TODO
             <!-- ORBACUS-->
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
-            <!-- XERCES XML parser -->
-            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
-
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
 
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="${c.lib.name}" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />

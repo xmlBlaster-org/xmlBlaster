@@ -321,7 +321,7 @@ public:
             assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
          }
       }
-      catch(bad_cast b) {
+      catch(const bad_cast &b) {
          cout << "EXCEPTION: " << b.what() << endl;
          assert(0);
       }

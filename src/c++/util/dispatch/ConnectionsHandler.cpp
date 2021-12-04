@@ -538,7 +538,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
             startPinger(false);
          }
       }
-      catch (XmlBlasterException ex) {
+      catch (const XmlBlasterException &ex) {
          if (log_.trace()) log_.trace(ME, "timeout got exception: " + ex.getMessage());
          currentRetry_++;
          if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll

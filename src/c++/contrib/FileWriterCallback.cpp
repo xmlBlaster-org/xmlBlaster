@@ -154,9 +154,9 @@ long FileWriterCallback::extractNumberPostfixFromFile(std::string &filename, std
 
         int prefixLength = prefix.length();
         if (filename.find(prefix) == 0) {
-        std::string postfix = filename.substr(prefixLength);
-      if (postfix.length() < 1)
-        return -1L;
+                std::string postfix = filename.substr(prefixLength);
+                if (postfix.length() < 1)
+                        return -1L;
                 try {
                         return lexical_cast<long>(postfix);
                 }
@@ -423,9 +423,9 @@ std::string FileWriterCallback::update(const std::string&,
         
         if (filename.length() < 1) {
                 filename = topic;
-      log_.warn(ME, "The message did not contain any filename nor timestamp. Will write to '" + filename + "'");
+                log_.warn(ME, "The message did not contain any filename nor timestamp. Will write to '" + filename + "'");
         }
-   log_.trace(ME, "storing file '" + filename + "' on directory '" + directory_ + "'");
+        log_.trace(ME, "storing file '" + filename + "' on directory '" + directory_ + "'");
 
         bool isCompleteMsg = isLastMsg && chunkCount == 0L;
         if (exMsg.length() < 1) { // no exception
@@ -436,9 +436,9 @@ std::string FileWriterCallback::update(const std::string&,
                         storeChunk(tmpDirectory_, filename, chunkCount, sep, overwrite_, (const char*)content, contentSize);
                 }
         }
-   else if (!isCompleteMsg) { // clean up old chunks
-        std::vector<std::string> filenames;
-        std::string sep(".");
+        else if (!isCompleteMsg) { // clean up old chunks
+                std::vector<std::string> filenames;
+                std::string sep(".");
                 getChunkFilenames(filename, sep, filenames); // retrieves the chunks in correct order
                 std::vector<std::string>::const_iterator fileIter = filenames.begin();
                 while (fileIter != filenames.end()) {
@@ -446,7 +446,7 @@ std::string FileWriterCallback::update(const std::string&,
                         deleteFile(tmp);
                         fileIter++;
                 }
-   }
+        }
         return "OK";
 }
                        

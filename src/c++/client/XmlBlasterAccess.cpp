@@ -211,7 +211,7 @@ string XmlBlasterAccess::sendAdministrativeCommand(const string &command, Publis
          if (log_.trace()) log_.trace(ME, "Send '" + cmd + " '");
          return ret.getState();
       }
-      catch (XmlBlasterException &e) {
+      catch (const XmlBlasterException &e) {
          if (log_.trace()) log_.trace(ME, "Sending of '" + cmd + " ' failed: " + e.getMessage());
          throw e;
       }
@@ -228,7 +228,7 @@ string XmlBlasterAccess::sendAdministrativeCommand(const string &command, Publis
             return "";
          return msgVec[0].getContentStr();
       }
-      catch (XmlBlasterException &e) {
+      catch (const XmlBlasterException &e) {
          if (log_.trace()) log_.trace(ME, "Sending of '" + cmd + " ' failed: " + e.getMessage());
          throw e;
       }
@@ -402,7 +402,7 @@ string XmlBlasterAccess::getLoginName()
       string nm = connectQos_->getSecurityQos().getUserId();
       if (nm != "") return nm;
    }
-   catch (XmlBlasterException e) {
+   catch (const XmlBlasterException &e) {
       log_.warn(ME, e.toString());
    }
    return string("client?");
@@ -536,7 +536,7 @@ vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout
 			msgs = receive("topic/"+tempTopicOid, maxEntries, timeout, true);
 			tryCount = 0;
 		  }
-		  catch (XmlBlasterException &ex) {
+		  catch (const XmlBlasterException &ex) {
 			if (tryCount > 0) tryCount--;
 			if (tryCount == 0 || ex.getErrorCodeStr() != "user.illegalArgument") throw ex;
             sleepMillis(10); // "user.illegalArgument" happens if server was not ready, try again ... (happens at clustering sometimes)
@@ -550,7 +550,7 @@ vector<MessageUnit> XmlBlasterAccess::request(MessageUnit &msgUnit, long timeout
       }
       return msgs;
    }
-   catch (XmlBlasterException &ex) {
+   catch (const XmlBlasterException &ex) {
       {  // Clean up temporary topic ...
          EraseKey ek(global_, tempTopicOid);
          EraseQos eq(global_);
@@ -822,7 +822,7 @@ int main(int args, char* argv[])
           log.info("main", string("Success: Subscribe return qos=") +
                    subReturnQos.toXml() + " done");
        }
-       catch (XmlBlasterException &ex) {
+       catch (const XmlBlasterException &ex) {
           log.error("main", ex.toXml());
        }
 
@@ -840,7 +840,7 @@ int main(int args, char* argv[])
        Timestamp delay = 10000000000ll; // 10 seconds
        Thread::sleep(delay);
    }
-   catch (XmlBlasterException &ex) {
+   catch (const XmlBlasterException &ex) {
       std::cout << ex.toXml() << std::endl;
    }
    return 0;
