@@ -307,7 +307,7 @@ void PublishDemo::publish()
             try {
                org::xmlBlaster::util::thread::Thread::sleep(sleep);
             }
-            catch(XmlBlasterException e) {
+            catch(const XmlBlasterException& e) {
                log_.error(ME, e.toXml());
             }
          }
@@ -423,7 +423,7 @@ int main(int args, char ** argv)
 
       PublishDemo demo(glob);
    }
-   catch (XmlBlasterException& ex) {
+   catch (const XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
    }
    catch (bad_exception& ex) {

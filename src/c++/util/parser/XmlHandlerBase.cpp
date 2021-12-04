@@ -75,7 +75,7 @@ void XmlHandlerBase::parse(const string &xmlData)
    catch (XmlBlasterException& ex) {
       throw ex;
    }
-   catch (std::exception e) {
+   catch (const std::exception &e) {
      throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("ParserFactory: ") + e.what());
    }
    catch (...) {
@@ -88,7 +88,7 @@ void XmlHandlerBase::parse(const string &xmlData)
       parser->parse(xmlData);
       delete parser;
    }
-   catch (StopParseException&) {
+   catch (const StopParseException&) {
       // If it does not work, it could be wrapped into SAXParseException
       log_.error(ME, string("StopParseException: ") + "Parsing execution stopped half the way ");
       if (log_.trace()) {
