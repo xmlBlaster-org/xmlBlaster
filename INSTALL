@@ -16,7 +16,8 @@ through the mailing list (see http://www.xmlBlaster.org).
 | REQUIRED           |
 +--------------------+
 
-   - JDK 1.5 or 1.8
+   - THIS IS THE PORTING BRANCH TO JAVA 17 LTE
+   - See master branch for JDK 1.5 or 1.8
      (until release 1.6.4 additionally JDK 1.4)
      (until release 1.0.7 additionally JDK 1.2, 1.3)
 
