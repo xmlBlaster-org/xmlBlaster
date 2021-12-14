@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/*,dat|**/*.css|**/*.dat|**/*.gif|**/*.js|**/*.png|**/*.sql|**/*.txt|**/*.xsd|**/*.xsl|**/DebugConnection*|**/MainSvc.java|**/README|**/README.*|**/TODO|**/XMLBLASTER-MIB|**/blasterk2.properties|**/corba/*|**/initialUpdate|**/initialUpdateFake|**/j2me/**|**/mime/sql92/**|**/testlog.properties|**/util/lexical/**|.settings/|doc/|j2ee/**" kind="src" path=""/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/activation.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.2.jar"/>
@@ -27,7 +31,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jzlib.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ldbc.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mail.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/miniJacorb.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mx4j-impl.jar"/>
@@ -93,5 +96,8 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/stompconnect-1.0.jar"/>
 	<classpathentry exported="true" kind="var" path="XMLBLASTER_HOME"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-1.2-api-2.16.0.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-api-2.16.0.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-core-2.16.0.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>

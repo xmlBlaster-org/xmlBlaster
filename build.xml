@@ -158,7 +158,7 @@ TODO
    <property name="cp.core" value="lib/remotecons.jar:lib/joda-time.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz/quartz-2.3.2-full.jar:lib/commons-collections-3.2.jar"/>
 
    <property name="cp.xmlrpc3" value="lib/xmlrpc3/commons-logging-1.1.jar:lib/xmlrpc3/ws-commons-util-1.0.2.jar:lib/xmlrpc3/xmlrpc-client-3.1.1.jar:lib/xmlrpc3/xmlrpc-common-3.1.1.jar:lib/xmlrpc3/xmlrpc-server-3.1.1.jar"/>
-   <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/log4j.jar:lib/jzlib.jar"/>
+   <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/log4j-1.2-api-2.16.0.jar:lib/log4j-core-2.16.0.jar:lib/jzlib.jar"/>
    <property name="cp.db" value="lib/postgresql.jar:lib/hsqldb.jar:lib/mysql-connector-java-3.0.8-stable-bin.jar/"/>
    <property name="cp.xpath" value="lib/jaxen.jar"/>
    <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
@@ -1760,7 +1760,8 @@ TODO
       <unjar src="${lib.dir}/commons-codec.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/commons-lang-2.4.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-classes.dir}" />
-      <unjar src="${lib.dir}/log4j.jar" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/log4j-1.2-api-2.16.0.jar" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/log4j-core-2.16.0.jar" dest="${dist-classes.dir}" />
 
       <switch value="${ADD_HSQLDB}">
          <case value="true">
@@ -2078,7 +2079,8 @@ TODO
       <unjar src="${lib.dir}/commons-codec.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/commons-lang-2.4.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-client.dir}/classes" />
-      <unjar src="${lib.dir}/log4j.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/log4j-1.2-api-2.16.0.jar" dest="${dist-client.dir}/classes" />
+      <unjar src="${lib.dir}/log4j-core-2.16.0.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/joda-time.jar" dest="${dist-client.dir}/classes" />
 
       <switch value="${ADD_HSQLDB}">

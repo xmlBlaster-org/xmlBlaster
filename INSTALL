@@ -25,10 +25,10 @@ You need to set JAVA_HOME to point to your
 JDK installation, for example:
 
   export JAVA_HOME=/opt/jdk	     [Unix sh,ksh,bash]
-  export PATH=$PATH:$JAVA_HOME/bin
+  export PATH=$JAVA_HOME/bin:$PATH
 
   set JAVA_HOME=C:\Program\jdk       [Windows]
-  set PATH=%PATH%;%JAVA_HOME%\bin
+  set PATH=%JAVA_HOME%\bin;%PATH%
 
 
 The XmlBlaster distribution comes compiled and ready to go.

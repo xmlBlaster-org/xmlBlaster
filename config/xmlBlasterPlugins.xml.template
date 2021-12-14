@@ -99,7 +99,7 @@
    </plugin>
 
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
-   <plugin create='true' id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+   <plugin create='false' id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='40'/> 
       <action do='STOP' onShutdownRunlevel='3' sequence='30'/>   
    </plugin>
@@ -544,7 +544,7 @@
    </plugin>
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.http.html -->
-   <plugin create='true' id='HtmlMonitorPlugin.default' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
+   <plugin create='false' id='HtmlMonitorPlugin.default' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
       <attribute id='documentRoot'>${user.home}${file.separator}html</attribute>
       <attribute id='urlPath'>/monitor</attribute>
       <attribute id='urlPath.CLASSPATH'>/status.html</attribute>
