@@ -67,6 +67,7 @@ private:
    string oid;
    string domain;
    string clientTags;
+   string contentMime;
    string contentStr;
    string contentFile;
    PriorityEnum priority;
@@ -182,6 +183,7 @@ void PublishDemo::initEnvironment()
    oid = global_.getProperty().get("oid", string("Hello"));
    domain = global_.getProperty().get("domain", string(""));
    clientTags = global_.getProperty().get("clientTags", ""); // "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
+   contentMime = global_.getProperty().get("contentMime", "text/plain");
    contentStr = global_.getProperty().get("content", "Hi-%counter");
    contentFile = global_.getProperty().get("contentFile", "");
    priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
@@ -240,6 +242,7 @@ void PublishDemo::initEnvironment()
    log_.info(ME, "   -oid            " + lexical_cast<string>(oid));
    log_.info(ME, "   -domain         " + lexical_cast<string>(domain));
    log_.info(ME, "   -clientTags     " + clientTags);
+   log_.info(ME, "   -contentMime    " + contentMime);
    if (contentSize >= 0) {
       log_.info(ME, "   -content        [generated]");
       log_.info(ME, "   -contentSize    " + lexical_cast<string>(contentSize));
@@ -314,7 +317,7 @@ void PublishDemo::publish()
          log_.info(ME, "Publish '" + oid + "' #" + lexical_cast<string>(i+1) + "/" + lexical_cast<string>(numPublish));
       }
 
-      PublishKey key(global_, oid, "text/xml", "1.0");
+      PublishKey key(global_, oid, contentMime, "1.0");
       key.setClientTags(clientTags);
       if (domain != "")  key.setDomain(domain);
       if (i==0) log_.info(ME, "PublishKey: " + key.toXml());
