@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.config.gnu.exe.debug.1483991281">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.debug.1483991281" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="so" artifactName="libxmlBlasterClientD" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1483991281" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postannouncebuildStep="Copy lib to xmlBlaster/lib directory" postbuildStep="cp ${XMLBLASTER_HOME}/src/c++/Debug/${BuildArtifactFileName} ${XMLBLASTER_HOME}/lib">
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1825122877" name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.2106847399" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1010239677" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
+							<builder buildPath="${workspace_loc:/xmlBlasterCPP}/Debug" id="cdt.managedbuild.target.gnu.builder.exe.debug.1972580816" name="Gnu Make Builder.Debug" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1740539441" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.682907905" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
+								<option defaultValue="gnu.c.debugging.level.max" id="gnu.c.compiler.exe.debug.option.debugging.level.14432650" superClass="gnu.c.compiler.exe.debug.option.debugging.level" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.2071885438" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1600476173" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="OMNITHREAD"/>
+									<listOptionValue builtIn="false" value="COMPILE_SOCKET_PLUGIN=1"/>
+									<listOptionValue builtIn="false" value="XMLBLASTER_PERSISTENT_QUEUE=1"/>
+									<listOptionValue builtIn="false" value="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1"/>
+									<listOptionValue builtIn="false" value="_REENTRANT"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.848123249" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
+									<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++"/>
+									<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++/generated"/>
+									<listOptionValue builtIn="false" value="${xerces_include_dir}"/>
+									<listOptionValue builtIn="false" value="${sqlite_include_dir}"/>
+									<listOptionValue builtIn="false" value="${zlib_include_dir}"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.warnings.pedantic.1413421069" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.other.other.1106197204" superClass="gnu.cpp.compiler.option.other.other" value="-c -fPIC -fmessage-length=0 -Wno-long-long -ftemplate-depth-20" valueType="string"/>
+								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1288644718" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="gnu.cpp.compiler.exe.debug.option.debugging.level.72908824" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1219026203" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.889830992" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.922928544" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.531476158" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="xerces-c"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.1880853805" superClass="gnu.cpp.link.option.paths" valueType="stringList">
+									<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/lib"/>
+									<listOptionValue builtIn="false" value="${xerces_lib_dir}"/>
+									<listOptionValue builtIn="false" value="${zlib_lib_dir}"/>
+									<listOptionValue builtIn="false" value="${sqlite_lib_dir}"/>
+									<listOptionValue builtIn="false" value="${usr_lib_dir}"/>
+								</option>
+								<option id="gnu.cpp.link.option.soname.945594894" superClass="gnu.cpp.link.option.soname" value="" valueType="string"/>
+								<option id="gnu.cpp.link.option.implname.1994661947" superClass="gnu.cpp.link.option.implname" value="" valueType="string"/>
+								<option id="gnu.cpp.link.option.shared.565687322" superClass="gnu.cpp.link.option.shared" value="true" valueType="boolean"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1108294956" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1606550903" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1703496026" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1946015768" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281./xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp" name="stdafx.cpp" rcbsApplicability="disable" resourcePath="xmlBlasterCppCE/stdafx.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281./xmlBlasterClientCPP/xmlBlasterCppCE/xmlBlasterCppCE.cpp" name="xmlBlasterCppCE.cpp" rcbsApplicability="disable" resourcePath="xmlBlasterCppCE/xmlBlasterCppCE.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE/xmlBlasterCppCE.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE/xmlBlasterCppCE.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.487719172" name="ThreadImplOmniOrb.cc" rcbsApplicability="disable" resourcePath="util/thread/ThreadImplOmniOrb.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/util/thread/ThreadImplOmniOrb.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/util/thread/ThreadImplOmniOrb.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1101079335" name="ThreadImplBoost.cc" rcbsApplicability="disable" resourcePath="util/thread/ThreadImplBoost.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/util/thread/ThreadImplBoost.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/util/thread/ThreadImplBoost.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281./xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" name="xmlBlasterCppCE.cpp" rcbsApplicability="disable" resourcePath="xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.2082571574" name="mach.cc" rcbsApplicability="disable" resourcePath="omnithread/mach.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/mach.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/mach.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.760616575" name="vxWorks.cc" rcbsApplicability="disable" resourcePath="omnithread/vxWorks.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/vxWorks.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/vxWorks.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.612879449" name="posix.cc" rcbsApplicability="disable" resourcePath="omnithread/posix.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/posix.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/posix.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.723171849" name="solaris.cc" rcbsApplicability="disable" resourcePath="omnithread/solaris.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/solaris.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/solaris.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.221366970" name="threaddata.cc" rcbsApplicability="disable" resourcePath="omnithread/threaddata.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/threaddata.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/threaddata.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1208938178" name="nt.cc" rcbsApplicability="disable" resourcePath="omnithread/nt.cc" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/nt.cc">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/omnithread/nt.cc" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1168866469" name="CorbaDriverFactory.cpp" rcbsApplicability="disable" resourcePath="client/protocol/corba/CorbaDriverFactory.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CorbaDriverFactory.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CorbaDriverFactory.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.74843282" name="CorbaDriver.cpp" rcbsApplicability="disable" resourcePath="client/protocol/corba/CorbaDriver.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CorbaDriver.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CorbaDriver.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1737146109" name="CorbaConnection.cpp" rcbsApplicability="disable" resourcePath="client/protocol/corba/CorbaConnection.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CorbaConnection.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CorbaConnection.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.2118791090" name="CompatibleCorba.cpp" rcbsApplicability="disable" resourcePath="client/protocol/corba/CompatibleCorba.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CompatibleCorba.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/CompatibleCorba.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.80626521" name="DefaultCallback.cpp" rcbsApplicability="disable" resourcePath="client/protocol/corba/DefaultCallback.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/DefaultCallback.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/client/protocol/corba/DefaultCallback.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1074171360" name="nteventlogappender.cxx" rcbsApplicability="disable" resourcePath="log4cplus/nteventlogappender.cxx" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/log4cplus/nteventlogappender.cxx">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/log4cplus/nteventlogappender.cxx" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1061487181" name="socket-win32.cxx" rcbsApplicability="disable" resourcePath="log4cplus/socket-win32.cxx" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/log4cplus/socket-win32.cxx">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/log4cplus/socket-win32.cxx" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.118773096" name="recursive_mutex.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/recursive_mutex.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/recursive_mutex.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/recursive_mutex.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1760424650" name="thread.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/thread.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/thread.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/thread.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1297710743" name="tss.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/tss.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/tss.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/tss.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.20158168" name="once.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/once.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/once.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/once.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1146146208" name="threadmon.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/threadmon.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/threadmon.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/threadmon.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1300930590" name="exceptions.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/exceptions.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/exceptions.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/exceptions.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1502619397" name="threadmon.hpp" rcbsApplicability="disable" resourcePath="libs/thread/src/threadmon.hpp" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1922708859" name="timeconv.inl" rcbsApplicability="disable" resourcePath="libs/thread/src/timeconv.inl" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1737673727" name="xtime.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/xtime.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/xtime.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/xtime.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1582651357" name="condition.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/condition.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/condition.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/condition.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1483991281.1890063157" name="mutex.cpp" rcbsApplicability="disable" resourcePath="libs/thread/src/mutex.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/mutex.cpp">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/libs/thread/src/mutex.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+					</fileInfo>
+					<sourceEntries>
+						<entry excluding="log4cplus/nteventlogappender.cxx|omnithread/mach.cc|omnithread/nt.cc|omnithread/solaris.cc|omnithread/vxWorks.cc|util/thread/ThreadImplBoost.cc|client/protocol/corba/CompatibleCorba.cpp|client/protocol/corba/CorbaConnection.cpp|client/protocol/corba/CorbaDriverFactory.cpp|client/protocol/corba/CorbaDriver.cpp|client/protocol/corba/DefaultCallback.cpp|libs/thread/src/condition.cpp|libs/thread/src/exceptions.cpp|libs/thread/src/mutex.cpp|libs/thread/src/once.cpp|libs/thread/src/recursive_mutex.cpp|libs/thread/src/thread.cpp|libs/thread/src/threadmon.cpp|libs/thread/src/threadmon.hpp|libs/thread/src/timeconv.inl|libs/thread/src/tss.cpp|libs/thread/src/xtime.cpp|omnithread/threaddata.cc|omnithread/posix.cc|log4cplus/socket-win32.cxx|util/thread/ThreadImplOmniOrb.cc|xmlBlasterCppCE/xmlBlasterCppCE.cpp|xmlBlasterCppCE/stdafx.cpp|xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="scannerConfiguration"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.exe.release.595657596">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.release.595657596" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="" artifactName="xmlBlasterClientCPP" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.595657596" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.595657596.248521697" name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.88690145" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.release.334294824" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>
+							<builder buildPath="${workspace_loc:/xmlBlasterCPP}/Release" id="cdt.managedbuild.target.gnu.builder.exe.release.1317343958" name="Gnu Make Builder.Release" superClass="cdt.managedbuild.target.gnu.builder.exe.release"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.394503013" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.exe.release.option.optimization.level.445301427" superClass="gnu.c.compiler.exe.release.option.optimization.level" valueType="enumerated"/>
+								<option defaultValue="gnu.c.debugging.level.none" id="gnu.c.compiler.exe.release.option.debugging.level.1427434385" superClass="gnu.c.compiler.exe.release.option.debugging.level" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.997987687" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.2014832587" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release">
+								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.14647538" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option defaultValue="gnu.cpp.compiler.debugging.level.none" id="gnu.cpp.compiler.exe.release.option.debugging.level.1566299100" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.718634397" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.793998610" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1358769589" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1337810706" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.280009890" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1797729656" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.418155656" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="xmlBlasterClientCPP.cdt.managedbuild.target.gnu.exe.797195204" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+</cproject>
