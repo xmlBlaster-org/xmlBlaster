@@ -214,14 +214,15 @@ public class XbUri
    
 
    // java org.xmlBlaster.util.XbUri smtp://:mypassword@server.xmlBlaster.org:3412
-   public static void main(String[] args) {
-      try {
-         String str = (args.length > 0) ? args[0] : "smtp://joe:mypassword@server.xmlBlaster.org:3412";
-         XbUri test = new XbUri(str);
-         System.out.println(test.toLiteral());
-      } catch (URISyntaxException e) {
-         e.printStackTrace();
-      }
-   }
+   // Commented out due to error message about credentials in URL from Google Play
+   //public static void main(String[] args) {
+   //   try {
+   //      String str = (args.length > 0) ? args[0] : "smtp://joe:mypassword@server.xmlBlaster.org:3412";
+   //      XbUri test = new XbUri(str);
+   //      System.out.println(test.toLiteral());
+   //   } catch (URISyntaxException e) {
+   //      e.printStackTrace();
+   //   }
+   //}
 }
 
