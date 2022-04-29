@@ -53,8 +53,12 @@ cpp.debug     = false
 # We provide the complete source code with xmlBlaster.
 # For configuration hints see http://log4cplus.sourceforge.net
 XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+# for VC17
+CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR" "/DWINVER=0x0501" "/D_WIN32_WINNT=0x0501" "/DHAVE_STRUCT_TIMESPEC=1 /arch:IA32 /std:c++17 /D_HAS_STD_BYTE=0 /D_HAS_AUTO_PTR_ETC=1
+# for VC15
+#CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR" "/DWINVER=0x0501" "/D_WIN32_WINNT=0x0501" "/DHAVE_STRUCT_TIMESPEC=1 /arch:IA32
 # for VC11 xp compatible builds:
-CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR" "/DWINVER=0x0501" "/D_WIN32_WINNT=0x0501" "/D_USING_V110_SDK71_=1" "/arch:IA32
+#CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR" "/DWINVER=0x0501" "/D_WIN32_WINNT=0x0501" "/D_USING_V110_SDK71_=1" "/arch:IA32
 # for VC10:
 #CFLAGS=-DLOG4CPLUS_SEVERE_INSTEADOF_ERROR
 
@@ -107,9 +111,13 @@ zlib.lib.name=zlibmd
 #xerces.include.dir=/usr/include
 #xerces.lib.dir=/usr/lib
 #xerces.lib.name=xerces-c
-xerces.include.dir=C:/externLibs/xerces-c-src_2_8_0/src
-xerces.lib.dir=C:/externLibs/xerces-c-src_2_8_0/lib
-xerces.lib.name=xerces-c_2
+xerces.include.dir=C:/externLibs/xerces-c-3.2.3/src;C:/externLibs/xerces-c-3.2.3/build/src;
+xerces.lib.dir=C:/externLibs/xerces-c-3.2.3/lib
+xerces.lib.name=xerces-c_3
+#xerces.include.dir=C:/externLibs/xerces-c-src_2_8_0/src
+#xerces.lib.dir=C:/externLibs/xerces-c-src_2_8_0/lib
+#xerces.lib.name=xerces-c_2
+
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
