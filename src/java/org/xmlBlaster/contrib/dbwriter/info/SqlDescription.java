@@ -434,7 +434,11 @@ public class SqlDescription {
          ClientProperty colContent = row.getColumn(colNames[i]);
          boolean isNull = colContent != null && Constants.TYPE_NULL.equals(colContent.getType());
          // new behaviour 2018-02-16 we now do not add null columns since problems with SDO_GEOMETRY
-         if (!colNames[i].startsWith(I_Mapper.COLUMN_TO_IGNORE) && !isNull) {
+         SqlColumn column = getColumn(colNames[i]);
+         int sqlType = column.getSqlType();
+         boolean specialIgnore = (sqlType == Types.OTHER && column.getTypeName() != null && column.getTypeName().contains("SDO_GEOMETRY")) && isNull;
+  
+         if (!colNames[i].startsWith(I_Mapper.COLUMN_TO_IGNORE) && !specialIgnore) {
          // if (true) { // we need all entries
             searchEntries.add(colContent);
             if (firstHit)
