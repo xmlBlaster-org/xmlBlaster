@@ -118,6 +118,17 @@ public final class ReplaceVariable
    }
 
    /**
+    * @param template 
+    * @returns true if contains "${"
+    */
+   public boolean hasReplacementToken(final String template) {
+     if (template == null || template.length() == 0) {
+       return false;
+     }
+     return template.contains(this.startToken) && template.contains(this.endToken); // "${" "}"
+   }
+   
+   /**
    * Replace all occurrences of "from" with to "to".
    */
    public final static String replaceAll(String str, int fromIndex, String from, String to) {
