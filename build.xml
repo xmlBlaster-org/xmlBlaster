@@ -2704,7 +2704,7 @@ TODO
          <compiler refid="g++"/>  <!-- GCC -->
      	 <!-- compilerarg value="-Wno-deprecated-declarations" if="g++" / -->
       	 <!-- log4cplus/appender.h:190:14: warning: ‘template<class> class std::auto_ptr’ is deprecated -->
-     	 <compilerarg value="-Wno-deprecated-declarations"/>
+     	 <!-- <compilerarg value="-Wno-deprecated-declarations"/> -->
          <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
