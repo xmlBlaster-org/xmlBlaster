@@ -3,7 +3,12 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
- o 50f67ac41 2022-06-30: now re-introduced setting to NULL a column in replication: only exception if it is an SDO_GEOMETRY type
+ o abb5f94c7 2022-07-12: michele
+   introduced getSpanTime in order to handle reconnect attempt differently between client and server dispatcher. needs the xmlBlaster.property
+   dispatch/connection/delayInitialReconnect=true to be activated
+
+ o 50f67ac41 2022-06-30: michele
+   now re-introduced setting to NULL a column in replication: only exception if it is an SDO_GEOMETRY type
 
  o f8700f0a5 2022-02-28 michele
    changed behaviour of ReplicationAgent: if an exception occurs in main method then it exits.
