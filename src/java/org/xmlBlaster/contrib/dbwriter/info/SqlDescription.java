@@ -533,6 +533,25 @@ public class SqlDescription {
             st.setLong(pos, val);
          }
       }
+      if (sqlType == Types.NUMERIC) {
+          if (isNull || tmp == null || tmp.trim().length() < 1) {
+             st.setNull(pos, Types.NUMERIC);
+             return;
+          }
+          // if it has no commas, then we store it as a long since the precision on doubles can
+          // cut off some of the digits after the decimal sign.
+          String tmpNumber = prop.getStringValue();
+          if (tmpNumber.indexOf('.') > -1 || tmpNumber.indexOf(',') > -1) {
+             double val = getDouble(prop);
+             log.fine("Handling insert column=" + colName + " as NUMERIC (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+             st.setDouble(pos, val);
+          }
+          else { // no digit sign, so we can handle it as a long
+             long val = getLong(prop);
+             log.fine("Handling insert column=" + colName + " as NUMERIC (type=" + sqlType + ", count=" + pos + ") '" + val + "' (no decimal sign found)");
+             st.setLong(pos, val);
+          }
+       }
       else if (sqlType == Types.SMALLINT) {
          if (isNull || tmp == null || tmp.trim().length() < 1) {
             st.setNull(pos, Types.SMALLINT);
