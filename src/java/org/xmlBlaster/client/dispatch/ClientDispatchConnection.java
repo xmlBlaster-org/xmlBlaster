@@ -80,6 +80,15 @@ public final class ClientDispatchConnection extends DispatchConnection
       return ME;
    }
 
+   protected long getSpanTime(long realSpanTime) {
+	   long ret = realSpanTime;
+	   // when going into polling per default it does a reconnect immediately (after 400 ms)
+	   boolean delayInitialReconnect = glob.getProperty().get("dispatch/connection/delayInitialReconnect", false);
+	   if (!delayInitialReconnect)
+		   ret = super.getSpanTime(realSpanTime);
+	   return ret;
+   }
+
    /**
     * Load the appropriate protocol driver, e.g the CORBA protocol plugin. 
     * <p>
