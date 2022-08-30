@@ -58,7 +58,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;..\..\..\..\src\c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS;XMLBLASTER_ZLIB;XMLBLASTER_PERSISTENT_QUEUE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS;XMLBLASTER_ZLIB;XMLBLASTER_PERSISTENT_QUEUE;_HAS_STD_BYTE=0;_HAS_AUTO_PTR_ETC=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -86,7 +86,7 @@ call copy "$(TargetDir)\$(TargetName).lib"  $(XMLBLASTER_HOME)\lib
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(sqlite_include_dir);$(zlib_include_dir);$(XMLBLASTER_HOME)\src\c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS;XMLBLASTER_ZLIB=1;XMLBLASTER_PERSISTENT_QUEUE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS;XMLBLASTER_ZLIB=1;XMLBLASTER_PERSISTENT_QUEUE=1;_HAS_STD_BYTE=0;_HAS_AUTO_PTR_ETC=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader />

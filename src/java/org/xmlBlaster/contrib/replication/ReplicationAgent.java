@@ -169,7 +169,8 @@ public class ReplicationAgent implements I_InitialUpdateListener, I_ConnectionSt
                   Thread.sleep(5000L);
                }
                catch (Exception ex) {
-                  
+                  LOG.severe("Exception occurred when sleeping: " + ex.getMessage());
+                  ex.printStackTrace();
                }
             }
          }
@@ -177,8 +178,9 @@ public class ReplicationAgent implements I_InitialUpdateListener, I_ConnectionSt
 
       } 
       catch (Throwable ex) {
-         LOG.severe("An exception occured when starting '" + ex.getMessage() + "'");
+         LOG.severe("An exception occured when starting (or during shutdown)': " + ex.getMessage() + "', will exit");
          ex.printStackTrace();
+         System.exit(-1);
       }
    }
 

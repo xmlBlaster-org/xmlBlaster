@@ -118,21 +118,6 @@ CREATE TABLE ${replPrefix}items (repl_key INTEGER,
              version VARCHAR(${charWidthSmall}), PRIMARY KEY (repl_key))
 -- EOC (end of command: needed as a separator for our script parser)            
 
-
--- ---------------------------------------------------------------------------- 
--- This trigger is needed if you want to detect change events synchronously as  
--- they occur without the need of polling. It is only used in conjunction with  
--- the OracleByEventScheduler.                                                  
--- ---------------------------------------------------------------------------- 
-CREATE TRIGGER ${replPrefix}scheduler_trigger AFTER INSERT
-ON ${replPrefix}ITEMS
-FOR EACH ROW
-BEGIN
-   dbms_alert.signal('${replPrefix}ITEMS', 'INSERT');
-END ${replPrefix}scheduler_trigger;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
 -- ---------------------------------------------------------------------------- 
 -- ${replPrefix}col2xml_cdata converts a column into a simple xml notation and  
 -- wraps the content into a _cdata object.                                      

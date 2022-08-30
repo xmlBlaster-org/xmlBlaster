@@ -553,27 +553,21 @@ TODO
          </case>
          <case value="1.8">
             <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.5" />
-            <property name="JVM.source" value="1.5" />
+            <property name="JVM.target" value="1.7" />
+            <property name="JVM.source" value="1.7" />
             <property name="DO_FILTERING" value="true" />
          </case>
          <case value="1.7"> <!-- for JDK 1.6 choose 1.5, otherwise it won't compile generics in JMS api -->
             <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.5" />
-            <property name="JVM.source" value="1.5" />
+            <property name="JVM.target" value="1.7" />
+            <property name="JVM.source" value="1.7" />
             <property name="DO_FILTERING" value="true" />
          </case>
-         <case value="1.6"> <!-- for JDK 1.6 choose 1.5, otherwise it won't compile generics in JMS api -->
-            <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.5" />
-            <property name="JVM.source" value="1.5" />
-            <property name="DO_FILTERING" value="true" />
+         <case value="1.6">
+            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.6.2"/>
          </case>
          <case value="1.5">
-            <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.5" />
-            <property name="JVM.source" value="1.5" />
-            <property name="DO_FILTERING" value="true" />
+            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.6.2"/>
          </case>
          <case value="1.4">
             <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.6.2"/>
@@ -582,8 +576,8 @@ TODO
             <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.0.7"/>
          </case>
          <default>
-            <property name="JVM.target" value="1.5" />
-            <property name="JVM.source" value="1.5" />
+            <property name="JVM.target" value="1.7" />
+            <property name="JVM.source" value="1.7" />
             <property name="DO_FILTERING" value="true" />
          </default>
       </switch>
@@ -2708,7 +2702,7 @@ TODO
          <compiler refid="g++"/>  <!-- GCC -->
      	 <!-- compilerarg value="-Wno-deprecated-declarations" if="g++" / -->
       	 <!-- log4cplus/appender.h:190:14: warning: ‘template<class> class std::auto_ptr’ is deprecated -->
-     	 <compilerarg value="-Wno-deprecated-declarations"/>
+     	 <!-- <compilerarg value="-Wno-deprecated-declarations"/> -->
          <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"

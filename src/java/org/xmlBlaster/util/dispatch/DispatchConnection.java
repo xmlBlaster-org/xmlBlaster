@@ -535,6 +535,12 @@ abstract public class DispatchConnection implements I_Timeout
            return code.isOfType(ErrorCode.USER_SECURITY_AUTHENTICATION);
    }
    
+
+   protected long getSpanTime(long realSpanTime) {
+	   return 400;
+	   
+   }
+
    /**
     * @param toReconnected If true if the connection is OK (it is a transition to reconnected)
     * @param byDispatchConnectionsHandler true if invoked by DispatchConnectionsHandler,
@@ -678,7 +684,7 @@ abstract public class DispatchConnection implements I_Timeout
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
                   // spanPingTimer(400, false); // do one instant try
-                  realSpanTime = 400;
+                  realSpanTime = getSpanTime(realSpanTime);
                }
                if (log.isLoggable(Level.FINE))
                   log.fine(ME+":  Respanning timeout for polling to '" + realSpanTime + "' ms");
