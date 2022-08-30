@@ -540,6 +540,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
             }
             else {
 //               if (!isTunnel)
+            	log.warning(ME + " " + ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE +  " XmlBlasterImpl ping failed since no CallbackAddress, no SessionInfo found");
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, "XmlBlasterImpl", "ping failed since no CallbackAddress, no SessionInfo found");
                //return "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>";
             }

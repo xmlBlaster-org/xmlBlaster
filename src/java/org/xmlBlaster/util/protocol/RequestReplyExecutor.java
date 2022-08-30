@@ -320,6 +320,9 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
    public final void setCbClient(I_CallbackExtended cbClient) {
       this.cbClient = cbClient;
+      if (this.cbClient == null) {
+    	  log.warning(ME + " unexpected cbClient==null");
+      }
    }
 
    public final void setXmlBlasterCore(I_XmlBlaster xmlBlaster) {
@@ -461,6 +464,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             try {
                I_CallbackExtended cbClientTmp = this.cbClient;
                if (cbClientTmp == null) {
+            	  log.warning(ME + " " + ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE + " The " + getType() + " callback driver is not created, can't process the remote invocation. Try configuration ' -protocol "+getType()+"'");
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The " + getType() + " callback driver is not created, can't process the remote invocation. Try configuration ' -protocol "+getType()+"'");
                }
                MsgUnitRaw[] arr = receiver.getMessageArr();

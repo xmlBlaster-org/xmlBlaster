@@ -142,8 +142,12 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          //}
       }
 
-      if (cbClient != null)
+      if (cbClient != null) {
          getSocketExecutor().setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
+      }
+      else {
+    	  log.warning(this.ME + " cbClient is null");
+      }
 
       // If we are server side and a client which receives publish(),subscribe()... from remote cluster node
       obj = glob.getObjectEntry("ClusterManager[cluster]/I_Authenticate");
