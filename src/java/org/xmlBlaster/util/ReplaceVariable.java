@@ -18,6 +18,7 @@ public final class ReplaceVariable
    private String startToken = "${";
    private String endToken = "}";
    private boolean throwException = true;
+   private boolean allowRecursive;
 
    public ReplaceVariable() {
    }
@@ -29,6 +30,10 @@ public final class ReplaceVariable
 
    public void setMaxNest(int maxNest) {
       this.maxNest = maxNest;
+   }
+   
+   public void setAllowRecursive(boolean allowRecursive) {
+	   this.allowRecursive = allowRecursive;
    }
 
    public void setThrowException(boolean throwException) {
@@ -81,7 +86,7 @@ public final class ReplaceVariable
          int to = text.indexOf(this.endToken, fromIndex+1);
          //System.out.println("ReplaceVariable: Trying fromIndex=" + fromIndex + " toIndex=" + to + " '" + text.substring(fromIndex,to+1) + "'");
 
-         if (false) {  // to support "${A${B}}"
+         if (allowRecursive) {  // to support "${A${B}}"
             int fromTmp = text.indexOf(this.startToken, fromIndex+1);
             if (fromTmp != -1 && to != -1 && fromTmp < to) {
                fromIndex = fromTmp;
