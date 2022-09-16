@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
+ o f7eb25915 2022-09-16: michele
+   avoid loop when ptp destination not available and publisher in async (in XmlBlasterAccess) 
+
  o 264a64b89 2022-07-15: michele
    added support for NUMERIC types in replication.
 
