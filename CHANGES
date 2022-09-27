@@ -3,6 +3,10 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
+ o 2022-09-27: marcel
+   XmlScriptInterpreter supports replaceWellknownTokens for ${generateGuid} and ${currIsoTsZ}
+   Replacing with setAllowRecursive(true) and multiple ${} in content
+
  o f7eb25915 2022-09-16: michele
    avoid loop when ptp destination not available and publisher in async (in XmlBlasterAccess) 
 
