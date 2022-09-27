@@ -73,9 +73,11 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
@@ -274,7 +276,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          }
       }
    }
-   
+
    public boolean sendingFailed(MsgQueueEntry[] entries, XmlBlasterException exception) {
       I_PostSendListener l = this.postSendListener;
       try {
@@ -294,6 +296,33 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                // true: default error handler removes from queue
                // false: It will loop as DispatchWorkerPool retries immediately
            	   return true;
+            }
+            else if (exception.isErrorCode(ErrorCode.USER_PTP_UNKNOWNDESTINATION) || exception.isErrorCode(ErrorCode.USER_PTP_UNKNOWNDESTINATION_SESSION)) {
+               if (entries.length > 0) {
+                  QosData qosData = entries[0].getMsgUnit().getQosData();
+                  if (qosData instanceof MsgQosData) {
+                     MsgQosData msgQosData = (MsgQosData)qosData;
+                     ArrayList<?> list = msgQosData.getDestinations();
+                     if (list != null && !list.isEmpty()) { // we only check the first destination (weak)
+                        Object obj = list.get(0);
+                        if (obj instanceof Destination) {
+                           Destination firstDestination = (Destination)obj;
+                           if (!firstDestination.forceQueuing()) {
+                              StringBuilder buf = new StringBuilder();
+                              buf.append("destination " + firstDestination.toString() + " does not exist: consider ");
+                              buf.append("register own implementation of I_PostSenderListener for better handling of dead messages ");
+                              buf.append(" or (set forceQueuing='true' in your destination ");
+                              if (firstDestination.getDestination().getPublicSessionId() < 1) {
+                                 buf.append("and/or  choose a positive sessionId");
+                              }
+                              buf.append(")");
+                              log.warning(buf.toString());
+                              return true;
+                           }
+                        }
+                     }
+                  }
+               }
             }
          }
          else {

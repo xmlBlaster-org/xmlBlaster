@@ -19,6 +19,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +31,7 @@ import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -119,9 +121,13 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    private boolean replaceQosTokens;
    private boolean replaceKeyTokens;
    private boolean replaceContentTokens;
+   @Deprecated // use replaceContentTokens
    private boolean replaceFileContentTokens;
    /** Replace tokens in wait or echo markup */
    private boolean replaceTokens;
+   /** replace ${generateGuid} and ${currIsoTsZ} */
+   private boolean replaceWellknownTokens;
+   private boolean dumpPublish;
 
    /** Encapsulates the content of the current message (useful for encoding) */
    protected EncodableData contentData;
@@ -337,8 +343,17 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if ("replaceTokens".equals(qName)) {
           this.replaceTokens = true;
           return;
-       }
+      }
        
+      if ("replaceWellknownTokens".equals(qName)) {
+          this.replaceWellknownTokens = true;
+          return;
+      }
+      
+      if ("dumpPublish".equals(qName)) {
+          this.dumpPublish = true;
+          return;
+      }      
       if ("replaceKeyTokens".equals(qName)) {
          this.replaceKeyTokens = true;
          return;
@@ -501,15 +516,39 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if (!replaceTokens) return template;
       
       ReplaceVariable r = new ReplaceVariable();
+      r.setAllowRecursive(true);
       String result = r.replace(template,
          new I_ReplaceVariable() {
             public String get(String key) {
+               if (replaceWellknownTokens) {
+            	  final String value = replaceWellknownTokens(key);
+            	  if (value != null) {
+            		 return value;
+            	  }
+               }
                return glob.getProperty().get(key, key);
             }
          });
       return result;
    }
 
+   public String replaceWellknownTokens(final String key) {
+      if (!replaceWellknownTokens) {
+        return null;
+      }
+      if ("generateGuid".equals(key)) {
+         final UUID uuid = UUID.randomUUID();
+         final String guid = uuid.toString();
+         log.info("Generated guid=" + guid);
+         return guid;
+      }
+      else if ("currIsoTsZ".equals(key)) {
+         final String ts = IsoDateParser.getCurrentUTCTimestampT();
+         return ts;
+      }
+      return null;
+   }
+   
    /**
     * Appends the end stream to the current StringBuffer
     * @param buf the StringBuffer to be used 
@@ -529,6 +568,8 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     */
    public String replaceVariable(String text) {
       if (text == null) return null;
+	  return replaceVariables(text);
+	  /*
       int lastFrom = -1;
       for (int i=0; i<20; i++) { // max recursion/replacement depth
          int from = text.indexOf("${");
@@ -537,11 +578,18 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          int to = text.indexOf("}", from);
          if (to == -1) return text;
          String key = text.substring(from+2, to);
+         if (replaceWellknownTokens) {
+      	  final String value = replaceWellknownTokens(key);
+      	  if (value != null) {
+      		 return value;
+      	  }
+         }
          String value = glob.getProperty().get(key, "${"+key+"}");
          text = text.substring(0,from) + value + text.substring(to+1);
          lastFrom = from;
       }
       return text;
+      */
    }
 
    /**
@@ -578,7 +626,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if (replaceContentTokens) {
          String tmp = this.content.toString();
          this.content.setLength(0);
-         this.content.append(replaceVariable(tmp));
+         this.content.append(tmp);
+         // replace happens later in contentData
+         // this.content.append(replaceVariable(tmp));
       }
       
       if (QOS_TAG.equals(qName)) {
@@ -650,23 +700,10 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     	  currentContent = (this.contentData == null) ? new byte[0] : this.contentData.getBlobValue();
       }
       
-      if (this.replaceFileContentTokens) {
+      if (this.replaceFileContentTokens || this.replaceContentTokens) {
 		try {
 		  String currentContentStr = new String(currentContent, "UTF-8");
-    	  ReplaceVariable rv = new ReplaceVariable();
-    	  currentContentStr = rv.replace(currentContentStr, new I_ReplaceVariable() {
-               // @Override
-			public String get(String key) {
-				try {
-					String value = glob.get(key, key, null, null);
-					return value;
-				} catch (XmlBlasterException e) {
-					e.printStackTrace();
-					return key;
-				}
-				//return System.getProperty(key);
-			}
-		  });
+		  currentContentStr = replaceVariables(currentContentStr);
     	  currentContent = currentContentStr.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -675,6 +712,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 
       MsgUnit msgUnit = new MsgUnit(this.key.toString(),
          currentContent, this.qos.toString());
+      if (dumpPublish) {
+    	  log.info(msgUnit.toXml((String)null, -1, true));
+      }
       return msgUnit;
    }
 
