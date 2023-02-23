@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
+ o 96b237694 2023-02-23: michele
+   protected against NPE in SessionInfo 
+
  o f7eb25915 2022-09-16: michele
    avoid loop when ptp destination not available and publisher in async (in XmlBlasterAccess) 
 
