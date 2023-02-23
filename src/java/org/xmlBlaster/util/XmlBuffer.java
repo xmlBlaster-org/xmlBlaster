@@ -237,6 +237,50 @@ public class XmlBuffer {
     }
     
     /**
+     * Escape predefined xml element data relaxed (&, <).
+     * Additionally the '\0' is escaped.
+     * <pre>
+     * <anElement>Yes "you're right and > 20"</anElement>
+     * </pre>
+     * @param text
+     * @return The escaped text is appended to the given StringBuilder.
+     */
+    public final static void appendElement(StringBuilder buf, String text) {
+        if (text == null) return;
+        int length = text.length();
+        for (int i = 0; i < length; i++) {
+            final char c = text.charAt(i);
+            switch (c) {
+                case '\0':
+                    buf.append(NULL);
+                    break;
+                case '&':
+                        buf.append(AMP);
+                    break;
+                case '<':
+                        buf.append(LT);
+                    break;
+                case '\r':
+                        buf.append(SLASH_R);
+                    break;
+                default:
+                	if (isPrintableCharExtended(c)) {
+                        buf.append(c);
+                	}
+                	else {
+                    	boolean isControl = Character.isISOControl(c);
+                    	boolean isUndefined = c == KeyEvent.CHAR_UNDEFINED;
+                    	Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
+                    	boolean isSpecial = block != null &&
+                    			block != Character.UnicodeBlock.SPECIALS;
+                    	boolean isAsciiControl = (int)c < 20;
+                		System.out.println("XmlBuffer.append caution: Dropping none UTF-8 character '" + c + "' isControl=" + isControl + " isUndefined=" + isUndefined + " isSpecial=" + isSpecial + " isAsciiControl=" + isAsciiControl);
+                	}
+            }
+        }
+    }
+    
+    /**
      * Detect strange characters
      * i=rk�9<?9,id=7807049
      * @param c

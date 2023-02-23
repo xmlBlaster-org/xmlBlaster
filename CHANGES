@@ -6,6 +6,10 @@ Changes for current git (previous svn)
  o 96b237694 2023-02-23: michele
    protected against NPE in SessionInfo 
 
+ o 2022-09-27: marcel
+   XmlScriptInterpreter supports replaceWellknownTokens for ${generateGuid} and ${currIsoTsZ}
+   Replacing with setAllowRecursive(true) and multiple ${} in content
+
  o f7eb25915 2022-09-16: michele
    avoid loop when ptp destination not available and publisher in async (in XmlBlasterAccess) 
 
