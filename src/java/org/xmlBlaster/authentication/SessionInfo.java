@@ -767,7 +767,9 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       // Avoid dump of password
       if (props == null) props = new Properties();
       props.put(Constants.TOXML_NOSECURITY, ""+true);
-      sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT, props));
+      if (connectQos != null) {
+         sb.append(connectQos.toXml(extraOffset+Constants.INDENT, props));
+      }
 
       ServerDispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {
