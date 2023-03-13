@@ -244,6 +244,8 @@ public class SqlInfoStreamPublisher implements I_ChangePublisher, I_Timeout {
        info.putObject("org.xmlBlaster.contrib.dbwatcher.mom.I_EventEngine", this);
        continuous = info.getBoolean("replication.player.continuous", true);
        startTime = info.get("replication.player.startTime", null);
+       count = info.getInt("replication.player.startFileCounter", 1);
+       count--;
        br = getBufferedReader(br, filename);
        if(br == null) {
           throw new Exception("File not found '" + filename + "'");
