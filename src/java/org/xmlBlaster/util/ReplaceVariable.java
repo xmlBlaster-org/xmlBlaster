@@ -140,7 +140,7 @@ public final class ReplaceVariable
          if (subValue != null) {
             //System.out.println("ReplaceVariable: fromIndex=" + fromIndex + " sub=" + sub + " subValue=" + subValue);
         	if (escapeToken == null) {
-        		// different legacy behavier, e.g. all subsequent tokens of same var name be replaced by its value, 
+        		// different legacy behaviour, e.g. all subsequent tokens of same var name will be replaced by its value, 
         		// eg. "1: ${XY), 2: ${XY}" -> "1: 100, 2: 100", even if to ends after the first ${XY}
                 text = replaceAll(text, fromIndex, sub, subValue);
         	} else {
@@ -177,7 +177,7 @@ public final class ReplaceVariable
    
 
    /**
-   * Replace all occurrences of "from" with to "to".
+   * Replace all occurrences of "from" with to "to" in the range from fromIndex to toIndex.
    */
    private final static String replaceAll(String str, int fromIndex, int toIndex, String from, String to) {
       if (str == null || str.length() < 1 || from == null || to == null)
@@ -186,7 +186,7 @@ public final class ReplaceVariable
    }
 
    /**
-   * Replace all occurrences of "from" with to "to".
+   * Replace all occurrences of "from" with to "to" in the range from fromIndex to the end of string.
    */
    public final static String replaceAll(String str, int fromIndex, String from, String to) {
       if (str == null || str.length() < 1 || from == null || to == null)
