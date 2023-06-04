@@ -22,7 +22,7 @@ public final class ReplaceVariable
     * the member escapeToken is default null, but if to set, prefer following value 
     * (Backslash: '\', e.g. \${var}): 
     */
-   public static final String PREFERRED_ESCAPE_TOKEN = "\\"; 
+   public static final String ESCAPE_TOKEN_BACKSLASH = "\\"; 
    private boolean throwException = true;
    private boolean allowRecursive;
 
