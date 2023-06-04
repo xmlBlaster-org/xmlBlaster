@@ -17,7 +17,7 @@ public final class ReplaceVariable
    private int maxNest = 2000;
    private String startToken = "${";
    private String endToken = "}";
-   private String escapeToken = null; // to be backward compatible "\\";
+   private String escapeToken =  null; // to be backward compatible, else PREFERRED_ESCAPE_TOKEN;
    /**
     * the member escapeToken is default null, but if to set, prefer following value 
     * (Backslash: '\', e.g. \${var}): 
@@ -90,13 +90,16 @@ public final class ReplaceVariable
       int minIndex = 0;
       for (int ii = 0;; ii++) {
          int fromIndex = text.indexOf(this.startToken, minIndex);
-         boolean isEscaped = false; // true = do not change value
+         if (fromIndex == -1) {
+        	 return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
+         }
          if (escapeToken != null) {
              int fromIndexEscaped = text.indexOf(this.escapeToken+this.startToken, minIndex);
-             isEscaped = fromIndexEscaped != -1 && fromIndexEscaped == fromIndex - this.escapeToken.length();
-         }
-         if (fromIndex == -1 || isEscaped) {
-        	 return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
+             if (fromIndexEscaped != -1 && fromIndexEscaped == fromIndex - this.escapeToken.length()) {
+            	 // isEscaped, e.g. \${A}
+            	 minIndex = fromIndex + this.escapeToken.length() + this.startToken.length();
+            	 continue;
+             }
          }
          minIndex = 0;
          
@@ -344,6 +347,7 @@ public final class ReplaceVariable
     */
    public static void main(String args[]) {
       String template = "Hello ${A} and ${B}, ${A${B}}, \\${A} and \\${B}, \\${A${B}}, \\${A\\${B}} ";
+      template = "\\${A}=${A} Hello ${A} and ${B}, ${A${B}}, \\${A} and \\${B}, \\${A${B}}, \\${A\\${B}} ";
       String startToken = "${";
       String endToken = "}";
       for (int i=0; i<args.length-1; i++) { // Add all "-key value" command line
