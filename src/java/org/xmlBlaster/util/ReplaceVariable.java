@@ -52,7 +52,7 @@ public final class ReplaceVariable
     * leads to ${var} and does not expose the 
     * value of var. Default it is not set, to due to 
     * backward compatibility reasons. 
-    * @param escapeToken
+    * @param escapeToken, e.g. ESCAPE_TOKEN_BACKSLASH (\)
     */
    public void setEscapeToken(String escapeToken) {
 	   this.escapeToken = escapeToken;
