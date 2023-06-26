@@ -17,6 +17,12 @@ public final class ReplaceVariable
    private int maxNest = 2000;
    private String startToken = "${";
    private String endToken = "}";
+   private String escapeToken =  null; // to be backward compatible, else PREFERRED_ESCAPE_TOKEN;
+   /**
+    * the member escapeToken is default null, but if to set, prefer following value 
+    * (Backslash: '\', e.g. \${var}): 
+    */
+   public static final String ESCAPE_TOKEN_BACKSLASH = "\\"; 
    private boolean throwException = true;
    private boolean allowRecursive;
 
@@ -38,6 +44,18 @@ public final class ReplaceVariable
 
    public void setThrowException(boolean throwException) {
       this.throwException = throwException;
+   }
+   
+   /** 
+    * Can be set, to be able to escape the start token, 
+    * so if e.g. set with backslash following pattern \${var} 
+    * leads to ${var} and does not expose the 
+    * value of var. Default it is not set, to due to 
+    * backward compatibility reasons. 
+    * @param escapeToken, e.g. ESCAPE_TOKEN_BACKSLASH (\)
+    */
+   public void setEscapeToken(String escapeToken) {
+	   this.escapeToken = escapeToken;
    }
 
    /**
@@ -72,7 +90,17 @@ public final class ReplaceVariable
       int minIndex = 0;
       for (int ii = 0;; ii++) {
          int fromIndex = text.indexOf(this.startToken, minIndex);
-         if (fromIndex == -1) return text;
+         if (fromIndex == -1) {
+        	 return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
+         }
+         if (escapeToken != null) {
+             int fromIndexEscaped = text.indexOf(this.escapeToken+this.startToken, minIndex);
+             if (fromIndexEscaped != -1 && fromIndexEscaped == fromIndex - this.escapeToken.length()) {
+            	 // isEscaped, e.g. \${A}
+            	 minIndex = fromIndex + this.escapeToken.length() + this.startToken.length();
+            	 continue;
+             }
+         }
          minIndex = 0;
          
          if (fromIndex+1 >= text.length()) {
@@ -80,7 +108,7 @@ public final class ReplaceVariable
                 throw new IllegalArgumentException("Invalid variable '" + text.substring(fromIndex) +
                          "', expecting " + this.startToken + this.endToken + " syntax.");
              }
-             return text;
+            return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
          }
 
          int to = text.indexOf(this.endToken, fromIndex+1);
@@ -88,7 +116,15 @@ public final class ReplaceVariable
 
          if (allowRecursive) {  // to support "${A${B}}"
             int fromTmp = text.indexOf(this.startToken, fromIndex+1);
-            if (fromTmp != -1 && to != -1 && fromTmp < to) {
+            boolean isNotEscaped = true; // true, we ignore possible escape token, eg. \${var} -> \5, if var is 5. 
+            if (escapeToken != null) {
+                int fromTmpEscaped = text.indexOf(this.escapeToken+this.startToken, fromIndex+1);
+                isNotEscaped = fromTmpEscaped == -1 || fromTmpEscaped != fromTmp - this.escapeToken.length();
+            }
+            if (fromTmp != -1 
+            		&& isNotEscaped
+            		&& to != -1 
+            		&& fromTmp < to) {
                fromIndex = fromTmp;
                to = text.indexOf(this.endToken, fromTmp);
             }
@@ -99,14 +135,23 @@ public final class ReplaceVariable
                throw new IllegalArgumentException("Invalid variable '" + text.substring(fromIndex) +
                         "', expecting " + this.startToken + this.endToken + " syntax.");
             }
-            return text;
+            return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
          }
          String sub = text.substring(fromIndex, to + this.endToken.length()); // "${XY}"
          String subKey = sub.substring(this.startToken.length(), sub.length() - this.endToken.length()); // "XY"
          String subValue = cb.get(subKey);
          if (subValue != null) {
             //System.out.println("ReplaceVariable: fromIndex=" + fromIndex + " sub=" + sub + " subValue=" + subValue);
-            text = replaceAll(text, fromIndex, sub, subValue);
+        	if (escapeToken == null) {
+        		// different legacy behaviour, e.g. all subsequent tokens of same var name will be replaced by its value, 
+        		// eg. "1: ${XY), 2: ${XY}" -> "1: 100, 2: 100", even if to ends after the first ${XY}
+                text = replaceAll(text, fromIndex, sub, subValue);
+        	} else {
+        		// with introduction of escape Token, ensure only values in current interval are replaced, 
+        		// e.g. correct: "1: ${XY), 2: \${XY}" -> "1: 100, 2: ${XY}" vs. 
+        		//    incorrect: "1: ${XY), 2: \${XY}" -> "1: 100, 2: \100" (if case)
+                text = replaceAll(text, fromIndex, to, sub, subValue);
+        	}
          }
          else {
             minIndex = fromIndex+1;  // to support all recursions
@@ -117,7 +162,7 @@ public final class ReplaceVariable
                throw new IllegalArgumentException("ReplaceVariable: Maximum nested depth of " + this.maxNest + " reached for '" + text + "'.");
             }
             System.out.println("ReplaceVariable: Maximum nested depth of " + this.maxNest + " reached for '" + text + "'.");
-            return text;
+            return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
          }
       }
    }
@@ -133,8 +178,18 @@ public final class ReplaceVariable
      return template.contains(this.startToken) && template.contains(this.endToken); // "${" "}"
    }
    
+
    /**
-   * Replace all occurrences of "from" with to "to".
+   * Replace all occurrences of "from" with to "to" in the range from fromIndex to toIndex.
+   */
+   private final static String replaceAll(String str, int fromIndex, int toIndex, String from, String to) {
+      if (str == null || str.length() < 1 || from == null || to == null)
+         return str;
+      return str.substring(0, fromIndex) + str.substring(fromIndex, toIndex+1).replace(from, to) + str.substring(toIndex+1);
+   }
+
+   /**
+   * Replace all occurrences of "from" with to "to" in the range from fromIndex to the end of string.
    */
    public final static String replaceAll(String str, int fromIndex, String from, String to) {
       if (str == null || str.length() < 1 || from == null || to == null)
@@ -291,7 +346,8 @@ public final class ReplaceVariable
     * java org.xmlBlaster.util.ReplaceVariable -startToken @ -endToken @ -template '@A@' -A aa -B bb -Abb WRONG -aabb OK
     */
    public static void main(String args[]) {
-      String template = "Hello ${A} and ${B}, ${A${B}}";
+      String template = "Hello ${A} and ${B}, ${A${B}}, \\${A} and \\${B}, \\${A${B}}, \\${A\\${B}} ";
+      template = "\\${A}=${A} Hello ${A} and ${B}, ${A${B}}, \\${A} and \\${B}, \\${A${B}}, \\${A\\${B}} ";
       String startToken = "${";
       String endToken = "}";
       for (int i=0; i<args.length-1; i++) { // Add all "-key value" command line
@@ -309,6 +365,7 @@ public final class ReplaceVariable
       System.out.println("Using startToken=" + startToken + " and endToken=" + endToken);
 
       ReplaceVariable r = new ReplaceVariable(startToken, endToken);
+      r.setEscapeToken("\\");
       String result = r.replace(template,
          new I_ReplaceVariable() {
             public String get(String key) {
