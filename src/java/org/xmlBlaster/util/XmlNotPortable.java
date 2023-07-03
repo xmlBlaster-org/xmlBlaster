@@ -11,12 +11,18 @@ package org.xmlBlaster.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPathFunction;
+import javax.xml.xpath.XPathFunctionException;
+import javax.xml.xpath.XPathFunctionResolver;
 
+import org.apache.xml.dtm.ref.DTMNodeList;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -112,6 +118,37 @@ public class XmlNotPortable
                // recursively invoke a newInstance method, even from the same
                // thread.
                javax.xml.xpath.XPathFactory xpathFactory = javax.xml.xpath.XPathFactory.newInstance();
+
+               
+               // Some XPath 1.4 functions to make our life easier
+               xpathFactory.setXPathFunctionResolver(new XPathFunctionResolver() {
+                  @Override
+                  public XPathFunction resolveFunction(QName functionName, int arity) {
+                     if (arity == 2 && functionName.getLocalPart().equals("matches")) {
+                        return new XPathFunction() {
+                           @Override
+                           public Object evaluate(List args) throws XPathFunctionException {
+                              try {
+                                 Object a0 = args.get(0);
+                                 Object a1 = args.get(1);
+                                 if (a0 instanceof String && a1 instanceof String)
+                                    return ((String) a0).matches((String) a1);
+                                 else if (a0 instanceof NodeList && a1 instanceof String) {
+                                    NodeList in = (NodeList) a0;
+                                    String text = in.item(0).getTextContent();
+                                    return text.matches((String) a1);
+                                 }
+                              } catch (Throwable e) {
+                                 log.warning("Invalid call to matches in XPath expression " + expression + ": " + e.getMessage());
+                              }
+                              return null;
+                           }
+                        };
+                     }
+                     // TODO Auto-generated method stub
+                     return null;
+                  }
+               });
                // The XPathFactory class is not thread-safe. In other words, it
                // is the application's responsibility to ensure
                // that at most one thread is using a XPathFactory object at any
