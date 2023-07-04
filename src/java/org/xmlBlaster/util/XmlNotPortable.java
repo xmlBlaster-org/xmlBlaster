@@ -108,7 +108,7 @@ public class XmlNotPortable
    /**
     * Do XPath query on DOM
     */
-   public static Enumeration getNodeSetFromXPath(String expression, org.w3c.dom.Document document) throws XmlBlasterException {
+   public static Enumeration getNodeSetFromXPath(final String expression, org.w3c.dom.Document document) throws XmlBlasterException {
       try {
          if (getJvmXmlVersionToUse() >= 15) {
             javax.xml.xpath.XPath xpath = null;

@@ -295,9 +295,9 @@ public class XbMqttDriver extends Thread implements I_Driver /* which extends I_
       while (true) {
          HandleMqttClient h = null;
          synchronized (handleClientSet) {
-            Iterator it = handleClientSet.iterator();
+            Iterator<HandleMqttClient> it = handleClientSet.iterator();
             if (it.hasNext()) {
-               h = (HandleMqttClient) it.next();
+               h = it.next();
                it.remove();
             } else
                break;

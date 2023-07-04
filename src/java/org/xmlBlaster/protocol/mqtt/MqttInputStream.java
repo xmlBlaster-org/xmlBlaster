@@ -5,6 +5,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttDataTypes;
@@ -17,19 +21,55 @@ import org.xmlBlaster.util.def.ErrorCode;
  * detects MQTT v3/v5
  */
 public class MqttInputStream extends InputStream {
-   //private static Logger log = Logger.getLogger(MqttInputStream.class.getName());
+   private static Logger log = Logger.getLogger(MqttInputStream.class.getName());
+   
+   public interface I_MessageListener {
+      /** Return true to intercept message */
+      boolean onMessage(MqttWireMessage msg) throws MqttException, IOException;
+   }
 
    private DataInputStream in;
    private ByteArrayOutputStream baos = new ByteArrayOutputStream();
    private int mqttVersion = -1;
+   
+   private Set<I_MessageListener> listeners = new HashSet<>();
 
    public MqttInputStream(InputStream in) {
       this.in = new DataInputStream(in);
    }
+   
+   /**
+    * Listener will be called until it returns true once, Then it is removed. 
+    * @param listener
+    */
+   public void addResponseListener(I_MessageListener listener) {
+      synchronized (listeners) {
+         this.listeners.add(listener);
+      }
+   }
+   
+   public void removeResponseListener(I_MessageListener listener) {
+      synchronized (listeners) {
+         this.listeners.remove(listener);
+      }
+   }
+   
+   private boolean notifyResponseListeners(MqttWireMessage msg) throws MqttException, IOException {
+      synchronized (listeners) {
+         Iterator<I_MessageListener> it = listeners.iterator();
+         while (it.hasNext()) {
+            I_MessageListener l = it.next();
+            if (l.onMessage(msg)) {
+               it.remove();
+               return true;
+            }
+         }
+      }
+      return false;
+   }
 
    @Override
    public int read() throws IOException {
-      // TODO Auto-generated method stub
       return in.read();
    }
 
@@ -77,10 +117,16 @@ public class MqttInputStream extends InputStream {
          if (mqttVersion < 0 && type == MqttWireMessage.MESSAGE_TYPE_CONNECT)
             mqttVersion = messageData[6];
 
-         return createWireMessage(type, reserved, messageData);
+         message = createWireMessage(type, reserved, messageData);
+         if (message != null)
+            log.info("mqtt recv: " + message.toString());
+         if (notifyResponseListeners(message))
+            message = null;
       } catch (SocketTimeoutException e) {
          // ignore socket read timeout
       }
+      
+
 
       return message;
    }
@@ -92,10 +138,14 @@ public class MqttInputStream extends InputStream {
       // case MqttWireMessage.MESSAGE_TYPE_CONNACK:
       case MqttWireMessage.MESSAGE_TYPE_PUBLISH:
          return XbMqttPublish.parse(mqttVersion, reserved, data);
-      // case MqttWireMessage.MESSAGE_TYPE_PUBACK:
-      // case MqttWireMessage.MESSAGE_TYPE_PUBREC:
-      // case MqttWireMessage.MESSAGE_TYPE_PUBREL:
-      // case MqttWireMessage.MESSAGE_TYPE_PUBCOMP:
+      case MqttWireMessage.MESSAGE_TYPE_PUBACK:
+         return XbMqttPubAck.parse(mqttVersion, reserved, data);
+      case MqttWireMessage.MESSAGE_TYPE_PUBREC:
+         return XbMqttPubRec.parse(mqttVersion, data);
+      case MqttWireMessage.MESSAGE_TYPE_PUBREL:
+         return XbMqttPubRel.parse(mqttVersion, data);
+      case MqttWireMessage.MESSAGE_TYPE_PUBCOMP:
+         return XbMqttPubComp.parse(mqttVersion, data);
       case MqttWireMessage.MESSAGE_TYPE_SUBSCRIBE:
          return XbMqttSubscribe.parse(mqttVersion, data);
       // case MqttWireMessage.MESSAGE_TYPE_SUBACK:
@@ -109,6 +159,7 @@ public class MqttInputStream extends InputStream {
          return XbMqttDisconnect.parse(mqttVersion, data);
       // case MqttWireMessage.MESSAGE_TYPE_AUTH:
       default:
+         //System.out.println("unknown message type " + type);
          return null;
       }
 

@@ -65,4 +65,9 @@ public class XbMqttConnect extends org.eclipse.paho.mqttv5.common.packet.MqttCon
       super(clientId, mqttVersion, cleanStart, keepAliveInterval, properties, willProperties);
    }
 
+   public String toLogString() {
+      return "MqttConnect [clientId=" + this.getClientId() + ", cleanStart=" + this.isCleanStart() + ", willDestination=" + this.getWillDestination() + ", userName=" + this.getUserName() + ", keepAliveInterval=" + this.getKeepAliveInterval() + ", mqttVersion=" + this.getMqttVersion() + "]";
+
+   }
+
 }

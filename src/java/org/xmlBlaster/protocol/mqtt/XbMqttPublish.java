@@ -49,6 +49,8 @@ public class XbMqttPublish extends MqttPublish implements I_XbMqttWireMessage {
       v3msg.setRetained(v5msg.isRetained());
 
       org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish v3pub = new org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish(this.getTopicName(), v3msg);
+      v3pub.setMessageId(this.getMessageId());
+      v3pub.setDuplicate(this.isDuplicate());
 
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       try {

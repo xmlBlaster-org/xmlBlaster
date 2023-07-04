@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -28,6 +31,7 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.engine.ServerScope;
@@ -49,6 +53,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
@@ -67,6 +72,8 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
 public class HandleMqttClient implements Runnable, I_CallbackDriver {
    private String ME = "HandleMqttClient";
    private static Logger log = Logger.getLogger(HandleMqttClient.class.getName());
+   private static final String KEY_QOS_LEVEL = "_mqttQosLevel";
+   
    private XbMqttDriver driver;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate;
@@ -95,16 +102,18 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
 
    private boolean running;
 
-   private ServerScope serverGlob;
+   // private ServerScope serverGlob;
    private Global glob;
 
    private XbMqttPublish lastWill;
+
+   private AtomicInteger nextMessageId = new AtomicInteger(0);
 
    /**
     * Creates an instance which serves exactly one client.
     */
    public HandleMqttClient(ServerScope glob, XbMqttDriver driver, Socket sock) throws IOException {
-      this.serverGlob = glob;
+      // this.serverGlob = glob;
       this.glob = new Global(); // new global for client scope
       this.driver = driver;
       this.sock = sock;
@@ -186,7 +195,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          driver.removeClient(this);
       }
       I_Authenticate auth = this.authenticate;
-      if (auth != null) {
+      if (auth != null && this.connectReturnQos != null) {
          // From the point of view of the incoming client connection we are dead
          // The callback dispatch framework may have another point of view (which is not
          // of interest here)
@@ -267,7 +276,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          }
       }
 
-      filter = xbFilter.toString();
+      filter = xbFilter.toString(); 
       // If we end with wildcard, we also need to match the parent topic...
       if (filter.endsWith(levelSeparatorEscaped + ".*")) {
          int suffix = levelSeparatorEscaped.length() + 2;
@@ -298,10 +307,16 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          securityQos.setUserId(login);
          securityQos.setCredential(password);
 
+         // SessionQos
+         // TODO: persistence, timeout
+         //conQosData.getSessionQos().setSessionTimeout(message.get)
+         
          // ClientProps
          for (UserProperty prop : message.getProperties().getUserProperties()) {
             conQosData.addClientProperty(prop.getKey(), prop.getValue());
          }
+         
+
 
          // long sessionId = Integer.toUnsignedLong(message.getClientId().hashCode()); //
          // TODO: should we do something like this?
@@ -326,6 +341,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
 
          this.connectReturnQos = authenticate.connect(conQos);
 
+         // TODO: should we check permission of will topic first?
          if (message.getWillDestination() != null && message.getWillDestination().length() > 0) {
             this.lastWill = new XbMqttPublish(message.getWillDestination(), message.getWillMessage(), message.getWillProperties());
          }
@@ -337,11 +353,16 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          returnProps.setMaximumQoS(1);
          returnProps.setAssignedClientIdentifier(connectReturnQos.getSecretSessionId());
 
+         log.info("Accepted mqtt version " + message.getMqttVersion() + " connection " + connectReturnQos.getSecretSessionId() + ": " + message.toLogString());
+         
          XbMqttConnAck connack = new XbMqttConnAck(true, 0, returnProps);
          outputStream.write(connack);
       } catch (XmlBlasterException e) {
          log.warning(ME + " Connect failed: " + e.toString());
-         XbMqttConnAck connack = new XbMqttConnAck(false, 128, null); // TODO: better return codes
+         int retCode = 0x80;
+         if (ErrorCode.getCategory(e.getErrorCode()) == ErrorCode.USER_SECURITY)
+            retCode = 0x87; // "Not authorized"
+         XbMqttConnAck connack = new XbMqttConnAck(false, retCode, null); // TODO: better return codes
          outputStream.write(connack);
       }
    }
@@ -364,12 +385,16 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             SubscribeQos qos = new SubscribeQos(glob);
             SubscribeKey key = new SubscribeKey(glob, filter, Constants.XPATH);
             qos.setPersistent(false);
-            qos.setMultiSubscribe(false);
+            qos.setMultiSubscribe(true);
             qos.setWantNotify(true);
+            qos.setWantInitialUpdate(true);
 
             for (UserProperty prop : message.getProperties().getUserProperties())
                qos.getData().addClientProperty(prop.getKey(), prop.getValue());
-
+            
+            qos.addClientProperty(KEY_QOS_LEVEL, subscription.getQos());
+            
+            
             xb.subscribe(null, connectReturnQos.getSecretSessionId(), key.toXml(), qos.toXml());
             returnCodes[count++] = 0;
          } catch (Throwable e) {
@@ -411,18 +436,47 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          pubKey.setContentMime(message.getProperties().getContentType());
 
       qos.setPersistent(message.isRetained());
-      qos.setVolatile(message.isRetained());
+      qos.setVolatile(!message.isRetained());
       if (publish.getProperties().getMessageExpiryInterval() != null)
          qos.setLifeTime(publish.getProperties().getMessageExpiryInterval());
 
       MsgUnit msgUnit = new MsgUnit(pubKey, content, qos);
 
-      if (message.getQos() == 0)
+      if (message.getQos() == 0) {
+         // TODO: this still triggers update() and not updateOneway()??
          xb.publishOneway(addressServer, connectReturnQos.getSecretSessionId(), new MsgUnitRaw[] { msgUnit.getMsgUnitRaw() });
-      else if (message.getQos() == 1) {
-         xb.publish(addressServer, connectReturnQos.getSecretSessionId(), msgUnit.getMsgUnitRaw());
-         if (outStream != null)
-            outStream.write(new XbMqttPubAck(0, publish.getMessageId(), null));
+      } else if (message.getQos() == 1 || message.getQos() == 2) {
+         int retCode = 0;
+         MqttProperties props = new MqttProperties();
+         try {
+            String result = xb.publish(addressServer, connectReturnQos.getSecretSessionId(), msgUnit.getMsgUnitRaw());
+            if (outStream != null && result != null) {
+               PublishReturnQos retQos = new PublishReturnQos(glob, result);
+               for (ClientProperty prop : retQos.getData().getClientPropertyArr())
+                  props.getUserProperties().add(new UserProperty(prop.getName(), prop.getStringValue()));
+            }
+         } catch (XmlBlasterException ex) {
+            if (ErrorCode.getCategory(ex.getErrorCode()) == ErrorCode.USER_SECURITY)
+               retCode = 0x87; // "Not authorized"
+            else
+               retCode = 0x80; // "Unspecified error"
+         }
+
+         if (outStream != null) {
+            if (message.getQos() == 1) { 
+               outStream.write(new XbMqttPubAck(retCode, publish.getMessageId(), props)); // TODO: better error codes
+            } else {
+               // TODO: incomplete QoS level 2 - we just pretend
+               mqttIStream.addResponseListener((msg) -> {
+                  if (msg instanceof XbMqttPubRel && msg.getMessageId() == publish.getMessageId()) {
+                     outStream.write(new XbMqttPubComp(0, publish.getMessageId(), null));
+                     return true;
+                  }
+                  return false;
+               });
+               outStream.write(new XbMqttPubRec(0, publish.getMessageId(), props));
+            }
+         }
       } else {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION, "MQTT QoS level " + message.getQos() + " not implemented");
       }
@@ -443,6 +497,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             for (UserProperty prop : unsubscribe.getProperties().getUserProperties()) {
                qos.addClientProperty(prop.getKey(), prop.getValue());
             }
+            // remember qos level of subscri
 
             xb.unSubscribe(addressServer, connectReturnQos.getSecretSessionId(), key.toXml(), qos.toXml());
             result[i] = 0;
@@ -595,25 +650,53 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
    }
 
    @Override
-   public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      String[] result = new String[msgArr.length];
+   public String[] sendUpdate(final MsgUnitRaw[] msgArr) throws XmlBlasterException {
+      final CountDownLatch allAckLatch = new CountDownLatch(msgArr.length);
+      final String[] results = new String[msgArr.length];
+      
       for (int i = 0; i < msgArr.length; i++) {
-         result[i] = "";
-         sendMsgUnit(msgArr[i], 0);
+         final int msgId = this.nextMessageId.getAndIncrement();
+         final int msgArrIdx = i;
+         
+         mqttIStream.addResponseListener((msg) -> {
+            if (msg instanceof XbMqttPubAck && msg.getMessageId() == msgId) {
+               results[msgArrIdx] = ""; // TODO: ??? What if error code?
+               allAckLatch.countDown();
+               return true;
+            }
+            return false;
+         });
+
+         try {
+            sendMsgUnit(msgArr[i], 1, msgId);
+         } catch (Throwable e) {
+            // allAckLatch.countDown(); // won't receive ack for this one
+            throw e;
+            // TODO: how to do exception handling? Mark fail in resultArray? Or fail all with exception?
+         }
       }
-      return result;
+
+      // Wait for all acks..
+      try {
+         allAckLatch.await(30, TimeUnit.SECONDS); // TODO: timeout handling? No ACK in time?
+      } catch (InterruptedException e) {
+      }
+
+
+      return results;
    }
 
    @Override
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
       for (MsgUnitRaw unitRaw : msgArr) {
-         sendMsgUnit(unitRaw, 0);
+         sendMsgUnit(unitRaw, 0, 0);
       }
    }
 
-   private void sendMsgUnit(MsgUnitRaw unitRaw, int qos) throws XmlBlasterException {
+   private void sendMsgUnit(MsgUnitRaw unitRaw, int qos, int messageId) throws XmlBlasterException {
       try {
-         MsgUnit unit = new MsgUnit(glob, unitRaw, MethodName.UPDATE_ONEWAY);
+         MsgUnit unit = new MsgUnit(glob, unitRaw, MethodName.UPDATE);
+         MsgQosData qosData = (MsgQosData) unit.getQosData();
 
          String topicName = unit.getKeyOid().replace(this.levelSeparator, "/");
 
@@ -627,11 +710,13 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             props.setContentType(unit.getContentMime());
 
          MqttMessage message = new MqttMessage(unit.getContent());
-         message.setQos(0);
-         message.setRetained(unit.getQosData().isPersistent());
+         message.setQos(qos);
+         message.setRetained(!qosData.isVolatile());
+         message.setDuplicate(qosData.getRedeliver() > 0);
 
          XbMqttPublish publish = new XbMqttPublish(topicName, message, props);
-
+         publish.setMessageId(messageId);
+         
          this.mqttOStream.write(publish);
       } catch (XmlBlasterException e) {
          throw e;
@@ -647,19 +732,17 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
 
    @Override
    public String getVersion() {
-      // TODO Auto-generated method stub
       return "1.0";
    }
 
    @Override
    public String ping(String qos) throws XmlBlasterException {
-      // TODO: ??
+      // TODO: ?? Mqtt only allows pings from client to server
       return "pong";
    }
 
    @Override
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      // TODO: ???
       return null;
    }
 }
