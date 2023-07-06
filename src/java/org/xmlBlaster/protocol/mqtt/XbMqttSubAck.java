@@ -42,15 +42,12 @@ public class XbMqttSubAck extends MqttSubAck implements I_XbMqttWireMessage {
       try {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          DataOutputStream outputStream = new DataOutputStream(baos);
-         byte b;
-         int i, arrayOfInt[];
-         for (i = (arrayOfInt = this.reasonCodes).length, b = 0; b < i;) {
-            int returnCode = arrayOfInt[b];
+         for (int i = 0; i < this.reasonCodes.length; i++) {
+            int returnCode = this.reasonCodes[i];
             // in mqtt3, only 0x80 indicates failure
             if (returnCode > 0x80)
                returnCode = 0x80;
             outputStream.writeByte(returnCode);
-            b++;
          }
          outputStream.flush();
          return baos.toByteArray();
