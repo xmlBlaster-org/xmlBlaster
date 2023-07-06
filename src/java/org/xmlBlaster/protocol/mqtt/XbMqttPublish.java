@@ -17,9 +17,13 @@ public class XbMqttPublish extends MqttPublish implements I_XbMqttWireMessage {
       try {
          org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish v3pub = new org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish(reserved, data);
          org.eclipse.paho.client.mqttv3.MqttMessage v3msg = v3pub.getMessage();
+         
          MqttMessage v5msg = new MqttMessage(v3msg.getPayload(), v3msg.getQos(), v3msg.isRetained(), new MqttProperties());
+         v5msg.setId(v3msg.getId());
+         XbMqttPublish v5pub = new XbMqttPublish(v3pub.getTopicName(), v5msg, null);
+         v5pub.setMessageId(v3pub.getMessageId());
 
-         return new XbMqttPublish(v3pub.getTopicName(), v5msg, null);
+         return v5pub;
       } catch (Throwable e) {
          throw new MqttException(e);
       }
