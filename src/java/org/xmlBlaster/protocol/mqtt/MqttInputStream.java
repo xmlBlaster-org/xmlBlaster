@@ -118,8 +118,8 @@ public class MqttInputStream extends InputStream {
             mqttVersion = messageData[6];
 
          message = createWireMessage(type, reserved, messageData);
-         if (message != null)
-            log.info("mqtt recv: " + message.toString());
+         //if (message != null)
+         //   log.info("mqtt recv: " + message.toString());
          if (notifyResponseListeners(message))
             message = null;
       } catch (SocketTimeoutException e) {

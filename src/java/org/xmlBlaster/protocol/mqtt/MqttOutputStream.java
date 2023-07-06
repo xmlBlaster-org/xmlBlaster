@@ -25,7 +25,7 @@ public class MqttOutputStream {
          data = ((I_XbMqttWireMessage) message).serializeV5();
       }
       if (data != null && data.length > 0) {
-         log.info("mqtt write " + message.toString());
+         //log.info("mqtt write " + message.toString());
          os.write(data);
       }
    }
