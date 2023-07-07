@@ -166,6 +166,7 @@ TODO
    <property name="cp.jmx" value="lib/jmxri.jar:lib/jmxtools.jar:lib/jmxremote.jar:lib/mx4j-tools.jar:lib/mx4j-impl.jar"/>
    <property name="cp.javacup" value="lib/java_cup.jar"/>
    <property name="cp.stomp" value="lib/stompconnect-1.0.jar"/>
+   <property name="cp.mqtt" value="lib/org.eclipse.paho.client.mqttv3-1.2.5.jar:lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"/>
 
    <!--
    <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
@@ -174,7 +175,7 @@ TODO
    <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
    -->
-   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}:${cp.xmlrpc3}:${cp.stomp}"/>
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}:${cp.xmlrpc3}:${cp.stomp}:${cp.mqtt}"/>
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
    <property name="svnversion.exe" value="svnversion"/>  <!-- On UNIX: /usr/bin/svnversion -->

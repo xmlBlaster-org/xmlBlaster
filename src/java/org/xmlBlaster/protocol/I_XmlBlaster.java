@@ -107,6 +107,8 @@ public interface I_XmlBlaster
      * All none "OK" values tell that the server is not willing to process messages.
      */
    public String ping(AddressServer addressServer, String qos) throws XmlBlasterException;
+   
+   public void refreshSession(AddressServer addressServer) throws XmlBlasterException;
 
    public String toXml() throws XmlBlasterException;
    public String toXml(String extraOffset) throws XmlBlasterException;

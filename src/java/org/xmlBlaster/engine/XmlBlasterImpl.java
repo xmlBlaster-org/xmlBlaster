@@ -559,6 +559,39 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+"), returning " + ret + " ...");
       return ret;
    }
+   
+   public final void refreshSession(AddressServer addressServer) throws XmlBlasterException {
+      // secretSessionId is always unknown here !!!
+      // sessionName is always null since not filled. Workaround for Socket
+      SessionName sessionName = addressServer.getSessionName();
+      
+      if (sessionName == null) {
+         Object cbd = addressServer.getCallbackDriver();
+         //boolean isTunnel = false;
+         if (cbd != null && cbd instanceof CallbackSocketDriver) {
+            CallbackAddress cba = ((CallbackSocketDriver)cbd).getCallbackAddress();
+            if (cba != null) {
+               sessionName = cba.getSessionName();
+            }
+            else {
+//               if (!isTunnel)
+                log.warning(ME + " " + ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE +  " XmlBlasterImpl ping failed since no CallbackAddress, no SessionInfo found");
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, "XmlBlasterImpl", "ping failed since no CallbackAddress, no SessionInfo found");
+               //return "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>";
+            }
+         }
+      }
+      
+      if (sessionName != null) {
+         SessionInfo info = null;
+         if (sessionName != null)
+            info = authenticate.getSessionInfo(sessionName);
+         if (info == null || info.isShutdown())
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, "XmlBlasterImpl", "ping failed since no SessionInfo found");
+         
+         info.refreshSession();
+      }
+   }
 
    /**
     * @todo Call me
