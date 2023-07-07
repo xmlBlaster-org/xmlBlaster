@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
+ o f88255733 2023-07-07: adrian
+   Integrated MQTT driver plugin
+   Needs Java 1.8 (before 1.7 was enough)
 
  o 96b237694 2023-02-23: michele
    protected against NPE in SessionInfo 

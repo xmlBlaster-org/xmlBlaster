@@ -193,6 +193,10 @@ public class SocketUrl {
    public int getPort() {
       return this.port;
    }
+   
+   public void setPort(int port) {
+      this.port = port;
+   }
 
    /**
     * @return for example "socket://myServer.com:7607"

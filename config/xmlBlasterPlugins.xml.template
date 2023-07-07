@@ -98,6 +98,15 @@
       <attribute id='port'>61613</attribute>
    </plugin>
 
+   <!-- ProtocolPlugin[MQTT][1.0] for MQTT clients port=1883 -->
+   <plugin create='false' id='MQTT' className='org.xmlBlaster.protocol.mqtt.XbMqttDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='35'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='35'/>
+      <attribute id='mqtt.topicOidLevelSeparator'>/</attribute>
+      <!--<attribute id='hostname'>0.0.0.0</attribute>-->
+   </plugin>
+
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
    <plugin create='false' id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='40'/> 

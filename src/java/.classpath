@@ -95,6 +95,8 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/batik.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/stompconnect-1.0.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/org.eclipse.paho.client.mqttv3-1.2.5.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"/>
 	<classpathentry exported="true" kind="var" path="XMLBLASTER_HOME"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-1.2-api-2.16.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-api-2.16.0.jar"/>
