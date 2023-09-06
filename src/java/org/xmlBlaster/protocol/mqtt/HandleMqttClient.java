@@ -121,6 +121,10 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
    private XbMqttPublish lastWill;
 
    private AtomicInteger nextMessageId = new AtomicInteger(0);
+   
+   public HandleMqttClient() {
+      this.glob = new Global(); // new global for client scope
+   }
 
    /**
     * Creates an instance which serves exactly one client.

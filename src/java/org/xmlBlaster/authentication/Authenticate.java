@@ -496,6 +496,11 @@ final public class Authenticate implements I_RunlevelListener
             connectQos.getSessionQos().setSessionName(sessionInfo.getSessionName());
             subjectInfo.notifyAboutLogin(sessionInfo);
             fireClientEvent(sessionInfo, true);
+         } catch (Throwable e) {
+            // 2023-09-06 11:32:09.639 [31;40mSEVERE [0m 1-XmlBlaster.MainThread RL3 stderr : errorCode=resource.configuration message=#2.2.1 Plugin 'CbProtocolPlugin[MQTT][1.0] plugin/MQTT/ null' not found, please check your configuration
+            log.warning("Failed to init session " + e.getMessage());
+            e.printStackTrace();
+            throw e;
          }
          finally {
             if (subjectInfo != null) subjectInfo.getLock().unlock();
