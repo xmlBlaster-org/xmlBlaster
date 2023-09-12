@@ -35,4 +35,5 @@ Class-Path: xmlrpc3/commons-logging-1.1.jar
  quartz/quartz-all-1.6.5.jar 
  stompconnect-1.0.jar 
  javax.jms.jar
-
+ org.eclipse.paho.client.mqttv3-1.2.5.jar
+ org.eclipse.paho.mqttv5.client-1.2.5.jar

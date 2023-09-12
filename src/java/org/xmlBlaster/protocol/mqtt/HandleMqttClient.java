@@ -121,6 +121,10 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
    private XbMqttPublish lastWill;
 
    private AtomicInteger nextMessageId = new AtomicInteger(0);
+   
+   public HandleMqttClient() {
+      this.glob = new Global(); // new global for client scope
+   }
 
    /**
     * Creates an instance which serves exactly one client.
@@ -463,9 +467,10 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             qos.addClientProperty(KEY_MAX_QOS_LEVEL, subscription.getQos());
             qos.addClientProperty(KEY_RETAIN_AS_PUBLISHED, subscription.isRetainAsPublished());
             
-            
             xb.subscribe(null, connectReturnQos.getSecretSessionId(), key.toXml(), qos.toXml());
-            returnCodes[count++] = 0;
+            
+            int grantedQos = subscription.getQos() >= 1 ? 1 : 0;
+            returnCodes[count++] = grantedQos;
          } catch (Throwable e) {
             log.warning("MQTT subscribe failed for filter " + subscription.getTopic() + " -> " + filter + ": " + e.getMessage());
             returnCodes[count++] = 128;
