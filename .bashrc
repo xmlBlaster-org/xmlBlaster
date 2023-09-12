@@ -184,6 +184,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar:${XMLBLASTER_HOME}/lib/mx4j-impl.jar:${XMLBLASTER_HOME}/lib/mx4j-tools.jar 
 
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/stompconnect-1.0.jar
+   
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/org.eclipse.paho.client.mqttv3-1.2.5.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/org.eclipse.paho.mqttv5.client-1.2.5.jar
 
    # quartz scheduler
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/quartz-2.3.2-full.jar
