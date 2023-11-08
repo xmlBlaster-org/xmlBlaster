@@ -3,7 +3,11 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
- o 96b237694 2023-07-07: adrian
+  o 2023-11-08: marcel
+   In case a PtP fails with resource.overflow the other destinations are never the less served
+   XmlBlasterException getErrorCodeStr() never returns null
+
+  o 96b237694 2023-07-07: adrian
    Integrated MQTT driver plugin
    Needs Java 1.8 (before 1.7 was enough)
 
