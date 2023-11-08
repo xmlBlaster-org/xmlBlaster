@@ -241,8 +241,11 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       return this.errorCodeEnum == code;
    }
 
+   /**
+    * @return never null
+    */
    public final String getErrorCodeStr() {
-      return this.errorCodeStr;
+      return this.errorCodeStr == null ? "" : this.errorCodeStr;
    }
 
    public final String getNode() {

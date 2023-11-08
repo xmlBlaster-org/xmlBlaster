@@ -949,7 +949,18 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      receiverSessionInfo.getSessionQueue().getStorageId(),
                      destination.getDestination(),
                      Constants.SUBSCRIPTIONID_PtP, false, false);
-            receiverSessionInfo.queueMessage(msgEntry);
+            try {
+               receiverSessionInfo.queueMessage(msgEntry);
+            }
+            catch (XmlBlasterException ex) {
+               if (!ex.getErrorCodeStr().startsWith("resource.overflow.")) {
+                  throw ex;
+               }
+               // /node/xxxxx/topic/device.PtPAlarmTopic.cfg: XmlBlasterException errorCode=[resource.overflow.queue.entries]
+               // [callback:/node/xxxxxx/client/yyyyy/session/6:]
+               // message=[#6b66d610f Cache queue overflow, 60001 entries are in queue, try increasing '-queue/callback/maxEntries' on client login
+               log.warning(ME+": PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "] lost: " + ex.getMessage());
+            }
             continue;
          }
          finally {
