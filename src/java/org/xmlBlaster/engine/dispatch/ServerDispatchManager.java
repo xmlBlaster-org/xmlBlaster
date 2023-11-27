@@ -137,8 +137,8 @@ public final class ServerDispatchManager implements I_DispatchManager
        * and if none is found one is created (see DispatcherPluginManager)
        * Default server setting is to use no dispatcher plugin
        */
-      PropString propString = new PropString(PluginManagerBase.NO_PLUGIN_TYPE); // "undef";
-      if (addrArr != null && addrArr.length > 0) // Check if client wishes a specific plugin
+      PropString propString = new PropString(glob.getProperty().get("DispatchPlugin/defaultPlugin", PluginManagerBase.NO_PLUGIN_TYPE));
+      if (addrArr != null && addrArr.length > 0 && !PluginManagerBase.NO_PLUGIN_TYPE.equals(addrArr[0].getDispatchPlugin())) // Check if client wishes a specific plugin
          propString.setValue(addrArr[0].getDispatchPlugin());
       this.typeVersion = propString.getValue();
       this.msgInterceptor = glob.getDispatchPluginManager().getPlugin(this.typeVersion); // usually from cache
