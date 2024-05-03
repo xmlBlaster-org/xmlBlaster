@@ -347,15 +347,19 @@ public class DropIfNotDeliverableUniqueOnly implements I_Plugin, I_AccessFilter,
 	   
 	  try {
 	  	 if (sn == null) {
-	   		 log.severe("Failed to execute, sessionName is null");
+	   		 log.severe("Failed to execute " + type + ", sessionName is null");
 	   		 return;
 	   	 }
 	   	 I_AdminSubject subjectInfo = serverScope.getAuthenticate().getSubjectInfoByName(sn);
 	   	 if (subjectInfo == null) {
-	   		 log.severe("Failed to execute, subjectInfo is null for " + sn);
+	   		 log.severe("Failed to execute " + type + ", subjectInfo is null for " + sn);
 	   		 return;
 	   	 }
 	     I_AdminSession receiver = subjectInfo.getSessionByPubSessionId(sn.getPublicSessionId());
+	     if (receiver == null) {
+	   		 log.severe("Failed to execute " + type + ", receiver is null for " + sn);
+	   		 return;
+	     }
 	     List<QueryQosData> queryQosDatas = receiver.getSubscriptionQos();
 	     String[] subIds = receiver.getRootSubscriptions(); // receiver.getSubscriptions();
 	     if (log.isLoggable(Level.FINE))
