@@ -131,11 +131,6 @@ TODO
    <property name="demo.http.dir"        value="${demo.dir}/http"/>
    <property name="WEB-INF"              value="${demo.http.dir}/WEB-INF"/>
 
-   <property name="idl" value="org.xmlBlaster.protocol.corba"/>
-   <property name="idl.class" value="org.jacorb.idl.parser"/>
-   <property name="idl.dir" value="./src/java/org/xmlBlaster/protocol/corba"/>
-   <property name="idl.file" value="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl" />
-
    <property name="build.dir" value="./build.tmp"/>
    <property name="build.src" value="${build.dir}/src"/>
    <property name="build.dest" value="${build.dir}/classes"/>
@@ -154,7 +149,6 @@ TODO
 
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar"/>
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
-   <property name="cp.orb" value="lib/miniJacorb.jar:lib/jacorb/idl.jar:lib/jacorb/jacorb.jar:lib/jacorb/logkit-1.2.jar:lib/jacorb/avalon-framework-4.1.5.jar"/>
    <property name="cp.core" value="lib/remotecons.jar:lib/joda-time.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz/quartz-2.3.2-full.jar:lib/commons-collections-3.2.jar"/>
 
    <property name="cp.xmlrpc3" value="lib/xmlrpc3/commons-logging-1.1.jar:lib/xmlrpc3/ws-commons-util-1.0.2.jar:lib/xmlrpc3/xmlrpc-client-3.1.1.jar:lib/xmlrpc3/xmlrpc-common-3.1.1.jar:lib/xmlrpc3/xmlrpc-server-3.1.1.jar"/>
@@ -168,27 +162,11 @@ TODO
    <property name="cp.stomp" value="lib/stompconnect-1.0.jar"/>
    <property name="cp.mqtt" value="lib/org.eclipse.paho.client.mqttv3-1.2.5.jar:lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"/>
 
-   <!--
-   <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
-   <property name="soapdeploy.dir" value="./demo/soap"/>
-   <property name="soaplib.dir" value="lib/soap"/>
-   <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
-   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}:${cp.wrapper}:${cp.jmx}:${cp.javacup}"/>
-   -->
-   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}:${cp.xmlrpc3}:${cp.stomp}:${cp.mqtt}"/>
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.wrapper}:${cp.jmx}:${cp.javacup}:${cp.xmlrpc3}:${cp.stomp}:${cp.mqtt}"/>
    <property name="CXX" value="cxx"/>  <!-- for ORBIX 2000 (for the newer orbix EA 5.1 it should be empty (set in build.properties) -->
 
    <property name="svnversion.exe" value="svnversion"/>  <!-- On UNIX: /usr/bin/svnversion -->
    <property name="git.exe" value="git"/>
-   <!--
-   <path id="svn.classpath">
-         <pathelement location="${svnant.jar}" />
-         <pathelement location="${svnClientAdapter.jar}" />
-         <pathelement location="${svnjavahl.jar}" />
-   </path>
-   <taskdef resource="svntask.properties" classpathref="svn.classpath"/>
-   -->
-
 
    <!-- for the embedded java devices (j2me) : the WTK TOOLKIT -->
    <condition property="J2ME_HOME" value="${env.J2ME_HOME}">
@@ -205,22 +183,15 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
-   <property name="COMPILE_CORBA_PLUGIN" value="0" />   <!-- Add the Corba protocol plugin -->
    <property name="COMPILE_SOCKET_PLUGIN" value="1" />  <!-- Add the C socket library wrapper plugin? -->
 
    <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="build.src.cpp.dir" value="${build.src}/c++"/>
-   <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
-   <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
    <property name="xerces.include.dir" value="/usr/include"/>  <!-- Assumes ./xercesc subdirectory -->
    <property name="xerces.lib.dir" value="/usr/lib"/>
    <property name="xerces.lib.name" value="xerces-c"/>  <!-- On Windows it is xerces-c_2 -->
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
-   <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
-   <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
-   <property name="OMNIORB_LIBS" value="omniORB4,omnithread" /> <!-- The necessary libs for omniORB C++ clients -->
-   <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
    <property name="src.csharp.dir" value="./src/csharp"/>
    <property name="csharp.debug" value="true" />
@@ -400,7 +371,6 @@ TODO
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
       <echo message="         -DADD_HSQLDB=false    hsqldb.jar, for embedded database support [true]"/>
-      <echo message="         -DADD_CORBA=false     jacorb.jar, for CORBA support [true]"/>
       <echo message="         -DADD_XMLRPC=false    commons-logging-1.1.jar ws-commons-util-1.0.2.jar xmlrpc-client-3.1.1.jar xmlrpc-common-3.1.1.jar xmlrpc-server-3.1.1.jar, for XMLRPC support [true]"/>
       <echo message="         -DADD_SNMP=false      jax.jar, for SNMP support [false]"/>
       <echo message="         -DADD_EMAIL=false     no EMAIL support [true]"/>
@@ -428,7 +398,6 @@ TODO
       <echo message=""/>
       <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
       <echo message="         -DADD_HSQLDB=false    does not add hsqldb.jar, no embedded database support [true]"/>
-      <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support for clients [true]"/>
       <echo message="         -DADD_EMAIL=true      mail.jar,activaton.jar, for EMAIL support [false]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
@@ -439,11 +408,11 @@ TODO
       <echo message=""/>
       <echo message=" C++: Use '-DCPP_LINK=static' to create static libs, default are shared libraries .so,.dll,.sl,.dylib"/>
       <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
-      <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
+      <echo message="                   Check build.properties settings for C++ XML libraries"/>
       <echo message="   cpp-test    --> generates C++ test clients"/>
       <echo message="   cpp-demo    --> generates C++ demo clients"/>
       <echo message="   cpp         --> builds cpp-lib, cpp-test and cpp-demo"/>
-      <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
+      <echo message="   cpp-clean   --> cleans up C++ generated files (object files etc)"/>
       <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message=""/>
       <echo message=" C:   Use '-DC_LINK=static' to create static libs, default are shared libraries .so,.dll,.sl,.dylib"/>
@@ -485,7 +454,7 @@ TODO
       <echo message="   ${script} all"/>
       <echo message="   ${script} -Ddebug=off -DJVM.target=1.1 all"/>
       <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
-      <echo message="   ${script} -DADD_CORBA=false -DADD_PROP=mystuff/xmlBlaster.properties -DADD_PLUGINPROPS=mystuff/xmlBlasterPlugins.xml -DADD_LOGGINGPROP=mystuff/logging.properties dist-client"/>
+      <echo message="   ${script} -DADD_PROP=mystuff/xmlBlaster.properties -DADD_PLUGINPROPS=mystuff/xmlBlasterPlugins.xml -DADD_LOGGINGPROP=mystuff/logging.properties dist-client"/>
       <echo message="   ${script} -verbose cpp-lib"/>
       <echo message="   ant -lib lib/ant/cpptasks.jar c  (run outside of build.sh/build.bat)"/>
       <echo message=""/>
@@ -630,31 +599,6 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- Compile the xmlBlaster.idl file for the CORBA plugin                -->
-   <!-- Uses ${idl}=org.xmlBlaster.protocol.corba package prefix            -->
-   <!-- =================================================================== -->
-   <target name="java-corba-idl" depends="prepare" description="Compile xmlBlaster.idl to generate Java stubs and skeletons">
-      <echo message="Converting idl..."/>
-      <echo message="Comparing ${idl.dir}/xmlBlaster.idl to ${idl.dir}/serverIdl/Server.java"/>
-      <uptodate property="idlBuild.required" targetfile="${idl.dir}/serverIdl/Server.java" value="false">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-      <if><equals arg1="${idlBuild.required}" arg2="false" />
-         <then>
-            <echo message="CORBA stubs and skeletons are up to date" />
-         </then>
-         <else>
-            <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
-            <java classname="${idl.class}" classpath="${cp}" fork="true">
-               <arg line=" ${D_XBL_IDL_WSTRING} -i2jpackage serverIdl:${idl}.serverIdl -i2jpackage clientIdl:${idl}.clientIdl  -i2jpackage authenticateIdl:${idl}.authenticateIdl -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
-            </java>
-         </else>
-      </if>
-      <echo message="${idl.dir}/xmlBlaster.idl done"/>
-   </target>
-
-
-   <!-- =================================================================== -->
    <!-- Generate the lexical files (JFlex and JavaCup)                      -->
    <!-- JFlex is normally not in the distribution. If a JFlex.jar file is   -->
    <!-- found in ${xmlBlaster.lib} then JFlex is generated if not uptodate. -->
@@ -739,7 +683,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster core source directory                       -->
    <!-- =================================================================== -->
-   <target name="xmlBlaster" depends="java-corba-idl,prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
+   <target name="xmlBlaster" depends="prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
 
       <copy todir="${build.src}/xmlBlaster" filtering="${DO_FILTERING}">
          <fileset dir="${src.java.dir}">
@@ -776,7 +720,6 @@ TODO
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/node.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/node.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/globe.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/globe.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/config.xml" tofile="${build.dest}/org/xmlBlaster/jmxgui/util/config.xml"/>
-      <copy file="${config.dir}/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
       <copy file="${config.dir}/logging.properties" tofile="${build.dest}/logging.properties" filtering="true"/>
@@ -934,7 +877,7 @@ TODO
         includes="jboss-service.xml"
         prefix="META-INF"/>
       <fileset dir="${lib.dir}"
-        includes="activation.jar,jacorb/idl.jar,jacorb/avalon-framework-4.1.5.jar,jacorb/logkit-1.2.jar,jacorb/jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,joda-time.jar,jax.jar,xmlrpc3/commons-logging-1.1.jar,xmlrpc3/ws-commons-util-1.0.2.jar,xmlrpc3/xmlrpc-client-3.1.1.jar,xmlrpc3/xmlrpc-common-3.1.1.jar,xmlrpc3/xmlrpc-server-3.1.1.jar,gnu-regexp.jar,tinySQL.jar,jzlib.jar"
+        includes="activation.jar,omquery.jar,xtdash.jar,remotecons.jar,joda-time.jar,jax.jar,xmlrpc3/commons-logging-1.1.jar,xmlrpc3/ws-commons-util-1.0.2.jar,xmlrpc3/xmlrpc-client-3.1.1.jar,xmlrpc3/xmlrpc-common-3.1.1.jar,xmlrpc3/xmlrpc-server-3.1.1.jar,gnu-regexp.jar,tinySQL.jar,jzlib.jar"
         />                                             
       <fileset dir="${build.dir}/sar"
         includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
@@ -953,9 +896,6 @@ TODO
       <mkdir dir="${build.dir}/ra"/>
       <mkdir dir="${build.dir}/ra/META-INF"/>
 
-      <copy file="${lib.dir}/jacorb/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
-      <copy file="${lib.dir}/jacorb/avalon-framework-4.1.5.jar"  toFile="${build.dir}/ra/avalon-framework-4.1.5.jar"/>
-      <copy file="${lib.dir}/jacorb/logkit-1.2.jar"  toFile="${build.dir}/ra/logkit-1.2.jar"/>
       <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
     <!-- Remove propertyfile from build by commenting this  out   -->
     <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties" toFile="${build.dir}/ra/blasterk2.properties"/>
@@ -1052,18 +992,9 @@ TODO
       <copy file="${DIST_PATH}/${jarFile}" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
       <!--
       <copy file="${lib.dir}/hsqldb.jar" tofile="${build.war}/WEB-INF/lib/hsqldb.jar"/>
-      <copy file="${lib.dir}/jacorb/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
-      <copy file="${lib.dir}/jacorb/avalon-framework-4.1.5.jar" tofile="${build.war}/WEB-INF/lib/avalon-framework-4.1.5.jar"/>
-      <copy file="${lib.dir}/jacorb/logkit-1.2.jar" tofile="${build.war}/WEB-INF/lib/logkit-1.2.jar"/>
-      <copy file="${config.dir}/jacorb.properties.template" tofile="${build.war}/WEB-INF/classes/jacorb.properties" filtering="false"/>
       <copy file="${lib.dir}/xmlBlaster.jar" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
       -->
       <copy file="${lib.dir}/commons-codec.jar" tofile="${build.war}/WEB-INF/lib/commons-codec.jar"/> <!-- Base64 for applet -->
-      <!-- jar destfile="${build.war}/WEB-INF/lib/jacorb.jar" update="yes" file="${build.war}/WEB-INF/classes/jacorb.properties"/ -->
-
-      <!-- unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
-      <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
-       -->
 
       <copy todir="${build.war}/javascript">
          <fileset dir="${src.java.dir}/org/xmlBlaster/protocol/http/javascript"/>
@@ -1452,7 +1383,6 @@ TODO
          <targetfile/>
          <fileset dir=".">
             <patternset>
-               <include name="**/*.idl"/>
                <include name="**/*.java"/>
                <include name="**/*.cpp"/>
                <include name="**/*.c"/>
@@ -1481,7 +1411,6 @@ TODO
       <delete>
          <fileset dir=".">
             <patternset>
-               <include name="**/*.idl.html"/>
                <include name="**/*.java.html"/>
                <include name="**/*.cpp.html"/>
                <include name="**/*.c.html"/>
@@ -1722,7 +1651,6 @@ TODO
 
       <property name="DIST_PATH" value="."/>
       <property name="ADD_HSQLDB" value="true"/>
-      <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_J2EE" value="false"/>
       <property name="ADD_CONTRIB" value="false"/>
@@ -1743,7 +1671,6 @@ TODO
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/jzlib.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/gnu-regexp.jar" dest="${dist-classes.dir}" />
-      <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/omquery.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/xtdash.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/remotecons.jar" dest="${dist-classes.dir}" />
@@ -1762,18 +1689,6 @@ TODO
          </case>
          <default>
             <echo message="ADD_HSQLDB=${ADD_HSQLDB}: No HSQLDB support added." />
-         </default>
-      </switch>
-      <switch value="${ADD_CORBA}">
-         <case value="true">
-            <echo message="Adding ${lib.dir}/jacorb/jacorb.jar for CORBA support" />
-            <unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/jacorb/avalon-framework-4.1.5.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/jacorb/logkit-1.2.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
-         </case>
-         <default>
-            <echo message="ADD_CORBA=${ADD_CORBA}: No CORBA support added." />
          </default>
       </switch>
       <switch value="${ADD_XMLRPC}">
@@ -1917,12 +1832,9 @@ TODO
          </default>
       </switch>
 
-      <copy file="config/jacorb.properties.template" tofile="${dist-classes.dir}/jacorb.properties" overwrite="yes" preservelastmodified="true"/>
-
       <copy file="README" tofile="${dist.dir}/README" overwrite="yes" preservelastmodified="true"/>
       <copy file="INSTALL" tofile="${dist.dir}/INSTALL" overwrite="yes" preservelastmodified="true"/>
       <copy file="doc/LICENSE" tofile="${dist.dir}/LICENSE" overwrite="yes" preservelastmodified="true"/>
-      <copy file="config/jacorb.properties.template" tofile="${dist.dir}/config/jacorb.properties.template" overwrite="yes" preservelastmodified="true"/>
       <copy file=".bashrc" tofile="${dist.dir}/.bashrc" overwrite="yes" preservelastmodified="true"/>
 
         <!-- copy wrapper files -->
@@ -2055,7 +1967,6 @@ TODO
 
       <property name="DIST_PATH" value="${dist-client.dir}"/>
       <property name="ADD_HSQLDB" value="true"/>
-      <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_SNMP" value="false"/>
       <property name="ADD_PROP" value="false"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties -->
@@ -2085,18 +1996,6 @@ TODO
             <echo message="ADD_HSQLDB=${ADD_HSQLDB}: No HSQLDB support added." />
          </default>
       </switch>
-      <switch value="${ADD_CORBA}">
-         <case value="true">
-            <echo message="Adding ${lib.dir}/jacorb/jacorb.jar for CORBA support" />
-            <unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${dist-client.dir}/classes" />
-            <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-client.dir}/classes" />
-            <unjar src="${lib.dir}/jacorb/logkit-1.2.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
-         </case>
-         <default>
-            <echo message="ADD_CORBA=${ADD_CORBA}: No CORBA support added." />
-         </default>
-      </switch>
       <switch value="${ADD_XMLRPC}">
          <case value="true">
             <echo message="Adding ${lib.dir}/xmlrpc.jar for XMLRPC support" />
@@ -2123,12 +2022,10 @@ TODO
          <case value="false">
             <echo message="Using default xmlBlaster.properties" />
             <copy file="config/xmlBlaster.properties.template" tofile="${dist-client.dir}/config/xmlBlaster.properties.template" overwrite="yes"/>
-            <copy file="config/jacorb.properties.template" tofile="${dist-client.dir}/config/jacorb.properties.template" overwrite="yes"/>
          </case>
          <default>
             <echo message="Using ${ADD_PROP} -> ${dist.dir}/config/*.properties*" />
             <copy file="${ADD_PROP}" tofile="${dist-client.dir}/config/xmlBlaster.properties.template" overwrite="yes"/>
-            <copy file="config/jacorb.properties.template" tofile="${dist-client.dir}/config/jacorb.properties.template" overwrite="yes"/>
          </default>
       </switch>
       <switch value="${ADD_PLUGINPROP}">
@@ -2249,9 +2146,6 @@ TODO
       <echo message=" xerces.include.dir = ${xerces.include.dir}"/>
       <echo message=" xerces.lib.dir = ${xerces.lib.dir}"/>
       <echo message=" COMPILE_SOCKET_PLUGIN=${COMPILE_SOCKET_PLUGIN}"/>
-      <echo message=" COMPILE_CORBA_PLUGIN=${COMPILE_CORBA_PLUGIN}"/>
-      <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
-      <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
       <echo message=" XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=${XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN}"/>
       <echo message=" XMLBLASTER_C_COMPILE_AS_CPP=${XMLBLASTER_C_COMPILE_AS_CPP}"/>
 
@@ -2343,11 +2237,6 @@ TODO
       <filter token="cpp.compiler" value="${cpp.compiler}"/>
       <filter token="c.compiler" value="${cpp.compiler}"/>
 
-      <property name="${corba.product}" value="true" /> <!-- Setting e.g. "MICO" or "TAO" to be used in if="" clause below -->
-      <echo message=" Setting ${corba.product} = true" />
-      <property name="${corba.product},${os.family}" value="true" /> <!-- Setting e.g. "MICO,windows" or "TAO,unix" to be used in if="" clause below -->
-      <echo message=" Setting ${corba.product},${os.family} = true" />
-
       <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNITHREAD" to be used in if="" clause below -->
       <echo message=" Setting ${thread.impl} = true" />
 
@@ -2376,16 +2265,6 @@ TODO
          </case>
          <default>
             <property name="COMPILE_SOCKET_EXCLUDES" value="**/socket/**" />
-         </default>
-      </switch>
-
-      <switch value="${COMPILE_CORBA_PLUGIN}">
-         <case value="1">
-            <property name="COMPILE_CORBA_EXCLUDES" value="" />
-            <property name="COMPILE_CORBA_DEFINE" value="1" />
-         </case>
-         <default>
-            <property name="COMPILE_CORBA_EXCLUDES" value="**/corba/**" />
          </default>
       </switch>
 
@@ -2430,190 +2309,6 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
-   <!-- =================================================================== -->
-   <target name="cpp-corba-idl-MICO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
-      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
-      <switch value="${os.family}" caseinsensitive="false">
-         <case value="unix">
-            <property name="idl.cmd.flag" value="" />
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
-         </case>
-         <default>
-            <property name="idl.cmd.flag" value="--windows-dll" />
-            <property name="idl.cmd" value="${CORBACPP_HOME}/win32-bin/idl" />
-         </default>
-      </switch>
-
-      <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-
-      <if><equals arg1="${idlBuild.done}" arg2="true" />
-         <then>
-            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
-         </then>
-         <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <!-- A typical MICO idl CORBA compile:
-              /opt/mico/bin/idl - -poa - -c++-suffix cpp - -windows-dll /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
-            -->
-            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
-               <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
-               <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
-               <env key="PATH" path="${CORBACPP_HOME}/bin" />
-               <arg line="--poa"/>
-               <arg line="--c++-suffix cpp"/>
-               <arg line="${idl.cmd.flag}"/>                             <!-- To export from windows DLL -->
-               <arg line="${idl.file}"/>
-            </exec>
-            <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
-            <echo message="IDL compilation returned ${idl.returnvalue}"/>
-         </else>
-      </if>
-   </target>
-
-   <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for TAO to create C++ CORBA stubs            -->
-   <!-- =================================================================== -->
-   <target name="cpp-corba-idl-TAO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
-      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
-      <switch value="${os.family}" caseinsensitive="true">
-         <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/TAO_IDL/tao_idl" />
-         </case>
-         <default>
-            <property name="idl.cmd" value="${CORBACPP_HOME}/../bin/tao_idl.exe" />
-         </default>
-      </switch>
-
-      <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlasterC.cpp" value="true">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-
-      <if><equals arg1="${idlBuild.done}" arg2="true" />
-         <then>
-            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
-         </then>
-         <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${build.src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
-               <arg line="${idl.file}"/>
-            </exec>
-            <echo message="IDL compilation returned ${idl.returnvalue}"/>
-         </else>
-      </if>
-   </target>
-
-   <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for OMNIORB to create C++ CORBA stubs        -->
-   <!-- =================================================================== -->
-   <target name="cpp-corba-idl-OMNIORB" depends="prepare" description="Compiles xmlBlaster.idl for omniOrb CORBA C++ clients">
-      <switch value="${os.family}" caseinsensitive="true">
-         <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/${CORBACPP_VER}/omniidl" />
-         </case>
-         <default>
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/x86_win32/omniidl.exe" />
-         </default>
-      </switch>
-      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlaster.h" value="true">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-      <if><equals arg1="${idlBuild.done}" arg2="true" />
-         <then>
-            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
-         </then>
-         <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
-               <env key="PYTHONPATH" path="${CORBACPP_HOME}/lib/python2.2/site-packages" /> <!-- Linux -->
-               <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
-               <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
-               <env key="PATH" path="${CORBACPP_HOME}/bin" />
-               <arg line="-bcxx -Wbh=.h -Wbs=.cpp"/>
-               <arg line="${idl.file}"/>
-            </exec>
-            <echo message="IDL compilation returned ${idl.returnvalue}"/>
-         </else>
-      </if>
-   </target>
-
-   <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for ORBIX to create C++ CORBA stubs            -->
-   <!-- =================================================================== -->
-   <target name="cpp-corba-idl-ORBIX" description="Compiles xmlBlaster.idl for CORBA C++ clients">
-      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
-      <switch value="${os.family}" caseinsensitive="true">
-         <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/${CORBACPP_VER}/bin/idl" />
-         </case>
-         <default>
-            <property name="idl.cmd" value="${CORBACPP_HOME}/asp/5.1/bin/idl.exe" />
-         </default>
-      </switch>
-
-      <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlasterS.cpp" value="true">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-
-      <if><equals arg1="${idlBuild.done}" arg2="true" />
-         <then>
-            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
-         </then>
-         <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line="-base:-cS.cpp:-hS.h"/>
-               <arg line="-poa:-c.cpp:-h.h:-bS.h"/>
-               <arg line="${idl.file}"/>
-            </exec>
-            <echo message="IDL compilation returned ${idl.returnvalue}"/>
-         </else>
-      </if>
-   </target>
-
-   <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for ORBACUS to create C++ CORBA stubs        -->
-   <!-- =================================================================== -->
-   <target name="cpp-corba-idl-ORBACUS" description="Compiles xmlBlaster.idl for CORBA C++ clients">
-      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
-      <switch value="${os.family}" caseinsensitive="true">
-         <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
-         </case>
-         <default>
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl.exe" />
-         </default>
-      </switch>
-
-      <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
-         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
-      </uptodate>
-
-      <if><equals arg1="${idlBuild.done}" arg2="true" />
-         <then>
-            <echo message="${corba.product} stubs and skeletons for os=${os.family} are up to date" />
-         </then>
-         <else>
-            <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line=""/>
-               <arg line="${idl.file}"/>
-            </exec>
-            <echo message="IDL compilation returned ${idl.returnvalue}"/>
-         </else>
-      </if>
-   </target>
-
-   <!-- =================================================================== -->
    <!-- c++ client integration - create libxmlBlasterClient.sl (so,dll)     -->
    <!-- See http://ant-contrib.sourceforge.net/cc.html                      -->
    <!-- =================================================================== -->
@@ -2632,60 +2327,7 @@ TODO
       </switch>
       -->
 
-      <switch value="${COMPILE_CORBA_PLUGIN}">
-         <case value="1">
-            <echo message="calling ant target cpp-corba-idl-${corba.product} for CORBA protocol support ..." />
-            <antcall target="cpp-corba-idl-${corba.product}"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
-            <echo message="cpp-corba-idl-${corba.product} done, continue with cpp-lib ..." />
-         </case>
-         <default>
-         </default>
-      </switch>
-
       <!-- Build a shared library xmlBlasterClient.so, xmlBlasterClient.sl or xmlBlasterClient.dll -->
-      <!-- A typical compile:
-        g++ -g
-            -fpic -I/opt/local/mico/include -DMICO -c /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.cc
-       -->
-      <!-- A typical shared library link:
-        g++ -shared -g
-            -o /opt/local/xmlBlaster/lib/libxmlBlasterClient.so.0.79d
-            /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
-      -->
-      <!--
-         cl /W3 -DOMNITHREAD /c /nologo /GX /Zi /Od /GZ /D_DEBUG /MDd /DXMLBLASTER_TAO=1 /D__WIN32__ /D_WIN32_WINNT=0x0400 /D__x86__ /D__NT__ /D__O
-         SVERSION__=4 /D_OMNITHREAD_DLL=1 /DWIN32=1 /D_WINDLL=1 /D_MBCS=1 /D_WINDOWS=1 /IC:\Marcel\xmlBlaster\src\c++ /IC:\Marcel\ACE_wrappers\TAO /IC:\Marce
-         l\ACE_wrappers /IC:\Marcel\ACE_wrappers\TAO\orbsvcs /IC:\Marcel\ACE_wrappers\TAO\include /IC:\Marcel\xmlBlaster\src\c++\generated /IC:\Marcel\ACE_wrap
-         pers\TAO\include\windows /IC:\Marcel\xerces-c2_2_0-win32\src /IC:\Marcel\xerces-c2_2_0-win32\src\xercesc /IC:\Marcel\xerces-c2_2_0-win32\include /IC:\
-         Marcel\xerces-c2_2_0-win32\include\xercesc C:\Marcel\xmlBlaster\src\c++\util\qos\ConnectQosFactory.cpp C:\Marcel\xmlBlaster\src\c++\util\qos\AccessFil
-         terQos.cpp C:\Marcel\xmlBlaster\src\c++\util\key\KeyData.cpp C:\Marcel\xmlBlaster\src\c++\util\Property.cpp C:\Marcel\xmlBlaster\src\c++\util\qos\stor
-         age\CbQueueProperty.cpp C:\Marcel\xmlBlaster\src\c++\util\Constants.cpp
-
-         link @C:\Marcel\xmlBlaster\lib\xmlBlasterClient.rsp
-           Creating library xmlBlasterClient.lib and object xmlBlasterClient.exp
-
-         === xmlBlasterClient.rsp contains: ===
-         /NOLOGO
-         /DEBUG
-         /DLL
-         /INCREMENTAL:NO
-         /OUT:xmlBlasterClient.dll
-         ..\..\ACE_wrappers\ace\aced.lib
-         ..\..\ACE_wrappers\TAO\tao\TAOd.lib
-         ..\..\ACE_wrappers\TAO\tao\PortableServer\TAO_PortableServerd.lib
-         ..\..\ACE_wrappers\TAO\orbsvcs\orbsvcs\TAO_CosNamingd.lib
-         ..\..\xerces-c2_2_0-win32\lib\xerces-c_2.lib
-         ..\build\obj\QueryKeyData.obj
-         ..\build\obj\Timeout.obj
-         ...
-
-        RESULT:
-         06/24/2003  11:46 AM         3,178,496 xmlBlasterClient.dll
-         06/24/2003  11:46 AM           668,081 xmlBlasterClient.exp
-         06/24/2003  11:46 AM         1,098,054 xmlBlasterClient.lib
-         06/24/2003  11:46 AM         7,195,648 xmlBlasterClient.pdb
-         06/24/2003  11:46 AM             2,957 xmlBlasterClient.rsp
-       -->
       <mkdir dir="${cpp.obj.dir}"/>
 
       <!-- CPP_LINK==shared links a shared library xmlBlaster/lib/libxmlBlaster.so -->
@@ -2703,7 +2345,7 @@ TODO
          <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
-                  excludes="${COMPILE_SOCKET_EXCLUDES},${COMPILE_CORBA_EXCLUDES}" />
+                  excludes="${COMPILE_SOCKET_EXCLUDES}" />
                         <fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
                         <fileset dir="${build.src.cpp.dir}/contrib" includes="**/*.cpp" />
          <!-- i don't think we need these libs. Boost 1.30 comes with all the classes defined here
@@ -2718,39 +2360,28 @@ TODO
          <includepath location="${build.src.cpp.dir}" />
 
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
-         <sysincludepath location="${CORBACPP_HOME}" if="TAO" /> <!-- TAO -->
-         <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" /> <!-- TAO -->
-         <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" /> <!-- TAO -->
-         <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO, OMNIORB -->
-         <sysincludepath location="${CORBACPP_HOME}/include/omniORB4" /> <!-- MICO, OMNIORB -->
          <sysincludepath location="${build.src.cpp.dir}/generated" /> <!-- ORBACUS -->
 
-         <sysincludepath location="${CORBACPP_HOME}/include/windows" if="MICO,windows" /> <!-- MICO necessary for mico on win32 -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
-         <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${xerces.include.dir}" />           <!-- Since xerces 1.7.0 (inclusive xerces 2.6) -->
 
          <includepath location="${build.src.c.dir}" />   <!-- Using the C SOCKET client library -->
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="XBL_IDL_WITH_WSTRING" value="1" if="XBL_IDL_WITH_WSTRING" />
-           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
-           <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" value="1" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" /> <!-- Use persistent queue -->
            <define name="XMLBLASTER_ZLIB" value="1" if="XMLBLASTER_ZLIB" /> <!-- Add command line define -->
            <define name="XMLBLASTER_NO_RCSID" value="1" if="XMLBLASTER_NO_RCSID" /> <!-- no rcsid string if svnversion makes problem in Global.cpp -->
 
-           <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
+           <define name="__WIN32__" if="windows"/>
            <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
            <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
            <define name="_WIN32_WINNT" value="0x0400" if="windows"/> <!-- omnithread, OMNIORB -->
-           <define name="__x86__" if="windows"/>                     <!-- omnithread, OMNIORB -->  <!-- ${sun.cpu.endian}="little" -->
-           <define name="__NT__" if="windows"/>                      <!-- omnithread, OMNIORB -->
-           <define name="__OSVERSION__" value="4" if="windows"/>     <!-- omnithread, OMNIORB -->
-           <define name="_OMNITHREAD_DLL" value="1" if="windows"/>   <!-- omnithread, OMNIORB -->
+           <define name="__x86__" if="windows"/>
+           <define name="__NT__" if="windows"/>
+           <define name="__OSVERSION__" value="4" if="windows"/>
 
            <undefine name="HAVE_LSTAT" if="windows" /> <!-- log4cplus only configurator.cxx:604-->
            <define name="LOG4CPLUS_BUILD_DLL" value="1" if="windows" /> <!-- log4cplus only -->
@@ -2801,28 +2432,6 @@ TODO
          </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
-            <!-- TAO -->
-            <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServer${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNaming${tao.lib.type}.lib" if="TAO,windows" />
-
-            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-
-            <!-- MICO -->
-            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
-            <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
-            <syslibset libs="ws2_32" if="MICO,windows" />
-
-            <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
-
-            <!-- OMNIORB -->
-            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
-
-            <!-- ORBACUS -->
-            <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
-
             <!-- XERCES XML parser -->
             <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}${CPP_DEBUG_POSTFIX}" if="windows" />
 
@@ -2868,18 +2477,13 @@ TODO
                      -L/opt/local/mico/lib -lmicocoss2.3.6
                      -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClient -lstdc++
 
-       Using STLport 4.5.1 gives a problem when linking an executable (on Linux):
-           /home/xmlblast/xmlBlaster/lib/libxmlBlasterClient.so: undefined reference to `CORBA::UserException::_print(_STL::basic_ostream<char, _STL::char_traits<char> > &) const'
-
       Windows:
        set CFLAGS=/c /nologo /D_WINDOWS /GX /GR /TP /MTd  /DMICO=1 /I.  /IE:\mico\include /IE:\mico\include\windows /nologo /D_WINDOWS /IE:\xmlBlaster\src\c++
        cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\Log.obj E:\xmlBlaster\src\c++\util\Log.cpp
        cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\xmlBlaster.obj E:\xmlBlaster\src\c++\generated\xmlBlaster.cpp
-       cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\CompatibleCorba.obj E:\xmlBlaster\src\c++\util\CompatibleCorba.cpp
-       cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
-      <foreach list="TestRequestResponse,TestQueue,TestProperty,TestClientProperty,TestLeaveServer,TestGet,TestSub,TestStringTrim,TestCommand,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys,TestDoubleGlobal"
+      <foreach list="TestRequestResponse,TestQueue,TestProperty,TestClientProperty,TestLeaveServer,TestGet,TestSub,TestStringTrim,TestCommand,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestThread,TestKeys,TestDoubleGlobal"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       </foreach>
@@ -2934,26 +2538,13 @@ TODO
          <includepath location="${build.src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
 
-         <sysincludepath location="${CORBACPP_HOME}" if="TAO" />          <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" />       <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/include" if="OMNIORB" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/include" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${build.src.cpp.dir}/generated" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
-         <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-
          <sysincludepath location="${xerces.include.dir}" />              <!-- Since xerces 1.7.0 -->
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="XBL_IDL_WITH_WSTRING" value="1" if="XBL_IDL_WITH_WSTRING" />
-           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
-           <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" value="1" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" /> <!-- Use persistent queue -->
@@ -2966,7 +2557,6 @@ TODO
            <define name="__x86__" if="windows"/>                     <!-- omnithread, OMNIORB -->  <!-- ${sun.cpu.endian}="little" -->
            <define name="__NT__" if="windows"/>                      <!-- omnithread, OMNIORB -->
            <define name="__OSVERSION__" value="4" if="windows"/>     <!-- omnithread, OMNIORB -->
-           <define name="_OMNITHREAD_DLL" value="1" if="windows"/>   <!-- omnithread, OMNIORB -->
 
            <undefine name="HAVE_LSTAT" if="windows" /> <!-- log4cplus only configurator.cxx:604-->
            <define name="LOG4CPLUS_BUILD_DLL" value="1" if="windows" /> <!-- log4cplus only -->
@@ -2993,10 +2583,6 @@ TODO
 
          <linker name="g++"  if="use-gcc">
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" unless="OSX" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" unless="OSX" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" unless="OSX" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" unless="OSX" />
             <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" unless="OSX"/>
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" unless="OSX" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" unless="OSX" />
@@ -3007,28 +2593,6 @@ TODO
             <!-- Since XCode 3.0 -rpath is supported with /usr/bin/ld, but gcc 4.0 or 4.2 does not seem to use this ld-->
             <!-- So you need to set:  -->
             <!-- export DYLD_LIBRARY_PATH=/Users/marcel/xerces-c_2_8_0-x86-macosx-gcc_4_0/lib:/Users/marcel/xmlBlaster/lib -->
-
-
-            <!-- TAO -->
-            <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/tao" libs="TAO" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/tao/PortableServer" libs="TAO_PortableServer" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" libs="TAO_CosNaming" if="TAO" />
-
-            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-
-            <!-- MICO -->
-            <libset dir="${CORBACPP_HOME}/bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
-            <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
-
-            <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
-
-            <!-- OMNIORB-->
-            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
-
-            <!-- ORBACUS-->
-            <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
@@ -3057,37 +2621,12 @@ TODO
          <linker name="icc"  if="use-icc">
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
 
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
-            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
             <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
             <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" />
             <linkerarg value="-Wl,-rpath=${ICC_HOME}/lib" if="ICC_HOME" />
-
-            <!-- TAO -->
-            <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/tao" libs="TAO" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/tao/PortableServer" libs="TAO_PortableServer" if="TAO" />
-            <libset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" libs="TAO_CosNaming" if="TAO" />
-
-            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-
-            <!-- MICO -->
-            <libset dir="${CORBACPP_HOME}/bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
-            <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
-
-            <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
-
-            <!-- OMNIORB-->
-            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
-
-            <!-- ORBACUS-->
-            <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
             <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
@@ -3114,23 +2653,6 @@ TODO
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
             <linkerarg value="${LDFLAGS2}" if="LDFLAGS2"/>
             <linkerarg value="${LDFLAGS3}" if="LDFLAGS3"/>
-            <!-- TAO -->
-            <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServer${tao.lib.type}.lib" if="TAO,windows" />
-            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNaming${tao.lib.type}.lib" if="TAO,windows" />
-
-            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-
-            <!-- MICO -->
-            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
-            <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
-
-            <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
-
-            <!-- OMNIORB -->
-            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- XERCES XML parser -->
             <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" if="windows" />
@@ -3153,9 +2675,6 @@ TODO
             <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
             <syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" /> <!-- ORBIX only? -->
 
-            <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
-
             <!-- XERCES XML parser -->
             <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
 
@@ -3175,12 +2694,10 @@ TODO
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
             <linkerarg value="-lsocket"/>
-            <!-- linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" / -->
             <!-- linkerarg value="-L${xerces.lib.dir}" / -->
             <!-- linkerarg value="-L${lib.dir.absolute}" / -->
-            <linkerarg value="-L${CORBACPP_HOME}/shlib/posix" if="ORBIX" />
             <!-- Burn .so path into executables: -->
-            <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:${lib.dir.absolute}:${xerces.lib.dir}" if="ORBIX" />
+            <linkerarg value="-R ${lib.dir.absolute}:${xerces.lib.dir}" if="ORBIX" />
 
             <syslibset dir="/lib" libs="dl" />
             <syslibset dir="/lib" libs="rt" />
@@ -3492,7 +3009,6 @@ TODO
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient${CPP_DEBUG_POSTFIX}.*,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
           <fileset dir="${demo.dir}/c++/bin" includes="*"/>
-          <fileset dir="${idl.dir}" includes="*Idl/*.java"/>
        </delete>
     </target>
 
@@ -3584,8 +3100,6 @@ TODO
          sqlite.lib.dir=E:/sqlite
          
          COMPILE_SOCKET_PLUGIN = 1
-         COMPILE_CORBA_PLUGIN  = 0
-         corba.product         = NONE
 
          build c-delete cpp-delete
          build -Dc.debug=true -Dcpp.debug=true c cpp

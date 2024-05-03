@@ -26,7 +26,6 @@ import javax.naming.NamingException;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.xmlBlaster.j2ee.util.GlobalUtil;
 import java.util.logging.Logger;
 /**
@@ -109,7 +108,6 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
       globalUtil = new GlobalUtil();
       glob = globalUtil.newGlobal(propFile,args );
 
-      loadJacorbProperties();
       globalUtil.setupSecurityManager(glob);
 
 
@@ -160,16 +158,6 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
       GlobalUtil gu = new GlobalUtil(engineGlobal);
       bind(ctx,jndiName,gu);
 
-   }
-
-
-   /**
-    * Jacorb is not capable of finding its jacorb.properties in the
-    * context classpath (actually it uses the system classloader.
-    * Remember that jacorb.properties is in xmlBlaster.jar.
-    */
-   private void loadJacorbProperties() throws Exception {
-      JacorbUtil.loadJacorbProperties("jacorb.properties",glob);
    }
 
 

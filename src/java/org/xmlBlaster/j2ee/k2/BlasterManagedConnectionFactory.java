@@ -31,7 +31,6 @@ import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.xmlBlaster.j2ee.util.GlobalUtil;
 
 import javax.resource.spi.ManagedConnectionFactory;
@@ -398,20 +397,6 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
       } // end of if ()
 
       glob = globalUtil.newGlobal( propFile, props );
-      
-      if ( "IOR".equals(glob.getProperty().get("protocol", "IOR")) ) {
-         //Start by loading jacorb.properties, without it corba protocol does
-         // not work well.
-         try {
-            JacorbUtil.loadJacorbProperties("jacorb.properties",glob);
-         } catch (XmlBlasterException e) {
-            IllegalStateException x = new IllegalStateException("Could not load jacorn properties, needed for IOR protocol to work: "+e);
-            x.setLinkedException(e);
-            throw x;
-         } // end of try-catch
-         
-      } // end of if ()
-      
    }
 
    

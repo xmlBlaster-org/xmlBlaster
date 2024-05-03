@@ -43,7 +43,7 @@ import java.awt.Toolkit;
 import java.awt.event.*;
 import java.util.Vector;
 
-import org.jacorb.poa.gui.beans.FillLevelBar;
+//import org.jacorb.poa.gui.beans.FillLevelBar;
 
 
 /**
@@ -92,21 +92,21 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
    private long lastPollingTime = 0L;
 
    /** Performance monitor for number of published messages. */
-   private FillLevelBar publishedMessagesBar = new FillLevelBar();
+   //private FillLevelBar publishedMessagesBar = new FillLevelBar();
    private Label publishedLabel = new Label(); // display total count
    private int peakPublishedMessages = 0;
    private long publishedMessages = 0L;
    private long lastPublishedMessages = 0L;
 
    /** Performance monitor for number of update messages (callbacks to clients). */
-   private FillLevelBar sentMessagesBar = new FillLevelBar();
+   //private FillLevelBar sentMessagesBar = new FillLevelBar();
    private Label sentLabel = new Label();
    private int peakSentMessages = 0;
    private long sentMessages = 0L;
    private long lastSentMessages = 0L;
 
    /** Performance monitor for number of synchronous accessed messages. */
-   private FillLevelBar getMessagesBar = new FillLevelBar();
+   //private FillLevelBar getMessagesBar = new FillLevelBar();
    private Label getLabel = new Label();
    private int peakGetMessages = 0;
    private long getMessages = 0L;
@@ -215,10 +215,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
          int currentPublishedAvg = (int)((publishedMessages - lastPublishedMessages)/sleepSeconds);
          if ((publishedMessages - lastPublishedMessages) == 1) currentPublishedAvg = 1;
          //int totalPublishedAvg = (int)(numPublish/elapsedSeconds);
-         publishedMessagesBar.setCurrentValue(currentPublishedAvg);
+         //publishedMessagesBar.setCurrentValue(currentPublishedAvg);
          if (currentPublishedAvg > peakPublishedMessages) {
             peakPublishedMessages = currentPublishedAvg;
-            publishedMessagesBar.setAvgValue(peakPublishedMessages);
+            //publishedMessagesBar.setAvgValue(peakPublishedMessages);
          }
          //publishedMessagesBar.setAvgValue(totalPublishedAvg);
          publishedLabel.setText("Total:  " + publishedMessages);
@@ -230,10 +230,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
          int currentSentAvg = (int)((sentMessages - lastSentMessages)/sleepSeconds);
          if ((sentMessages - lastSentMessages) == 1) currentSentAvg = 1;
          //int totalSentAvg = (int)(sentMessages/elapsedSeconds);
-         sentMessagesBar.setCurrentValue(currentSentAvg);
+         //sentMessagesBar.setCurrentValue(currentSentAvg);
          if (currentSentAvg > peakSentMessages) {
             peakSentMessages = currentSentAvg;
-            sentMessagesBar.setAvgValue(peakSentMessages);
+            //sentMessagesBar.setAvgValue(peakSentMessages);
          }
          // sentMessagesBar.setAvgValue(totalSentAvg);
          sentLabel.setText("Total:  " + sentMessages);
@@ -246,10 +246,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
          if ((getMessages - lastGetMessages) == 1) currentGetAvg = 1;
          //int totalGetAvg = (int)(numGet/elapsedSeconds);
          // System.out.println("totally numGet=" + numGet + " current avg=" + currentGetAvg + " total avg=" + totalGetAvg);
-         getMessagesBar.setCurrentValue(currentGetAvg);
+         //getMessagesBar.setCurrentValue(currentGetAvg);
          if (currentGetAvg > peakGetMessages) {
             peakGetMessages = currentGetAvg;
-            getMessagesBar.setAvgValue(peakGetMessages);
+            //getMessagesBar.setAvgValue(peakGetMessages);
          }
          // getMessagesBar.setAvgValue(totalGetAvg);
          getLabel.setText("Total:  " + getMessages);
@@ -309,9 +309,9 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
       int offset = 0;
       gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
       gbc.weightx = gbc.weighty = 0.0;
-      createBarPanel(publishedMessagesBar, publishedLabel, "Published", gbc, offset++);
-      createBarPanel(sentMessagesBar,      sentLabel,      "Update",    gbc, offset++);
-      createBarPanel(getMessagesBar,       getLabel,       "Get",       gbc, offset++);
+      //createBarPanel(publishedMessagesBar, publishedLabel, "Published", gbc, offset++);
+      //createBarPanel(sentMessagesBar,      sentLabel,      "Update",    gbc, offset++);
+      //createBarPanel(getMessagesBar,       getLabel,       "Get",       gbc, offset++);
 
 
       {  // XPath query GUI
@@ -462,7 +462,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
     * @param gbc The layout manager
     * @param offset The position of the panel (grid layout)
     */
-   private void createBarPanel(FillLevelBar messageBar, Label totalCountLabel, String token, GridBagConstraints gbc, int offset)
+   private void createBarPanel(Object messageBar, Label totalCountLabel, String token, GridBagConstraints gbc, int offset)
    {
       final int LABEL_LOCATION_X = 2;
       final int LABEL_LOCATION_Y = 10;
@@ -505,17 +505,17 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
       label2.setAlignment(1);
       panel.add(label2, label2.getName());
 
-      messageBar.setName(token + "Messages");
-      messageBar.setLocation(BAR_X, BAR_Y);
-      messageBar.setBackground(java.awt.SystemColor.control);
-      messageBar.setSize(BAR_WIDTH, BAR_HEIGHT);
+      //messageBar.setName(token + "Messages");
+      //messageBar.setLocation(BAR_X, BAR_Y);
+      //messageBar.setBackground(java.awt.SystemColor.control);
+      //messageBar.setSize(BAR_WIDTH, BAR_HEIGHT);
       boolean useAvg = true;
       boolean isVariable = true;     // !!!
       int MAX_SCALE = 10;
-      messageBar.init(0, 5, MAX_SCALE, Color.green, Color.green, useAvg, isVariable);
-      messageBar.setAvgValue(0);
+      //messageBar.init(0, 5, MAX_SCALE, Color.green, Color.green, useAvg, isVariable);
+      //messageBar.setAvgValue(0);
       // messageBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
-      panel.add(messageBar, messageBar.getName());
+      //panel.add(messageBar, messageBar.getName());
 
       totalCountLabel.setName(token + "Label");
       totalCountLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);

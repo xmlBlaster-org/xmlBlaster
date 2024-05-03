@@ -74,7 +74,6 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html
 # NOTE: Please use xmlBlasterPlugins.xml to configure which protocols to offer
 
-CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 # The CallbackSocketDriver is a fake as we tunnel back through the same socket
 # But we need it for persistent Session/Subscription recovery on server startup
 CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
@@ -104,7 +103,6 @@ CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
 # On client side only
 
 # Register the client side protocol plugin to connect to server
-ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnection
 ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
 ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,SSL=true,compress/type=zlib:stream
 ClientProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,\
@@ -126,7 +124,6 @@ ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConne
 #                                 parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 
 # Register the client side callback server plugins:
-ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
 ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
 ClientCbServerProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,SSL=true,compress/type=zlib:stream
 ClientCbServerProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,\
