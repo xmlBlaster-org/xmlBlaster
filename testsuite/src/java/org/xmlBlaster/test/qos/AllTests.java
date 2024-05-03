@@ -73,7 +73,6 @@ public class AllTests
       suite.addTest(TestErase.suite());
       suite.addTest(TestUpdateClientException.suite());
       suite.addTest(TestClientProperty.suite());
-      suite.addTest(TestCorbaThreads.suite());
       return suite;
    }
 }

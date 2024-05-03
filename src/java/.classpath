@@ -88,10 +88,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/xalan.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/xercesImpl.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/xml-apis.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/avalon-framework-4.1.5.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/idl.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/logkit-1.2.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/batik.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/stompconnect-1.0.jar"/>

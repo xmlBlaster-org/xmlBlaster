@@ -101,8 +101,6 @@ public class Util
             "" + Constants.XMLBLASTER_PORT,
             "-plugin/socket/port",
             "" + org.xmlBlaster.util.protocol.socket.SocketUrl.DEFAULT_SERVER_PORT,
-            "-plugin/rmi/registryPort",
-            "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT,
             "-plugin/xmlrpc/port",
             "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT,
             "-admin.remoteconsole.port",
