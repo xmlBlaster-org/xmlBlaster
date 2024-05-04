@@ -686,6 +686,9 @@ TODO
    <!-- =================================================================== -->
    <target name="xmlBlaster" depends="prepare-src,javaCup" description="Compile xmlBlaster server and create a xmlBlaster.jar">
 
+      <!-- somehow survived git rm -r -->
+      <delete dir="${src.java.dir}/org/xmlBlaster/protocol/corba"/>
+
       <copy todir="${build.src}/xmlBlaster" filtering="${DO_FILTERING}">
          <fileset dir="${src.java.dir}">
             <exclude name="README"/>
