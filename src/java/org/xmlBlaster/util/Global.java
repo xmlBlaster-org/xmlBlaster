@@ -29,6 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+// Remove lib/ant/xml-apis.jar
+// Java22: https://docs.oracle.com/en/java/javase/22/docs/api/java.xml/javax/xml/parsers/DocumentBuilderFactory.html
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.SAXParserFactory;
@@ -765,13 +767,13 @@ public class Global implements Cloneable
       return this.errorText;
    }
 
-   /**
+   /*
     * @return 1 Show usage, 0 OK
-    */
    public int init(java.applet.Applet applet) {
       property.setApplet(applet);
       return property.wantsHelp() ? 1 : 0;
    }
+    */
 
    /**
     * The unique name of this instance.
@@ -1820,6 +1822,7 @@ public class Global implements Cloneable
       return new ClientDispatchConnectionsHandler(this, (ClientDispatchManager)dispatchManager);
    }
 
+   /*
    public void finalize() {
       try {
          //if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
@@ -1835,6 +1838,7 @@ public class Global implements Cloneable
          e.printStackTrace();
       }
    }
+   */
 
    public void shutdown() {
       if (this.isDoingShutdown) {
@@ -2185,7 +2189,7 @@ public class Global implements Cloneable
       if (tmp == null) // should never happen
          return defaultValue;
       try {
-         return new Boolean(tmp).booleanValue();
+         return Boolean.valueOf(tmp).booleanValue();
       }
       catch (Throwable ex) {
          throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION, ME + ".get", "wrong type for '" + shortKey + "': should be boolean but is '" + tmp + "'");

@@ -103,7 +103,7 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
       if (name.equalsIgnoreCase("deleteSubjectQueue")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.disconnectQosData.deleteSubjectQueue(new Boolean(tmp).booleanValue());
+            this.disconnectQosData.deleteSubjectQueue(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -111,7 +111,7 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
       if (name.equalsIgnoreCase("clearSessions")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.disconnectQosData.clearSessions(new Boolean(tmp).booleanValue());
+            this.disconnectQosData.clearSessions(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }

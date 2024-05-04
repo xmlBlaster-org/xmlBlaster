@@ -36,10 +36,10 @@ public class ConnectionTable extends AgentXTable
         oid = new AgentXOID(OID);
 
         // register implemented columns
-        columns.addElement(new Long(2));
-        columns.addElement(new Long(3));
-        columns.addElement(new Long(4));
-        columns.addElement(new Long(5));
+        columns.addElement(Long.valueOf(2));
+        columns.addElement(Long.valueOf(3));
+        columns.addElement(Long.valueOf(4));
+        columns.addElement(Long.valueOf(5));
     }
 
     public ConnectionTable(boolean shared)
@@ -49,10 +49,10 @@ public class ConnectionTable extends AgentXTable
         oid = new AgentXOID(OID);
 
         // register implemented columns
-        columns.addElement(new Long(2));
-        columns.addElement(new Long(3));
-        columns.addElement(new Long(4));
-        columns.addElement(new Long(5));
+        columns.addElement(Long.valueOf(2));
+        columns.addElement(Long.valueOf(3));
+        columns.addElement(Long.valueOf(4));
+        columns.addElement(Long.valueOf(5));
     }
 
     public AgentXVarBind getVarBind(AgentXEntry entry, long column)

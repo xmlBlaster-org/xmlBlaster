@@ -218,7 +218,7 @@ public class ClientPropertiesInfo implements I_Info {
        String ret = this.getPropAsString(key);
        if (ret != null) {
           try {
-             Boolean bool = new Boolean(ret);
+             Boolean bool = Boolean.valueOf(ret);
              return bool.booleanValue();
           }
           catch (NumberFormatException ex) {

@@ -386,6 +386,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       return this.sessionName.getPublicSessionId();
    }
 
+   /*
    public void finalize() {
       try {
          removeExpiryTimer();
@@ -401,6 +402,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
          e.printStackTrace();
       }
    }
+   */
 
    public boolean isShutdown() {
       this.lock.lock();

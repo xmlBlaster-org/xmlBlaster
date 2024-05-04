@@ -2634,6 +2634,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return glob.getProperty().getProperties().size();
    }
    /** @deprecated Is not supported anymore */
+   @Deprecated
    public String getSyspropList() {
       java.util.Properties props = glob.getProperty().getProperties();
       StringBuffer sb = new StringBuffer(props.size()*30);
@@ -3090,7 +3091,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                public I_Entry intercept(final I_Entry entry, I_Storage storage) {
                   try {
                      final long currMsgUnitId = entry.getUniqueId();
-                     final Long currMsgUnitIdL = new Long(currMsgUnitId);
+                     final Long currMsgUnitIdL = Long.valueOf(currMsgUnitId);
 
                      // Process the history queue of this topic if the messagUnit is referenced
                      int before = foundInHistoryQueue.size() + notFoundInHistoryQueue.size();

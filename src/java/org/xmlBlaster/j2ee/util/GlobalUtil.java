@@ -22,7 +22,6 @@ import java.util.Properties;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.rmi.RMISecurityManager;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -212,14 +211,15 @@ public class GlobalUtil implements java.io.Serializable {
          
       } // end of if ()
       
-      
+      /* 2024 deprecated
       if (System.getSecurityManager() == null) {
          String exist = System.getProperty("java.security.policy");
          if (exist == null) {
             throw new SecurityException("You must specify a -Djava.security.policy when starting the server to be able to use the RMI driver");
          }else {
-            System.setSecurityManager(new RMISecurityManager());
+            System.setSecurityManager(new java.rmi.RMISecurityManager());
          } // end of else
       }
+      */
    }
 }// GlobalUtil

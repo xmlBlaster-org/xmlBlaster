@@ -817,7 +817,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    boolean isInMsgStore(MsgUnitWrapper msgUnitWrapper) {
       synchronized(this.msgUnitWrapperUnderConstructionMutex) {
          return this.msgUnitWrapperUnderConstruction == null || this.msgUnitWrapperUnderConstruction.getUniqueId() != msgUnitWrapper.getUniqueId();
-         //return !this.msgUnitWrapperUnderConstruction.containsKey(new Long(msgUnitWrapper.getUniqueId()));
+         //return !this.msgUnitWrapperUnderConstruction.containsKey(Long.valueOf(msgUnitWrapper.getUniqueId()));
       }
    }
 

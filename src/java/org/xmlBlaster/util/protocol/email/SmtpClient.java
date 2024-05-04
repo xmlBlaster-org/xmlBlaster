@@ -385,25 +385,25 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          props.put("messageIdForceBase64", ""+glob.get("messageIdForceBase64", false, null,
                pluginConfig));
       p = props.getProperty("messageIdForceBase64");
-      this.messageIdForceBase64 = new Boolean(p).booleanValue();
+      this.messageIdForceBase64 = Boolean.valueOf(p).booleanValue();
       
       if (props.getProperty("contentForceBase64") == null)
          props.put("contentForceBase64", ""+glob.get("contentForceBase64", false, null,
                pluginConfig));
       p = props.getProperty("contentForceBase64");
-      this.contentForceBase64 = new Boolean(p).booleanValue();
+      this.contentForceBase64 = Boolean.valueOf(p).booleanValue();
 
       if (props.getProperty("addExpiresHeader") == null)
          props.put("addExpiresHeader", ""+glob.get("addExpiresHeader", true, null,
                pluginConfig));
       p = props.getProperty("addExpiresHeader");
-      this.addExpiresHeader = new Boolean(p).booleanValue();
+      this.addExpiresHeader = Boolean.valueOf(p).booleanValue();
       
       if (props.getProperty("breakLongMessageIdLine") == null)
          props.put("breakLongMessageIdLine", ""+glob.get("breakLongMessageIdLine", false, null,
                pluginConfig));
       p = props.getProperty("breakLongMessageIdLine");
-      this.breakLongMessageIdLine = new Boolean(p).booleanValue();
+      this.breakLongMessageIdLine = Boolean.valueOf(p).booleanValue();
 
       if (props.getProperty("inlineExtension") == null)
          props.put("inlineExtension", ""+glob.get("inlineExtension", "", null,
@@ -415,14 +415,14 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
         		  Integer.MAX_VALUE, null,
                 pluginConfig));
        p = props.getProperty("mail.smtp.timeout");
-       this.smtpIoTimeout = new Integer(p).intValue();
+       this.smtpIoTimeout = Integer.valueOf(p).intValue();
 
        if (props.getProperty("mail.smtp.connectiontimeout") == null)
            props.put("mail.smtp.connectiontimeout", ""+glob.get("mail.smtp.connectiontimeout",
          		  Integer.MAX_VALUE, null,
                  pluginConfig));
         p = props.getProperty("mail.smtp.connectiontimeout");
-        this.smtpConnectionTimeout = new Integer(p).intValue();
+        this.smtpConnectionTimeout = Integer.valueOf(p).intValue();
 
       // Pass "this" for SMTP authentication with Authenticator
       this.authentication = new PasswordAuthentication(getUser(), this.xbUri.getPassword());

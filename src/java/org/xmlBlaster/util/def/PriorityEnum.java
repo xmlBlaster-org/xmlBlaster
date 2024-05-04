@@ -88,7 +88,7 @@ public final class PriorityEnum implements java.io.Serializable
       }
       prio = prio.trim();
       try {
-         int priority = new Integer(prio).intValue();
+         int priority = Integer.valueOf(prio).intValue();
          return toPriorityEnum(priority); // may throw IllegalArgumentException
       } catch (NumberFormatException e) {
          prio = prio.toUpperCase();
@@ -193,16 +193,16 @@ public final class PriorityEnum implements java.io.Serializable
     * Create Integer instances for each priority, for performance reasons only. 
     */
    private static final Integer[] integerArr = {
-      new Integer(0),
-      new Integer(1),
-      new Integer(2),
-      new Integer(3),
-      new Integer(4),
-      new Integer(5),
-      new Integer(6),
-      new Integer(7),
-      new Integer(8),
-      new Integer(9)
+      Integer.valueOf(0),
+      Integer.valueOf(1),
+      Integer.valueOf(2),
+      Integer.valueOf(3),
+      Integer.valueOf(4),
+      Integer.valueOf(5),
+      Integer.valueOf(6),
+      Integer.valueOf(7),
+      Integer.valueOf(8),
+      Integer.valueOf(9)
    };
 
    ///////////////

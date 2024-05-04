@@ -88,7 +88,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     * @param negative nano seconds to enforce LIFO behavior (the newest message is at the front)
     */
    public Long getUniqueIdLong() {
-      return new Long(getUniqueId());
+      return Long.valueOf(getUniqueId());
    }
 
    public long getSizeInBytes() {

@@ -104,6 +104,7 @@ public class StorageId implements java.io.Serializable
     *           sessionName.getAbsoluteName()
     * @deprecated Old xb_entries only
     */
+   @Deprecated
    public StorageId(Global glob, String relating, String postfix) {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.xbStore = new XBStore();
@@ -130,6 +131,7 @@ public class StorageId implements java.io.Serializable
     *               if no separator ":" was found
     * @deprecated Old xb_entries only
     */
+   @Deprecated
    public StorageId(Global glob, String id) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.xbStore = new XBStore();
@@ -274,6 +276,7 @@ public class StorageId implements java.io.Serializable
     * @return storageId.getId() is not recovered properly, can be null
     * @deprecated Old xb_entries
     */
+   @Deprecated
    public static StorageId valueOf(Global glob, String strippedStorageId) {
       if (strippedStorageId == null) return null;
       String relating = null;
@@ -319,6 +322,7 @@ public class StorageId implements java.io.Serializable
     * @return e.g. "/node/heron/client/joe/-2"
     * @deprecated Use getXBStore().getPostfix()
     */
+   @Deprecated
    public String getOldPostfix() {
       return this.postfix;
    }
@@ -341,6 +345,7 @@ public class StorageId implements java.io.Serializable
     * @see Global#getStrippedString(String)
     * @deprecated Old xb_entries
     */
+   @Deprecated
    public String getStrippedId() {
       return this.strippedId;
    }
@@ -353,6 +358,7 @@ public class StorageId implements java.io.Serializable
     * @return getId()
     * @deprecated
     */
+   @Deprecated
    public String toString() {
       return this.id;
    }

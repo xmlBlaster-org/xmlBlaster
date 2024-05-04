@@ -20,9 +20,9 @@ package org.xmlBlaster.engine;
 public interface I_SubscriptionListener extends java.util.EventListener {
 
    /* The priority by which it will be invoked. Lower numbers are invoked first on subscribe and last on unsubscribe */
-   public final static Integer PRIO_01 = new Integer(1);
-   public final static Integer PRIO_05 = new Integer(5);
-   public final static Integer PRIO_10 = new Integer(10);
+   public final static Integer PRIO_01 = Integer.valueOf(1);
+   public final static Integer PRIO_05 = Integer.valueOf(5);
+   public final static Integer PRIO_10 = Integer.valueOf(10);
    
    /**
     * The priority by which it will be invoked. Lower numbers are invoked first on subscribe and last on unsubscribe.

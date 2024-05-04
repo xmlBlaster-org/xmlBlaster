@@ -158,11 +158,11 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
             Object[] obj = { 
                           this.keyOid,
-                          new Long(this.msgUnitWrapperUniqueId),
+                          Long.valueOf(this.msgUnitWrapperUniqueId),
                           this.receiver.getAbsoluteName(),
                           this.subscriptionId,
                           this.flag,
-                          new Integer(getRedeliverCounter())
+                          Integer.valueOf(getRedeliverCounter())
                            };
             return obj;
       }
@@ -172,11 +172,11 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
             Object[] meat = (Object[])w.getEmbeddedObject();
             Object[] obj = { 
                              this.keyOid,
-                             new Long(this.msgUnitWrapperUniqueId),
+                             Long.valueOf(this.msgUnitWrapperUniqueId),
                              this.receiver.getAbsoluteName(),
                              this.subscriptionId,
                              this.flag,
-                             new Integer(getRedeliverCounter()),
+                             Integer.valueOf(getRedeliverCounter()),
                              meat[0],   // QoS
                              meat[1],   // key
                              meat[2]    // content
@@ -186,11 +186,11 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
          else {
             Object[] obj = { 
                           this.keyOid,
-                          new Long(this.msgUnitWrapperUniqueId),
+                          Long.valueOf(this.msgUnitWrapperUniqueId),
                           this.receiver.getAbsoluteName(),
                           this.subscriptionId,
                           this.flag,
-                          new Integer(getRedeliverCounter())
+                          Integer.valueOf(getRedeliverCounter())
                            };
             return obj;
          }

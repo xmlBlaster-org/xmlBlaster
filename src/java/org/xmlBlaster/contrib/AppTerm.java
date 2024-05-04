@@ -209,11 +209,11 @@ public class AppTerm extends JFrame implements KeyListener {
       
       public void write(int val) {
          try {
-            this.queue.put(new Integer(val));
+            this.queue.put(Integer.valueOf(val));
             // hack to force the read in readLine to break. Otherwise readLine will 
             // not return. This has not been tested on windows.
             if (val == 10)
-               this.queue.put(new Integer(-1));
+               this.queue.put(Integer.valueOf(-1));
          }
          catch (InterruptedException ex) {
             ex.printStackTrace();

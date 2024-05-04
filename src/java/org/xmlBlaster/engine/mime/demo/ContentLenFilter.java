@@ -64,14 +64,14 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
       String lenStr = (String)props.get("DEFAULT_MAX_LEN");
       if (lenStr != null) {
-         DEFAULT_MAX_LEN = (new Long(lenStr)).longValue();
+         DEFAULT_MAX_LEN = (Long.valueOf(lenStr)).longValue();
          log.info("Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
       }
 
       // This is for the testsuite only to test exception
       String throwStr = (String)props.get("THROW_EXCEPTION_FOR_LEN");
       if (throwStr != null) {
-         THROW_EXCEPTION_FOR_LEN = (new Integer(throwStr)).intValue();
+         THROW_EXCEPTION_FOR_LEN = (Integer.valueOf(throwStr)).intValue();
          log.info("Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
       }
    }
@@ -137,7 +137,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
          long maxLen;
 
          if (query != null) { // Subscriber/getter has given own max length
-            maxLen = new Long(query.toString().trim()).longValue();
+            maxLen = Long.valueOf(query.toString().trim()).longValue();
          }
          else                 // Use default max length
             maxLen = DEFAULT_MAX_LEN;

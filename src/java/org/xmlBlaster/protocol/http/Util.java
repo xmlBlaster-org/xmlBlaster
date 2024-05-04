@@ -58,7 +58,7 @@ public class Util
     */
    public static final boolean getParameter(HttpServletRequest req, String name, boolean defaultVal)
    {
-      Boolean b = new Boolean(getParameter(req, name, new Boolean(defaultVal).toString()));
+      Boolean b = Boolean.valueOf(getParameter(req, name, Boolean.valueOf(defaultVal).toString()));
       return b.booleanValue();
    }
 }

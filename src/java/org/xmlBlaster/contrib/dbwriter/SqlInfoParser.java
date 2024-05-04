@@ -144,7 +144,7 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
       String tmp = attrs.getValue(key);
       if (tmp == null)
          return def;
-      return (new Boolean(tmp)).booleanValue();
+      return (Boolean.valueOf(tmp)).booleanValue();
    }
    
    private final int getIntAttr(Attributes attrs, String key, int def) {

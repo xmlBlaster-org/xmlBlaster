@@ -128,7 +128,7 @@ public class Timestamp implements Comparable, java.io.Serializable
     */
    public final Long getTimestampLong() {
       if (this.timestampLong == null) {
-         this.timestampLong = new Long(this.timestamp);
+         this.timestampLong = Long.valueOf(this.timestamp);
       }
       return timestampLong;
    }

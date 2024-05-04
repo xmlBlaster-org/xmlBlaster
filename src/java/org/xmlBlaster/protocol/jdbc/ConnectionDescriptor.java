@@ -116,7 +116,7 @@ public class ConnectionDescriptor {
             String   con =
                curNode.getAttributes().getNamedItem("confirm").getNodeValue();
 
-            confirmation = (new Boolean(con)).booleanValue();
+            confirmation = (Boolean.valueOf(con)).booleanValue();
          }
          else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:documentrootnode")) {

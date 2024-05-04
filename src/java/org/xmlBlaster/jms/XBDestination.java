@@ -94,7 +94,7 @@ public class XBDestination implements Topic, Queue, Destination, Referenceable, 
       oo.writeLong(serialVersionUID);
       oo.writeObject(this.topicName);
       oo.writeObject(this.queueName);
-      oo.writeObject(new Boolean(this.queueName));
+      oo.writeObject(Boolean.valueOf(this.queueName));
    }
 
 }

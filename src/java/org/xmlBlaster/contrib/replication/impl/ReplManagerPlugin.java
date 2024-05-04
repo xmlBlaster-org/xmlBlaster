@@ -1580,7 +1580,7 @@ public class ReplManagerPlugin extends GlobalInfo implements
     */
    public Integer getPriority() {
       // TODO Check if the priority is correct
-      return new Integer(100);
+      return Integer.valueOf(100);
    }
 
    /**

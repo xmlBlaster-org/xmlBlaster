@@ -76,7 +76,7 @@ public class ConnectionTableObserver implements Observer {
 			    indexSet.clear(connectionIndex);
 
                             // insert connectionHost + connectionPort and connectionIndex in connectionHashtable
-			    connectionHashtable.put(connectionHost + connectionPort, new Integer(connectionIndex));
+			    connectionHashtable.put(connectionHost + connectionPort, Integer.valueOf(connectionIndex));
   
                             // insert new connectionEntry in connectionTable
 			    connectionEntryImpl = new ConnectionEntryImpl(connectionTableSubject.nodeIndex.intValue(),

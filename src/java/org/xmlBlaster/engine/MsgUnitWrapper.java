@@ -403,7 +403,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    /**
     * The embedded object. 
-    * Object[] = { this.msgUnit, new Integer(this.referenceCounter) }  or<br />
+    * Object[] = { this.msgUnit, Integer.valueOf(this.referenceCounter) }  or<br />
     * qos.toXml, key.toXml, contentBytes
     * <p>
     * IMPORTANT NOTE:
@@ -413,14 +413,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     */
    public Object getEmbeddedObject() {
       if (this.embeddedType.equals(ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL)) {
-         Object[] obj = { this.msgUnit, new Integer(this.referenceCounter),
-                          new Integer(this.historyReferenceCounter) };
+         Object[] obj = { this.msgUnit, Integer.valueOf(this.referenceCounter),
+                          Integer.valueOf(this.historyReferenceCounter) };
          return obj;
       }
       else {
          Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml(),
-                          this.msgUnit.getContent(), new Integer(this.referenceCounter),
-                          new Integer(this.historyReferenceCounter) };
+                          this.msgUnit.getContent(), Integer.valueOf(this.referenceCounter),
+                          Integer.valueOf(this.historyReferenceCounter) };
          return obj;
       }
    }
@@ -446,7 +446,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       boolean forceReadable = (props!=null) && props.contains("forceReadable"); Constants.TOXML_FORCEREADABLE
       int maxContentLen = -1;
       if (props!=null && props.contains("maxContentLen")) { Constants.TOXML_MAXCONTENTLEN
-         try { maxContentLen = new Integer((String)props.get("maxContentLen")).intValue(); } catch(NumberFormatException e) {}
+         try { maxContentLen = Integer.valueOf((String)props.get("maxContentLen")).intValue(); } catch(NumberFormatException e) {}
       }
       */
       MsgUnit msgUnit = getMsgUnit();

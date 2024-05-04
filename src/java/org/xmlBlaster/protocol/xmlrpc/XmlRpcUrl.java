@@ -183,7 +183,7 @@ public class XmlRpcUrl
                portStr = portStr.substring(0, pos); // strip path e.g. "http://myHost:8080/path/subpath"
             }
             try {
-               this.port = (new Integer(portStr)).intValue();
+               this.port = (Integer.valueOf(portStr)).intValue();
             }
             catch (NumberFormatException e) {
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "Your given XMLRPC url '" + url + "' port '" + portStr + "' is invalid");

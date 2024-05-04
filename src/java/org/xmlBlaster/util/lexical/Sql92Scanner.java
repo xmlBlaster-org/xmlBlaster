@@ -355,7 +355,7 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
        if (clientProperty.isStringType()) {
           return symbol(Sql92Symbols.STRING, str);
        }
-       return symbol(Sql92Symbols.NUMBER, new Double(str));
+       return symbol(Sql92Symbols.NUMBER, Double.valueOf(str));
     }
 
 
@@ -781,7 +781,7 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
         case 53: break;
         case 4: 
           { if (log.isLoggable(Level.FINE)) this.logBuffer.append(yytext());
-                         return symbol(Sql92Symbols.NUMBER, new Double(yytext()));
+                         return symbol(Sql92Symbols.NUMBER, Double.valueOf(yytext()));
           }
         case 54: break;
         case 6: 

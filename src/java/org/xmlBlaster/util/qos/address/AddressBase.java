@@ -928,7 +928,7 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(i).equalsIgnoreCase("bootstrapPort") ) {
                   String ll = attrs.getValue(i).trim();
                   try {
-                     setBootstrapPort(new Integer(ll).intValue());
+                     setBootstrapPort(Integer.valueOf(ll).intValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <" + rootTag + " bootstrapPort='" + ll + "'>, expected an integer number.");
                   }
@@ -936,7 +936,7 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(i).equalsIgnoreCase("port") ) {  // deprecated -> use bootstrapPort
                   String ll = attrs.getValue(i).trim();
                   try {
-                     setBootstrapPort(new Integer(ll).intValue());
+                     setBootstrapPort(Integer.valueOf(ll).intValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <" + rootTag + " port='" + ll + "'>, expected an integer number.");
                   }
@@ -947,7 +947,7 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(i).equalsIgnoreCase("pingInterval") ) {
                   String ll = attrs.getValue(i).trim();
                   try {
-                     setPingInterval(new Long(ll).longValue());
+                     setPingInterval(Long.valueOf(ll).longValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <" + rootTag + " pingInterval='" + ll + "'>, expected a long in milliseconds.");
                   }
@@ -955,7 +955,7 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(i).equalsIgnoreCase("retries") ) {
                   String ll = attrs.getValue(i).trim();
                   try {
-                     setRetries(new Integer(ll).intValue());
+                     setRetries(Integer.valueOf(ll).intValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <" + rootTag + " retries='" + ll + "'>, expected an integer number.");
                   }
@@ -963,25 +963,25 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(i).equalsIgnoreCase("delay") ) {
                   String ll = attrs.getValue(i).trim();
                   try {
-                     setDelay(new Long(ll).longValue());
+                     setDelay(Long.valueOf(ll).longValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <" + rootTag + " delay='" + ll + "'>, expected a long in milliseconds.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("oneway") ) {
-                  setOneway(new Boolean(attrs.getValue(i).trim()).booleanValue());
+                  setOneway(Boolean.valueOf(attrs.getValue(i).trim()).booleanValue());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("dispatcherActive") ) {
-                  setDispatcherActive(new Boolean(attrs.getValue(i).trim()).booleanValue());
+                  setDispatcherActive(Boolean.valueOf(attrs.getValue(i).trim()).booleanValue());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("useForSubjectQueue") ) {
-                  this.useForSubjectQueue.setValue(new Boolean(attrs.getValue(i).trim()).booleanValue());
+                  this.useForSubjectQueue.setValue(Boolean.valueOf(attrs.getValue(i).trim()).booleanValue());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("dispatchPlugin") ) {
                   this.dispatchPlugin.setValue(attrs.getValue(i).trim());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("stallOnPingTimeout") ) {
-                  this.stallOnPingTimeout.setValue(new Boolean(attrs.getValue(i).trim()).booleanValue());
+                  this.stallOnPingTimeout.setValue(Boolean.valueOf(attrs.getValue(i).trim()).booleanValue());
                }
                else {
                   log.severe("Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
@@ -1006,7 +1006,7 @@ public abstract class AddressBase implements Cloneable
                if (attrs.getQName(ii).equalsIgnoreCase("collectTime")) {
                   String ll = attrs.getValue(ii).trim();
                   try {
-                     setCollectTime(new Long(ll).longValue());
+                     setCollectTime(Long.valueOf(ll).longValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <burstMode collectTime='" + ll + "'>, expected a long in milliseconds, burst mode is switched off sync messages.");
                   }
@@ -1014,7 +1014,7 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(ii).equalsIgnoreCase("maxEntries") ) {
                   String ll = attrs.getValue(ii).trim();
                   try {
-                     setBurstModeMaxEntries(new Integer(ll).intValue());
+                     setBurstModeMaxEntries(Integer.valueOf(ll).intValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <burstMode maxEntries='" + ll + "'>, expected an integer number.");
                   }
@@ -1022,7 +1022,7 @@ public abstract class AddressBase implements Cloneable
                else if( attrs.getQName(ii).equalsIgnoreCase("maxBytes") ) {
                   String ll = attrs.getValue(ii).trim();
                   try {
-                     setBurstModeMaxBytes(new Long(ll).longValue());
+                     setBurstModeMaxBytes(Long.valueOf(ll).longValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <burstMode maxBytes='" + ll + "'>, expected a long in bytes.");
                   }
@@ -1045,7 +1045,7 @@ public abstract class AddressBase implements Cloneable
                else if (attrs.getQName(ii).equalsIgnoreCase("minSize")) {
                   String ll = attrs.getValue(ii).trim();
                   try {
-                     setMinSize(new Long(ll).longValue());
+                     setMinSize(Long.valueOf(ll).longValue());
                   } catch (NumberFormatException e) {
                      log.severe("Wrong format of <compress minSize='" + ll + "'>, expected a long in bytes, compress is switched off.");
                   }
@@ -1083,7 +1083,7 @@ public abstract class AddressBase implements Cloneable
       else if (name.equalsIgnoreCase("ptp")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            setPtpAllowed(new Boolean(tmp).booleanValue());
+            setPtpAllowed(Boolean.valueOf(tmp).booleanValue());
          return;
       }
 

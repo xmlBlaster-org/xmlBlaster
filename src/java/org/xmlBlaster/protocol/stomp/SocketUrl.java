@@ -163,7 +163,7 @@ public class SocketUrl
                portStr = portStr.substring(0, pos); // strip path e.g. "stomp://myHost:8000/path/subpath"
             }
             try {
-               this.port = (new Integer(portStr)).intValue();
+               this.port = (Integer.valueOf(portStr)).intValue();
             }
             catch (NumberFormatException e) {
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "Your given stomp url '" + url + "' port '" + portStr + "' is invalid");

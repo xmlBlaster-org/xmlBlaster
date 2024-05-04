@@ -52,7 +52,7 @@ public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
   public void fillHashMap() {
     for (int i = 0; i<vecMBeans.size(); i++) {
       try {
-        hmtable.put(new Integer(i), aServer.getAttribute(RequestBroker, (String) vecMBeans.get(i)).get());
+        hmtable.put(Integer.valueOf(i), aServer.getAttribute(RequestBroker, (String) vecMBeans.get(i)).get());
       }
       catch (RemoteException ex) {
       }
@@ -111,7 +111,7 @@ public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
     }
     if (column == 1) {
       try {
-        obj = hmtable.get(new Integer(row));
+        obj = hmtable.get(Integer.valueOf(row));
       }
       catch (Exception ex) {
         ex.printStackTrace();

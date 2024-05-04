@@ -254,7 +254,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                else if( attrs.getQName(i).equalsIgnoreCase("forceQueuing") ) {
                   String tmp = attrs.getValue(i).trim();
                   if (tmp.length() > 0) {
-                     this.destination.forceQueuing(new Boolean(tmp).booleanValue());
+                     this.destination.forceQueuing(Boolean.valueOf(tmp).booleanValue());
                   }
                }
             }
@@ -311,7 +311,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
             tmp = attrs.getValue("forceDestroy");
             if (tmp != null) {
-               msgQosData.setForceDestroy(new Boolean(tmp.trim()).booleanValue());
+               msgQosData.setForceDestroy(Boolean.valueOf(tmp.trim()).booleanValue());
             }
             
             tmp = attrs.getValue("remainingLife");
@@ -331,7 +331,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          
          String tmp = attrs.getValue("readonly");
          if (tmp != null) {
-            tmpProp.setReadonly(new Boolean(tmp.trim()).booleanValue());
+            tmpProp.setReadonly(Boolean.valueOf(tmp.trim()).booleanValue());
          }
          
          tmp = attrs.getValue("destroyDelay");
@@ -341,7 +341,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          
          tmp = attrs.getValue("createDomEntry");
          if (tmp != null) {
-            tmpProp.setCreateDomEntry(new Boolean(tmp.trim()).booleanValue());
+            tmpProp.setCreateDomEntry(Boolean.valueOf(tmp.trim()).booleanValue());
          }
          
          msgQosData.setTopicProperty(tmpProp);
@@ -480,7 +480,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             String tmpDirty = attrs.getValue("dirtyRead");
             boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
             if (tmpDirty != null) {
-               try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.severe("Invalid dirtyRead =" + tmpDirty); };
+               try { dirtyRead = Boolean.valueOf(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.severe("Invalid dirtyRead =" + tmpDirty); };
             }
 
             routeInfo = new RouteInfo(nodeId, stratum, timestamp);
@@ -606,7 +606,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 //       this.inSubscribable = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
-            msgQosData.setSubscribable(new Boolean(tmp).booleanValue());
+            msgQosData.setSubscribable(Boolean.valueOf(tmp).booleanValue());
          }
          character.setLength(0);
          return;
@@ -685,7 +685,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 //       this.inIsVolatile = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
-            msgQosData.setVolatile(new Boolean(tmp).booleanValue());
+            msgQosData.setVolatile(Boolean.valueOf(tmp).booleanValue());
             if (msgQosData.isVolatile()) {
                log.warning("Found 'isVolatile=" + msgQosData.isVolatile() + "' which is deprecated, use lifeTime==0&&forceDestroy==false instead");
             }
@@ -698,7 +698,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 //       this.inAdministrative = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            msgQosData.setAdministrative(new Boolean(tmp).booleanValue());
+            msgQosData.setAdministrative(Boolean.valueOf(tmp).booleanValue());
          // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found administrative = " + msgQosData.isAdministrative());
          character.setLength(0);
          return;
@@ -708,7 +708,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 //       this.inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            msgQosData.setPersistent(new Boolean(tmp).booleanValue());
+            msgQosData.setPersistent(Boolean.valueOf(tmp).booleanValue());
          // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;
@@ -718,7 +718,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 //       this.inForceUpdate = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            msgQosData.setForceUpdate(new Boolean(tmp).booleanValue());
+            msgQosData.setForceUpdate(Boolean.valueOf(tmp).booleanValue());
          // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
          character.setLength(0);
          return;
@@ -728,7 +728,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 //       this.inReadonly = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            msgQosData.setReadonly(new Boolean(tmp).booleanValue());
+            msgQosData.setReadonly(Boolean.valueOf(tmp).booleanValue());
          // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found readonly = " + msgQosData.readonly());
          character.setLength(0);
          return;

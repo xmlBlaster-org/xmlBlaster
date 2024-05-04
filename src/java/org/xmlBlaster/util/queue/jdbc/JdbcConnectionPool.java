@@ -532,7 +532,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
       String txt = pluginProp.getProperty("debug", "" + false);
       try {
-         this.debug = (new Boolean(txt)).booleanValue();
+         this.debug = (Boolean.valueOf(txt)).booleanValue();
       }
       catch (Exception ex) {
          log.warning("The property 'debug' was set to '" + txt + "' which can not be parsed as a boolean value, will set it to false");
@@ -837,9 +837,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       disconnect(-1L, false);
    }
 
-   public void finalize() {
-      shutdown();
-   }
+   // is deprecated
+   //public void finalize() {
+   //   shutdown();
+   //}
 
 
    /**

@@ -195,7 +195,7 @@ public class DbInfo implements I_Info, DbInfoMBean {
        String ret = getPropAsString(key);
        if (ret != null) {
           try {
-             Boolean bool = new Boolean(ret);
+             Boolean bool = Boolean.valueOf(ret);
              return bool.booleanValue();
           }
           catch (NumberFormatException ex) {
