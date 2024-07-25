@@ -1822,7 +1822,6 @@ public class Global implements Cloneable
       return new ClientDispatchConnectionsHandler(this, (ClientDispatchManager)dispatchManager);
    }
 
-   /*
    public void finalize() {
       try {
          //if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
@@ -1838,7 +1837,6 @@ public class Global implements Cloneable
          e.printStackTrace();
       }
    }
-   */
 
    public void shutdown() {
       if (this.isDoingShutdown) {

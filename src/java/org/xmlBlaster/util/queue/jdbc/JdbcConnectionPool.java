@@ -838,9 +838,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    }
 
    // is deprecated
-   //public void finalize() {
-   //   shutdown();
-   //}
+   public void finalize() {
+      shutdown();
+   }
 
 
    /**

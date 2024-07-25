@@ -248,6 +248,7 @@ class PreparedQuery {
    /*
     * TODO this method should not be needed. Check if close is really always invoked.
     * IS DEPRECATED Java 11
+    */
    public void finalize() {
       try {
          if (!this.isClosed) {
@@ -265,7 +266,6 @@ class PreparedQuery {
          e.printStackTrace();
       }
    }
-    */
 
 }
 
