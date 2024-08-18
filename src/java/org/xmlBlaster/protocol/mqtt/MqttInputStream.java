@@ -123,10 +123,10 @@ public class MqttInputStream extends InputStream {
          if (notifyResponseListeners(message))
             message = null;
       } catch (SocketTimeoutException e) {
+    	  log.warning("socket timeout " + e.toString());
+    	  e.printStackTrace();
          // ignore socket read timeout
       }
-      
-
 
       return message;
    }
