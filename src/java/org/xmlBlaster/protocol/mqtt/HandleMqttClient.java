@@ -320,9 +320,16 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
          String login = message.getUserName();
-         String password = new String(message.getPassword());
+         if (login == null || login.trim().length() == 0) {
+             throw new XmlBlasterException(this.glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED_UNKNOWNLOGINNAME, "No xmlBlaster loginName given by mqtt client");
+         }
+         byte[] pw = message.getPassword();
+         if (pw == null) {
+             throw new XmlBlasterException(this.glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED_WRONGPASSWORD, "No xmlBlaster password given by mqtt client");
+         }
+         String password = new String(pw);
          if (login == null || password == null) {
-            throw new XmlBlasterException(this.glob, ErrorCode.USER_SECURITY_AUTHENTICATION, "No login/password given");
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_SECURITY_AUTHENTICATION, "No xmlBlaster login/password given");
          }
 
          ConnectQosData conQosData = new ConnectQosData(glob);
@@ -413,14 +420,20 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          if (clientId == null || clientId.length() == 0)
             returnProps.setAssignedClientIdentifier(connectReturnQos.getSecretSessionId());
 
-         log.info("Accepted mqtt version " + message.getMqttVersion() + " connection " + connectReturnQos.getSecretSessionId() + ": " + message.toLogString());
+         log.info("Accepted remote " + remoteSocketStr + " mqtt version " + message.getMqttVersion() + " connection " + connectReturnQos.getSecretSessionId() + ": " + message.toLogString());
          
          XbMqttConnAck connack = new XbMqttConnAck(connectReturnQos.isReconnected(), 0, returnProps);
          outputStream.write(connack);
       } catch (XmlBlasterException e) {
-         log.warning(ME + " Connect failed: " + e.toString());
+         log.warning(ME + " Connect from " + remoteSocketStr + " failed: " + e.toString());
          int retCode = 0x80;
-         if (ErrorCode.getCategory(e.getErrorCode()) == ErrorCode.USER_SECURITY)
+         if (e.getErrorCode() == ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED_UNKNOWNLOGINNAME) {
+        	 retCode = 0x86; // 134dec MQTT5 Bad User Name or Password (not 0x02 any more) 
+         }
+         else if (e.getErrorCode() == ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED_WRONGPASSWORD) {
+        	 retCode = 0x86; // MQTT5 Bad User Name or Password (not 0x02 any more) 
+         }
+         else if (ErrorCode.getCategory(e.getErrorCode()) == ErrorCode.USER_SECURITY)
             retCode = 0x87; // "Not authorized"
          XbMqttConnAck connack = new XbMqttConnAck(false, retCode, null);
          outputStream.write(connack);
@@ -491,6 +504,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
    private void handlePublish(XbMqttPublish publish, MqttOutputStream outStream) throws XmlBlasterException, MqttException, IOException {
       I_XmlBlaster xb = authenticate.getXmlBlaster();
 
+      // iot.pub.company.D7:D0:B3:05:15:26.data
       String topic = publish.getTopicName();
       topic = topic.replace("/", this.levelSeparator);
 
@@ -662,9 +676,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
          log.finer("Handling client request ...");
       try {
          if (log.isLoggable(Level.FINE)) {
-            Socket socket = this.sock;
-            if (socket != null)
-               log.fine("Client accepted, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
+            log.fine("Client accepted, coming from host " + this.remoteSocketStr);
          }
          this.mqttIStream = new MqttInputStream(iStream);
          this.mqttOStream = null;
@@ -677,6 +689,9 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
                      mqttOStream = new MqttOutputStream(mqttIStream.getMqttVersion(), oStream);
                   handleMessage(msg, mqttOStream);
                }
+               else {
+            	   log.warning("Empty message received from " + this.remoteSocketStr);
+               }
             } catch (Throwable e) {
                if (e.toString().indexOf("closed") != -1 || (e instanceof java.net.SocketException && e.toString().indexOf("Connection reset") != -1)) {
                   if (log.isLoggable(Level.FINE))
@@ -684,11 +699,11 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
                } else if (e.toString().indexOf("EOF") != -1) {
                   if (this.disconnectIsCalled)
                      if (log.isLoggable(Level.FINE))
-                        log.fine(toString() + ": Lost TCP connection after sending disconnect(): " + e.toString());
+                        log.fine(toString() + ": Lost TCP connection to " + this.remoteSocketStr + " after sending disconnect(): " + e.toString());
                      else
-                        log.warning(toString() + ": Lost TCP connection: " + e.toString());
+                        log.warning(toString() + ": Lost TCP connection to " + this.remoteSocketStr + ": " + e.toString());
                } else {
-                  log.warning(toString() + ": Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
+                  log.warning(toString() + ": Error parsing TCP data from '" + this.remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
                }
                if (e instanceof OutOfMemoryError || e instanceof IllegalArgumentException) {
                   e.printStackTrace();
@@ -708,7 +723,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
       } finally {
          shutdown(); // to potentially publish last will
          if (log.isLoggable(Level.FINE))
-            log.fine("Deleted thread for '" + getLoginName() + "'.");
+            log.fine("Deleted thread for " + this.remoteSocketStr + " '" + getLoginName() + "'.");
       }
    }
 

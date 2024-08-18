@@ -3,6 +3,7 @@ package org.xmlBlaster.protocol.mqtt;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -10,10 +11,12 @@ import org.eclipse.paho.mqttv5.common.packet.MqttDataTypes;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 public class XbMqttConnect extends org.eclipse.paho.mqttv5.common.packet.MqttConnect {
-
+   private static Logger log = Logger.getLogger(XbMqttConnect.class.getName());
+   
    public static XbMqttConnect parse(int mqttVersion, byte[] data) throws MqttException, IOException {
-      if (mqttVersion >= 5)
+      if (mqttVersion >= 5) {
          return new XbMqttConnect((byte) 0, data);
+      }
 
       ByteArrayInputStream bais = new ByteArrayInputStream(data);
       DataInputStream dis = new DataInputStream(bais);
@@ -45,9 +48,11 @@ public class XbMqttConnect extends org.eclipse.paho.mqttv5.common.packet.MqttCon
 
       dis.close();
 
+      log.info("Client connecting protocolVersion=" + protocolVersion + ",connectFlags=" + connectFlags + ",clientId=" + clientId + ",cleanSession=" + cleanSession + ",user=" + user);
       XbMqttConnect connect = new XbMqttConnect(clientId, protocolVersion, cleanSession, keepAliveInterval, new MqttProperties(), new MqttProperties());
       connect.setUserName(user);
-      connect.setPassword(password.getBytes());
+      if (password != null)
+    	  connect.setPassword(password.getBytes());
       if (hasWill) {
          connect.setWillDestination(willTopic);
          MqttMessage willMsg = new MqttMessage(willMessage.getBytes());
