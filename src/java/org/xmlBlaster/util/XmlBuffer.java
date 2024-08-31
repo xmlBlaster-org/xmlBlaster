@@ -185,6 +185,20 @@ public class XmlBuffer {
         append(buf, text);
         return buf.toString();
     }
+    
+    /**
+     * Escape predefined xml entities (&, <).
+     * Additionally the '\0' is escaped.
+     * @param text e.g. "Hello < and &"
+     * @return "Hello &lt; and &amp;"
+     */
+    public static String escapeElement(String text) {
+        if (text == null || text.length() < 1)
+            return text;
+	    StringBuilder buf = new StringBuilder((int)(text.length()*1.2));
+	    appendElement(buf, text);
+	    return buf.toString();
+    }
 
     /**
      * Escape predefined xml entities (&, <, >, ', ").
