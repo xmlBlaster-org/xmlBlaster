@@ -33,7 +33,7 @@ NOTE 4: The demo below has following setup.
   
    java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties -logging/org.xmlBlaster.engine.RequestBroker FINE
 
- 'avalon.mycomp.com' listens now on bootstrapPort 7601.
+ 'avalon.mycomp.com' listens now on port 7701.
  We have switched on logging of method calls in the 'core'
  to see when messages arrive.
  You can use the JMX 'jconsole' GUI application if you want to have more control over avalon.
@@ -42,10 +42,10 @@ NOTE 4: The demo below has following setup.
 3. Start a client connecting to avalon:
 =======================================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -protocol IOR -bootstrapPort 7601 -numPublish 20 -session.name pubisher/2 -persistent true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win"
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -protocol SOCKET -dispatch/connection/plugin/socket/port 7701 -numPublish 20 -session.name pubisher/2 -persistent true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win"
 
  This publisher connects to the slave 'avalon'.
- The bootstrapPort 7601 is the same as specified for avalon in avalon.properties.
+ The port 7701 is the same as specified for avalon in avalon.properties.
  We publish up to 20 messages, each must be sent by hitting
  enter on your console.
  We login with the name 'publisher' with the well known public
@@ -65,9 +65,9 @@ NOTE 4: The demo below has following setup.
 5. Add a subscriber:
 ====================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -protocol IOR -bootstrapPort 7600 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -protocol SOCKET -dispatch/connection/plugin/socket/port 7700 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
 
-   This subscriber connects to 'heron' (port 7600) which is the master of
+   This subscriber connects to 'heron' (port 7700) which is the master of
    'PublishToSlave.RUGBY_NEWS' messages.
    We use the login name 'subscriber' and force the
    public session id '1' to be able to reconnect to the same
@@ -129,15 +129,15 @@ Example setup with publisher to heron and subscriber at avalon
 
  java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties
 
- java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -protocol IOR -bootstrapPort 7600 -numPublish 100 -interactivePublish true -session.name pubisher/2 -persistent true -erase.forceDestroy true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win"
+ java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -protocol SOCKET -dispatch/connection/plugin/socket/port 7700 -numPublish 100 -interactivePublish true -session.name pubisher/2 -persistent true -erase.forceDestroy true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win"
 
- java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -protocol IOR -bootstrapPort 7601 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -dispatch/callback/retries -1 -multiSubscribe false
+ java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -protocol SOCKET -dispatch/connection/plugin/socket/port 7701 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -dispatch/callback/retries -1 -multiSubscribe false
 
 
 Sniff all messages passing thru:
 
- java javaclients.simplereader.SimpleReaderGui -protocol IOR -bootstrapPort 7600
+ java javaclients.simplereader.SimpleReaderGui -protocol SOCKET -dispatch/connection/plugin/socket/port 7700
 
- java javaclients.simplereader.SimpleReaderGui -protocol IOR -bootstrapPort 7601
+ java javaclients.simplereader.SimpleReaderGui -protocol SOCKET -dispatch/connection/plugin/socket/port 7701
 
  $JAVA_HOME/bin/jconsole
