@@ -27,13 +27,14 @@
       <action do='STOP' onShutdownRunlevel='3' sequence='60'/>
    </plugin>
 
-   <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
-   <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='2'
+   <plugin create='true' id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
-   </plugin>
-
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
+      <!-- attribute id='port'>7607</attribute -->
+      <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
+   </plugin>   
+   
    <!-- The cluster manager must be started after the protocol plugins it wants to use for communication -->
    <plugin create='true' id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
       <action do='LOAD' onStartupRunlevel='5' sequence='5' />
