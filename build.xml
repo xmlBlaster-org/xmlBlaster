@@ -545,43 +545,10 @@ TODO
       
       <echo message="java.specification.version=${java.specification.version}"/>
 
-      <switch value="${java.specification.version}">
-         <case value="13">
-            <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.8" />
-            <property name="JVM.source" value="1.8" />
-            <property name="DO_FILTERING" value="true" />
-         </case>
-         <case value="1.8">
-            <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.8" />
-            <property name="JVM.source" value="1.8" />
-            <property name="DO_FILTERING" value="true" />
-         </case>
-         <case value="1.7"> <!-- for JDK 1.6 choose 1.5, otherwise it won't compile generics in JMS api -->
-            <property name="isJdk15" value="true" />
-            <property name="JVM.target" value="1.8" />
-            <property name="JVM.source" value="1.8" />
-            <property name="DO_FILTERING" value="true" />
-         </case>
-         <case value="1.6">
-            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.6.2"/>
-         </case>
-         <case value="1.5">
-            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.6.2"/>
-         </case>
-         <case value="1.4">
-            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.6.2"/>
-         </case>
-         <case value="1.3">
-            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.0.7"/>
-         </case>
-         <default>
-            <property name="JVM.target" value="1.8" />
-            <property name="JVM.source" value="1.8" />
-            <property name="DO_FILTERING" value="true" />
-         </default>
-      </switch>
+
+      <property name="JVM.target" value="1.8" />
+      <property name="JVM.source" value="1.8" />
+      <property name="DO_FILTERING" value="true" />
 
       <switch value="${XBL_IDL_WITH_WSTRING}">
          <case value="1">
@@ -747,7 +714,6 @@ TODO
             <exclude name="**/servlet/Req*.java"/>
             <exclude name="**/client/protocol/http/j2me/UrlConnectionMicro.java"/> <!-- We need Base64.java -->
             <exclude name="**/client/protocol/http/j2me/XmlBlasterAccessJ2ME.java"/>
-            <exclude name="**/util/admin/extern/LowMemoryDetector.java" unless="isJdk15"/>
             <!-- Activate excludes to compile with JDK 1.2 -->
             <patternset id="jdk12.notcompatible.sources">
                <!-- 
@@ -791,10 +757,6 @@ TODO
             target="${JVM.target}" />
 
       <!-- javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${cp}" / -->
-
-      <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
-      <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
-      <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
 
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
            includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,manifest.xmlBlaster,*.xml"/>
@@ -1047,7 +1009,6 @@ TODO
       </copy>
       <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http/ajax/">
         <fileset dir="${build.dest}/org/xmlBlaster/protocol/http/ajax/">
-           <exclude name="${build.dest}/org/xmlBlaster/protocol/http/ajax/*.java" unless="isJdk15"/>
         </fileset>
       </copy>
       <copy todir="${build.war}/WEB-INF/classes/http">

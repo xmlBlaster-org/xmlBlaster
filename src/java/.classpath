@@ -23,7 +23,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jaxen.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jhotdraw.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxremote.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxri.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxtools.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/joda-time.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jsr107cache-1.0.jar"/>
@@ -31,7 +30,7 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jzlib.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ldbc.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mail.jar"/>
+	<classpathentry exported="true" kind="var" path="XMLBLASTER_HOME/lib/mail.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/miniJacorb.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mx4j-impl.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mx4j-tools.jar"/>
@@ -92,8 +91,6 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/idl.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/logkit-1.2.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/batik.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/stompconnect-1.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/org.eclipse.paho.client.mqttv3-1.2.5.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"/>
