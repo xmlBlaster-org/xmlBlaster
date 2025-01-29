@@ -245,7 +245,7 @@ class PreparedQuery {
    }
 
 
-   /**
+   /*
     * TODO this method should not be needed. Check if close is really always invoked.
     */
    public void finalize() {

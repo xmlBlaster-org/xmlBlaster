@@ -1921,7 +1921,7 @@ this.smtpDestinationHelper.getSubjectTemplate(), summary, description,
     */
    public Integer getPriority() {
       // Support multiple plugins
-      return new Integer(this.instanceCounter+120);
+      return Integer.valueOf(this.instanceCounter+120);
    }
 
    /* (non-Javadoc)

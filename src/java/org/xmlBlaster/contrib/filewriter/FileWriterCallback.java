@@ -191,7 +191,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             long postfix = extractNumberPostfixFromFile(files[i].getName(), prefix);
             if (postfix > -1L) {
                if (files[i].exists() && files[i].canRead() && files[i].isFile())
-                  map.put(new Long(postfix), files[i]);
+                  map.put(Long.valueOf(postfix), files[i]);
             }
          }
          File[] ret = new File[map.size()];

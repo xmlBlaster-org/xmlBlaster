@@ -63,14 +63,14 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
 
       String lenStr = (String)props.get("DEFAULT_MAX_LEN");
       if (lenStr != null) {
-         DEFAULT_MAX_LEN = (new Long(lenStr)).longValue();
+         DEFAULT_MAX_LEN = (Long.valueOf(lenStr)).longValue();
          log.info("Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
       }
 
       // This is for the testsuite only to test exception
       String throwStr = (String)props.get("THROW_EXCEPTION_FOR_LEN");
       if (throwStr != null) {
-         THROW_EXCEPTION_FOR_LEN = (new Integer(throwStr)).intValue();
+         THROW_EXCEPTION_FOR_LEN = (Integer.valueOf(throwStr)).intValue();
          log.info("Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
       }
    }

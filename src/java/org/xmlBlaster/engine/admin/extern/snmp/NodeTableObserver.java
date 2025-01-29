@@ -68,12 +68,12 @@ public class NodeTableObserver implements Observer {
 	// increment refsCount of nodeName  
 	Integer rc = (Integer)refCounts.get(nodeName);
 	if (rc != null) {
-            refCounts.put(nodeName, new Integer(rc.intValue() + 1));
+            refCounts.put(nodeName, Integer.valueOf(rc.intValue() + 1));
             System.out.println("increment, " + nodeName + ", " + ((Integer)refCounts.get(nodeName)).intValue());
             return rc.intValue() + 1;
 	}
 	else {
-            refCounts.put(nodeName, new Integer(1));
+            refCounts.put(nodeName, Integer.valueOf(1));
             System.out.println("increment, " + nodeName + ", 1");
             return 1;
 	}
@@ -103,7 +103,7 @@ public class NodeTableObserver implements Observer {
 	}
 
 	if (rc.intValue() > 1) {
-            refCounts.put(nodeName, new Integer(rc.intValue() - 1));
+            refCounts.put(nodeName, Integer.valueOf(rc.intValue() - 1));
             return rc.intValue() - 1;
 	}
 	else {
@@ -183,7 +183,7 @@ public class NodeTableObserver implements Observer {
 			    indexSet.clear(insInd);
 
                             // insert nodeName and insInd in nodeHashtable
-			    nodeHashtable.put(nodeName, new Integer(insInd));
+			    nodeHashtable.put(nodeName, Integer.valueOf(insInd));
   
                             // insert new nodeEntry in nodeTable
 			    nodeEntryImpl = new NodeEntryImpl(insInd, nodeTableSubject.nodeEntryImplPeer);

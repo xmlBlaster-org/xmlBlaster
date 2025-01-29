@@ -340,13 +340,13 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
                   }
                }
                else if (attrs.getQName(ii).equalsIgnoreCase("timeout"))
-                  sessionQos.setSessionTimeout((new Long(attrs.getValue(ii).trim())).longValue());
+                  sessionQos.setSessionTimeout((Long.valueOf(attrs.getValue(ii).trim())).longValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("maxSessions"))
-                  sessionQos.setMaxSessions((new Integer(attrs.getValue(ii).trim())).intValue());
+                  sessionQos.setMaxSessions((Integer.valueOf(attrs.getValue(ii).trim())).intValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
-                  sessionQos.clearSessions((new Boolean(attrs.getValue(ii).trim())).booleanValue());
+                  sessionQos.clearSessions((Boolean.valueOf(attrs.getValue(ii).trim())).booleanValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("reconnectSameClientOnly"))
-                  sessionQos.setReconnectSameClientOnly((new Boolean(attrs.getValue(ii).trim())).booleanValue());
+                  sessionQos.setReconnectSameClientOnly((Boolean.valueOf(attrs.getValue(ii).trim())).booleanValue());
                else if (attrs.getQName(ii).equalsIgnoreCase("sessionId"))
                   sessionQos.setSecretSessionId(attrs.getValue(ii));
                else
@@ -474,7 +474,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("ptp")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.connectQosData.setPtpAllowed(new Boolean(tmp).booleanValue());
+            this.connectQosData.setPtpAllowed(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -482,7 +482,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("clusterNode")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.connectQosData.setClusterNode(new Boolean(tmp).booleanValue());
+            this.connectQosData.setClusterNode(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -490,7 +490,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("refreshSession")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.connectQosData.setRefreshSession(new Boolean(tmp).booleanValue());
+            this.connectQosData.setRefreshSession(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -498,7 +498,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("duplicateUpdates")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.connectQosData.setDuplicateUpdates(new Boolean(tmp).booleanValue());
+            this.connectQosData.setDuplicateUpdates(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -506,7 +506,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("reconnected")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            this.connectQosData.setReconnected(new Boolean(tmp).booleanValue());
+            this.connectQosData.setReconnected(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -548,7 +548,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          //this.inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            connectQosData.setPersistent(new Boolean(tmp).booleanValue());
+            connectQosData.setPersistent(Boolean.valueOf(tmp).booleanValue());
          // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;

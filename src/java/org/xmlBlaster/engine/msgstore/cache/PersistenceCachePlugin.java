@@ -575,7 +575,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             ramEntries = this.transientStore.getAll(null);
          }
          for(int i=0; i<ramEntries.length; i++) {
-            map.put(new Long(ramEntries[i].getUniqueId()), ramEntries[i]);
+            map.put(Long.valueOf(ramEntries[i].getUniqueId()), ramEntries[i]);
          }
          //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries());
 
@@ -584,7 +584,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             if (persistEntries != null) {
                for(int i=0; i<persistEntries.length; i++) {
                   if (persistEntries[i] == null) continue;
-                  map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+                  map.put(Long.valueOf(persistEntries[i].getUniqueId()), persistEntries[i]);
                }
             }
             //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());

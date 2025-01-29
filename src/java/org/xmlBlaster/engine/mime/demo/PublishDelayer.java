@@ -69,7 +69,7 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter, PublishDelayer
 
       String lenStr = (String)props.get("delayMillis");
       if (lenStr != null) {
-         delayMillis = (new Long(lenStr)).longValue();
+         delayMillis = (Long.valueOf(lenStr)).longValue();
          log.info("Setting delayMillis=" + delayMillis + " as configured in xmlBlaster.properties");
       }
       this.exceptionErrorCode = (String)props.getProperty("exceptionErrorCode", "");

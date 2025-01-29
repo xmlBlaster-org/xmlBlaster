@@ -466,7 +466,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
                this.senderLoopProtectionMap.put(loopProtection.key, loopProtection);
             }
          }
-         // long currRequestId = new Long(msgInfo.getRequestId()).longValue();
+         // long currRequestId = Long.valueOf(msgInfo.getRequestId()).longValue();
          long currRequestId = msgInfo.getRequestSequence();
          
          if (MethodName.PING.equals(msgInfo.getMethodName())) {

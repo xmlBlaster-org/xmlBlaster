@@ -36,19 +36,19 @@ public class NodeTable extends AgentXTable
         oid = new AgentXOID(OID);
 
         // register implemented columns
-        columns.addElement(new Long(2));
-        columns.addElement(new Long(3));
-        columns.addElement(new Long(4));
-        columns.addElement(new Long(5));
-        columns.addElement(new Long(6));
-        columns.addElement(new Long(7));
-        columns.addElement(new Long(8));
-        columns.addElement(new Long(9));
-        columns.addElement(new Long(10));
-        columns.addElement(new Long(11));
-        columns.addElement(new Long(12));
-        columns.addElement(new Long(13));
-        columns.addElement(new Long(14));
+        columns.addElement(Long.valueOf(2));
+        columns.addElement(Long.valueOf(3));
+        columns.addElement(Long.valueOf(4));
+        columns.addElement(Long.valueOf(5));
+        columns.addElement(Long.valueOf(6));
+        columns.addElement(Long.valueOf(7));
+        columns.addElement(Long.valueOf(8));
+        columns.addElement(Long.valueOf(9));
+        columns.addElement(Long.valueOf(10));
+        columns.addElement(Long.valueOf(11));
+        columns.addElement(Long.valueOf(12));
+        columns.addElement(Long.valueOf(13));
+        columns.addElement(Long.valueOf(14));
     }
 
     public NodeTable(boolean shared)
@@ -58,19 +58,19 @@ public class NodeTable extends AgentXTable
         oid = new AgentXOID(OID);
 
         // register implemented columns
-        columns.addElement(new Long(2));
-        columns.addElement(new Long(3));
-        columns.addElement(new Long(4));
-        columns.addElement(new Long(5));
-        columns.addElement(new Long(6));
-        columns.addElement(new Long(7));
-        columns.addElement(new Long(8));
-        columns.addElement(new Long(9));
-        columns.addElement(new Long(10));
-        columns.addElement(new Long(11));
-        columns.addElement(new Long(12));
-        columns.addElement(new Long(13));
-        columns.addElement(new Long(14));
+        columns.addElement(Long.valueOf(2));
+        columns.addElement(Long.valueOf(3));
+        columns.addElement(Long.valueOf(4));
+        columns.addElement(Long.valueOf(5));
+        columns.addElement(Long.valueOf(6));
+        columns.addElement(Long.valueOf(7));
+        columns.addElement(Long.valueOf(8));
+        columns.addElement(Long.valueOf(9));
+        columns.addElement(Long.valueOf(10));
+        columns.addElement(Long.valueOf(11));
+        columns.addElement(Long.valueOf(12));
+        columns.addElement(Long.valueOf(13));
+        columns.addElement(Long.valueOf(14));
     }
 
     public AgentXVarBind getVarBind(AgentXEntry entry, long column)

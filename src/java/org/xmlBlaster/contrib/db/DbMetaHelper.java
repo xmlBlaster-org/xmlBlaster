@@ -98,7 +98,7 @@ public class DbMetaHelper {
             String name = rs.getString("COLUMN_NAME");
             // should already be in the correct order according to 
             // javadoc but to be really sure we order it too
-            map.put(new Integer(pos), name);
+            map.put(Integer.valueOf(pos), name);
             count++;
          }
          if (count != map.size())

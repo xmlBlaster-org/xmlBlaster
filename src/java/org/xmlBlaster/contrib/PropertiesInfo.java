@@ -130,7 +130,7 @@ public class PropertiesInfo implements I_Info {
        String ret = get(key, null);
        if (ret != null) {
           try {
-             Boolean bool = new Boolean(ret);
+             Boolean bool = Boolean.valueOf(ret);
              return bool.booleanValue();
           }
           catch (NumberFormatException ex) {

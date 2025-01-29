@@ -386,7 +386,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * The embedded object for this implementing class is an Object[2]
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.keyOid, new Long(this.msgUnitWrapperUniqueId) };
+      Object[] obj = { this.keyOid, Long.valueOf(this.msgUnitWrapperUniqueId) };
       return obj;
    }
 

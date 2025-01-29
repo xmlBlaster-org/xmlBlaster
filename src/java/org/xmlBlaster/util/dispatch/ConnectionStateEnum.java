@@ -73,7 +73,7 @@ public final class ConnectionStateEnum implements java.io.Serializable
       }
       state = state.trim();
       try {
-         int connectionState = new Integer(state).intValue();
+         int connectionState = Integer.valueOf(state).intValue();
          return toConnectionStateEnum(connectionState); // may throw IllegalArgumentException
       } catch (NumberFormatException e) {
          state = state.toUpperCase();

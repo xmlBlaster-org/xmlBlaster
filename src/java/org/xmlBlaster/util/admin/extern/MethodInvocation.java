@@ -147,7 +147,7 @@ public class MethodInvocation implements java.io.Serializable {
       }
 
       else if (methodName.equals("isRegistered")) {
-        returnValue = new Boolean(server.isRegistered(
+        returnValue = Boolean.valueOf(server.isRegistered(
             (ObjectName)params[0]
         ));
       }
@@ -210,7 +210,7 @@ public class MethodInvocation implements java.io.Serializable {
       }
 
       else if (methodName.equals("isInstanceOf")) {
-        returnValue = new Boolean(server.isInstanceOf(
+        returnValue = Boolean.valueOf(server.isInstanceOf(
             (ObjectName)params[0],
             (String)params[1]
         ));

@@ -69,12 +69,12 @@ public class ClientTableObserver implements Observer {
         // increment refsCount of clientName  
         Integer rc = (Integer)refCounts.get(clientName);
         if (rc != null) {
-            refCounts.put(clientName, new Integer(rc.intValue() + 1));
+            refCounts.put(clientName, Integer.valueOf(rc.intValue() + 1));
             System.out.println("increment, " + clientName + ", " + ((Integer)refCounts.get(clientName)).intValue());
             return rc.intValue() + 1;
         }
         else {
-            refCounts.put(clientName, new Integer(1));
+            refCounts.put(clientName, Integer.valueOf(1));
             System.out.println("increment, " + clientName + ", 1");
             return 1;
         }
@@ -105,7 +105,7 @@ public class ClientTableObserver implements Observer {
         }
 
         if (rc.intValue() > 1) {
-            refCounts.put(clientName, new Integer(rc.intValue() - 1));
+            refCounts.put(clientName, Integer.valueOf(rc.intValue() - 1));
             return rc.intValue() - 1;
         }
         else {
@@ -213,7 +213,7 @@ public class ClientTableObserver implements Observer {
                             indexSet.clear(clientIndex);
 
                             // insert nodeName + clientName in clientHashtable
-                            clientHashtable.put(nodeName + clientName, new Integer(clientIndex));
+                            clientHashtable.put(nodeName + clientName, Integer.valueOf(clientIndex));
   
                             // insert new clientEntry in clientTable
                             clientEntryImpl = new ClientEntryImpl(clientTableSubject.nodeIndex.intValue(),

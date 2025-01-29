@@ -287,7 +287,7 @@ public class JmxWrapper
 
       boolean supportsJconsole = true;
       try {
-         if (new Float(System.getProperty("java.runtime.version").substring(0,3)).floatValue() < 1.5)
+         if (Float.valueOf(System.getProperty("java.runtime.version").substring(0,3)).floatValue() < 1.5)
             supportsJconsole = false;
       }
       catch (Throwable e) {
@@ -307,7 +307,7 @@ public class JmxWrapper
          // For localhost or remote access with specific port
          // You have to configure authentication!
          // JDK >= 1.5 automatically creates an RMI connector and start it for us
-         int port = new Integer(System.getProperty("com.sun.management.jmxremote.port")).intValue();
+         int port = Integer.valueOf(System.getProperty("com.sun.management.jmxremote.port")).intValue();
          if (supportsJconsole) {
             String loc = "service:jmx:rmi:///jndi/rmi://"+glob.getLocalIP()+":"+port+jndiPath;
             log.info("'java -Dcom.sun.management.jmxremote.port=" + port +
@@ -513,7 +513,7 @@ public class JmxWrapper
 //                  java.lang.reflect.Constructor ctor = clazz.getConstructor(paramCls);
 //
 //                  float thresholdFactor = glob.getProperty().get("xmlBlaster/jmx/memoryThresholdFactor", (float)0.9);
-//                  Object[] params = new Object[] { new Float(thresholdFactor) };
+//                  Object[] params = new Object[] { Float.valueOf(thresholdFactor) };
 //                  ctor.newInstance(params);
 //               }
             }
@@ -1042,13 +1042,13 @@ didn't you have "state" as the name of the attribute?
          String sig = (String)sigs.get(i);
          String par = (String)parms.get(i);
          if (sig.equals("java.lang.Integer") || sig.equals("int"))
-            ret[i] = new Integer(par);
+            ret[i] = Integer.valueOf(par);
          else if (sig.equals("java.lang.Long") || sig.equals("long"))
-            ret[i] = new Long(par);
+            ret[i] = Long.valueOf(par);
          else if (sig.equals("java.lang.Short") || sig.equals("short"))
-            ret[i] = new Short(par);
+            ret[i] = Short.valueOf(par);
          else if (sig.equals("java.lang.Boolean") || sig.equals("boolean"))
-            ret[i] = new Boolean(par);
+            ret[i] = Boolean.valueOf(par);
          else
             ret[i] = par;
       }

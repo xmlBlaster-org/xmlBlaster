@@ -90,6 +90,7 @@ public final class ContextNode
    /**
     * @deprecated Use constructor without global
     */
+   @Deprecated
    public ContextNode(Global glob, String className, String instanceName, ContextNode parent) {
       this(className, instanceName, parent);
    }

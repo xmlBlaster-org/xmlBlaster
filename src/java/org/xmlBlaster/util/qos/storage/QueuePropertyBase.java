@@ -572,7 +572,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("maxEntries")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxEntriesUnchecked(new Long(tmp).longValue());
+                  setMaxEntriesUnchecked(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " maxEntries='" + tmp + "'>, expected a long, using default.");
                }
@@ -583,7 +583,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("debug")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setDebug(new Boolean(tmp).booleanValue());
+                  setDebug(Boolean.valueOf(tmp).booleanValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " debug='" + tmp + "'>, expected a boolean, using default.");
                }
@@ -594,7 +594,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("maxEntriesCache")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxEntriesCacheUnchecked(new Long(tmp).longValue());
+                  setMaxEntriesCacheUnchecked(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " maxEntriesCache='" + tmp + "'>, expected an long, using default.");
                }
@@ -602,7 +602,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("maxBytes")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxBytesUnchecked(new Long(tmp).longValue());
+                  setMaxBytesUnchecked(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " maxBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
@@ -610,7 +610,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("maxBytesCache")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxBytesCacheUnchecked(new Long(tmp).longValue());
+                  setMaxBytesCacheUnchecked(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " maxBytesCache='" + tmp + "'>, expected a long in bytes, using default.");
                }
@@ -618,7 +618,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapLevel")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setStoreSwapLevel(new Long(tmp).longValue());
+                  setStoreSwapLevel(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
                }
@@ -626,7 +626,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapBytes")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setStoreSwapBytes(new Long(tmp).longValue());
+                  setStoreSwapBytes(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " storeSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
@@ -634,7 +634,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapLevel")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setReloadSwapLevel(new Long(tmp).longValue());
+                  setReloadSwapLevel(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
                }
@@ -642,7 +642,7 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapBytes")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setReloadSwapBytes(new Long(tmp).longValue());
+                  setReloadSwapBytes(Long.valueOf(tmp).longValue());
                } catch (NumberFormatException e) {
                   log.severe("Wrong format of <" + getRootTagName() + " reloadSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }

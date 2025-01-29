@@ -168,43 +168,43 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @exception NumberFormatException
     */
    public int getIntValue() {
-      return (new Integer(getStringValue())).intValue();
+      return (Integer.valueOf(getStringValue())).intValue();
    }
 
    public boolean getBooleanValue() {
-      return (new Boolean(getStringValue())).booleanValue();
+      return (Boolean.valueOf(getStringValue())).booleanValue();
    }
 
    /**
     * @exception NumberFormatException
     */
    public double getDoubleValue() {
-      return (new Double(getStringValue())).doubleValue();
+      return (Double.valueOf(getStringValue())).doubleValue();
    }
 
    /**
     * @exception NumberFormatException
     */
    public float getFloatValue() {
-      return (new Float(getStringValue())).floatValue();
+      return (Float.valueOf(getStringValue())).floatValue();
    }
 
    public byte getByteValue() {
-      return (new Byte(getStringValue())).byteValue();
+      return (Byte.valueOf(getStringValue())).byteValue();
    }
 
    /**
     * @exception NumberFormatException
     */
    public long getLongValue() {
-      return (new Long(getStringValue())).longValue();
+      return (Long.valueOf(getStringValue())).longValue();
    }
 
    /**
     * @exception NumberFormatException
     */
    public short getShortValue() {
-      return (new Short(getStringValue())).shortValue();
+      return (Short.valueOf(getStringValue())).shortValue();
    }
 
    /**
@@ -327,13 +327,13 @@ public class EncodableData implements java.io.Serializable, Cloneable
    public final static Object convertPropertyObject(String type, String val) {
       if (type == null) return val;
       if (val == null) return null;
-      if (Constants.TYPE_BOOLEAN.equalsIgnoreCase(type)) return new Boolean(val);
-      if (Constants.TYPE_BYTE.equalsIgnoreCase(type)) return new Byte(val);
-      if (Constants.TYPE_DOUBLE.equalsIgnoreCase(type)) return new Double(val);
-      if (Constants.TYPE_FLOAT.equalsIgnoreCase(type)) return new Float(val);
-      if (Constants.TYPE_INT.equalsIgnoreCase(type)) return new Integer(val);
-      if (Constants.TYPE_SHORT.equalsIgnoreCase(type)) return new Short(val);
-      if (Constants.TYPE_LONG.equalsIgnoreCase(type)) return new Long(val);
+      if (Constants.TYPE_BOOLEAN.equalsIgnoreCase(type)) return Boolean.valueOf(val);
+      if (Constants.TYPE_BYTE.equalsIgnoreCase(type)) return Byte.valueOf(val);
+      if (Constants.TYPE_DOUBLE.equalsIgnoreCase(type)) return Double.valueOf(val);
+      if (Constants.TYPE_FLOAT.equalsIgnoreCase(type)) return Float.valueOf(val);
+      if (Constants.TYPE_INT.equalsIgnoreCase(type)) return Integer.valueOf(val);
+      if (Constants.TYPE_SHORT.equalsIgnoreCase(type)) return Short.valueOf(val);
+      if (Constants.TYPE_LONG.equalsIgnoreCase(type)) return Long.valueOf(val);
       if (Constants.TYPE_BLOB.equalsIgnoreCase(type)) return val.getBytes();
       return null; 
    }

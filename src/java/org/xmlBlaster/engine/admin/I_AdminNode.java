@@ -32,6 +32,7 @@ public interface I_AdminNode extends I_AdminUsage {
     * @return A comma separated list of cluster node names
     * @deprecated Please use getNodes() instead
     */
+   @Deprecated
    public String getNodeList();
 
    /**
@@ -286,6 +287,7 @@ public interface I_AdminNode extends I_AdminUsage {
     * @return A comma separated list
     * @deprecated Please use getClients() instead
     */
+   @Deprecated
    public String getClientList();
 
    /**
@@ -310,6 +312,7 @@ public interface I_AdminNode extends I_AdminUsage {
     * @return A comma separated list
     * @deprecated Will be removed
     */
+   @Deprecated
    public String getSyspropList();
 
    /**
@@ -322,6 +325,7 @@ public interface I_AdminNode extends I_AdminUsage {
     * @return A comma separated list
     * @deprecated Please use getTopics() instead
     */
+   @Deprecated
    public String getTopicList();
 
    /**
@@ -341,6 +345,7 @@ public interface I_AdminNode extends I_AdminUsage {
     * @return A comma separated list
     * @deprecated Please use getSubscriptions() instead
     */
+   @Deprecated
    public String getSubscriptionList();
 
    /**

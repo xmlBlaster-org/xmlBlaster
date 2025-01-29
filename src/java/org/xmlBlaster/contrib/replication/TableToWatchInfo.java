@@ -263,7 +263,7 @@ public class TableToWatchInfo {
             String val = ownInfo.get(key, null);
             TableToWatchInfo tableToWatch = new TableToWatchInfo();
             tableToWatch.assignFromInfoPair(key, val);
-            Long mapKey = new Long(tableToWatch.getReplKey());
+            Long mapKey = Long.valueOf(tableToWatch.getReplKey());
             ArrayList list = (ArrayList)map.get(mapKey);
             if (list == null) {
                list = new ArrayList();

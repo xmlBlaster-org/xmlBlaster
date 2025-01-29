@@ -1157,7 +1157,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
          ((amount < numOfBytes) || (numOfBytes < 0))) {
 
          if(onlyId) {
-            entries.add(new Long(rs.getLong(1)));
+            entries.add(Long.valueOf(rs.getLong(1)));
          }
          else {
             long dataId = rs.getLong(DATA_ID);            // preStatement.setLong(1, dataId);
@@ -1214,7 +1214,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
          ((ret.countBytes < numOfBytes) || (numOfBytes < 0))) {
          currentAmount = rs.getLong(2);
          if ( (numOfBytes < 0) || (ret.countBytes+currentAmount < numOfBytes) || (ret.countEntries == 0)) {
-            retL.add(new Long(rs.getLong(1)));
+            retL.add(Long.valueOf(rs.getLong(1)));
             ret.countBytes += currentAmount;
             ret.countEntries++;
          }
@@ -1966,7 +1966,7 @@ public class CommonTableDatabaseAccessor implements I_StorageProblemListener, I_
             query = new PreparedQuery(pool, req, numOfEntries);
             query.rs.next();
             prio = query.rs.getInt(1);
-            if (log.isLoggable(Level.FINE)) log.fine("Max prio " + new Integer(prio).toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Max prio " + Integer.valueOf(prio).toString());
             query.close(success);
             query = null;
             req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + 

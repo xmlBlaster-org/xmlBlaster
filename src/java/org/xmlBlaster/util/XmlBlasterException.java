@@ -274,7 +274,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       Object[] arguments = {  (errorCodeStr==null) ? "" : errorCodeStr,  // {0}
                               (node==null) ? "" : node,                  // {1}
                               (location==null) ? "" : location,          // {2}
-                              new Boolean(isServerSide()),               // {3}
+                              Boolean.valueOf(isServerSide()),               // {3}
                               getRawMessage(),                           // {4}
                               (versionInfo==null) ? "" : versionInfo,         // {5}
                               (timestamp==null) ? "" : timestamp.toString(),  // {6}
@@ -625,7 +625,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       String stackTrace = null;
       String embeddedMessage = null;
       String transactionInfo = null;
-      Boolean exceptionFromServer = new Boolean(true);
+      Boolean exceptionFromServer = Boolean.valueOf(true);
 
       try {
          for (end=start; end<data.length; end++)
@@ -691,7 +691,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          for (end=start; end<data.length; end++)
             if (data[end] == 0)
                break;
-         exceptionFromServer = new Boolean(new String(data, start, end-start));
+         exceptionFromServer = Boolean.valueOf(new String(data, start, end-start));
       }
       catch (java.lang.StringIndexOutOfBoundsException e) {
          log.severe("Receiving invalid format for XmlBlasterException in '" + Constants.toUtf8String(data) + "'");

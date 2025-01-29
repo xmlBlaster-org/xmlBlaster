@@ -121,7 +121,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
             return;
 //       this.inErase = true;
          if (attrs != null) {
-            queryQosData.setForceDestroy(new Boolean(attrs.getValue("forceDestroy")).booleanValue());
+            queryQosData.setForceDestroy(Boolean.valueOf(attrs.getValue("forceDestroy")).booleanValue());
          }
          return;
       }
@@ -326,7 +326,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inMeta = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setWantMeta(new Boolean(tmp).booleanValue());
+            queryQosData.setWantMeta(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -335,7 +335,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inContent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setWantContent(new Boolean(tmp).booleanValue());
+            queryQosData.setWantContent(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -344,7 +344,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inMultiSubscribe = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setMultiSubscribe(new Boolean(tmp).booleanValue());
+            queryQosData.setMultiSubscribe(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -353,7 +353,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inLocal = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setWantLocal(new Boolean(tmp).booleanValue());
+            queryQosData.setWantLocal(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -362,7 +362,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inInitialUpdate = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setWantInitialUpdate(new Boolean(tmp).booleanValue());
+            queryQosData.setWantInitialUpdate(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -371,7 +371,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inUpdateOneway = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setWantUpdateOneway(new Boolean(tmp).booleanValue());
+            queryQosData.setWantUpdateOneway(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -380,7 +380,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inNotify = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setWantNotify(new Boolean(tmp).booleanValue());
+            queryQosData.setWantNotify(Boolean.valueOf(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -427,7 +427,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 //       this.inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            queryQosData.setPersistent(new Boolean(tmp).booleanValue());
+            queryQosData.setPersistent(Boolean.valueOf(tmp).booleanValue());
          // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;

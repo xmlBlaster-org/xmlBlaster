@@ -111,7 +111,7 @@ public class SessionTableObserver implements Observer {
                             indexSet.clear(sessionIndex);
 
                             // insert nodeName + clientName + sessionName and sessionIndex in sessionHashtable
-                            sessionHashtable.put(nodeName + clientName + sessionName, new Integer(sessionIndex));
+                            sessionHashtable.put(nodeName + clientName + sessionName, Integer.valueOf(sessionIndex));
   
                             // insert new sessionEntry in sessionTable
                             sessionEntryImpl = new SessionEntryImpl(sessionTableSubject.nodeIndex.intValue(),

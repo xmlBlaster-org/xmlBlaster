@@ -607,6 +607,7 @@ public final class JdbcQueue implements I_Queue, I_StoragePlugin, I_Map {
     * @see I_Queue#peekWithLimitEntry(I_QueueEntry)
     * @deprecated
     */
+   @Deprecated
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("peekWithLimitEntry called");
       if (limitEntry == null) 

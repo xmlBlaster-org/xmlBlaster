@@ -449,7 +449,7 @@ implements I_Plugin, I_Timeout,
 
       if (this.holdbackExpireTimeout > 0) {
          Timestamp timestamp = new Timestamp();
-         this.holdbackMap.put(new Long(timestamp.getTimestamp()), emailData);
+         this.holdbackMap.put(Long.valueOf(timestamp.getTimestamp()), emailData);
          log.warning("None of our registered listeners '" + getListeners()
                + "' matches for key=" + key + ", email '" 
                + emailData.extractMessageId(EmailData.METHODNAME_TAG, msgIdFileName)

@@ -78,7 +78,7 @@ public class XBObjectFactory implements ObjectFactory {
             String topicName = (String)topicRef.getContent();
             String queueName = (String)queueRef.getContent();
             String forceQueuingTxt = (String)forceQueuingRef.getContent();
-            boolean forceQueuing = (new Boolean(forceQueuingTxt)).booleanValue();
+            boolean forceQueuing = (Boolean.valueOf(forceQueuingTxt)).booleanValue();
             return new XBDestination(topicName, queueName, forceQueuing);
          }
       }

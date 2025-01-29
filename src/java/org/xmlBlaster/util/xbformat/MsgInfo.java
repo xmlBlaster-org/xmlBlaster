@@ -360,7 +360,7 @@ public class MsgInfo {
       int pos = tmp.lastIndexOf(':');
       if (pos > -1)
          tmp = tmp.substring(pos+1);
-      return new Long(tmp).longValue();      
+      return Long.valueOf(tmp).longValue();      
    }
    
    
