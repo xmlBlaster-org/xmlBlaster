@@ -384,8 +384,21 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
                ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                "WebSocket callback ping failed");
       }
-      // TODO Auto-generated method stub
-      return null;
+      if (this.secretSessionId == null)
+         return Constants.RET_OK; // not yet authenticated..
+      
+      try {
+         String cbSessionId = "";
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener, getCbMsgInfoParserClassName());
+         parser.addMessage(qos);
+         Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + ((response == null) ? "null" : response.toString()));
+         return (String)response; // return the QoS
+      } catch (Throwable e) {
+         boolean weAreOnServerSide = getXmlBlasterCore() != null; //// TODO !!!!!!!!!!!
+         String txt = weAreOnServerSide ? "Callback ping failed" :  MethodName.PING.toString();
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, txt, e);
+      }
    }
 
 

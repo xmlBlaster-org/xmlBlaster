@@ -55,7 +55,6 @@ public class XbWebSocketServer extends WebSocketServer {
 
    @Override
    public void onOpen(WebSocket conn, ClientHandshake clientHandshake) {
-      log.warning("OPEN");
       HandleWebSocketClient handler = new HandleWebSocketClient(driver.getGlobal(), driver, conn, clientHandshake);
       this.connectedClients.put(conn,  handler);
    }
