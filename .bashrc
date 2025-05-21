@@ -188,6 +188,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/org.eclipse.paho.client.mqttv3-1.2.5.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/org.eclipse.paho.mqttv5.client-1.2.5.jar
 
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/Java-WebSocket-1.6.0.jar
+
    # quartz scheduler
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz/quartz-2.3.2-full.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-collections-3.2.jar
