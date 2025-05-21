@@ -100,6 +100,15 @@
       <!--<attribute id='hostname'>0.0.0.0</attribute>-->
    </plugin>
 
+   <!-- ProtocolPlugin[WEBSOCKET][1.0] for WebSocket clients port=3414 -->
+   <plugin create='false' id='WEBSOCKET' className='org.xmlBlaster.protocol.websocket.WebSocketDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='20'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>
+      <attribute id='port'>3414</attribute>
+      <attribute id='hostname'>localhost</attribute>
+   </plugin>
+
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
    <plugin create='false' id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='40'/> 
