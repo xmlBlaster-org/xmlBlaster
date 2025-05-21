@@ -260,7 +260,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException {
       byte[] msg = msgInfo.createRawMsg(getCbMsgInfoParserClassName());
-      this.sock.send(new String(msg));
+      this.sock.send(msg);
    }
    
    @Override
