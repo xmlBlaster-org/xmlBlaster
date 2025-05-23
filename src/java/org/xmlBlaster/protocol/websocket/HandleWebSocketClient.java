@@ -191,10 +191,12 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
             e1.printStackTrace();
          }
          try {
+            if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
+               executeException(receiver, e, false);
+            else
+               log.warning("Can't handle publishOneway message, ignoring exception: " + e.toString());
             
             if (e.isCleanupSession()) {
-            //if (e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED) ||
-            //      e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT)) {
                shutdown(); // cleanup to avoid thread/memory leak for a client trying again an again
             }
          }
