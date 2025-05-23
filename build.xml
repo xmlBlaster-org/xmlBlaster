@@ -784,7 +784,8 @@ TODO
    <target name="total" depends="delete,all,c,cpp" description="Compile xmlBlaster server, all Java, C and C++ clients">
    </target>
 
-   <target name="SimpleReader" depends="all" description="Startup simple GUI to show messages">
+   <!-- 2025-05-22 removed depends="all" -->
+   <target name="SimpleReader" description="Startup simple GUI to show messages, call 'build all' beforehand">
             <echo message="CLASSPATH=${build.dir} ${project.classpath}" />
             <java dir="." fork="true" classname="javaclients.simplereader.SimpleReaderGui" maxmemory="36m">
                   <classpath path="${cp}" />
