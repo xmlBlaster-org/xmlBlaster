@@ -40,7 +40,7 @@ export class XmlBlasterAccess {
    * @param {string} urlBase
    * @param {string=} loginName
    */
-  constructor(urlBase, loginName, opt_options={}) {
+  constructor(urlBase, loginName, opt_options = {}) {
     if (!orgXmlBlasterUtil.isDefined(urlBase))
       throw "IllegalArgument: Can't create org.xmlBlaster.client.XmlBlasterAccess without urlBase";
 
@@ -108,22 +108,22 @@ export class XmlBlasterAccess {
 
   /**
   * @param {MsgInfo} msgInfo
-  * @param {function} responseFp
+  * @param {Function} responseFp
   * @throws {XmlBlasterException}
   */
   sendMessageForResponse(msgInfo, responseFp) {
     if (!this.webSocket) {
-      throw new XmlBlasterException("Not connected");
+      throw new XmlBlasterException("communication.noConnection", "XmlBlasterAccess.js#sendMessageForResponse", "Not connected to server", false);
     }
     this.registerResponseHandler(msgInfo.getRequestId(), responseFp);
     this.webSocket.send(msgInfo.encodeXbf());
   }
 
   /**
-   * @param {string} data
+   * @param {ArrayBuffer} data
    */
   onWebSocketMessage(data) {
-    const msg = MsgInfo.parseXbf(event.data);
+    const msg = MsgInfo.parseXbf(data);
     const requestId = msg.getRequestId();
     // If this is a response, return to the appropriate response hanlder, otherwise handle further
     const responseHandler = this.responseHandlers.get(requestId);
@@ -154,8 +154,8 @@ export class XmlBlasterAccess {
       response.setRequestId(requestId);
       this.webSocket.send(response.encodeXbf());
     }
-
   }
+
 
   getSessionId() {
     return this?.connectReturnQosData?.getSessionQos()?.getSessionId();
@@ -294,7 +294,7 @@ export class XmlBlasterAccess {
       log.info("Returned: " + resp.getQosStr(), { file: "XmlBlasterAccess", method: "disconnect" });
       if (resp.isException()) {
         const msgUnit = resp.getMsgUnits()[0];
-        log.error("XmlBlasterAccess.js-Disconnect returned exception " + msgUnit.getXmlBlasterException()?.toString(), { file: "XmlBlasterAccess", method: "disconnect", exception: msgUnit.getXmlBlasterException() });
+        log.error("Returned exception " + msgUnit.getXmlBlasterException()?.toString(), { file: "XmlBlasterAccess", method: "disconnect", exception: msgUnit.getXmlBlasterException() });
       }
     });
   }
@@ -351,7 +351,9 @@ export class XmlBlasterAccess {
    * @param {object|null} responseFp_ -> if given we call responseFp_(dataReceived, myXmlHttp, returnObj)
    * @param {object|null} responseThisArg -> the 'this' pointer (scope) used when callback is called
    * @param {object|null} returnObj_ Bounced back with response or exception
+   * @returns {SubscribeReturnQos}
    */
+  // async subscribe(SubscribeKey, SubscribeQos) {}
   subscribe(key_ = null, qos_ = null, responseFp_, responseThisArg, returnObj_) {
     if (key_ == null || (typeof (key_) == "string" && key_.length == 0)) {
       return false;
