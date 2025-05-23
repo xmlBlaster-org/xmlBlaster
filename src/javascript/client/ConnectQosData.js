@@ -161,4 +161,9 @@ export class ConnectQosData {
       str += "</qos>";
       return str;
    }
+
+   toXml() {
+      // TODO: not a proper full dump yet! Currently, for ConnectQos, we create the MsgUnitRaw directly with hard coded xml..
+      return this.dump();
+   }
 }
