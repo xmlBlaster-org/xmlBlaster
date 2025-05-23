@@ -2,6 +2,8 @@ import { KeyData } from "../client/KeyData.js";
 import { QosData } from "../client/QosData.js";
 import { ConnectQosData } from "../client/ConnectQosData.js";
 import { MsgUnit } from "./MsgUnit.js";
+import { XmlBlasterException } from "./XmlBlasterException.js";
+import { MsgUnitRaw } from "./MsgUnitRaw.js";
 
 /**
  * @class Holds a xmlBlaster socket message, encode/decode Xbf
@@ -9,16 +11,22 @@ import { MsgUnit } from "./MsgUnit.js";
 export class MsgInfo {
   static currRequestId = 1;
   /**
-   * @param {string} msgType I=Invoke, R=Return value, E=Exception
-   * @param {string} methodName connect/disconnect/publish/subscribe/get/ping/erase/unsubscribe/...
-   * @param {string} secretSessionId
-   * @param {Array.<MsgUnitRaw>|MsgUnitRaw} msgUnits
+   * TODO: in the future, this should probably only receive MsgUnit, not MsgUnitRaw.
+   * However, we pass a lot of raw XML around right now, so it's not really an option yet..
+   * Right now:
+   * - for receiving we directly parse to MsgUnit[]
+   * - for sending, both SHOULD work if the MsgUnit's toMsgUnitRaw() works correctly (i.e. QOS is serialized correctly). Especially for ConnectQos this is not the case yet.
+   * @param {String} msgType I=Invoke, R=Return value, E=Exception
+   * @param {String} methodName connect/disconnect/publish/subscribe/get/ping/erase/unsubscribe/...
+   * @param {String} secretSessionId
+   * @param {Array.<MsgUnitRaw>|MsgUnitRaw|Array.<MsgUnit>} msgUnitsRawArr For sending messages, pass MsgUnitRaw. Received messages will be parsed to MsgUnit
    */
-  constructor(msgType, methodName, secretSessionId="", msgUnitsRaw=[]) {
+  constructor(msgType, methodName, secretSessionId = "", msgUnitsRawArr = []) {
     this.msgType = msgType;
     this.methodName = methodName;
     this.secretSessionId = secretSessionId;
-    this.msgUnits = msgUnitsRaw;
+    this.msgUnits = msgUnitsRawArr;
+    /** @type {number|string} */
     this.requestId = MsgInfo.currRequestId++;
 
     if (!Array.isArray(this.msgUnits))
@@ -26,18 +34,18 @@ export class MsgInfo {
   }
 
   /**
-   * @param {ArrayBuffer} xbfData
+   * @param {ArrayBuffer} xbfDataArrayBuff
    */
-  static parseXbf(xbfData) {
+  static parseXbf(xbfDataArrayBuff) {
     // TODO: Expects no checksum
-    xbfData = new Uint8Array(xbfData);
+    const xbfData = new Uint8Array(xbfDataArrayBuff);
     const decoder = new TextDecoder();
 
     const msgLenStr = decoder.decode(xbfData.slice(0, 10)).trim();
     const flagBytes = xbfData.slice(10, 16);
     const msgType = String.fromCharCode(flagBytes[2]);
 
-   
+
     let i = 16;
     let end = xbfData.indexOf(0, i);
     const requestId = decoder.decode(xbfData.slice(i, end)); i = end + 1; end = xbfData.indexOf(0, i);
@@ -71,6 +79,8 @@ export class MsgInfo {
 
       const msgUnit = new MsgUnit(methodName, qosData, keyData, contentStr);
       msgUnit.setSessionId(sessId);
+      if (msgType == "E")
+        msgUnit.setXmlBlasterException(XmlBlasterException.parse(msgUnit.getContentStr()));
       msgUnits.push(msgUnit);
     }
 
@@ -83,34 +93,34 @@ export class MsgInfo {
     return this.msgType == "E";
   }
   /**
-   * @return {string}
+   * @return {String}
    */
   getRequestId() {
     return this.requestId.toString();
   }
   /**
-   * @return {string}
+   * @return {String}
    */
   getMsgType() {
     return this.msgType;
   }
 
   /**
-   * @return {string}
+   * @return {String}
    */
   getMethodName() {
     return this.methodName;
   }
 
   /**
-   * @return {string}
+   * @return {String}
    */
   getSecretSessionId() {
     return this.secretSessionId;
   }
 
   /**
-   * @return {Array.<MsgUnit>}
+   * @return {Array.<MsgUnit>|Array.<MsgUnitRaw>}
    */
   getMsgUnits() {
     return this.msgUnits;
@@ -121,12 +131,6 @@ export class MsgInfo {
   }
 
   /**
-   * @param {string} msgType I=Invoke, R=Return value, E=Exception
-   * @param {string} methodName connect/disconnect/publish/subscribe/get/ping/erase/unsubscribe/...
-   * @param {string} secretSessionId
-   * @param {string} key
-   * @param {string} qos
-   * @param {string} content
    * @returns {Uint8Array}
    */
   encodeXbf() {
@@ -137,10 +141,14 @@ export class MsgInfo {
     const zeroByte = new Uint8Array([0]);
 
     const userData = [];
-    for (const msgUnit of this.msgUnits) {
+    for (let msgUnit of this.msgUnits) {
+      if (msgUnit instanceof MsgUnit) {
+        msgUnit = msgUnit.toMsgUnitRaw();
+      }
       const qosData = encoder.encode(msgUnit.getQosDataStr() || "");
       const keyData = encoder.encode(msgUnit.getKeyDataStr() || "");
       const content = encoder.encode(msgUnit.getContentStr());
+
       userData.push(qosData);
       userData.push(zeroByte);
       userData.push(keyData);
