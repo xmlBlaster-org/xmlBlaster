@@ -3,11 +3,14 @@ package org.xmlBlaster.protocol.websocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.java_websocket.WebSocket;
+import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtension;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
@@ -16,9 +19,11 @@ public class XbWebSocketServer extends WebSocketServer {
    private static Logger log = Logger.getLogger(XbWebSocketServer.class.getName());
    private WebSocketDriver driver;
    private Map<WebSocket, HandleWebSocketClient> connectedClients = new HashMap<>();
+   // see https://github.com/TooTallNate/Java-WebSocket/blob/master/src/main/example/PerMessageDeflateExample.java
+   private static final Draft_6455 deflateExtension = new Draft_6455(new PerMessageDeflateExtension());
    
    public XbWebSocketServer(WebSocketDriver driver, SocketUrl socketUrl) {
-      super(new InetSocketAddress(socketUrl.getHostname(), socketUrl.getPort()));
+      super(new InetSocketAddress(socketUrl.getHostname(), socketUrl.getPort()), Collections.singletonList(deflateExtension));
       this.driver = driver;
       setReuseAddr(true);
       setDaemon(true);
@@ -66,5 +71,4 @@ public class XbWebSocketServer extends WebSocketServer {
    public Collection<HandleWebSocketClient> getConnectedClients() {
       return this.connectedClients.values();
    }
-
 }
