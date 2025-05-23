@@ -8,10 +8,10 @@ export class XmlBlasterException {
 
   /**
    * @constructor Create an exception instance
-   * @param {string} errorCodeStr See org.xmlBlaster.util.ErrorCode.java 
-   * @param {string} location_ E.g. "XbAccess.js"
-   * @param {string} rawMessage The English error text
-   * @param {boolean} isServerSide true if coming from server
+   * @param {String} errorCodeStr See org.xmlBlaster.util.ErrorCode.java 
+   * @param {String} location_ E.g. "XbAccess.js"
+   * @param {String} rawMessage The English error text
+   * @param {Boolean} isServerSide true if coming from server
   */
   constructor(errorCodeStr, location_, rawMessage, isServerSide) {
     this.errorCodeStr = errorCodeStr || "internal.unknown";
@@ -24,6 +24,31 @@ export class XmlBlasterException {
     this.tomcatServerSide = false;
     this.httpStatus = 0; // e.g. when Ajax call fails when tomcat has stopped: = 503  (Service Unavailable)
     this.isLocalizedAlready = false;
+  }
+
+  /** 
+   * parses raw exception as received from websocket. See org.xmlBlaster.util.parseXmlBlasterResponse to parse legacy XmlScript DOM exception
+   * @param {string} contentStr
+  */
+  static parse(contentStr) {
+    const parts = contentStr.split("\0");
+    // See XmlBlasterException.java#toByteArr()
+    if (parts.length < 11) {
+      return null;
+    }
+    const result = new XmlBlasterException();
+    result.setErrorCodeStr(parts[0]);
+    // result.setNode(parts[1])
+    result.setLocation(parts[2]);
+    //result.setLang(parts[3]);
+    result.setMessage(parts[4]);
+    //result.setVersionInfo(parts[5]);
+    //result.setTimestamp(parts[6]);
+    //result.setStackTrace(parts[7]);
+    result.setEmbeddedMessage(parts[8]);
+    //result.setTransactionInfo(parts[9]);
+    result.setXmlBlasterServerSide(parts[10].toLowerCase() === "true");
+    return result;
   }
 
   getErrorCodeStr() {
@@ -98,8 +123,6 @@ export class XmlBlasterException {
   }
   setMessage(rawMessage) {
     this.rawMessage = rawMessage || "";
-    //Authorize throws such ugly mix:
-    //<message><![CDATA[#16983M errorCode=user.security.authentication.accessDenied: Login to dev failed due to missing privileges. Access on account with loginName 'joe' is denied]]></message>
     var start = this.rawMessage.indexOf("errorCode=");
     if (start >= 0) {
       // "Original errorCode=" see XmlBlasterException.java#changeErrorCode()
