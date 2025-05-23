@@ -98,7 +98,7 @@ constructor(methodName, qosData=null, keyData=null, content="") {
   }
 
   toMsgUnitRaw() {
-    return new MsgUnitRaw(this.getQos().toXml(), this.getKey().toXml(), this.getContentStr());
+    return new MsgUnitRaw(this.getQosData().toXml(), this.getKeyData().toXml(), this.getContentStr());
   }
   
   dump() {
