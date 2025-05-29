@@ -93,11 +93,11 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
    }
    
    public String getLoginName() {
-	   ConnectQosServer qos = this.conQos;
-	   if (qos != null) {
-		   qos.getSessionName().getLoginName();
-	   }
-	   return "";
+       ConnectQosServer qos = this.conQos;
+       if (qos != null) {
+         return qos.getSessionName().getLoginName();
+       }
+       return "";
    }
 
    public boolean isShutdownCompletly() {
