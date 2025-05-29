@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -43,6 +44,17 @@ public class XbWebSocketServer extends WebSocketServer {
       public HandshakeBuilder postProcessHandshakeResponseAsServer(ClientHandshake request, ServerHandshakeBuilder response) throws InvalidHandshakeException {
          HandshakeBuilder hb = super.postProcessHandshakeResponseAsServer(request, response);
          hb.put("Server", "XmlBlaster");
+         if (false) {
+           Iterator<String> it = hb.iterateHttpFields();
+           while(it.hasNext()) {
+             String key = it.next();
+             // "Connection=Upgrade"
+             // "Upgrade=websocket"
+             // "Sec-WebSocket-Accept=NpCjvddcN32dujXR0D7vdLnzdtM="
+             // "Sec-WebSocket-Extensions=permessage-deflate; server_no_context_takeover"
+             log.info("WEBSOCKET-Header: " + key + "=" + hb.getFieldValue(key));
+           }
+         }
          return hb;
       }
       @Override
@@ -67,16 +79,26 @@ public class XbWebSocketServer extends WebSocketServer {
    @Override
    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
       HandleWebSocketClient handler = this.connectedClients.get(conn);
-      if (handler != null)
+      if (handler != null) {
+         log.info(toString() + " Closing " + handler.toString());
          handler.onClose(code, reason, remote);
+      }
+      else {
+          log.severe(toString() + " Closing with unknown handler");
+      }
       connectedClients.remove(conn);
    }
 
    @Override
    public void onError(WebSocket conn, Exception ex) {
       HandleWebSocketClient handler = this.connectedClients.get(conn);
-      if (handler != null)
+      if (handler != null) {
+         log.severe(toString() + " Got error for " + handler.toString() + ": " + ex.getMessage());
          handler.onError(ex);
+      }
+      else {
+          log.severe(toString() + " Got error for unknown connection: " + ex.getMessage());
+      }
    }
 
    @Override
@@ -95,8 +117,13 @@ public class XbWebSocketServer extends WebSocketServer {
 
    @Override
    public void onOpen(WebSocket conn, ClientHandshake clientHandshake) {
+      log.info(toString() + " " + conn.getRemoteSocketAddress() + "->" + conn.getLocalSocketAddress() + " readyState=" + conn.getReadyState());
       HandleWebSocketClient handler = new HandleWebSocketClient(driver.getGlobal(), driver, conn, clientHandshake);
       this.connectedClients.put(conn,  handler);
+   }
+   
+   public String toString() {
+     return this.driver.getProtocolId() + " connectedClients=" + this.connectedClients.size();
    }
 
    @Override

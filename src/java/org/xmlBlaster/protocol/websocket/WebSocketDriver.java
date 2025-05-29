@@ -25,29 +25,32 @@ import org.xmlBlaster.util.protocol.socket.SocketUrl;
 /**
  * Socket driver class to invoke the xmlBlaster server over a native message format
  * <p />
- * This "SOCKET:" driver needs to be registered in xmlBlaster.properties
- * and will be started on xmlBlaster startup, for example:
+ * This "WEBSOCKET:" driver needs to be activated in xmlBlasterPlugins.xml
+ * and will be started on xmlBlaster startup, for example using port 3414 on localhost:
  * <pre>
- * ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
- *
- * CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+   <plugin create='true' id='WEBSOCKET' className='org.xmlBlaster.protocol.websocket.WebSocketDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='20'
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>
+      <attribute id='port'>3414</attribute>
+      <attribute id='hostname'>localhost</attribute>
+   </plugin>
  * </pre>
  *
- * The variable plugin/socket/port (default 7607) sets the socket server port,
+ * The variable plugin/websocket/port (default 3414) sets the socket server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -plugin/socket/port 9090
+ * java -jar lib/xmlBlaster.jar  -plugin/websocket/port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * <p />
- * All adjustable parameters are explained in {@link org.xmlBlaster.protocol.socket.SocketDriver#usage()}
- * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
- * @author <a href="mailto:bpoka@axelero.hu">Balázs Póka</a> (SSL embedding, zlib compression)
+ * All adjustable parameters are explained in {@link org.xmlBlaster.protocol.websocket.WebSocketDriver#usage()}
+ * @author <a href="mailto:">Adrian Batzill</a>
  *
  * @see org.xmlBlaster.util.xbformat.MsgInfo
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.websocket.html">The protocol.websocket requirement</a>
  */
 public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, WebSocketDriverMBean
 {
@@ -96,7 +99,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
 
    /**
     * Enforced by I_Plugin
-    * @return The configured type in xmlBlaster.properties, defaults to "SOCKET"
+    * @return The configured type in xmlBlaster.properties, defaults to "WEBSOCKET"
     */
    @Override
    public String getType() {
@@ -163,9 +166,9 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
          this.socketUrl = new SocketUrl(glob, this.addressServer);
 
          if (this.socketUrl.getPort() < 1) {
-            log.info(ME + "Option protocol/socket/port set to "
+            log.info(ME + "Option protocol/websocket/port set to "
                                 + this.socketUrl.getPort()
-                                + ", stomp server not started");
+                                + ", server not started");
             return;
          }
 
@@ -175,7 +178,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
       } catch (Throwable ex) {
          throw new XmlBlasterException(this.glob,
                               ErrorCode.INTERNAL_UNKNOWN, ME + ".init",
-                              "init. Could'nt initialize the driver.", ex);
+                              "init. Could'nt initialize the driver " + getProtocolId() + ".", ex);
       }
    }
 
@@ -209,7 +212,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
       return pluginInfo;
    }
 
-   /**
+   /*
     * Start xmlBlaster SOCKET access.
     * <p />
     * Enforced by interface I_Driver.<br />
@@ -217,7 +220,6 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
     * @param glob Global handle to access logging, property and commandline args
     * @param authenticate Handle to access authentication server
     * @param xmlBlasterImpl Handle to access xmlBlaster core
-    */
    private synchronized void init(Global glob, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
@@ -239,23 +241,25 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
       }
 
       if (socketUrl.getPort() < 1) {
-         log.info("Option protocol/socket/port set to " + socketUrl.getPort() + ", socket server not started");
+         log.info("Option protocol/websocket/port set to " + socketUrl.getPort() + ", socket server not started");
          return;
       }
    }
+    */
 
    /**
     * Activate xmlBlaster access through this protocol.
     */
    public synchronized void activate() throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering activate");
+      if (log.isLoggable(Level.FINER)) log.finer(toString() + " Entering activate");
       this.isShutdown = false;
       try {
          this.webSocketServer = new XbWebSocketServer(this, this.socketUrl);
          this.webSocketServer.start();
+         log.info("Started successfully " + getType() + " driver on '" + this.socketUrl.getUrl() + "'");
        } catch (Exception e) {
-               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION,
-                               "activate", e.getMessage(), e);
+           log.severe("Failed starting " + getType() + " driver on '" + this.socketUrl.getUrl() + "': " + e.getMessage());
+           throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION, "activate", e.getMessage(), e);
        }
    }
 
@@ -267,7 +271,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
     * Deactivate xmlBlaster access (standby), no clients can connect.
     */
    public synchronized void deActivate() throws RuntimeException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering deActivate");
+      if (log.isLoggable(Level.FINER)) log.finer(toString() + " Entering deActivate");
       if (this.webSocketServer == null)
          return;
       
@@ -276,7 +280,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
       }
       
       try {
-         log.info("deActivate, stopping stomp socket listener");
+         log.info(toString() + " Stopping " + getType() + " driver on '" + this.socketUrl.getUrl() + "'");
          this.webSocketServer.stop();
          this.webSocketServer = null;
        } catch (Throwable ex) {
@@ -292,14 +296,11 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
       return this.glob;
    }
 
-
-
-
    /**
     * Close the listener port, the driver shuts down.
     */
    public void shutdown() throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown");
+      if (log.isLoggable(Level.FINER)) log.finer(toString() + " Entering shutdown");
 
       try {
          deActivate();
@@ -311,7 +312,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
 
       this.isShutdown = true;
 
-      log.info("Socket driver '" + getType() + "' stopped, all resources released.");
+      log.info(toString() + " Driver stopped, all resources released.");
    }
 
    public boolean isShutdown() {
@@ -333,7 +334,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
     * Command line usage.
     * <p />
     * <ul>
-    *  <li><i>-plugin/websocket/port</i>        The WebSocket server port [8080]</li>
+    *  <li><i>-plugin/websocket/port</i>        The WebSocket server port [3414]</li>
     *  <li><i>-plugin/websocket/hostname</i>    Specify a hostname where the WebSocket server runs
     *                                          Default is the localhost.</li>
     * </ul>
@@ -345,7 +346,7 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
       String text = "\n";
       text += "SocketDriver options:\n";
       text += "   -"+getEnvPrefix()+"port\n";
-      text += "                       The WebSocket server port [8080].\n";
+      text += "                       The WebSocket server port [3414].\n";
       text += "   -"+getEnvPrefix()+"hostname\n";
       text += "                       Specify a hostname where the WebSocket server runs.\n";
       text += "                       Default is the localhost.\n";
@@ -357,5 +358,9 @@ public class WebSocketDriver implements I_Driver /* which extends I_Plugin */, W
    @Override
    public String getName() {
       return "XmlBlaster.WebSocketDriver";
+   }
+   
+   public String toString() {
+	   return getProtocolId() + "-" + getRawAddress();
    }
 }

@@ -35,7 +35,7 @@ import org.xmlBlaster.util.xbformat.MsgInfo;
 
 /**
  * Holds one socket connection to a client and handles
- * all requests from one client with plain socket messaging.
+ * all requests from one client with WebSocket messaging.
  * <p />
  * <ol>
  *   <li>We block on the socket input stream to read incoming messages
@@ -43,13 +43,14 @@ import org.xmlBlaster.util.xbformat.MsgInfo;
  *   <li>We send update() and ping() back to the client</li>
  * </ol>
  *
- * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Adrian Batzill</a>.
  */
 public class HandleWebSocketClient extends RequestReplyExecutor implements Runnable, I_CallbackDriver
 {
    private String ME = "HandleClient";
    private static Logger log = Logger.getLogger(HandleWebSocketClient.class.getName());
    private Global glob;
+   private ConnectQosServer conQos;
    private WebSocketDriver driver;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate;
@@ -63,14 +64,13 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
    /** The unique client sessionId */
    private String secretSessionId = null;
 
-   private boolean callCoreInSeparateThread=true;
+   //private boolean callCoreInSeparateThread=true;
    protected volatile static ExecutorService executorService;
 
    protected boolean disconnectIsCalled = false;
    
    private boolean isShutdownCompletly = false;
    
-
    /**
     * Creates an instance which serves exactly one client.
     */
@@ -79,7 +79,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
       this.driver = driver;
       this.sock = webSocket;
       this.authenticate = driver.getAuthenticate();
-      this.ME = driver.getType()+"-HandleClient";
+      this.ME = toString();
 
       this.remoteSocketStr = this.sock.getRemoteSocketAddress().toString();
       
@@ -91,18 +91,26 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
    public String getType() {
       return this.driver.getType();
    }
+   
+   public String getLoginName() {
+	   ConnectQosServer qos = this.conQos;
+	   if (qos != null) {
+		   qos.getSessionName().getLoginName();
+	   }
+	   return "";
+   }
 
    public boolean isShutdownCompletly() {
       return this.isShutdownCompletly;
    }
    
    void onClose(int code, String reason, boolean remote) {
-      log.info("WebSocket " + this.sock.getRemoteSocketAddress().toString() + " closed: code=" + code + ", reason=" + reason + ", remote=" + remote);
+      log.info(toString() + " closed: code=" + code + ", reason=" + reason + ", remote=" + remote);
       this.isShutdownCompletly = true;
    }
    
    public void onError(Exception ex) {
-      log.info("WebSocket " + this.sock.getRemoteSocketAddress().toString() + " error: " + ex.getMessage());
+      log.warning(toString() + " error: " + ex.getMessage());
    }
 
    public void onMessage(String message) {
@@ -142,19 +150,17 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
 
          if (log.isLoggable(Level.FINE)) log.fine("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
-
          if (MethodName.CONNECT == receiver.getMethodName()) {
-            ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
+            this.conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
             if (conQos.getSecurityQos() == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
             conQos.getSecurityQos().setClientIp (sock.getRemoteSocketAddress().getAddress().getHostAddress());
 
             conQos.setAddressServer(driver.getAddressServer());
-            this.ME = this.driver.getType() + "-HandleClient-" + conQos.getSessionName().getRelativeName();
-
+            this.ME = toString() + "-HandleClient-" + conQos.getSessionName().getRelativeName();
 
             // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
-            log.info(ME+": Client connected, coming from host=" + sock.getRemoteSocketAddress().toString());
+            log.info(this.ME+": Client connected");
             
             
             CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
@@ -164,7 +170,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
                   cbArr[ii].setCallbackDriver(this);
                } catch (Exception e) {
                   e.printStackTrace();
-                  log.severe(ME + " Internal error during setCallbackDriver: " + e.toString());
+                  log.severe(this.ME + " Internal error during setCallbackDriver: " + e.toString());
                }
             }
             
@@ -176,6 +182,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
             executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
          } else if (MethodName.DISCONNECT == receiver.getMethodName()) {
             this.disconnectIsCalled = true;
+            log.info(this.ME+": Got DisconnectQos: Client disconnected");
             executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
             // Note: the disconnect will call over the CbInfo our shutdown as well
             // setting sessionId = null prevents that our shutdown calls disconnect() again.
@@ -184,7 +191,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
          }
       }
       catch (XmlBlasterException e) {
-         /*if (log.isLoggable(Level.FINE)) log.fine*/log.info("Can't handle message, throwing exception back to client: " + e.toString());
+         /*if (log.isLoggable(Level.FINE)) log.fine*/log.info(this.ME + " Can't handle message, throwing exception back to client: " + e.toString());
          try {
             if (log.isLoggable(Level.FINE)) log.fine(receiver.toLiteral());
          } catch (Throwable e1) {
@@ -194,20 +201,20 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
             if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
                executeException(receiver, e, false);
             else
-               log.warning("Can't handle publishOneway message, ignoring exception: " + e.toString());
+               log.warning(this.ME + ": Can't handle publishOneway message, ignoring exception: " + e.toString());
             
             if (e.isCleanupSession()) {
                shutdown(); // cleanup to avoid thread/memory leak for a client trying again an again
             }
          }
          catch (Throwable e2) {
-            log.warning("Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
+            log.warning(this.ME + ": Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
             shutdown();
          }
       }
       catch (Throwable e) {
          e.printStackTrace();
-         log.severe("Lost connection to client: " + e.toString());
+         log.severe(this.ME + ": Lost connection to client: " + e.toString());
          shutdown();
       }
    }
@@ -222,7 +229,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
     * Close connection for one specific client
     */
    public void shutdown() {
-      if (log.isLoggable(Level.FINE)) log.fine("Shutdown cb connection to " + sock.getRemoteSocketAddress().toString() + " ...");
+      if (log.isLoggable(Level.FINE)) log.fine(this.ME + " Shutdown cb connection ...");
       
       I_Authenticate auth = this.authenticate;
       if (auth != null) {
@@ -237,12 +244,22 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
 
    public String toString() {
       StringBuffer ret = new StringBuffer(256);
-      ret.append(getType()).append("-").append(this.sock.getRemoteSocketAddress().toString());
-     // if (loginName != null && loginName.length() > 0)
-      //   ret.append("-").append(loginName);
-      //else
-         ret.append("-").append(getSecretSessionId());
-      ret.append("-").append(remoteSocketStr);
+      ret.append(getType());
+      if (this.sock != null && this.sock.getRemoteSocketAddress() != null) {
+        ret.append("-client ").append(this.sock.getRemoteSocketAddress().toString());
+      }
+      else {
+        if (this.remoteSocketStr != null && this.remoteSocketStr.length() > 0) {
+          ret.append("-client ").append(remoteSocketStr);
+        }
+      }
+      String loginName = getLoginName();
+      if (loginName != null && loginName.length() > 0) {
+         ret.append("-").append(loginName);
+      }
+      if (getSecretSessionId() != null && getSecretSessionId().length() > 0) {
+        ret.append("-").append(getSecretSessionId());
+      }
       return ret.toString();
    }
 
@@ -262,6 +279,9 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException {
       byte[] msg = msgInfo.createRawMsg(getCbMsgInfoParserClassName());
+      
+      // TODO out get outQueue.size()?? this.sock.hasBufferedData() for logging if queue gets huge
+      
       this.sock.send(msg);
    }
    
