@@ -455,7 +455,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                break top;
             }
             MsgUnitRaw[] arr = receiver.getMessageArr();
-            if (arr == null || arr.length < 1)
+            if (arr == null || arr.length == 0)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = xmlBlasterImpl.publishArr(getAddressServer(), receiver.getSecretSessionId(), arr);
             executeResponse(receiver, response, udp);
@@ -545,10 +545,13 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                break top;
             }
             MsgUnitRaw[] arr = receiver.getMessageArr();
-            if (arr == null || arr.length != 1)
+            if (arr == null || arr.length == 0)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String response = xmlBlasterImpl.subscribe(getAddressServer(), receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
-            executeResponse(receiver, response, udp);
+            String[] responseArr = new String[arr.length];
+            for (int i = 0; i < arr.length; i++) {
+               responseArr[i] = xmlBlasterImpl.subscribe(getAddressServer(), receiver.getSecretSessionId(), arr[i].getKey(), arr[i].getQos());
+            }
+            executeResponse(receiver, responseArr, udp);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
             if (!glob.isServerSide() && this.xmlBlasterImpl==null) { // Fixed again 2010-06-19: As for acceptRemoteLoginAsTunnel=true it is allowed
