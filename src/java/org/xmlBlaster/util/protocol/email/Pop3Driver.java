@@ -6,22 +6,22 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
-import javax.mail.NoSuchProviderException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Message;
-import javax.mail.Store;
-import javax.mail.Folder;
-import javax.mail.Flags;
-import javax.mail.Address;
-import javax.mail.Authenticator;
-import javax.mail.MessagingException;
-import javax.mail.URLName;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimePart;
+import jakarta.mail.NoSuchProviderException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Message;
+import jakarta.mail.Store;
+import jakarta.mail.Folder;
+import jakarta.mail.Flags;
+import jakarta.mail.Address;
+import jakarta.mail.Authenticator;
+import jakarta.mail.MessagingException;
+import jakarta.mail.URLName;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimePart;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -752,7 +752,7 @@ implements I_Plugin, I_Timeout,
                   + " milliseconds again:" + e.toString());
             this.isConnected = false;
          }
-         if (e instanceof javax.mail.AuthenticationFailedException)
+         if (e instanceof jakarta.mail.AuthenticationFailedException)
             throw new XmlBlasterException(this.glob,
                   ErrorCode.RESOURCE_CONFIGURATION_CONNECT, Pop3Driver.class
                         .getName(), "The POP3 server '" + this.pop3Url

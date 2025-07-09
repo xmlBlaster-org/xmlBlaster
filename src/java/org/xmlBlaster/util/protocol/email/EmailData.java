@@ -12,8 +12,8 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -516,7 +516,7 @@ public class EmailData {
       if (this.content != null && this.content.length() > 0) {
          String con = this.content;
          /*
-         if (this.content instanceof javax.mail.internet.MimeMultipart) {
+         if (this.content instanceof jakarta.mail.internet.MimeMultipart) {
             MimeMultipart part = (MimeMultipart)this.content;
             if (part.getCount() > 0)
                con = part.getBodyPart(0).getContent();

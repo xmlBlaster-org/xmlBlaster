@@ -15,7 +15,7 @@ Class-Path: xmlrpc3/commons-logging-1.1.jar
  tinySQL.jar jhotdraw.jar 
  jax.jar 
  jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar 
- mail.jar activation.jar 
+ jakarta.mail-2.0.1.jar jakarta.activation-2.0.1.jar 
  batik/batik.jar js.jar 
  jaxen.jar 
  postgresql.jar 

@@ -6,20 +6,20 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Message;
-import javax.mail.Transport;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.Message;
+import jakarta.mail.Transport;
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.MimeMultipart;
 
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
@@ -970,7 +970,7 @@ Some body text
     if (expires != null && expires.length > 0) {
        // Date: Thu, 17 Nov 2005 16:45:12 +0100 (CET)
        String value = expires[0].trim();
-       java.text.DateFormat df = new javax.mail.internet.MailDateFormat();
+       java.text.DateFormat df = new jakarta.mail.internet.MailDateFormat();
        java.util.Date expire = df.parse(value);
        java.util.Date now = new java.util.Date();
        if (now.getTime() > expire.getTime()) {

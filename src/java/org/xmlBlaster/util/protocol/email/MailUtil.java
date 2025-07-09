@@ -22,24 +22,24 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.mail.Address;
-import javax.mail.FetchProfile;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.URLName;
-import javax.mail.event.StoreEvent;
-import javax.mail.event.StoreListener;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MailDateFormat;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.ParseException;
+import jakarta.mail.Address;
+import jakarta.mail.FetchProfile;
+import jakarta.mail.Flags;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
+import jakarta.mail.URLName;
+import jakarta.mail.event.StoreEvent;
+import jakarta.mail.event.StoreListener;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MailDateFormat;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.ParseException;
 
 import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.Global;
@@ -547,7 +547,7 @@ public class MailUtil {
       pr("HEADERS", level);
       Enumeration e = m.getAllHeaders();
       while (e.hasMoreElements()) {
-         javax.mail.Header head = (javax.mail.Header) e.nextElement();
+         jakarta.mail.Header head = (jakarta.mail.Header) e.nextElement();
          pr(head.getName() + ": " + head.getValue(), level);
       }
       pr("------ This is the message envelope END ------", level);
