@@ -8,9 +8,11 @@ package org.xmlBlaster.util.protocol.email;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
@@ -960,7 +962,13 @@ public class EmailData {
 		   return new InternetAddress[0];
 	   return this.replyTo;
    }
-
+   
+   public String getReplyToAddressCsv() {
+	return Arrays.stream(getReplyToAddresses())
+			.map(addr -> addr.getAddress())
+			.collect(Collectors.joining(","));
+   }
+   
    public void setReplyTo(String replyTo) {
       if (replyTo == null || replyTo.length() == 0) {
          this.replyTo = new InternetAddress[0];
