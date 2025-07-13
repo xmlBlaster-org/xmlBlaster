@@ -265,6 +265,9 @@ public class EmailData {
     * @param address e.g. "XmlBlaster Team <team@xmlBlaster.org>" or "team@xmlBlaster.org"
     */
    public static InternetAddress toInternetAddress(String address) throws IllegalArgumentException {
+      if (address == null || address.length() == 0) {
+         return null;
+      }
       try {
          address = address == null ? address : address.trim();
          boolean strict = false;
