@@ -12,6 +12,7 @@ import jakarta.mail.Session;
 import jakarta.mail.Message;
 import jakarta.mail.Store;
 import jakarta.mail.Folder;
+import jakarta.mail.Header;
 import jakarta.mail.Flags;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
@@ -24,6 +25,7 @@ import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.MimePart;
 
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -31,6 +33,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
@@ -790,13 +794,23 @@ implements I_Plugin, I_Timeout,
          if (msgs == null)
             msgs = new Message[0];
 
-         EmailData[] datas = new EmailData[msgs.length];
+         EmailData[] emailDatas = new EmailData[msgs.length];
          for (int i = 0; i < msgs.length; i++) {
+
             log.fine("Reading message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
+            // Contains the sent "Message-ID"
+            // In-Reply-To=<1614363744.1.1752346607415@marup.netwake.com>
+            //  References=<1614363744.1.1752346607415@marup.netwake.com>
+            Enumeration<Header> headers = msg.getAllHeaders();
+            while (headers.hasMoreElements()) {
+                Header h = headers.nextElement();
+                log.info("DEBUG: email " + h.getName() + "=" + h.getValue()); // "Message-ID"
+            }            
+            
             if (clear)
                msg.setFlag(Flags.Flag.DELETED, true);
-
+            
             Address[] froms = msg.getFrom();
             String from = (froms != null && froms.length > 0) ? froms[0]
                   .toString() : "";
@@ -804,16 +818,44 @@ implements I_Plugin, I_Timeout,
             Address[] arr = msg.getAllRecipients();
             if (arr == null)
                arr = new Address[0];
+            String to = "";
             String[] recips = new String[arr.length];
-            for (int j = 0; j < arr.length; j++)
+            for (int j = 0; j < arr.length; j++) {
                recips[j] = arr[j].toString();
+               if (j == 0)
+                  to = recips[j];
+            }
             
             //String content = retrieveContent(msg); // Would sometimes deliver an attachment
             String content = "";
-            datas[i] = new EmailData(recips, from, msg.getSubject(), content);
+            EmailData emailData = new EmailData(recips, from, msg.getSubject(), content);
+            emailDatas[i] = emailData;
             
-            datas[i].setSentDate(msg.getSentDate());
-            datas[i].setReplyTo((InternetAddress[])msg.getReplyTo());
+            { // not functional:
+               // this will not work as thunderbird/outlook to not bounce back headers with reply button
+               String[] conversationIdArr = msg.getHeader(EmailData.CONVERSATION_HEADER_KEY);
+               String conversationId = (conversationIdArr != null && conversationIdArr.length > 0) ? conversationIdArr[0] : null;
+               if (conversationId != null && conversationId.length() > 0) {
+                   emailData.setHeaderConversationId(conversationId);
+               }
+               // [<17bfb4ee-4213-4e3a-83be-1b5930848e52@example.com>]
+               conversationIdArr = msg.getHeader("Message-ID");
+               conversationId = (conversationIdArr != null && conversationIdArr.length > 0) ? conversationIdArr[0] : null;
+               if (conversationId != null && conversationId.length() > 0) {
+                  
+                  conversationId = extractUuidFromMessageId(conversationId);
+                  // this is not our conversationId but some generated one
+                  //if (conversationId != null && conversationId.length() > 0)
+                  //   datas[i].setHeaderConversationId(conversationId);
+               }
+               if (to != null && to.length() > 0) {
+                  // extract from email address
+                  // ae287a52-09f9-4ffa-ac97-7923bec3f75b+jack@example.com
+               }
+            }
+            
+            emailData.setSentDate(msg.getSentDate());
+            emailData.setReplyTo((InternetAddress[])msg.getReplyTo());
             
             /*
             String[] expires = msg.getHeader(EmailData.EXPIRES_HEADER);
@@ -837,7 +879,7 @@ implements I_Plugin, I_Timeout,
                   // Date: Thu, 17 Nov 2005 16:45:12 +0100 (CET)
                   String value = expires[0].trim();
                   try {
-                     datas[i].setExpiryTime(MailUtil.dateTimeTS(value));
+                     emailData.setExpiryTime(MailUtil.dateTimeTS(value));
                   }
                   catch (Throwable e) {
                      System.err.println("xmlBlaster Pop3Driver.java: Ignoring illegal email header '" + expires[0] + "'");
@@ -846,9 +888,9 @@ implements I_Plugin, I_Timeout,
                }
             //}
 
-            datas[i].setAttachments(MailUtil.accessAttachments(msg));
+            emailData.setAttachments(MailUtil.accessAttachments(msg));
          }
-         return datas;
+         return emailDatas;
       } catch (MessagingException e) {
          throw new XmlBlasterException(this.glob,
                ErrorCode.RESOURCE_CONFIGURATION, Pop3Driver.class.getName(),
@@ -873,6 +915,24 @@ implements I_Plugin, I_Timeout,
          }
       }
    }
+   
+   /**
+    * "<17bfb4ee-4213-4e3a-83be-1b5930848e52@example.com>"
+    * @param messageId
+    * @return "17bfb4ee-4213-4e3a-83be-1b5930848e52"
+    */
+   private static String extractUuidFromMessageId(String messageId) {
+       if (messageId == null) return null;
+
+       Pattern pattern = Pattern.compile("<([a-f0-9\\-]{36})@");
+       Matcher matcher = pattern.matcher(messageId);
+
+       if (matcher.find()) {
+           return matcher.group(1);
+       }
+       return null;
+   }
+   
    /**
     * @return Syntax is "pop3://user:password@host:port/INBOX"
     */

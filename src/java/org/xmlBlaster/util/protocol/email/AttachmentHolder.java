@@ -148,7 +148,7 @@ public class AttachmentHolder {
    }
 
    public String toXml(boolean readable) {
-	   return toXml(readable, true);
+      return toXml(readable, true);
    }
    
    /**
@@ -177,5 +177,13 @@ public class AttachmentHolder {
      }
      sb.append(offset).append("  </attachment>");
      return sb.toString();
+   }
+   
+   public String getContentUtf8() {
+      try {
+         return new String(getContent(), Constants.UTF8_ENCODING);
+      } catch (UnsupportedEncodingException e) {
+         return new String(getContent());
+      }
    }
 }

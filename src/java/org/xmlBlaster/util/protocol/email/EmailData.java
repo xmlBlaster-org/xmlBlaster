@@ -10,12 +10,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 
 import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -24,6 +22,9 @@ import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.xbformat.MsgInfoParserFactory;
+
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  * Value object holding the most commonly used email fields.
@@ -62,6 +63,18 @@ public class EmailData {
    public final static String CONTENTTYPE_HTML = "text/html";
    public final static String CONTENTTYPE_HTML_UTF8 = "text/html; charset=utf-8";
    /**
+    * Multiple email addresses in a single field: alice@example.com;bob@example.com;charlie@example.com
+    * <p>
+    * Note that thunderbird support ; as well when pasted into the to field, but no blanks only " ":
+    * alice@example.com,bob@example.com , charlie@example.com; jack@example.com
+    * It ignores extra whitespace around addresses.
+    * <p>
+    * Semicolon ; is the standard separator in Microsoft Outlook (Windows).
+    */
+   
+   public final static String ADDRESS_SEP = ";";
+   public final static String ADDRESS_SEP_TOLERANT = ",";
+   /**
     * For HTML content use "text/html; charset=utf-8"
     * <p>
     * For text use  "text/plain" ? 
@@ -86,6 +99,27 @@ public class EmailData {
 
    /** Containts AttachmentHolder instances */
    protected ArrayList<AttachmentHolder> attachments;
+   
+   /**
+    * Used for send - replyTo use cases to bounce back eg a ref_poi guid (is not a standardized name but our own invention)
+    * BUGGY, don't use, outlook and thunderbird don't send received headers back with replyTo
+    * <p>
+    * Probably fine for forward messages
+    */
+   public static final String CONVERSATION_HEADER_KEY = "X-XmlBlaster-Conversation-ID";
+   
+   /** 
+    * Bounced by ReplyTo responses.
+    * <p>
+    * Can be a guid or a ticketId like "ticket-123456" etc, is sent inside
+    * message.setHeader("X-XmlBlaster-Conversation-ID", headerGuid);
+    * and in "" extracted like 
+    * String[] headerGuid = message.getHeader("X-XmlBlaster-Conversation-ID");
+    * <p>
+    * Invisible for normal users
+    * Nice for internal references 
+    */
+   protected String headerConversationId;
 
    /** Contains sessionId * */
    protected String sessionId;
@@ -155,6 +189,14 @@ public class EmailData {
    public void setMessageIdFileName(String name) {
       messageIdFileName = name;
    }
+
+   public String getMessageIdFileName() {
+      return this.messageIdFileName;
+   }
+   
+   protected EmailData() {
+      
+   }
    
    /**
     * Create a simple message.
@@ -170,7 +212,7 @@ public class EmailData {
     */
    public EmailData(String recipient, String from, String subject,
          String content) {
-      setRecipients(recipient);	   
+      setRecipients(recipient);
       setFromAddress(from);
       this.subject = subject;
       this.content = content;
@@ -222,8 +264,9 @@ public class EmailData {
     * </pre>
     * @param address e.g. "XmlBlaster Team <team@xmlBlaster.org>" or "team@xmlBlaster.org"
     */
-   private InternetAddress toInternetAddress(String address) throws IllegalArgumentException {
+   public static InternetAddress toInternetAddress(String address) throws IllegalArgumentException {
       try {
+         address = address == null ? address : address.trim();
          boolean strict = false;
          InternetAddress[] arr = InternetAddress.parse(address, strict);
          if (arr == null || arr.length == 0 || arr[0] == null) {
@@ -235,17 +278,60 @@ public class EmailData {
       }
    }
 
-   private InternetAddress[] toInternetAddresses(String addresses) throws IllegalArgumentException {
-      if (addresses == null || addresses.length() == 0)
-         return new InternetAddress[0];
-	  // String sep = addresses.contains("\n") ? "\n" : ",";
-      // String[] arr = StringPairTokenizer.parseLine(addresses);
-	  String sep = ",";
-      String[] arr = StringPairTokenizer.toArray(addresses, sep);
-      InternetAddress[] ret = new InternetAddress[arr.length];
-      for (int i=0; i<arr.length; i++)
-         ret[i] = toInternetAddress(arr[i].trim());
-     return ret;
+   /**
+    * Allowed separators comma, semicolon, newline. Standard separator is comma ","
+    * @param inputCsv "alice@example.com,bob@example.com , charlie@example.com; jack@example.com";
+    * @throws AddressException
+    */
+   public static InternetAddress[] toInternetAddresses(String inputCsv) throws IllegalArgumentException {
+       if (inputCsv == null || inputCsv.trim().isEmpty()) {
+           return new InternetAddress[0];
+       }
+
+       // Normalize all separators (comma, semicolon, newline) to comma
+       String normalized = inputCsv.replaceAll("[,;\\n]", ADDRESS_SEP);
+
+       String[] parts = normalized.split(ADDRESS_SEP);
+       List<InternetAddress> addresses = new ArrayList<>();
+
+       for (String part : parts) {
+           String trimmed = part.trim();
+           if (!trimmed.isEmpty()) {
+               addresses.add(toInternetAddress(trimmed));
+           }
+       }
+
+       return addresses.toArray(new InternetAddress[0]);
+   }
+   
+   public static String toAddressCsv(InternetAddress[] addr) {
+      if (addr == null || addr.length == 0) {
+         return "";
+      }
+      String csv = Arrays.stream(addr)
+         .map(InternetAddress::getAddress)
+         .collect(Collectors.joining(ADDRESS_SEP));
+      return csv;
+   }
+   
+   /**
+    * @param addr
+    * @return
+    */
+   public static String toAddressCsv(String[] addr) {
+       if (addr == null || addr.length == 0) {
+          return "";
+       }
+       return Arrays.stream(addr)
+          .map(a -> {
+              String trimmed = a.trim();
+            // Escape quote characters and wrap in quotes if needed
+              if (trimmed.contains("\"") || trimmed.contains(ADDRESS_SEP) || trimmed.contains(ADDRESS_SEP_TOLERANT)) {
+                trimmed = "\"" + trimmed.replace("\"", "\"\"") + "\"";
+            }
+            return trimmed;
+        })
+        .collect(Collectors.joining(ADDRESS_SEP));
    }
 
    public void addAttachment(AttachmentHolder attachmentHolder) {
@@ -256,6 +342,28 @@ public class EmailData {
 
    public void setAttachments(ArrayList<AttachmentHolder> attachmentHolders) {
       this.attachments = attachmentHolders;
+   }
+
+   public void setAttachments(AttachmentHolder[] attachmentHolders) {
+      this.attachments = new ArrayList<>(Arrays.asList(attachmentHolders));;
+   }
+
+   public AttachmentHolder addAttachment(String attachmentName, String attachmentContentType, byte[] content) {
+      if (content == null) { // || reportData.length == 0) {
+         return null;
+      }
+      AttachmentHolder ah = new AttachmentHolder(attachmentName, attachmentContentType, content);
+      addAttachment(ah);
+      return ah;
+   }
+
+   public AttachmentHolder addAttachment(String attachmentName, String attachmentContentType, String content) {
+      if (content == null) { // || reportData.length() == 0) {
+         return null;
+      }
+      AttachmentHolder ah = new AttachmentHolder(attachmentName, attachmentContentType, Constants.toUtf8Bytes(content));
+      addAttachment(ah);
+      return ah;
    }
 
    /**
@@ -317,14 +425,30 @@ public class EmailData {
       StringBuffer buf = new StringBuffer();
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
-         if (j > 0) buf.append(",");
+         if (j > 0) buf.append(","); // hmm, use ADDRESS_SEP=; ?
          buf.append(atts[j].getFileName());
       }
       return buf.toString();
    }
    
+   public boolean hasAttachments() {
+      return (this.attachments != null && this.attachments.size() > 0);
+   }
+
+   public void clearAttachments() {
+      this.attachments = null;
+   }
+
    public void setRecipients(String recipients) {
      this.recipients = toInternetAddresses(recipients);
+   }
+   
+   public void setRecipients(InternetAddress[] recipients) {
+     this.recipients = recipients;
+   }
+   
+   public InternetAddress[] getRecipients() {
+      return this.recipients;
    }
    
    /**
@@ -335,10 +459,14 @@ public class EmailData {
       if (this.recipients == null) return "";
       StringBuffer buf = new StringBuffer();
       for (int j = 0; j < this.recipients.length; j++) {
-         if (j > 0) buf.append(",");
+         if (j > 0) buf.append(ADDRESS_SEP);
          buf.append(this.recipients[j]);
       }
       return buf.toString();
+   }
+   
+   public boolean hasRecipients() {
+      return this.recipients != null && this.recipients.length > 0;
    }
 
    /**
@@ -396,6 +524,10 @@ public class EmailData {
    public void setFromAddress(String address) {
       this.from = toInternetAddress(address); 
    }
+   
+   public void setFromAddress(InternetAddress address) {
+      this.from = address; 
+   }
 
    /**
     * @return The from of the message, never null
@@ -403,6 +535,10 @@ public class EmailData {
    public String getFrom() {
       return (this.from == null) ? "" : this.from.getAddress();
    }
+   
+   public boolean hasFrom() {
+      return this.from != null && this.from.getAddress() != null && this.from.getAddress().length() > 0;
+   }   
 
    /**
     * Convert this address into a RFC 822 / RFC 2047 encoded address. 
@@ -424,15 +560,22 @@ public class EmailData {
    }
 
    public String getToAddressesStr() {
-	   if (this.recipients == null) {
-		   return "";
-	   }
-	   StringBuffer buf = new StringBuffer();
-	   for (int i=0; i<this.recipients.length; i++) {
-		   if (i>0) buf.append(";");
-		   buf.append(this.recipients[i].getAddress());
-	   }
-	   return buf.toString();
+      if (this.recipients == null) {
+         return "";
+      }
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i<this.recipients.length; i++) {
+         if (i>0) buf.append(ADDRESS_SEP);
+         buf.append(this.recipients[i].getAddress());
+      }
+      return buf.toString();
+   }
+   
+   public String getToAddressFirst() {
+      if (this.recipients == null || this.recipients.length == 0) {
+         return "";
+      }
+      return this.recipients[0].getAddress();
    }
 
    /**
@@ -440,6 +583,10 @@ public class EmailData {
     */
    public String getSubject() {
       return (this.subject == null) ? "" : this.subject;
+   }
+   
+   public boolean hasSubject() {
+      return (this.subject != null && this.subject.length() > 0);
    }
 
    /**
@@ -461,6 +608,10 @@ public class EmailData {
       return (this.content == null) ? "" : this.content;
    }
    
+   public boolean hasContent() {
+      return this.content != null && this.content.length() > 0;
+   }
+   
    public AttachmentHolder getAttachment(String fileName) {
       if (fileName == null) return null;
       AttachmentHolder[] arr = getAttachments();
@@ -475,7 +626,7 @@ public class EmailData {
     * @param readable If true '\0' are replaced by '*' 
     */
    public String toXml(boolean readable) {
-	   return toXml(readable, true);
+      return toXml(readable, true);
    }
    
    /**
@@ -605,13 +756,13 @@ public class EmailData {
          }
          start = startTmp;
          if (sb.length() > 0) {
-        	if (sb.indexOf(",") != -1) {
-        		String[] arr = StringPairTokenizer.toArray(sb.toString(), ",");
-        		for (int i=0; i<arr.length; i++)
-        			toList.add(arr[i].trim());
-        	}
-        	else
-        		toList.add(sb.toString());
+           if (sb.indexOf(",") != -1) {
+              String[] arr = StringPairTokenizer.toArray(sb.toString(), ",");
+              for (int i=0; i<arr.length; i++)
+                 toList.add(arr[i].trim());
+           }
+           else
+              toList.add(sb.toString());
          }
       }
       String[] recipients = (String[]) toList
@@ -787,6 +938,47 @@ public class EmailData {
    }
    
    /**
+    * @return ISO UTC
+    */
+   public String getExpires() {
+      if (getExpiryTime() == null) {
+         return "";
+      }
+      return IsoDateParser.getUTCTimestampT(getExpiryTime());
+   }
+   
+   public boolean hasExpires() {
+      return this.expiryTime != null;
+   }
+
+   /**
+    * @param isoUtc absolute timestamp like "2025-07-12T12:45:16.0Z" or delta milliseconds like "+3600000"
+    */
+   public void setExpires(String isoUtc) {
+      if (isoUtc == null || isoUtc.length() == 0) {
+         setExpiryTime(null);
+         return;
+      }
+      
+      try {
+        Timestamp ts = null;
+        Date now = new Date();
+        if (isoUtc.indexOf("+") == 0) {
+           // "expires" delta time from now "+3600000"
+           ts = new Timestamp(Long.valueOf(isoUtc.substring(1)).longValue() + now.getTime());
+        } else {
+           // absolute time "2011-12-20 16:40:12"
+           // ts = Timestamp.valueOf(isoUtc);
+           ts = new Timestamp(IsoDateParser.parse(isoUtc).getTime());
+        }
+        setExpiryTime(ts);
+     }
+     catch (Throwable e) {
+        log.warning("Ignoring expires setting '" + isoUtc + "':" + e.toString());
+     }
+   }
+
+   /**
     * If any of the params is null no markup for this param is added. 
     * If any of the param is empty "", an empty markup is added 
     * @param methodName Can be null
@@ -829,6 +1021,20 @@ public class EmailData {
    public InternetAddress[] getBcc() {
       return (this.bcc==null) ? new InternetAddress[0] : this.bcc;
    }
+   
+   public boolean hasBcc() {
+      return this.bcc != null && this.bcc.length > 0;
+   }
+   
+   public String getBccCsv() {
+      if (this.bcc == null || this.bcc.length == 0) {
+         return "";
+      }
+      String bccEmails = Arrays.stream(this.bcc)
+       .map(InternetAddress::getAddress)
+       .collect(Collectors.joining(ADDRESS_SEP));
+      return bccEmails;
+   }   
 
    /**
     * @param bcc The bcc to set.
@@ -840,12 +1046,30 @@ public class EmailData {
       //for (int i=0; i<bccs.length; i++)
       //   this.bcc[i] = toInternetAddress(bccs[i]);
    }
+   
+   public void setBcc(InternetAddress[] bcc) {
+      this.bcc = bcc;
+   }
 
    /**
     * @return Returns the cc array, is never null
     */
    public InternetAddress[] getCc() {
       return (this.cc==null) ? new InternetAddress[0] : this.cc;
+   }
+   
+   public boolean hasCc() {
+      return this.cc != null && this.cc.length > 0;
+   }
+   
+   public String getCcCsv() {
+      if (this.cc == null || this.cc.length == 0) {
+         return "";
+      }
+      String ccEmails = Arrays.stream(this.cc)
+       .map(InternetAddress::getAddress)
+       .collect(Collectors.joining(ADDRESS_SEP));
+      return ccEmails;
    }
 
    /**
@@ -857,6 +1081,10 @@ public class EmailData {
       //this.cc = new InternetAddress[ccs.length];
       //for (int i=0; i<ccs.length; i++)
       //   this.cc[i] = toInternetAddress(ccs[i]);
+   }
+   
+   public void setCc(InternetAddress[] cc) {
+      this.cc = cc;
    }
 
    /**
@@ -951,37 +1179,35 @@ public class EmailData {
    }
    
    public boolean hasReplyTo() {
-	  return this.replyTo != null && this.replyTo.length > 0;
+     return this.replyTo != null && this.replyTo.length > 0;
    }
    
    /**
     * @return never null
     */
    public InternetAddress[] getReplyToAddresses() {
-	   if (this.replyTo == null)
-		   return new InternetAddress[0];
-	   return this.replyTo;
+      if (this.replyTo == null)
+         return new InternetAddress[0];
+      return this.replyTo;
    }
    
    public String getReplyToAddressCsv() {
-	return Arrays.stream(getReplyToAddresses())
-			.map(addr -> addr.getAddress())
-			.collect(Collectors.joining(","));
+      return Arrays.stream(getReplyToAddresses())
+         .map(addr -> addr.getAddress())
+         .collect(Collectors.joining(ADDRESS_SEP));
    }
-   
-   public void setReplyTo(String replyTo) {
-      if (replyTo == null || replyTo.length() == 0) {
-         this.replyTo = new InternetAddress[0];
-          return;
-      }
-      if (replyTo.contains(";")) {
-         setReplyTo(replyTo.split(";"));
-      }
-      else if (replyTo.contains(",")) {
-         setReplyTo(replyTo.split(","));
-      }
-      else
-         setReplyTo(new String[] {replyTo});
+
+   /**
+    * @return "Jacky <myself@example.com>"
+    */
+   public String getReplyToFull() {
+      return Arrays.stream(getReplyToAddresses())
+         .map(addr -> addr.toUnicodeString())
+         .collect(Collectors.joining(ADDRESS_SEP));
+   }
+
+   public void setReplyTo(String replyToCsv) {
+      setReplyTo(toInternetAddresses(replyToCsv));
    }
    
    public void setReplyTo(String[] replyTo) {
@@ -1057,8 +1283,25 @@ public class EmailData {
      else
         this.contentType = null;
    }
+   
+   public boolean isHtml() {
+      if (this.contentType == null) {
+          return true;
+      }
+      return this.contentType.startsWith(CONTENTTYPE_HTML);
+   }
+   
+   public String getContentFormatted(boolean mixture) {
+      if (isHtml()) {
+         String content = toXhtmlEmailBody(getContent(), mixture);
+         return content;
+      }
+      String content = xhtmlToAscii(getContent());
+      return content;
+   }
 
    /**
+    * mimeType
     * @return never null, eg "text/plain" or "text/html; charset=utf-8"
     */
    public String getContentType() {
@@ -1068,4 +1311,73 @@ public class EmailData {
    public void setContentType(String contentType) {
       this.contentType = contentType;
    }
+   
+   public String getHeaderConversationId() {
+      return this.headerConversationId == null ? "" : this.headerConversationId;
+   }
+
+   public boolean hasHeaderConversationId() {
+      return this.headerConversationId != null && this.headerConversationId.length() > 0;
+   }
+   
+   public void setHeaderConversationId(String headerConversationId) {
+      this.headerConversationId = headerConversationId == null ? null : headerConversationId.trim();
+   }
+   
+   /**
+    * Assumes pure ascii
+    * @param asciiText
+    */
+   public static String toXhtmlEmailBody(String asciiText, boolean mixture) {
+       if (asciiText == null) return "";
+
+       // Escape basic HTML special characters
+       String escaped = asciiText;
+       
+       if (!mixture) {
+          escaped = asciiText
+               .replace("&", "&amp;")
+               .replace("<", "&lt;")
+               .replace(">", "&gt;");
+       }
+
+       // Replace line breaks with XHTML <br />
+       String xhtml = escaped.replace("\n", "<br />\n");
+
+       // Optionally wrap in <body> or <div> for completeness
+       return "<div>" + xhtml + "</div>";
+   }
+   
+   public static String xhtmlToAscii(String html) {
+       if (html == null) return "";
+
+       // Replace <br>, <br/>, <br /> with newlines
+       String text = html.replaceAll("(?i)<br\\s*/?>", "\n");
+
+       // Replace <p>, <div> with double newlines
+       text = text.replaceAll("(?i)</?(p|div)[^>]*>", "\n\n");
+
+       // Remove all remaining HTML tags
+       text = text.replaceAll("<[^>]+>", "");
+
+       // Decode basic HTML entities
+       text = unescapeHtmlEntities(text);
+
+       // Collapse excessive newlines
+       text = text.replaceAll("\\n{3,}", "\n\n");
+
+       return text.trim();
+   }
+   
+   public static String unescapeHtmlEntities(String input) {
+       if (input == null) return null;
+
+       return input
+           .replace("&lt;", "<")
+           .replace("&gt;", ">")
+           .replace("&amp;", "&")
+           .replace("&quot;", "\"")
+           .replace("&#39;", "'")
+           .replace("&nbsp;", " ");
+   }   
 }

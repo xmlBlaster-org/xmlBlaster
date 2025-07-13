@@ -278,12 +278,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    }
    
    private void fillProperties(String key, String defaultValue, Properties props, Global glob, I_PluginConfig pluginConfig) throws XmlBlasterException {
-	   if (props.getProperty(key) != null) {
-		   return;
-	   }
-	   String val = glob.get(key, System.getProperty(key, defaultValue), null, pluginConfig);
-	   if (val != null)
-		   props.put(key, val);
+      if (props.getProperty(key) != null) {
+         return;
+      }
+      String val = glob.get(key, System.getProperty(key, defaultValue), null, pluginConfig);
+      if (val != null)
+         props.put(key, val);
    }
 
    /**
@@ -376,8 +376,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          props.put("mail.smtp.port", ""+this.xbUri.getPort());
       }
       else {
-    	  // "465"
-    	  fillProperties("mail.smtp.port", null, props, glob, pluginConfig);
+         // "465"
+         fillProperties("mail.smtp.port", null, props, glob, pluginConfig);
       }
       
       String p;
@@ -412,14 +412,14 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       
       if (props.getProperty("mail.smtp.timeout") == null)
           props.put("mail.smtp.timeout", ""+glob.get("mail.smtp.timeout",
-        		  Integer.MAX_VALUE, null,
+                Integer.MAX_VALUE, null,
                 pluginConfig));
        p = props.getProperty("mail.smtp.timeout");
        this.smtpIoTimeout = Integer.valueOf(p).intValue();
 
        if (props.getProperty("mail.smtp.connectiontimeout") == null)
            props.put("mail.smtp.connectiontimeout", ""+glob.get("mail.smtp.connectiontimeout",
-         		  Integer.MAX_VALUE, null,
+                 Integer.MAX_VALUE, null,
                  pluginConfig));
         p = props.getProperty("mail.smtp.connectiontimeout");
         this.smtpConnectionTimeout = Integer.valueOf(p).intValue();
@@ -430,12 +430,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       this.isInitialized = true;
       
       if (log.isLoggable(Level.FINE)) {
-    	  // log.info("SMTP Property password=" + this.xbUri.getPassword());
-	      for (Object key: props.keySet()) {
-	    	  String value = props.getProperty(key.toString());
-	    	  log.info("SMTP Property " + key +"=" + value);
-	      }
-	      log.info("Auth " + getUser() + " " + this.xbUri.getPassword());
+         // log.info("SMTP Property password=" + this.xbUri.getPassword());
+         for (Object key: props.keySet()) {
+            String value = props.getProperty(key.toString());
+            log.info("SMTP Property " + key +"=" + value);
+         }
+         log.info("Auth " + getUser() + " " + this.xbUri.getPassword());
       }
       
       // Setup asynchronous sending thread for outgoing emails
@@ -506,6 +506,21 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       return new MimeMessage(getSession());
    }
 
+   /*
+    * Reuse transport for better performance:
+    * See http://java.sun.com/products/javamail/FAQ.html
+     MimeMessage msg = ...;
+      construct message
+      msg.saveChanges();
+      Transport t = session.getTransport("smtp");
+      t.connect();
+      for (int i = 0; .....) {
+        t.sendMessage(msg, new Address[] { recipients[i] });
+      }
+      t.close();
+   */
+
+   
    /**
     * Send a ready prepared message.
     * <p>
@@ -513,28 +528,16 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * </p>
     */
    public void send(Message message) throws MessagingException {
-/*
- * Reuse transport for better performance:
- * See http://java.sun.com/products/javamail/FAQ.html
-  MimeMessage msg = ...;
-   construct message
-   msg.saveChanges();
-   Transport t = session.getTransport("smtp");
-   t.connect();
-   for (int i = 0; .....) {
-     t.sendMessage(msg, new Address[] { recipients[i] });
-   }
-   t.close();
-*/
-
       try {
+         // log.info("Message-ID=" + message.getHeader("Message-ID")[0]);
          Transport.send(message);
+         // log.info("Message-ID=" + message.getHeader("Message-ID")[0]);
       } catch (MessagingException e) {
          throw e;
       }
    }
 
-   public void sendEmail(String from, String to, String subject, String body)
+   public String sendEmail(String from, String to, String subject, String body)
          throws AddressException, MessagingException {
       Message message = getMessage();
       try {
@@ -548,6 +551,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          throw e;
       }
       send(message);
+      String providerGeneratedMessageId = ((MimeMessage)message).getMessageID();
+      return providerGeneratedMessageId;
    }
 
    public void sendEmail(String from, String to, String subject, String body,
@@ -566,7 +571,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     *          Content-Type: text/plain; charset=UTF-8
     * </pre>
     */
-   public void sendEmail(InternetAddress from, InternetAddress to,
+   public String sendEmail(InternetAddress from, InternetAddress to,
          String subject, String body, String encoding) throws AddressException,
          MessagingException {
       MimeMessage message = new MimeMessage(getSession());
@@ -581,6 +586,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          throw e;
       }
       send(message);
+      String providerGeneratedMessageId = message.getMessageID();
+      return providerGeneratedMessageId;
    }
 
    /**
@@ -632,6 +639,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          // "text/plain"
 
          send(message);
+         String providerGeneratedMessageId = message.getMessageID();
          if (log.isLoggable(Level.FINE))
             log.fine("Successful send email from=" + from.toString() + " to="
                   + to.toString());
@@ -677,7 +685,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * @param emailData
     *        Container holding the message to send
     */
-   public void sendEmailSync(EmailData emailData, String msgIdFileName) throws XmlBlasterException {
+   public String sendEmailSync(EmailData emailData, String msgIdFileName) throws XmlBlasterException {
       if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
       try {
          MimeMessage message = new MimeMessage(getSession());
@@ -695,20 +703,37 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
          if (emailData.hasReplyTo())
              message.setReplyTo(emailData.getReplyToAddresses());
+         if (emailData.hasHeaderConversationId()) {
+            final String bounceId = emailData.getHeaderConversationId();
+            // unfortunately only forwarded but not replied
+            message.setHeader(EmailData.CONVERSATION_HEADER_KEY, bounceId);
+            
+            if (false) {
+               // unfortunately overrideen by jakarta and not sent to server
+              // message.setHeader("Message-ID", bounceId);
+              message.setHeader("Message-ID", "<ae287a52-09f9-4ffa-ac97-7923bec3f75b@example.com>");
+              String[] tmp = message.getHeader(EmailData.CONVERSATION_HEADER_KEY);
+            }
+            
+            // 3. option is to add bounceId to replyTo: ae287a52-09f9-4ffa-ac97-7923bec3f75b+kolonne1@example.com
+            
+            // 4. option is to add bounceId to content
+         }
+             
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
          AttachmentHolder[] holder = emailData.getAttachments();
 
          // "text/html; charset=utf-8"
          boolean useContentType = (emailData.isEncodingUtf8() && emailData.getContentType().toLowerCase().contains(Constants.UTF8_ENCODING.toLowerCase()));
 
-         if (holder.length == 0 && emailData.getContent() != null && emailData.getContent().length() > 0) {
+         if (holder.length == 0 && emailData.hasContent()) {
             if (emailData.isSendContentAsHtml()) {
-            	if (useContentType) {
+               if (useContentType) {
                    message.setContent(emailData.getContent(), emailData.getContentType());
-            	}
-            	else {
+               }
+               else {
                    message.setText(emailData.getContent(), emailData.getEncoding(), emailData.getContentType());
-            	}
+               }
             }
             else {
                //Constants.UTF8_ENCODING);
@@ -725,7 +750,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                if (useContentType)
                    mbp.setContent(emailData.getContent(), emailData.getContentType());
                else
-            	   mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+                  mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
                mbp.setDisposition(MimeBodyPart.INLINE);
                multi.addBodyPart(mbp);
             }
@@ -802,7 +827,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                   + emailData.getRecipientsList());
          if (log.isLoggable(Level.FINER))
             log.finer("Successful send email" + emailData.toXml(true));
+         String providerGeneratedMessageId = message.getMessageID();
+         return providerGeneratedMessageId;
       } catch (Exception e) {
+         // com.sun.mail.smtp.SMTPSendFailedException: 554 5.7.1 Spam message rejected
          log.fine("Can't send mail: " + e.toString() + ": " + emailData.toXml(true));
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
@@ -1026,14 +1054,14 @@ Some body text
    }
 
    public int getSmtpIoTimeout() {
-	  return smtpIoTimeout;
+      return smtpIoTimeout;
    }
 
    //I don't think i can change this on an established connection
    //public void setSmtpIoTimeout(int smtpIoTimeout) {
    //   this.smtpIoTimeout = smtpIoTimeout;
    //}
-	
+   
    public int getSmtpConnectionTimeout() {
       return smtpConnectionTimeout;
    }
@@ -1064,9 +1092,5 @@ Some body text
          boolean asyncSendQueueBlockOnOverflow) {
       this.asyncSendQueueBlockOnOverflow = asyncSendQueueBlockOnOverflow;
    }
-	
-   //I don't think i can change this on an established connection
-   //public void setSmtpConnectionTimeout(int smtpConnectionTimeout) {
-   //   this.smtpConnectionTimeout = smtpConnectionTimeout;
-   //}
+
 }
