@@ -269,8 +269,16 @@ public class EmailData {
          return null;
       }
       try {
-         address = address == null ? address : address.trim();
+         address = address.trim();
+         address = quotePersonalIfNeeded(address);
          boolean strict = false;
+         // address.toString() delivers:
+         // personal can be RFC 2047 encoded "=?UTF-8?Q?Kolonne_S=C3=BCd?=" which is "Kolonne Süd"
+         // =?: start of the encoding
+         // UTF-8
+         // Q: Quoted-Printable encoding
+         // ü: S=C3=BCd
+         // so use address.toUnicodeString()!
          InternetAddress[] arr = InternetAddress.parse(address, strict);
          if (arr == null || arr.length == 0 || arr[0] == null) {
             throw new IllegalArgumentException("Illegal email address '" + address + "'");
@@ -279,6 +287,20 @@ public class EmailData {
       } catch (AddressException e) {
          throw new IllegalArgumentException("Illegal email address '" + address + "': " + e.toString());
       }
+   }
+   
+   /**
+    * @param address 'Kolonne Süd <sued.kolonne1@example.com>'
+    * @return '"Kolonne Süd" <sued.kolonne1@example.com>'
+    */
+   public static String quotePersonalIfNeeded(String address) {
+       if (address == null) return null;
+       if (!address.contains("<")) {
+          return address;
+       }
+
+       // regex to find the personal name before the email <...>
+       return address.replaceFirst("^([^\"<]+)\\s<", "\"$1\" <");
    }
 
    /**
@@ -463,7 +485,7 @@ public class EmailData {
       StringBuffer buf = new StringBuffer();
       for (int j = 0; j < this.recipients.length; j++) {
          if (j > 0) buf.append(ADDRESS_SEP);
-         buf.append(this.recipients[j]);
+         buf.append(this.recipients[j].toUnicodeString());
       }
       return buf.toString();
    }
@@ -507,7 +529,7 @@ public class EmailData {
    public String[] getAllRecipients() {
       String[] ret = new String[this.recipients.length];
       for (int i=0; i<this.recipients.length; i++)
-         ret[i] = this.recipients[i].toString();
+         ret[i] = this.recipients[i].toUnicodeString();
       return ret;
    }
 
@@ -548,7 +570,7 @@ public class EmailData {
     * @return "XmlBlaster Team <info@xmlBlaster.org> 
     */
    public String getFromFull() {
-      return (this.from == null) ? "" : this.from.toString();
+      return (this.from == null) ? "" : this.from.toUnicodeString();
    }
 
    /**
@@ -648,23 +670,23 @@ public class EmailData {
       sb.append(offset).append("  <from>").append(XmlNotPortable.escape(getFrom())).append(
             "</from>");
       for (int i = 0; i < this.recipients.length; i++) {
-         sb.append(offset).append("  <to>").append(XmlNotPortable.escape(this.recipients[i].toString()))
+         sb.append(offset).append("  <to>").append(XmlNotPortable.escape(this.recipients[i].toUnicodeString()))
                .append("</to>");
       }
       InternetAddress[] replyTos = this.getReplyToAddresses();
       for (int i = 0; i < replyTos.length; i++) {
-         sb.append(offset).append("  <replyTo>").append(XmlNotPortable.escape(replyTos[i].toString()))
+         sb.append(offset).append("  <replyTo>").append(XmlNotPortable.escape(replyTos[i].toUnicodeString()))
                 .append("</replyTo>");
       }
       if (this.recipients.length == 0) {
          sb.append(offset).append("  <to></to>");
       }
       for (int i = 0; this.cc!=null && i < this.cc.length; i++) {
-         sb.append(offset).append("  <cc>").append(XmlNotPortable.escape(this.cc[i].toString()))
+         sb.append(offset).append("  <cc>").append(XmlNotPortable.escape(this.cc[i].toUnicodeString()))
                .append("</cc>");
       }
       for (int i = 0; this.bcc!=null && i < this.bcc.length; i++) {
-         sb.append(offset).append("  <bcc>").append(XmlNotPortable.escape(this.bcc[i].toString()))
+         sb.append(offset).append("  <bcc>").append(XmlNotPortable.escape(this.bcc[i].toUnicodeString()))
                .append("</bcc>");
       }
       sb.append(offset).append("  <subject>").append(XmlNotPortable.escape(getSubject()))
