@@ -380,6 +380,17 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          fillProperties("mail.smtp.port", null, props, glob, pluginConfig);
       }
       
+      // Enable SMTP DSN Notification, Request all DSN types "SUCCESS,FAILURE,DELAY"
+      // String notifyDefault = "SUCCESS,FAILURE,DELAY";
+      String notifyDefault = null;
+      fillProperties("mail.smtp.dsn.notify", notifyDefault, props, glob, pluginConfig);
+      // "FULL" Return full message on failure
+      // "HDRS" Only headers returned on failure
+      // String retDefault = "FULL";
+      String retDefault = null;
+      fillProperties("mail.smtp.dsn.ret", retDefault, props, glob, pluginConfig);
+
+      
       String p;
       if (props.getProperty("messageIdForceBase64") == null)
          props.put("messageIdForceBase64", ""+glob.get("messageIdForceBase64", false, null,
@@ -701,8 +712,17 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             message.setRecipients(Message.RecipientType.CC, emailData.getCc());
          if (emailData.getBcc().length > 0)
             message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
-         if (emailData.hasReplyTo())
+         if (emailData.hasReplyTo()) {
              message.setReplyTo(emailData.getReplyToAddresses());
+         }
+         if (emailData.hasDispositionNotifyAddress()) {
+            // Want human Read ACK RFC 8098
+            message.setHeader("Disposition-Notification-To", emailData.getDispositionNotifyAddress());
+         }
+         if (emailData.hasReturnReceiptToAddress()) {
+            // Want non-standard ACK X-Confirm-Reading-To
+            message.setHeader("Return-Receipt-To", emailData.getReturnReceiptToAddress());
+         }
          if (emailData.hasHeaderConversationId()) {
             final String bounceId = emailData.getHeaderConversationId();
             // unfortunately only forwarded but not replied

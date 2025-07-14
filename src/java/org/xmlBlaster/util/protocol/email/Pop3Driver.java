@@ -16,7 +16,9 @@ import jakarta.mail.Header;
 import jakarta.mail.Flags;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
+import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
 import jakarta.mail.URLName;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
@@ -29,7 +31,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -768,6 +773,185 @@ implements I_Plugin, I_Timeout,
                         + getUrlWithoutPassword() + "' is not available", e);
       }
    }
+   
+
+   public static final Pattern BOUNCE_HEADERMSG_UUID_PATTERN = Pattern.compile(
+           "\\b([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\\+",
+           Pattern.CASE_INSENSITIVE
+   );
+   
+   public static String extractFirstUuidWithTail(String headersContent) {
+       if (headersContent == null || headersContent.isEmpty()) {
+           return null;
+       }
+
+       Matcher matcher = BOUNCE_HEADERMSG_UUID_PATTERN.matcher(headersContent);
+       if (matcher.find()) {
+           return matcher.group(1); // Only the UUID part before '+'
+       }
+       return null;
+   }
+   
+   /**
+    * From: Mail Delivery System <MAILER-DAEMON@example.com>
+    * @param message
+    * @param status
+    * @return
+    * @throws MessagingException
+    */
+   public boolean parseMailDeliveryStatus(Message bounceMessage, EmailData emailData) throws MessagingException {
+       try {
+           if (!bounceMessage.isMimeType("multipart/report")) {
+               return false;
+           }
+           
+           MailDeliveryStatus status = emailData.getMailDeliveryStatus();
+           
+           status.setContentErrorMessage(extractMtaContent(bounceMessage));
+
+           Multipart multipart = (Multipart) bounceMessage.getContent();
+           //MailDeliveryStatus status = new MailDeliveryStatus();
+
+           for (int i = 0; i < multipart.getCount(); i++) {
+               BodyPart part = multipart.getBodyPart(i);
+               String contentType = part.getContentType().toLowerCase();
+               log.info("Got bounce message contentType=" + contentType);
+
+               if (part.isMimeType("message/delivery-status")) {
+                   BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()));
+                   String line;
+                   while ((line = reader.readLine()) != null) {
+                       line = line.trim();
+                       if (line.startsWith("Reporting-MTA:")) {
+                           status.setMtaInfo(line.substring("Reporting-MTA:".length()).trim());
+                       } else if (line.startsWith("Action:")) {
+                           status.setMtaAction(line.substring("Action:".length()).trim());
+                       } else if (line.startsWith("Status:")) {
+                           status.setMtaStatus(line.substring("Status:".length()).trim());
+                       } else if (line.startsWith("Diagnostic-Code:")) {
+                           String diagCodeStr = line.substring("Diagnostic-Code:".length()).trim();
+                           status.setMtaDiagnosticCodeStr(diagCodeStr);
+
+                           int code = extractSmtpCode(diagCodeStr);
+                           if (code > 0) {
+                               status.setMtaDiagnosticCode(code);
+                           }
+                       }
+                   }
+               } else if (part.isMimeType("text/plain") || part.isMimeType("text/html")) {
+                  Object contentObj = part.getContent();
+                  if (contentObj == null) {
+                     log.info("Part content is null");
+                  } else if (contentObj instanceof String) {
+                     String readableContent = (String) contentObj;
+                     log.info("Human readable explanation, text content: " + readableContent);
+                     status.setContentErrorMessage(readableContent);
+                  } else {
+                     log.info("Human readable explanation: " + contentObj.toString());
+                     status.setContentErrorMessage(contentObj.toString());
+                  }
+               } else if (part.isMimeType("message/rfc822")) {
+                   MimeMessage originalMsg = new MimeMessage(session, part.getInputStream());
+                   String readableContent = extractOriginalMessageContentAsString(originalMsg);
+                   emailData.setContent(readableContent);
+               } else if (part.isMimeType("text/rfc822-headers")) {
+                   // Only headers available, still wrap as MimeMessage with headers only
+                  InputStream is = part.getInputStream();
+                  String readableContent = new String(is.readAllBytes());
+                  // Reply-To: =?UTF-8?Q?Kolonne_S=C3=BCd?= <c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@example.com>
+                  String conversationId = extractFirstUuidWithTail(readableContent);
+                  if (conversationId != null && conversationId.length() > 0) {
+                     emailData.setHeaderConversationId(conversationId);
+                  }
+                  
+                  // CAUTION: Good emails with these headers end up here as well!!!
+                  // Human Read ACK RFC 8098:
+                  // Disposition-Notification-To: c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@strabe.ka.de
+                  // Non-standard ACK:
+                  // Return-Receipt-To: c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@strabe.ka.de
+                  
+                  status.setContentErrorMessage(readableContent);
+               }
+           }
+       } catch (MessagingException me) {
+           throw me; // Re-throw untouched
+       } catch (Exception e) {
+           throw new MessagingException("Failed to parse Mail Delivery Status", e);
+       }
+       return true;
+   }
+   
+   /**
+    * Extracts the human-readable MTA error text from the DSN bounce.
+    */
+   public static String extractMtaContent(Message bounceMessage) throws MessagingException {
+       try {
+           if (!bounceMessage.isMimeType("multipart/report")) {
+               return null;
+           }
+
+           Multipart multipart = (Multipart) bounceMessage.getContent();
+           for (int i = 0; i < multipart.getCount(); i++) {
+               BodyPart part = multipart.getBodyPart(i);
+               if (part.isMimeType("text/plain")) {
+                   return part.getContent().toString().trim();
+               }
+           }
+           return null;
+       } catch (MessagingException me) {
+           throw me;
+       } catch (Exception e) {
+           throw new MessagingException("Failed to extract MTA content", e);
+       }
+   }
+   
+   public String extractOriginalMessageContentAsString(MimeMessage originalMsg) throws MessagingException {
+       try {
+           if (originalMsg.isMimeType("multipart/*")) {
+               Multipart multipart = (Multipart) originalMsg.getContent();
+               for (int i = 0; i < multipart.getCount(); i++) {
+                   BodyPart part = multipart.getBodyPart(i);
+                   if (part.isMimeType("text/plain")) {
+                       return part.getContent().toString();
+                   }
+                   if (part.isMimeType("text/html")) {
+                       return part.getContent().toString();
+                   }
+               }
+           } else {
+               // Not multipart: return available headers and subject
+               StringBuilder sb = new StringBuilder();
+               sb.append("Subject: ").append(originalMsg.getSubject()).append("\n");
+               sb.append("From: ").append(originalMsg.getFrom() != null ? originalMsg.getFrom()[0] : "unknown").append("\n");
+               sb.append("To: ").append(originalMsg.getAllRecipients() != null ? originalMsg.getAllRecipients()[0] : "unknown").append("\n");
+               // You can add more headers if desired
+               return sb.toString();
+           }
+           return null;
+       } catch (Exception e) {
+           throw new MessagingException("Failed to extract original message content as String", e);
+       }
+   }   
+
+   
+   /**
+    * <pre>
+Reporting-MTA: dns; intra.example.com
+Action: failed
+Status: 5.1.1
+Diagnostic-Code: smtp; 550 5.1.1 User unknown
+    * </pre>
+    * @param dsnContent
+    * @param mealData
+    */
+   private static int extractSmtpCode(String diagnosticCodeStr) {
+       // Look for the first 3-digit SMTP code like 550, 421, etc.
+       Matcher matcher = Pattern.compile("\\b([245]\\d{2})\\b").matcher(diagnosticCodeStr);
+       if (matcher.find()) {
+           return Integer.parseInt(matcher.group(1));
+       }
+       return -1; // Not found
+   }
 
    /**
     * Read messages from mail server with POP3.
@@ -800,13 +984,13 @@ implements I_Plugin, I_Timeout,
             log.fine("Reading message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
             // Contains the sent "Message-ID"
-            // In-Reply-To=<1614363744.1.1752346607415@marup.netwake.com>
-            //  References=<1614363744.1.1752346607415@marup.netwake.com>
+            // In-Reply-To=<1614363744.1.1752346607415@example.com>
+            //  References=<1614363744.1.1752346607415@example.com>
             Enumeration<Header> headers = msg.getAllHeaders();
             while (headers.hasMoreElements()) {
                 Header h = headers.nextElement();
                 log.info("DEBUG: email " + h.getName() + "=" + h.getValue()); // "Message-ID"
-            }            
+            }
             
             if (clear)
                msg.setFlag(Flags.Flag.DELETED, true);
@@ -829,6 +1013,7 @@ implements I_Plugin, I_Timeout,
             //String content = retrieveContent(msg); // Would sometimes deliver an attachment
             String content = "";
             EmailData emailData = new EmailData(recips, from, msg.getSubject(), content);
+            parseMailDeliveryStatus(msg, emailData);
             emailDatas[i] = emailData;
             
             { // not functional:

@@ -58,6 +58,7 @@ attachement {
  * @see http://www.faqs.org/rfcs/rfc2822.html
  */
 public class EmailData {
+
    private static Logger log = Logger.getLogger(EmailData.class.getName());
 
    protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
@@ -171,30 +172,10 @@ public class EmailData {
 
    private String messageIdFileName = MESSAGEID_TAG+MESSAGEID_EXTENSION;
    
-   /**
-    * @return the sendAsync
-    */
-   public boolean isSendAsync() {
-      return this.sendAsync;
-   }
-
-   /**
-    * Set to true if you want to send the mail over a producer/consumer pattern
-    * from another thread.
-    * This is helpful to protect against blocking SMTP servers.
-    * @param sendAsync the sendAsync to set, defaults to false
-    */
-   public void setSendAsync(boolean sendAsync) {
-      this.sendAsync = sendAsync;
-   }
-
-   public void setMessageIdFileName(String name) {
-      messageIdFileName = name;
-   }
-
-   public String getMessageIdFileName() {
-      return this.messageIdFileName;
-   }
+   private MailDeliveryStatus mailDeliveryStatus = new MailDeliveryStatus();
+   
+   protected String dispositionNotifyAddress;
+   protected String returnReceiptToAddress;
    
    protected EmailData() {
       
@@ -236,8 +217,8 @@ public class EmailData {
             this.recipients[i] = toInternetAddress(recipients[i]);
       }
       setFromAddress(from);
-      this.subject = subject;
-      this.content = content;
+      setSubject(subject);
+      setContent(content);
    }
 
    public EmailData(InternetAddress recipient, InternetAddress from, String subject) {
@@ -251,6 +232,69 @@ public class EmailData {
       this.from = from;
       this.subject = subject;
       this.content = null;
+   }
+   
+   /**
+    * Human Read ACK RFC 8098 (updated MDN RFC)
+    * <p>
+    * "Disposition-Notification-To": "sender@example.com"
+    * <p>
+    * Requests a Message Disposition Notification (MDN) a.k.a. read receipt
+    * @return sender@example.com"
+    */
+   public String getDispositionNotifyAddress() {
+      return this.dispositionNotifyAddress;
+   }
+
+   public boolean hasDispositionNotifyAddress() {
+      String addr = getDispositionNotifyAddress();
+      return addr != null && addr.length() > 0;
+   }
+   
+   public void setDispositionNotifyAddress(String dispositionNotifyAddress) {
+      this.dispositionNotifyAddress = dispositionNotifyAddress;
+   }
+
+   /**
+    * "Return-Receipt-To", X-Confirm-Reading-To   Non-standard ACK
+    * @return sender@example.com"
+    */
+   public String getReturnReceiptToAddress() {
+      return this.returnReceiptToAddress;
+   }
+
+   public void setReturnReceiptToAddress(String returnReceiptToAddress) {
+      this.returnReceiptToAddress = returnReceiptToAddress;
+   }
+
+   public boolean hasReturnReceiptToAddress() {
+      String addr = getReturnReceiptToAddress();
+      return addr != null && addr.length() > 0;
+   }   
+
+   /**
+    * @return the sendAsync
+    */
+   public boolean isSendAsync() {
+      return this.sendAsync;
+   }
+
+   /**
+    * Set to true if you want to send the mail over a producer/consumer pattern
+    * from another thread.
+    * This is helpful to protect against blocking SMTP servers.
+    * @param sendAsync the sendAsync to set, defaults to false
+    */
+   public void setSendAsync(boolean sendAsync) {
+      this.sendAsync = sendAsync;
+   }
+
+   public void setMessageIdFileName(String name) {
+      messageIdFileName = name;
+   }
+
+   public String getMessageIdFileName() {
+      return this.messageIdFileName;
    }
    
    /**
@@ -1037,7 +1081,7 @@ public class EmailData {
             + ((this.expiryTime != null) ? (" " + EXPIRES_HEADER_RFC2156 + ":" + MailUtil.dateTime(this.expiryTime)) : "")
             + " attachments:" + getFileNameList();
    }
-
+   
    public void setContent(String content) {
       this.content = content;
    }
@@ -1360,7 +1404,25 @@ public class EmailData {
    public void setHeaderConversationId(String headerConversationId) {
       this.headerConversationId = headerConversationId == null ? null : headerConversationId.trim();
    }
+
+   public void setMailDeliveryStatus(MailDeliveryStatus mailDeliveryStatus) {
+      this.mailDeliveryStatus = mailDeliveryStatus;
+   }
+
+   public MailDeliveryStatus getMailDeliveryStatus() {
+      return this.mailDeliveryStatus;
+   }
    
+   public boolean isOk() {
+       boolean ok = this.mailDeliveryStatus.isOk();
+       return !this.isError();
+   }
+
+   public boolean isError() {
+       return this.mailDeliveryStatus.isError();
+   }
+
+
    /**
     * Assumes pure ascii, use \n, <p> etc but avoid <br /> as it may result in many new lines (both \n + <br />)
     * @param asciiText
@@ -1441,4 +1503,5 @@ public class EmailData {
            .replace("&#39;", "'")
            .replace("&nbsp;", " ");
    }
+   
 }
