@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.xmlBlaster.util.IsoDateParser;
@@ -305,7 +307,7 @@ public class EmailData {
 
    /**
     * Allowed separators comma, semicolon, newline. Standard separator is comma ","
-    * @param inputCsv "alice@example.com,bob@example.com , charlie@example.com; jack@example.com";
+    * @param inputCsv "XmlBlaster Team <alice@example.com>;bob@example.com , charlie@example.com; jack@example.com";
     * @throws AddressException
     */
    public static InternetAddress[] toInternetAddresses(String inputCsv) throws IllegalArgumentException {
@@ -1316,12 +1318,22 @@ public class EmailData {
       return this.contentType.startsWith(CONTENTTYPE_HTML);
    }
    
-   public String getContentFormatted(boolean mixture) {
+   public String getContentFormatted(boolean mixture, boolean replaceFormattingTags) {
       if (isHtml()) {
          String content = toXhtmlEmailBody(getContent(), mixture);
          return content;
       }
-      String content = xhtmlToAscii(getContent());
+      String content = xhtmlToAscii(getContent(), replaceFormattingTags);
+      return content;
+   }
+   
+   public String getContentToXhtml(boolean mixture) {
+       String content = toXhtmlEmailBody(getContent(), mixture);
+       return content;
+   }
+
+   public String getContentToAscii(boolean replaceFormattingTags) {
+      String content = xhtmlToAscii(getContent(), replaceFormattingTags);
       return content;
    }
 
@@ -1350,11 +1362,13 @@ public class EmailData {
    }
    
    /**
-    * Assumes pure ascii
+    * Assumes pure ascii, use \n, <p> etc but avoid <br /> as it may result in many new lines (both \n + <br />)
     * @param asciiText
     */
    public static String toXhtmlEmailBody(String asciiText, boolean mixture) {
-       if (asciiText == null) return "";
+       if (asciiText == null || asciiText.trim().length() == 0) {
+             return "";
+       }
 
        // Escape basic HTML special characters
        String escaped = asciiText;
@@ -1373,25 +1387,47 @@ public class EmailData {
        return "<div>" + xhtml + "</div>";
    }
    
-   public static String xhtmlToAscii(String html) {
-       if (html == null) return "";
+   public static String xhtmlToAscii(String html, boolean replaceFormattingTags) {
+         if (html == null) return "";
 
-       // Replace <br>, <br/>, <br /> with newlines
-       String text = html.replaceAll("(?i)<br\\s*/?>", "\n");
+          html = html.trim();
+          
+          // Remove DOCTYPE
+          html = html.replaceAll("(?is)<!DOCTYPE[^>]*>", "").trim();
 
-       // Replace <p>, <div> with double newlines
-       text = text.replaceAll("(?i)</?(p|div)[^>]*>", "\n\n");
+          // Extract content inside <body>...</body>
+          Matcher bodyMatcher = Pattern.compile("(?is)<body[^>]*>(.*?)</body>").matcher(html);
+          if (bodyMatcher.find()) {
+              html = bodyMatcher.group(1);
+          }
 
-       // Remove all remaining HTML tags
-       text = text.replaceAll("<[^>]+>", "");
+          // Remove all line breaks and normalize whitespaces
+          html = html.replaceAll("[\\n\\r]+", ""); // Replace line breaks with space
+          html = html.replaceAll("\\s{2,}", "").trim(); // Collapse multiple spaces
 
-       // Decode basic HTML entities
-       text = unescapeHtmlEntities(text);
+          // Strip outermost <div> if present
+          if (html.matches("(?is)^<div[^>]*>.*</div>$")) {
+              html = html.replaceAll("(?is)^<div[^>]*>", "").replaceAll("(?is)</div>$", "");
+          }
 
-       // Collapse excessive newlines
-       text = text.replaceAll("\\n{3,}", "\n\n");
+          // Replace <br>, <br/>, <br /> with newlines
+          String text = html.replaceAll("(?i)<br\\s*/?>", "\n");
 
-       return text.trim();
+          if (replaceFormattingTags) {
+              // Replace <p> or <div> with double newlines
+              text = text.replaceAll("(?i)</?(p|div)[^>]*>", "\n\n");
+
+              // Remove all remaining HTML tags
+              text = text.replaceAll("<[^>]+>", "");
+          }
+
+          // Decode basic HTML entities
+          text = unescapeHtmlEntities(text);
+
+          // Collapse excessive newlines to at most 2
+          text = text.replaceAll("\\n{3,}", "\n\n");
+
+          return text.trim();
    }
    
    public static String unescapeHtmlEntities(String input) {
@@ -1404,5 +1440,5 @@ public class EmailData {
            .replace("&quot;", "\"")
            .replace("&#39;", "'")
            .replace("&nbsp;", " ");
-   }   
+   }
 }
