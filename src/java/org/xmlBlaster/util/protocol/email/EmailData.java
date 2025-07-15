@@ -1406,6 +1406,10 @@ public class EmailData {
    }
 
    public void setMailDeliveryStatus(MailDeliveryStatus mailDeliveryStatus) {
+      if (mailDeliveryStatus == null) {
+         this.mailDeliveryStatus = new MailDeliveryStatus();
+         return;
+      }
       this.mailDeliveryStatus = mailDeliveryStatus;
    }
 

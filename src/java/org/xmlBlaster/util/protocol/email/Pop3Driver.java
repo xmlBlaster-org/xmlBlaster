@@ -831,11 +831,10 @@ implements I_Plugin, I_Timeout,
                        } else if (line.startsWith("Diagnostic-Code:")) {
                            String diagCodeStr = line.substring("Diagnostic-Code:".length()).trim();
                            status.setMtaDiagnosticCodeStr(diagCodeStr);
-
-                           int code = extractSmtpCode(diagCodeStr);
-                           if (code > 0) {
-                               status.setMtaDiagnosticCode(code);
-                           }
+//                           int code = MailDeliveryStatus.extractSmtpCode(diagCodeStr);
+//                           if (code > 0) {
+//                               status.setMtaDiagnosticCode(code);
+//                           }
                        }
                    }
                } else if (part.isMimeType("text/plain") || part.isMimeType("text/html")) {
