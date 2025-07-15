@@ -9,8 +9,11 @@ package org.xmlBlaster.util.protocol.email;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -176,6 +179,11 @@ public class EmailData {
    
    protected String dispositionNotifyAddress;
    protected String returnReceiptToAddress;
+   
+   /**
+    * additional headers for your convenience
+    */
+   protected Map<String, String> attributes = new HashMap<>();
    
    protected EmailData() {
       
@@ -1425,7 +1433,48 @@ public class EmailData {
    public boolean isError() {
        return this.mailDeliveryStatus.isError();
    }
+   
+   public void addAttribute(String key, String value) {
+       attributes.put(key, value);
+   }
 
+   public String getAttribute(String key) {
+       return attributes.get(key);
+   }
+   
+   public String removeAttribute(String key) {
+       return attributes.remove(key);
+   }
+   
+   public String getAttribute(String key, String defaultValue) {
+       String value = attributes.get(key);
+       if (value == null) {
+          return defaultValue;
+       }
+       return value;
+   }
+
+   public boolean hasAttribute(String key) {
+       String val = attributes.get(key);
+       return val != null && !val.isEmpty();
+   }
+   
+   public void clearAttributes() {
+       this.attributes.clear();
+   }   
+
+   /**
+    * @return unmodifiableMap
+    */
+   public Map<String, String> getAllAttributes() {
+       return Collections.unmodifiableMap(attributes);
+   }
+   
+   public void setAttributes(Map<String, String> attributes) {
+      if (attributes != null) {
+         this.attributes = attributes;
+      }
+   }
 
    /**
     * Assumes pure ascii, use \n, <p> etc but avoid <br /> as it may result in many new lines (both \n + <br />)

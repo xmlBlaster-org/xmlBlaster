@@ -983,17 +983,6 @@ Diagnostic-Code: smtp; 550 5.1.1 User unknown
             log.fine("Reading message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
             
-            if (false) {
-	            // Contains the sent "Message-ID"
-	            // In-Reply-To=<1614363744.1.1752346607415@example.com>
-	            //  References=<1614363744.1.1752346607415@example.com>
-	            Enumeration<Header> headers = msg.getAllHeaders();
-	            while (headers.hasMoreElements()) {
-	                Header h = headers.nextElement();
-	                log.info("DEBUG: email " + h.getName() + "=" + h.getValue()); // "Message-ID"
-	            }
-            }
-            
             if (clear)
                msg.setFlag(Flags.Flag.DELETED, true);
             
@@ -1017,6 +1006,19 @@ Diagnostic-Code: smtp; 550 5.1.1 User unknown
             EmailData emailData = new EmailData(recips, from, msg.getSubject(), content);
             parseMailDeliveryStatus(msg, emailData);
             emailDatas[i] = emailData;
+            
+            {   // pass all headers to caller. 
+	            // Contains the sent "Message-ID"
+	            // In-Reply-To=<1614363744.1.1752346607415@example.com>
+	            //  References=<1614363744.1.1752346607415@example.com>
+	            Enumeration<Header> headers = msg.getAllHeaders();
+	            while (headers.hasMoreElements()) {
+	                Header h = headers.nextElement();
+	                emailData.addAttribute(h.getName(), h.getValue());
+	                // log.info("DEBUG: email " + h.getName() + "=" + h.getValue()); // "Message-ID"
+	            }
+            }
+
             
             { // not functional:
                // this will not work as thunderbird/outlook to not bounce back headers with reply button
