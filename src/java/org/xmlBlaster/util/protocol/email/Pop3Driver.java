@@ -843,10 +843,10 @@ implements I_Plugin, I_Timeout,
                      log.info("Part content is null");
                   } else if (contentObj instanceof String) {
                      String readableContent = (String) contentObj;
-                     log.info("Human readable explanation, text content: " + readableContent);
+                     // log.info("Human readable explanation, text content: " + readableContent);
                      status.setContentErrorMessage(readableContent);
                   } else {
-                     log.info("Human readable explanation: " + contentObj.toString());
+                     // log.info("Human readable explanation: " + contentObj.toString());
                      status.setContentErrorMessage(contentObj.toString());
                   }
                } else if (part.isMimeType("message/rfc822")) {
@@ -982,13 +982,16 @@ Diagnostic-Code: smtp; 550 5.1.1 User unknown
 
             log.fine("Reading message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
-            // Contains the sent "Message-ID"
-            // In-Reply-To=<1614363744.1.1752346607415@example.com>
-            //  References=<1614363744.1.1752346607415@example.com>
-            Enumeration<Header> headers = msg.getAllHeaders();
-            while (headers.hasMoreElements()) {
-                Header h = headers.nextElement();
-                log.info("DEBUG: email " + h.getName() + "=" + h.getValue()); // "Message-ID"
+            
+            if (false) {
+	            // Contains the sent "Message-ID"
+	            // In-Reply-To=<1614363744.1.1752346607415@example.com>
+	            //  References=<1614363744.1.1752346607415@example.com>
+	            Enumeration<Header> headers = msg.getAllHeaders();
+	            while (headers.hasMoreElements()) {
+	                Header h = headers.nextElement();
+	                log.info("DEBUG: email " + h.getName() + "=" + h.getValue()); // "Message-ID"
+	            }
             }
             
             if (clear)
