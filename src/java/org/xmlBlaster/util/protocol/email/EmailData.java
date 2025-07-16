@@ -691,6 +691,10 @@ public class EmailData {
       return this.content != null && this.content.length() > 0;
    }
    
+   /**
+    * @param fileName "body.xml"
+    * @return
+    */
    public AttachmentHolder getAttachment(String fileName) {
       if (fileName == null) return null;
       AttachmentHolder[] arr = getAttachments();

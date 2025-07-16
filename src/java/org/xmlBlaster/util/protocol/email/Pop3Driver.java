@@ -865,9 +865,9 @@ implements I_Plugin, I_Timeout,
                   
                   // CAUTION: Good emails with these headers end up here as well!!!
                   // Human Read ACK RFC 8098:
-                  // Disposition-Notification-To: c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@strabe.ka.de
+                  // Disposition-Notification-To: c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@example.com
                   // Non-standard ACK:
-                  // Return-Receipt-To: c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@strabe.ka.de
+                  // Return-Receipt-To: c1f61983-18d6-466d-be28-bf9056109655+sued.kolonne1@example.com
                   
                   status.setContentErrorMessage(readableContent);
                }
