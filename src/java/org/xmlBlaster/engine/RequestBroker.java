@@ -767,9 +767,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   }
                }
 
-               log.info("Ignoring duplicate subscription '" +
-                       ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
-                        "' subId=" + subscriptionId + " from '" + sessionInfo.getSessionName().getAbsoluteName() + "' as you have set multiSubscribe to false" + (subscribeQos.isRecoveredFromPersistenceStore() ? ", recovered from persistenceStore=true" : ""));
+               log.info("isClusterClient=" + sessionInfo.getConnectQos().isClusterNode()
+                   + ",isClusterManagerReady=" + this.glob.isClusterManagerReady()
+                   + ",subscribeMultipleClusterForward=" + this.subscribeMultipleClusterForward
+                   + " Ignoring duplicate subscription '"
+                   +   ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid())
+                   + "' subId=" + subscriptionId + " from '" + sessionInfo.getSessionName().getAbsoluteName()
+                   + "' as you have set multiSubscribe to false"
+                   + (subscribeQos.isRecoveredFromPersistenceStore() ? ", recovered from persistenceStore=true" : ""));
 
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
                SubscriptionInfo i = vec.get(0);
