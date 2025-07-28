@@ -532,20 +532,29 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    
          String tail = subscriptionId.substring(Constants.SUBSCRIPTIONID_PREFIX.length());
          
-         // "__subId:client/joe/session/1-XPATH://key"
-         if (!tail.startsWith(sessionName.getRelativeName(true)) &&
-               
-               // It could by a slave of a slave cluster node, so the check sessionName.getLoginName() is not enough
-               !isClusterNode &&
-               
-               //"__subId:heron-3456646466" for cluster slaves
-              /*connectQos.isClusterNode()) &&*/ !tail.startsWith(sessionName.getLoginName()+"-"))
-            isOk = false;
+         if (isClusterNode) {
+             // "__subId:/node/client/joe/session/1-exact:myTopicId"
+             if (!tail.startsWith(sessionName.getRelativeName(true)) &&
+                !tail.startsWith(sessionName.getAbsoluteName(true)) &&
+                !tail.startsWith(sessionName.getLoginName()+"-")) {
+                 isOk = false;
+             }
+         }
+         else {
+            // It could by a slave of a slave cluster node, so the check sessionName.getLoginName() is not enough
+            // "__subId:client/joe/session/1-XPATH://key"
+            //"__subId:heron-3456646466" for cluster slaves
+            if (!tail.startsWith(sessionName.getRelativeName(true)) &&
+               !tail.startsWith(sessionName.getAbsoluteName(true)) && // optionally allowed?
+               !tail.startsWith(sessionName.getLoginName()+"-")) {
+               isOk = false;
+            }
+         }
          
          if (!isOk)
             throw new XmlBlasterException(subscribeQos.getGlobal(), ErrorCode.USER_SUBSCRIBE_ID,
                "Your subscriptionId '" + subscriptionId +
-               "' is invalid, we expect something like '" +
+               "' for isClusterNode=" + isClusterNode+ " is invalid, we expect something like '" +
                subscribeQos.getData().generateSubscriptionId(sessionName, xmlKey));
       }
    }
