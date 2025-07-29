@@ -150,6 +150,13 @@ public final class SubscribeQosServer
    public final String getSubscriptionId() {
       return this.queryQosData.getSubscriptionId();
    }
+   
+   /**
+    * @return true if the identifier forced by the client
+    */
+   public final boolean hasSubscriptionId() {
+      return this.queryQosData.hasSubscriptionId();
+   }   
 
    /**
     * Inhibits the initial updates even if the qosData.wantInitialUpdates has been
@@ -166,5 +173,9 @@ public final class SubscribeQosServer
 
    public String toXml(String extraOffset) {
       return this.queryQosData.toXml(extraOffset);
+   }
+   
+   public String toString() {
+      return this.queryQosData.toString();
    }
 }
