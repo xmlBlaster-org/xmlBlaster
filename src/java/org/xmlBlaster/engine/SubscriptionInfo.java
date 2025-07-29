@@ -26,6 +26,7 @@ import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.cluster.NodeId;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -488,7 +489,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @see org.xmlBlaster.util.qos.QueryQosData#generateSubscriptionId(String)
     */
    private static String generateUniqueKey(KeyData keyData, QueryQosData xmlQos, boolean clusterWideUnique) throws XmlBlasterException {
-      if (xmlQos.getSubscriptionId() != null && xmlQos.getSubscriptionId().length() > 0) {
+      if (xmlQos.hasSubscriptionId()) {
          return xmlQos.getSubscriptionId(); // Client forced his own key
       }
       StringBuffer buf = new StringBuffer(126);
@@ -534,27 +535,38 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
          
          if (isClusterNode) {
              // "__subId:/node/client/joe/session/1-exact:myTopicId"
-             if (!tail.startsWith(sessionName.getRelativeName(true)) &&
-                !tail.startsWith(sessionName.getAbsoluteName(true)) &&
-                !tail.startsWith(sessionName.getLoginName()+"-")) {
-                 isOk = false;
+             if (!tail.startsWith(sessionName.getRelativeName(true))
+                && !tail.startsWith(sessionName.getAbsoluteName(true))
+                && !tail.contains(sessionName.getRelativeNameWithoutSessionMarker())
+                && !tail.startsWith(sessionName.getLoginName()+"-")) {
+                String subjectId = sessionName.getSubjectId();
+                String tmp = "/node/" + subjectId + "/";
+                // sessionName: "/node/myClusterNodeId/client/mySlaveNodeId/session/1"
+                // tail: __subId:/node/mySlaveNodeId/client/joe/session/1-exact:someTopicId
+                if (!tail.startsWith(tmp)) {
+                   if (!tail.startsWith("/node/") && !tail.contains("/client/")) { // slave from a slave?
+                      isOk = false;
+                   }
+                }
              }
          }
          else {
             // It could by a slave of a slave cluster node, so the check sessionName.getLoginName() is not enough
             // "__subId:client/joe/session/1-XPATH://key"
             //"__subId:heron-3456646466" for cluster slaves
-            if (!tail.startsWith(sessionName.getRelativeName(true)) &&
-               !tail.startsWith(sessionName.getAbsoluteName(true)) && // optionally allowed?
-               !tail.startsWith(sessionName.getLoginName()+"-")) {
+            if (!tail.startsWith(sessionName.getRelativeName(true))
+               && !tail.contains(sessionName.getRelativeNameWithoutSessionMarker())
+               && !tail.startsWith(sessionName.getAbsoluteName(true))
+               && !tail.startsWith(sessionName.getLoginName()+"-")) {
                isOk = false;
             }
          }
          
          if (!isOk)
             throw new XmlBlasterException(subscribeQos.getGlobal(), ErrorCode.USER_SUBSCRIBE_ID,
-               "Your subscriptionId '" + subscriptionId +
-               "' for isClusterNode=" + isClusterNode+ " is invalid, we expect something like '" +
+               "Your subscriptionId '" + subscriptionId
+               + "' session="+ sessionName.getAbsoluteName(true)
+               + " for isClusterNode=" + isClusterNode+ " is invalid, we expect something like '" +
                subscribeQos.getData().generateSubscriptionId(sessionName, xmlKey));
       }
    }
