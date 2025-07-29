@@ -428,6 +428,12 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
                      new Timestamp().getTimestamp();
          return this.subscriptionId;
       }
+      
+      final String clusterNodeId = sessionName.getNodeIdStr();
+      // final String clusterNodeId = this.glob.getProperty().get("cluster.node.id", "");
+      final boolean clusterEnabled = this.glob.getProperty().get("cluster", false);
+      final boolean useCluster = clusterEnabled && clusterNodeId != null && clusterNodeId.length() > 0;
+
       if (sessionName.isPubSessionIdUser() || !getMultiSubscribe()) {
          // This key is assured to be the same on client restart
          // a previous subscription in the server will have the same subscriptionId
@@ -439,16 +445,15 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
          String url = subscribeKey.getUrl();
          // url = ReplaceVariable.replaceAll(url, "'", "&apos;"); // to have valid xml (<subscribe id='bla'/>
          this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
-                               sessionName.getRelativeName(true) + "-" +
+                               (useCluster ? sessionName.getAbsoluteName(true) : sessionName.getRelativeName(true)) + "-" +
                                url;
       }
       else {
          this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
-                               sessionName.getRelativeName(true) + "-" +
+                 (useCluster ? sessionName.getAbsoluteName(true) : sessionName.getRelativeName(true)) + "-" +
                                new Timestamp().getTimestamp();
       }
-	   return this.subscriptionId;
-
+      return this.subscriptionId;
    }
 
    /**
