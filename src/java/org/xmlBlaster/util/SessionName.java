@@ -7,7 +7,6 @@ package org.xmlBlaster.util;
 
 import java.util.logging.Logger;
 
-import org.xmlBlaster.authentication.plugins.htpasswd.Session;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
@@ -230,6 +229,10 @@ public final class SessionName implements java.io.Serializable {
       this.pubSessionId = pubSessionId;
    }
 
+   public String getSubjectId() {
+	   return this.subjectId;
+   }
+   
    public String getAbsoluteName() {
       return getAbsoluteName(false);
    }
