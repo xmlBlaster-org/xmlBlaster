@@ -733,8 +733,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
 
-         String returnOid = "";
-
          if (subscribeQos.getMultiSubscribe() == false) {
             ArrayList<SubscriptionInfo> vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey, subscribeQos.getData());
             String subscriptionId = "";
@@ -787,7 +785,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                // Marcel 2011-06-14
 	               if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
 	                  try {
-	                     subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
+	                     // why reset a given __subId?
+	                     // subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
 	                     SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
 	                     if (ret != null)
 	                        qos = ret.getData();
@@ -810,6 +809,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             }
          }
 
+         String returnOid = "";
          SubscriptionInfo subsQuery = null;
          if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
          // if (true) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
