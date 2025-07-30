@@ -115,7 +115,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
             
             MsgQueueSubscribeEntry entry = (MsgQueueSubscribeEntry)msgQueueEntry;
             if (!entry.getSubscribeQosData().hasSubscriptionId()) {
-               entry.getSubscribeQosData().generateSubscriptionId(glob.getXmlBlasterAccess().getSessionName(), entry.getSubscribeKeyData());
+               entry.getSubscribeQosData().generateSubscriptionId(glob.getXmlBlasterAccess().getSessionName(), entry.getSubscribeKeyData(), entry.getSubscribeQosData());
                //String subscriptionId = QueryKeyData.generateSubscriptionId(dispatchManager.getQueue().getStorageId().getPostfix());
                //entry.getSubscribeQosData().setSubscriptionId(subscriptionId);
             }

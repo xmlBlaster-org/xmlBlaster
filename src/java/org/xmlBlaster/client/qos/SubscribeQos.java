@@ -87,6 +87,23 @@ public final class SubscribeQos
    public void setSubscriptionId(String subId) {
       this.queryQosData.setSubscriptionId(subId);
    }
+   
+   /**
+    * Default is false: in case one client connects to multiple failover xmlBlaster cluster nodes,
+    * the subId should remain the same, and does not include "/node/myClusterNodeId"
+    * <p>
+    * true: set in case multiple different clients with same sessionName.getRelativeName() exist
+    * <p>
+    * Another approach is to let the client control the subId with {@link #setSubscriptionId(String)}
+    * @param value
+    */
+   public void setSubIdGeneratedIncludeClusterNodeId(boolean value) {
+      this.queryQosData.setSubIdGeneratedIncludeClusterNodeId(value);
+   }
+
+   public boolean isSubIdGeneratedIncludeClusterNodeId() {
+      return this.queryQosData.isSubIdGeneratedIncludeClusterNodeId();
+   }
 
    /**
     * Are multiple subscribes allowed?

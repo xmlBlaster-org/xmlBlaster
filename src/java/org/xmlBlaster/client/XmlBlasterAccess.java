@@ -1212,7 +1212,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
           // In case of offline/clientSideQueued operation we guarantee like this a not changing
           // subscriptionId and the client code can reliably use the subscriptionId for further dispatching
           // of update() messages.
-          subscribeQos.getData().generateSubscriptionId(getSessionName(), subscribeKey.getData());
+          subscribeQos.getData().generateSubscriptionId(getSessionName(), subscribeKey.getData(), subscribeQos.getData());
       }
       MsgQueueSubscribeEntry entry  = new MsgQueueSubscribeEntry(glob,
                                       this.clientQueue.getStorageId(), subscribeKey.getData(), subscribeQos.getData());

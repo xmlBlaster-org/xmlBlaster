@@ -786,6 +786,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 	               if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
 	                  try {
 	                     // why reset a given __subId?
+	                     // See javadoc at QueryQosData#setSubIdGeneratedIncludeClusterNodeId
 	                     // subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
 	                     SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
 	                     if (ret != null)

@@ -25,6 +25,7 @@ import org.xml.sax.*;
  *   &lt;meta>false&lt;/meta>         &lt;!-- Don't send me the xmlKey meta data on updates -->
  *   &lt;content>false&lt;/content>   &lt;!-- Don't send me the content data on updates (notify only) -->
  *   &lt;multiSubscribe>false&lt;/multiSubscribe> &lt;!-- Ignore a second subscribe on same oid or XPATH -->
+ *   &lt;subIdGeneratedIncludeClusterNodeId>false&lt;/subIdGeneratedIncludeClusterNodeId> &lt;!-- Don't add /node/myClusterNodeId to subId -->
  *   &lt;local>false&lt;/local>       &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *   &lt;initialUpdate>false&lt;/initialUpdate> <!-- don't send an initial message after subscribe -->
  *   &lt;updateOneway>false&lt;/updateOneway> <!-- use the acknowledged update() or updateOneway() for callbacks -->
@@ -167,6 +168,19 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          }
          return;
       }
+      
+      if (name.equalsIgnoreCase("subIdGeneratedIncludeClusterNodeId")) {
+          if (!inQos)
+             return;
+          queryQosData.setSubIdGeneratedIncludeClusterNodeId(true);
+          if (attrs != null) {
+             int len = attrs.getLength();
+             for (int i = 0; i < len; i++) {
+                log.warning("Ignoring sent <subIdGeneratedIncludeClusterNodeId> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+             }
+          }
+          return;
+       }
 
       if (name.equalsIgnoreCase("local")) {
          if (!inQos)
@@ -348,6 +362,14 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          character.setLength(0);
          return;
       }
+      
+      if (name.equalsIgnoreCase("subIdGeneratedIncludeClusterNodeId")) {
+          String tmp = character.toString().trim();
+          if (tmp.length() > 0)
+             queryQosData.setSubIdGeneratedIncludeClusterNodeId(Boolean.valueOf(tmp).booleanValue());
+          character.setLength(0);
+          return;
+       }
 
       if (name.equalsIgnoreCase("local")) {
 //       this.inLocal = false;
@@ -478,6 +500,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
             sb.append(offset).append(" <multiSubscribe/>");
          else
             sb.append(offset).append(" <multiSubscribe>false</multiSubscribe>");
+      }
+      
+      if (queryQosData.getSubIdGeneratedIncludeClusterNodeId().isModified()) {
+         if (queryQosData.isSubIdGeneratedIncludeClusterNodeId())
+            sb.append(offset).append(" <subIdGeneratedIncludeClusterNodeId/>");
+         else
+            sb.append(offset).append(" <subIdGeneratedIncludeClusterNodeId>false</subIdGeneratedIncludeClusterNodeId>");
       }
 
       if (queryQosData.getLocalProp().isModified()) {

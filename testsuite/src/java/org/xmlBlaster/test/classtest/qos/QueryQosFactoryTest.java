@@ -1,19 +1,21 @@
 package org.xmlBlaster.test.classtest.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.I_QueryQosFactory;
-import org.xmlBlaster.util.qos.HistoryQos;
-import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.engine.mime.Query;
+import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
+import org.xmlBlaster.util.qos.QueryQosData;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Test I_QueryQosFactory implementations. 
@@ -59,6 +61,7 @@ public class QueryQosFactoryTest extends TestCase {
            "   <meta>false</meta>\n" +
            "   <content>false</content>\n" +
            "   <local>false</local>\n" +
+           "   <subIdGeneratedIncludeClusterNodeId>true</subIdGeneratedIncludeClusterNodeId>\n" +
            "   <initialUpdate>false</initialUpdate>\n" +
            "   <filter type='myPlugin' version='1.0'>a!=100</filter>\n" +
            "   <filter type='anotherPlugin' version='1.1'><![CDATA[b<100|a[0]>10]]></filter>\n" +
@@ -68,6 +71,7 @@ public class QueryQosFactoryTest extends TestCase {
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
          assertEquals("", true, qos.getForceDestroy());
+         assertEquals("", true, qos.isSubIdGeneratedIncludeClusterNodeId());
          assertEquals("", false, qos.getWantMeta());
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
@@ -102,6 +106,7 @@ public class QueryQosFactoryTest extends TestCase {
            "   <meta>false</meta>\n" +
            "   <content>false</content>\n" +
            "   <local>false</local>\n" +
+           "   <subIdGeneratedIncludeClusterNodeId>true</subIdGeneratedIncludeClusterNodeId>\n" +
            "   <initialUpdate>false</initialUpdate>\n" +
            "   <history numEntries='20' newestFirst='false'/>\n" +
            "   <filter type='myPlugin' version='1.0'>a!=100</filter>\n" +
@@ -114,6 +119,7 @@ public class QueryQosFactoryTest extends TestCase {
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
          assertEquals("", true, qos.getForceDestroy());
+         assertEquals("", true, qos.isSubIdGeneratedIncludeClusterNodeId());
          assertEquals("", false, qos.getWantMeta());
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
@@ -148,6 +154,7 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", true, qos.getWantMeta());
          assertEquals("", true, qos.getWantContent());
          assertEquals("", true, qos.getWantLocal());
+         assertEquals("", false, qos.isSubIdGeneratedIncludeClusterNodeId());
          assertEquals("", true, qos.getWantInitialUpdate());
          assertEquals("", 1, qos.getHistoryQos().getNumEntries());
          assertEquals("", true, qos.getHistoryQos().getNewestFirst());

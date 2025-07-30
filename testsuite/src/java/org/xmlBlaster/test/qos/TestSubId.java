@@ -6,22 +6,24 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 /**
