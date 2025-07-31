@@ -40,6 +40,11 @@ java MyApp -property.verbose 2
         <th>Comment</th>
       </tr>
        <tr>
+         <td>-propertyFileOnly</td>
+         <td>/tmp/xy.properties </td>
+         <td>full property file name (complete with path) from command line, no other xmlBlaster.properties are used and merged</td>
+       </tr>
+       <tr>
          <td>user.dir</td>
          <td>/opt/xmlBlaster</td>
          <td>The current directory</td>
