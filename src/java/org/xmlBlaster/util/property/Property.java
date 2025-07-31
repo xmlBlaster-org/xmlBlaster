@@ -163,6 +163,7 @@ public class Property implements Cloneable {
    //private static Logger log = Logger.getLogger(Property.class.getName());
    
    private boolean propertyFileArgGivenAndExists = false;
+   private boolean propertyFileOnlyArgGivenAndExists = false;
 
    private static String separator = null;
 
@@ -554,12 +555,32 @@ public class Property implements Cloneable {
           );
       }
       
+      // -propertyFile xxx.properties
       if (argsProps != null && argsProps.containsKey("propertyFile")) {
          String propertyFile = argsProps.getProperty("propertyFile");
          if (propertyFile != null && propertyFile.length() > 0) {
             File f = new File(propertyFile);
             if (f != null && f.exists() && f.canRead() && !f.isDirectory()) {
                this.propertyFileArgGivenAndExists = true;
+            }
+         }
+      }
+
+      // -propertyFileOnly xxx.properties
+      String propertyFileOnly = null;
+      if (argsProps != null && argsProps.containsKey("propertyFileOnly")) {
+         propertyFileOnly = argsProps.getProperty("propertyFileOnly");
+         if (propertyFileOnly != null && propertyFileOnly.length() == 0) {
+            propertyFileOnly = null;
+         }
+         
+         if (propertyFileOnly != null) {
+            File f = new File(propertyFileOnly);
+            if (f != null && f.exists() && f.canRead() && !f.isDirectory()) {
+               this.propertyFileOnlyArgGivenAndExists = true;
+            }
+            else {
+               propertyFileOnly = null;
             }
          }
       }
@@ -575,7 +596,12 @@ public class Property implements Cloneable {
       javaHomeExt = System.getProperty("java.ext.dirs");
       javaHome = System.getProperty("java.home");
 
-      loadProps(findGivenFile(propertyFileName), argsProps);
+      if (propertyFileOnly != null) {
+         loadProps(findArgsFileOnly(propertyFileOnly), argsProps);
+      }
+      else {
+          loadProps(findGivenFile(propertyFileName), argsProps);
+      }
 
       if (properties == null)
         properties = dummyProperties;
@@ -872,10 +898,12 @@ public class Property implements Cloneable {
       if (properties != null) {
         if (verbose>=1) System.out.println("Property: reload loadProps()");
       }
-
+      
       // set default
       properties = new Properties();
+      
       try {
+
          // 1. Read user supplied properties file
          if (info != null) {
             InputStream inputStream = info.getInputStream();
@@ -1171,6 +1199,18 @@ public class Property implements Cloneable {
       throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't parse <" + token + "> to true or false");
    }
 
+   static public final boolean toBool(String token, boolean defaultValue) {
+      if (token == null || token.length() == 0) {
+         return defaultValue;
+      }
+      try {
+         return toBool(token);
+      }
+      catch (XmlBlasterException e) {
+        e.printStackTrace();
+        return defaultValue;
+      }
+   }
 
    /********************************************************************************************
     * Look for properties file.
@@ -1184,12 +1224,17 @@ public class Property implements Cloneable {
    public final FileInfo findPath(String fileName) {
       return findPath(fileName, null);
    }
+   
    public final FileInfo findPath(String fileName, String hint) {
       if (fileName == null)
         return null;
-
+      
       File f = null;
       FileInfo info = new FileInfo(fileName);
+      
+      if (this.propertyFileOnlyArgGivenAndExists) {
+         return findArgsFileOnly(fileName); 
+      }
 
       f = new File(currentPath, fileName);
       if (f.exists() && f.canRead()) {
@@ -1317,7 +1362,7 @@ public class Property implements Cloneable {
    public final FileInfo findArgsFile(Properties argsProps) {
 
       String argsLocation = (String)argsProps.get("propertyFile");
-      if (argsLocation != null) {
+      if (argsLocation != null && argsLocation.length() > 0) {
          FileInfo info = findPath(argsLocation, "xmlBlaster.properties configuration given by '-propertyFile " + argsLocation + "'");
          if(info != null) {
             propertyFileName = argsLocation;
@@ -1330,7 +1375,37 @@ public class Property implements Cloneable {
       }
       return null;
    }
-
+   
+   public final FileInfo findArgsFileOnly(String fullFileName) {
+      if (fullFileName == null || fullFileName.length() == 0) {
+         return null;
+      }
+      
+      File f = new File(fullFileName);
+      FileInfo info = new FileInfo(f.getName());
+      if (f.exists() && f.canRead()) {
+         info.path = f.getParent();
+         info.fullPath = f.getAbsolutePath();
+         // info.hint = "xmlBlaster.properties configuration given by '-propertyFileOnly " + fullFileName + "'";
+         propertyFileName = fullFileName;
+         if (verbose>=0) System.out.println("Property: File '-propertyFileOnly " + fullFileName + "' found");
+         return info;
+      }
+      else {
+          if (verbose>=0) System.out.println("Property: ERROR: File '-propertyFileOnly " + fullFileName + "' not found!");
+      }
+      return null;
+   }
+   
+   /**
+   * Find properties file, if found no other properties file is merged. 
+   * @param args Only "-propertyFileOnly /tmp/xy.properties" is evaluated (if given)
+   * @return The property file name or null if not found of not given.
+      */
+   public final FileInfo findArgsFileOnly(Properties argsProps) {
+      String fullFileName = (String)argsProps.get("propertyFileOnly");
+      return findArgsFileOnly(fullFileName);
+   }
 
    /**
    * Find properties file which was given with the constructor.
@@ -1348,11 +1423,16 @@ public class Property implements Cloneable {
         if (verbose>=2) System.out.println("Property: No property file specified.");
         return null;
       }
+      
+      if (this.propertyFileOnlyArgGivenAndExists) {
+         return null;
+      }
+      
       // The method 'findPath' now return the full path including the filename
       FileInfo info = findPath(fileName);
       if(info == null) {
         String text = "Property: File '" + fileName + "' not found, used lookup strategy is described in http://xmlblaster.org/xmlBlaster/doc/requirements/util.property.html";
-       if (this.propertyFileArgGivenAndExists) {
+       if (this.propertyFileArgGivenAndExists || this.propertyFileOnlyArgGivenAndExists) {
            if (verbose >= 2) // info log trace only
             System.out.println(text);
        }
@@ -1371,14 +1451,21 @@ public class Property implements Cloneable {
    * See findPath() for search - logic
    *
    * @param fileName e.g. "cool.properties"
-   * @param args Only "-propertyFile /tmp/xy.properties" is evaluated (if given)
+   * @param args Only "-propertyFileOnly /tmp/xy.properties" is evaluated (if given)
    *             this has precedence over the given fileName!
    * @return The path to file or null
       */
    public final FileInfo findFile(String fileName, Properties argsProps) {
-
+   
+      FileInfo propertyFileOnly = findArgsFileOnly(argsProps);
+      if (propertyFileOnly != null) {
+         return propertyFileOnly;
+      }
+      
       FileInfo info = findArgsFile(argsProps);
-      if (info != null) return info;
+      if (info != null) {
+         return info;
+      }
 
       return findGivenFile(fileName);
    }
@@ -1463,23 +1550,23 @@ public class Property implements Cloneable {
       if(argsProps == null) {
          return;
       }
-
-      // 1. Load property file if given on command line
+      
+      // 1. Load property file if given on command line with "-propertyFile path/xxx.properties"
       FileInfo info = findArgsFile(argsProps);
       if (info != null) {
          InputStream inputStream = info.getInputStream();
          if (inputStream != null) {
             try {
                props.load(inputStream);
-               if (verbose>=2) System.out.println("Property: Loaded file " + info.getFullPath());
+               if (verbose>=2) System.out.println("Property: Loaded file '-propertyFile " + info.getFullPath() + "'");
             } catch(IOException e) {
-               if (verbose>=0) System.out.println("Property: ERROR loading file " + info.getFullPath());
+               if (verbose>=0) System.out.println("Property: ERROR loading file '-propertyFile " + info.getFullPath() + "'");
             } finally {
                info.closeInputStream();
             }
          }
          else {
-            if (verbose>=1) System.out.println("Property: No property file given.");
+            if (verbose>=1) System.out.println("Property: No property file '-propertyFile=xxxx' given.");
          }
       }
 
@@ -1851,6 +1938,10 @@ public void saveProps(String fileName) throws java.io.IOException {
          }
          catch (IOException e) {
          }
+      }
+      
+      public String toString() {
+         return "path=" + path + ",fileName=" + fileName + ",fullPath=" + getFullPath();
       }
    } // class FileInfo
 } // class Property
