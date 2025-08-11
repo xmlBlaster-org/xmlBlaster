@@ -33,6 +33,48 @@ import java.util.Properties;
  */
 public abstract class QosData implements java.io.Serializable, Cloneable
 {
+	// jsonStr Jackson -> map 
+	private Map<String, Object> map;
+	
+	// "status" , "OK"
+	public String getString(String key, String defaultValue) {
+		Object tmp = map.get(key);
+		if (tmp == null) 
+			return defaultValue;
+		return tmp.toString();
+	}
+	
+	public String getStatus() {
+		return getString("status", "OK")
+	}
+	
+	RouteInfo getRoutInfo() {
+		!!!! JsonNode jsonNode = map.get("routeInfo");
+		--> new RouteInfo
+		
+	}
+
+	public boolean getString(String key, boolean defaultValue) {
+		Object tmp = map.get(key);
+		if (tmp == null) 
+			return defaultValue;
+		return Boolean.valueOf(tmp.toString()();
+	}
+	
+	toXml() {
+		return "<qos>...<status>OK</status>
+	}
+	
+	toJson() {
+		return "{ \"qos\" "status":"OK"
+	}
+	
+	parse(data) {
+		
+return qosData;
+		}
+
+	
    private static final long serialVersionUID = -8909581788281969020L;
    protected transient Global glob;
    private static Logger log = Logger.getLogger(QosData.class.getName());

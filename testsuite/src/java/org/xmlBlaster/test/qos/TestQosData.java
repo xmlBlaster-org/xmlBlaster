@@ -6,27 +6,15 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.MsgInterceptor;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 public class TestQosData extends TestCase
@@ -73,6 +61,9 @@ public class TestQosData extends TestCase
       queryQosData.addClientProperty("_bounceId:oid", "1");
       queryQosData.addClientProperty("_bounceId:special", "2");
       queryQosData.addClientProperty("blabla", "blubblub");
+      
+      String jsonStr = queryQosData.toJson();
+      queryQosData = QueryQosData.parse(jsonStr);
       
       boolean trimPrefix = true;
       statusQosData.addClientProperties("_bounceId:", queryQosData.getClientPropertyArr(), trimPrefix);
