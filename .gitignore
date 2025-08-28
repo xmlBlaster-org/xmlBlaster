@@ -12,3 +12,4 @@ dist-classes/
 dist-client/
 doc/test
 src/java/.settings/
+.metadata

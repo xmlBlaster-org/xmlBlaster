@@ -518,6 +518,16 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
+    * Dump state of this object into a JSON string.
+    * <br>
+    * @return internal state of the query as a JSON string
+    */
+   public String toJson() {
+      QueryQosJsonFactory jsonFactory = new QueryQosJsonFactory(glob);
+      return jsonFactory.writeObject(this, null, null);
+   }
+   
+   /**
     * Returns a deep clone, you can change savely all basic or immutable types
     * like boolean, String, int and also the ClientProperties and RouteInfo.
     */

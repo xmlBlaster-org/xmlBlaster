@@ -10,6 +10,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.QueryQosJsonFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 
 import junit.framework.Test;
@@ -63,7 +64,8 @@ public class TestQosData extends TestCase
       queryQosData.addClientProperty("blabla", "blubblub");
       
       String jsonStr = queryQosData.toJson();
-      queryQosData = QueryQosData.parse(jsonStr);
+      QueryQosJsonFactory factory = new QueryQosJsonFactory(glob);
+      queryQosData = factory.readObject(jsonStr);
       
       boolean trimPrefix = true;
       statusQosData.addClientProperties("_bounceId:", queryQosData.getClientPropertyArr(), trimPrefix);

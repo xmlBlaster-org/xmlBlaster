@@ -45,34 +45,34 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 	}
 	
 	public String getStatus() {
-		return getString("status", "OK")
+		return getString("status", "OK");
 	}
 	
-	RouteInfo getRoutInfo() {
-		!!!! JsonNode jsonNode = map.get("routeInfo");
-		--> new RouteInfo
-		
-	}
+//	RouteInfo getRoutInfo() {
+//		!!!! JsonNode jsonNode = map.get("routeInfo");
+//		--> new RouteInfo
+//		
+//	}
 
 	public boolean getString(String key, boolean defaultValue) {
 		Object tmp = map.get(key);
 		if (tmp == null) 
 			return defaultValue;
-		return Boolean.valueOf(tmp.toString()();
+		return Boolean.valueOf(tmp.toString());
 	}
 	
-	toXml() {
-		return "<qos>...<status>OK</status>
-	}
-	
-	toJson() {
-		return "{ \"qos\" "status":"OK"
-	}
-	
-	parse(data) {
+//	toXml() {
+//		return "<qos>...<status>OK</status>
+//	}
+//	
+//	toJson() {
+//		return "{ \"qos\" "status":"OK"
+//	}
+//	
+//	parse(data) {
 		
-return qosData;
-		}
+//return qosData;
+//		}
 
 	
    private static final long serialVersionUID = -8909581788281969020L;

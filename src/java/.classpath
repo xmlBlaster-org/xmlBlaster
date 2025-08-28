@@ -58,5 +58,8 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-core-2.16.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jakarta.activation-2.0.1.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jakarta.mail-2.0.1.jar"/>
+	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-databind-2.19.2.jar"/>
+	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-core-2.19.2.jar"/>
+	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-annotations-2.19.2.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>
