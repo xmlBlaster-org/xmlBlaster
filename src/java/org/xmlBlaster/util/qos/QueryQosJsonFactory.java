@@ -2,146 +2,380 @@ package org.xmlBlaster.util.qos;
 
 import java.util.Properties;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+
+import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.ErrorCode;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.logging.Logger;
+
+/**
+ * JSON-based parser for QueryQosData using Jackson streaming API.
+ */
 public class QueryQosJsonFactory implements I_QueryQosFactory {
-   private Global glob;
-   private  QueryQosData queryQosData;
+
+   private static final Logger log = Logger.getLogger(QueryQosJsonFactory.class.getName());
+   private final Global glob;
 
    public QueryQosJsonFactory(Global glob) {
       this.glob = glob;
-
    }
+
    @Override
    public QueryQosData readObject(String jsonQos) throws XmlBlasterException {
-      if (jsonQos == null) {
-         jsonQos = "<qos/>";
+      if (jsonQos == null || jsonQos.trim().isEmpty()) {
+         jsonQos = "{}";
       }
 
-      // what does this do in toXml?
-//      this.tmpFilter = null;
-//      this.tmpQuerySpec = null;
-//      this.tmpHistory = null;
-      
-      //pass null as factory, so the usual factory from `glob` is used
-      queryQosData = new QueryQosData(glob, null, jsonQos, MethodName.UNKNOWN);
-      
-      // what does this do in toXml?
-//      if (!isEmpty(jsonQos)) // if possible avoid expensive SAX parsing
-//         init(jsonQos);      // use SAX parser to parse it (is slow)
+      QueryQosData queryQosData = new QueryQosData(glob, this, jsonQos, MethodName.UNKNOWN);
+
+      JsonFactory factory = new JsonFactory();
+      try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
+         if (parser.nextToken() != JsonToken.START_OBJECT) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, "Expected start object in QoS JSON");
+         }
+         if (parser.currentToken() == JsonToken.START_OBJECT) {
+            parser.nextToken(); // move to value
+            if ("qos".equals(parser.currentName())) {
+               parser.nextToken();
+            } else {
+               log.warning("expectes \"qos\" instead found: " + parser.currentName());
+               parser.skipChildren();
+            }
+
+         }
+         while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = parser.currentName();
+            parser.nextToken(); // move to value
+
+            switch (fieldName) {
+            case "subscribe":
+               if (parser.currentToken() == JsonToken.START_OBJECT) {
+                  while (parser.nextToken() != JsonToken.END_OBJECT) {
+                     if ("id".equals(parser.currentName())) {
+                        parser.nextToken();
+                        queryQosData.setSubscriptionId(parser.getValueAsString());
+                     }
+                  }
+               }
+               break;
+
+            case "erase":
+               if (parser.currentToken() == JsonToken.START_OBJECT) {
+                  while (parser.nextToken() != JsonToken.END_OBJECT) {
+                     if ("forceDestroy".equals(parser.currentName())) {
+                        parser.nextToken();
+                        queryQosData.setForceDestroy(parser.getBooleanValue());
+                     }
+                  }
+               }
+               break;
+
+            case "meta":
+               queryQosData.setWantMeta(parser.getBooleanValue());
+               break;
+
+            case "content":
+               queryQosData.setWantContent(parser.getBooleanValue());
+               break;
+
+            case "multiSubscribe":
+               queryQosData.setMultiSubscribe(parser.getBooleanValue());
+               break;
+
+            case "local":
+               queryQosData.setWantLocal(parser.getBooleanValue());
+               break;
+
+            case "subIdGeneratedIncludeClusterNodeId":
+               queryQosData.setSubIdGeneratedIncludeClusterNodeId(parser.getBooleanValue());
+               break;
+
+            case "initialUpdate":
+               queryQosData.setWantInitialUpdate(parser.getBooleanValue());
+               break;
+
+            case "updateOneway":
+               queryQosData.setWantUpdateOneway(parser.getBooleanValue());
+               break;
+
+            case "notify":
+               queryQosData.setWantNotify(parser.getBooleanValue());
+               break;
+
+            case "persistent":
+               queryQosData.setPersistent(parser.getBooleanValue());
+               break;
+            case "filter":
+               // JSON "filter" may be an object or an array of objects
+               if (parser.currentToken() == JsonToken.START_ARRAY) {
+                  while (parser.nextToken() != JsonToken.END_ARRAY) {
+                     AccessFilterQos tmpFilter = new AccessFilterQos(glob);
+                     boolean ok = jsonToAcessFilterQos(tmpFilter, parser);
+                     if (ok) {
+                        queryQosData.addAccessFilter(tmpFilter);
+                     } else {
+                        tmpFilter = null;
+                     }
+                  }
+               } else if (parser.currentToken() == JsonToken.START_OBJECT) {
+                  AccessFilterQos tmpFilter = new AccessFilterQos(glob);
+                  boolean ok = jsonToAcessFilterQos(tmpFilter, parser);
+                  if (ok) {
+                     queryQosData.addAccessFilter(tmpFilter);
+                  } else {
+                     tmpFilter = null;
+                  }
+               } else {
+                  parser.skipChildren(); // ignore unexpected value
+                  log.warning("Ignoring unknown filter field: " + fieldName);
+               }
+               break;
+
+            case "history":
+               // JSON "history" may be an object
+               if (parser.currentToken() == JsonToken.START_OBJECT) {
+                  HistoryQos tmpHistory = new HistoryQos(glob);
+                  boolean ok = jsonToHistoryQos(tmpHistory, parser); // Assuming you have a method to parse JSON into
+                                                                     // HistoryQos
+                  if (ok) {
+                     queryQosData.setHistoryQos(tmpHistory);
+                  } else {
+                     tmpHistory = null;
+                  }
+               } else {
+                  parser.skipChildren(); // ignore unexpected value
+                  log.warning("Ignoring unknown history field: " + fieldName);
+               }
+               break;
+
+//                    case "querySpec":
+//                        QuerySpecQos spec = new QuerySpecQos(glob);
+//                        spec.fromJson(parser);
+//                        queryQosData.addQuerySpec(spec);
+//                        break;
+//
+//                    case "method":
+//                        queryQosData.setMethod(MethodName.valueOf(parser.getValueAsString().toUpperCase()));
+//                        break;
+
+            default:
+               log.warning("Ignoring unknown QoS field: " + fieldName);
+               parser.skipChildren();
+            }
+         }
+
+      } catch (IOException e) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
+               "Failed to parse JSON QoS: " + e.getMessage());
+      }
 
       return queryQosData;
    }
 
+   /**
+    * Dump state of this object into a XML ASCII string. <br>
+    * 
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of the RequestBroker as a XML ASCII string
+    */
    @Override
    public String writeObject(QueryQosData queryQosData, String extraOffset, Properties props) {
-      // parseJson
-      // todo Interact with extraOffset and props Fields
-      String jsonQos;
-      try {
-          jsonQos = JacksonUtils.MAPPER.writeValueAsString(queryQosData);
-      } catch (Exception e) {
-          // Hacky fallback (avoid crashing)
-          jsonQos = "{}";  // or maybe `null`
-          e.printStackTrace(); // or log properly
-      }      
-      return jsonQos;
+      return writeObjectJson(queryQosData, extraOffset, props);
    }
+
+   public static final String writeObjectJson(QueryQosData queryQosData, String extraOffset, Properties props) {
+      try {
+         StringWriter writer = new StringWriter();
+         JsonFactory factory = new JsonFactory();
+         JsonGenerator gen;
+         gen = factory.createGenerator(writer);
+
+         gen.useDefaultPrettyPrinter();
+
+         gen.writeStartObject(); // root
+         gen.writeObjectFieldStart("qos");
+
+         if (queryQosData.getSubscriptionId() != null) {
+            gen.writeObjectFieldStart("subscribe");
+            gen.writeStringField("id", queryQosData.getSubscriptionId());
+            gen.writeEndObject();
+         }
+
+         if (queryQosData.getForceDestroyProp().isModified()) {
+            gen.writeObjectFieldStart("erase");
+            gen.writeBooleanField("forceDestroy", queryQosData.getForceDestroy());
+            gen.writeEndObject();
+         }
+
+         if (queryQosData.getMetaProp().isModified()) {
+            gen.writeBooleanField("meta", queryQosData.getWantMeta());
+         }
+
+         if (queryQosData.getContentProp().isModified()) {
+            gen.writeBooleanField("content", queryQosData.getWantContent());
+         }
+
+         if (queryQosData.getMultiSubscribeProp().isModified()) {
+            gen.writeBooleanField("multiSubscribe", queryQosData.getMultiSubscribe());
+         }
+
+         if (queryQosData.getSubIdGeneratedIncludeClusterNodeId().isModified()) {
+            gen.writeBooleanField("subIdGeneratedIncludeClusterNodeId",
+                  queryQosData.isSubIdGeneratedIncludeClusterNodeId());
+         }
+
+         if (queryQosData.getLocalProp().isModified()) {
+            gen.writeBooleanField("local", queryQosData.getWantLocal());
+         }
+
+         if (queryQosData.getInitialUpdateProp().isModified()) {
+            gen.writeBooleanField("initialUpdate", queryQosData.getWantInitialUpdate());
+         }
+
+         if (queryQosData.getUpdateOnewayProp().isModified()) {
+            gen.writeBooleanField("updateOneway", queryQosData.getWantUpdateOneway());
+         }
+
+         if (queryQosData.getNotifyProp().isModified()) {
+            gen.writeBooleanField("notify", queryQosData.getWantNotify());
+         }
+
+         if (queryQosData.getPersistentProp().isModified()) {
+            gen.writeBooleanField("persistent", queryQosData.isPersistent());
+         }
+
+         // filters
+         AccessFilterQos[] list = queryQosData.getAccessFilterArr();
+         if (list != null && list.length > 0) {
+            gen.writeArrayFieldStart("filter");
+            for (AccessFilterQos filter : list) {
+               gen.writeStartObject();
+               gen.writeStringField("type", filter.getType());
+               gen.writeStringField("version", filter.getVersion());
+               gen.writeStringField("value", filter.getQuery().toString());
+               gen.writeEndObject();
+            }
+            gen.writeEndArray();
+         }
+
+         // query specs
+         QuerySpecQos[] querySpecList = queryQosData.getQuerySpecArr();
+         if (querySpecList != null && querySpecList.length > 0) {
+            gen.writeArrayFieldStart("querySpec");
+            for (QuerySpecQos spec : querySpecList) {
+               gen.writeString(spec.toXml()); // store XML as a JSON string
+            }
+            gen.writeEndArray();
+         }
+
+         // history
+         HistoryQos historyQos = queryQosData.getHistoryQos();
+         if (historyQos != null && historyQos.getNumEntries() != HistoryQos.DEFAULT_numEntries) {
+            gen.writeObjectFieldStart("history");
+            gen.writeNumberField("numEntries", historyQos.getNumEntries());
+            gen.writeBooleanField("newestFirst", historyQos.getNewestFirst());
+            gen.writeEndObject();
+         }
+
+         gen.writeEndObject(); // qos
+         gen.writeEndObject(); // root
+
+         gen.close();
+         return writer.toString();
+      } catch (IOException e) {
+         // should be safe
+         log.warning("Unexpected I/O error writing JSON in QueryQosJsonFactory");
+         e.printStackTrace();
+         return "{}";
+      }
+   }
+//       QueryQosSaxFactory workingFactory = new QueryQosSaxFactory(glob);
+//       return workingFactory.writeObject(queryQosData, extraOffset, props);
+//    }
 
    @Override
    public String getName() {
       return "QueryQosJsonFactory";
    }
 
+   private boolean jsonToAcessFilterQos(AccessFilterQos filterQos, JsonParser parser) throws IOException {
+      if (parser.currentToken() != JsonToken.START_OBJECT) {
+         log.warning("Expected start object in Filter Array JSON, skipping this entry");
+         return false;
+      }
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+         String filterFieldName = parser.currentName();
+         parser.nextToken(); // move to value
+         if (filterFieldName.equalsIgnoreCase("type")) {
+            System.out.println("filterFieldName: " + filterFieldName);
+            System.out.println("currentToken: " + parser.getValueAsString());
+            filterQos.setType(parser.getValueAsString());
+         } else if (filterFieldName.equalsIgnoreCase("version")) {
+            filterQos.setVersion(parser.getValueAsString());
+         } else if (filterFieldName.equalsIgnoreCase("value")) {
+            filterQos.setQuery(new Query(glob, parser.getValueAsString()));
+         } else {
+            log.warning("Ignoring unknown attribute \"" + filterFieldName + "\" in " + filterQos.tagName + " section.");
+         }
+      }
+
+//             if (getType() == null) {
+//                log.warning("Missing '" + this.tagName + "' attribute 'type' in QoS, ignoring the " + this.tagName + " request");
+//                setType(null);
+//                return false;
+//             }
+//             return true;
+//          }
+
+      return true; // TODO: return false if "type" field is missing!
+   }
+
+   private boolean jsonToHistoryQos(HistoryQos historyQos, JsonParser parser) {
+      try {
+         // Move to the start of the object
+         if (parser.currentToken() != JsonToken.START_OBJECT) {
+            log.warning("Expected START_OBJECT for history QoS");
+            return false;
+         }
+
+         // Iterate through the fields of the JSON object
+         while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = parser.currentName();
+            parser.nextToken(); // Move to the value
+
+            switch (fieldName) {
+            case "numEntries":
+               int numEntries = parser.getIntValue();
+               historyQos.setNumEntries(numEntries);
+               break;
+
+            case "newestFirst":
+               boolean newestFirst = parser.getBooleanValue();
+               historyQos.setNewestFirst(newestFirst);
+               break;
+
+            default:
+               log.warning("Ignoring unknown attribute " + fieldName + " in history section.");
+               parser.skipChildren(); // Skip the value of the unknown field
+               break;
+            }
+         }
+         return true; // Successfully parsed the history QoS
+      } catch (IOException e) {
+         log.severe("Error parsing history QoS: " + e.getMessage());
+         return false; // Indicate failure
+      }
+   }
+
 }
-//package org.xmlBlaster.util.qos;
-//
-//import java.util.Map;
-//import java.util.HashMap;
-//import java.util.Set;
-//
-//import org.xmlBlaster.util.Global;
-//import org.xmlBlaster.util.def.MethodName;
-//
-//public abstract class QueryQosDataBuilder {
-//
-//   /**
-//    * Manually map a generic Map to QueryQosData, ignoring unsafe fields.
-//    */
-//   public static QueryQosData fromMap(Map<String, Object> map, Global glob) {
-//      QueryQosData qos = new QueryQosData(glob, MethodName.SUBSCRIBE);
-//
-//      if (map == null) return qos;
-//
-//      // -----------------------------
-//      // Safe scalar fields
-//      // -----------------------------
-//      Object state = map.get("state");
-//      if (state instanceof String) qos.setState((String) state);
-//
-//      Object stateInfo = map.get("stateInfo");
-//      if (stateInfo instanceof String) qos.setStateInfo((String) stateInfo);
-//      
-//      Object persistent = map.get("persistent");
-//      if (persistent instanceof Boolean) qos.setPersistent((Boolean) persistent);
-//      
-//      // -----------------------------
-//      // Safe clientProperties mapping
-//      // -----------------------------
-//      Object clientPropsObj = map.get("clientProperties");
-//      if (clientPropsObj instanceof Map) {
-//         // should be safe because if clientPropsObj is a Map it can only be of this type
-//         Map<String, Object> rawProps = (Map<String, Object>) clientPropsObj;
-//         for (Map.Entry<String, Object> entry : rawProps.entrySet()) {
-//            Object prop = entry.getValue();
-//            if (prop instanceof Map) {
-//               Map<String, Object> propertyMap = (Map<String, Object>) prop;
-//                  String name = (String) propertyMap.get("name");
-//                  Object value = propertyMap.get("value");
-//                  qos.addClientProperty(name, value);
-////                  String key = propEntry.getKey().toString();
-////                  Object val = propEntry.getValue();
-////                  
-////                  if (name == "name") {
-////                     // todo
-////                     qos.addClientProperty("ToDo", "ToDo");
-////                  } else {
-////                     // Fallback: store simple scalar
-////                     qos.addClientProperty(key, val);
-////                  }
-//            }
-//         }
-//      }
-//      
-//      
-//         // chatgpt boilerplate:
-//         // -----------------------------
-//         // RouteInfo list is tricky — ignore unsafe types like ThreadPoolExecutor
-//         // -----------------------------
-////       Object routeNodeList = map.get("routeNodeList");
-////       if (routeNodeList instanceof Iterable) {
-////           for (Object riObj : (Iterable<?>) routeNodeList) {
-////               if (riObj instanceof RouteInfo) {
-////                   qos.addRouteInfo((RouteInfo) riObj);
-////               }
-////           }
-////       }
-//         
-//         return qos;
-//      }
-//   /**
-//    * Extract name and value of a ClientProperty, that has been turned into a Map<String, Object>
-//    * TODO: make this somehow more typesafe
-//    */
-//   private static String extractNameAndValue(Map<String, Object> property) {
-//      // Extracting the name and value from the property map
-//      String name = (String) property.get("name");
-//      String value = (String) property.get("value");
-//
-//      // Returning the result in a sensible way
-//      return String.format("Name: %s, Value: %s", name, value);
-//  }         
-//}
