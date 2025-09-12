@@ -12,7 +12,6 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.QueryQosJsonFactory;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -68,42 +67,7 @@ public class QueryQosFactoryTest extends TestCase {
            "   <filter type='anotherPlugin' version='1.1'><![CDATA[b<100|a[0]>10]]></filter>\n" +
            "</qos>\n";
 
-         QueryQosData qosXML = factory.readObject(xml);
-         //new
-         //String jsonQos = qosXML.toJson();
-         String json = """
-                  {
-                     "qos": {
-                       "subscribe": {
-                         "id": "_subId:1"
-                       },
-                       "erase": {
-                         "forceDestroy": true
-                       },
-                       "meta": false,
-                       "content": false,
-                       "local": false,
-                       "subIdGeneratedIncludeClusterNodeId": true,
-                       "initialUpdate": false,
-                       "filter": [ {
-                           "type": "myPlugin",
-                           "version": "1.0",
-                           "value": "a!=100"
-                         }, {
-                           "type": "anotherPlugin",
-                           "version": "1.1",
-                           "value": "b<100|a[0]>10"
-                         }
-                       ]
-                     }
-                   }
-               """;
-
-         System.out.println("QueryQuosJson" + json);
-         QueryQosJsonFactory jsonFactory = new QueryQosJsonFactory(glob);
-         QueryQosData qos = jsonFactory.readObject(json);
-         System.out.println("JSON ->Obj -> XML:\n" + qos.toString());
-         //Endnew
+         QueryQosData qos = factory.readObject(xml);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
          assertEquals("", true, qos.getForceDestroy());
