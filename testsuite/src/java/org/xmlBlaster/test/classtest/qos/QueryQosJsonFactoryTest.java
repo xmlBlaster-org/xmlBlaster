@@ -54,7 +54,7 @@ public class QueryQosJsonFactoryTest extends TestCase {
    }
 
    /**
-    * Tries with all known tags
+    * Tries with all known key
     */
    public void testParse() {
       System.out.println("***QueryQosJsonFactoryTest: testParse ...");
@@ -83,7 +83,7 @@ public class QueryQosJsonFactoryTest extends TestCase {
                          {
                            "type": "anotherPlugin",
                            "version": "1.1",
-                           "value": "b<100|a[0]>10"
+                           "value": "\\\"lolIwillescape\\\", {\\\"thisisnotafield\\\": \\\"thisisnotavalue\\\"}"
                          }
                        ]
                      }
@@ -108,7 +108,8 @@ public class QueryQosJsonFactoryTest extends TestCase {
          assertEquals("", "a!=100", filterArr[0].getQuery().toString());
          assertEquals("", "anotherPlugin", filterArr[1].getType());
          assertEquals("", "1.1", filterArr[1].getVersion());
-         assertEquals("", "b<100|a[0]>10", filterArr[1].getQuery().toString());
+         assertEquals("", "\"lolIwillescape\", {\"thisisnotafield\": \"thisisnotavalue\"}",
+               filterArr[1].getQuery().toString());
       } catch (XmlBlasterException e) {
          fail("testParse failed: " + e.toString());
       }
@@ -117,7 +118,7 @@ public class QueryQosJsonFactoryTest extends TestCase {
    }
 
    /**
-    * Test toXml (parse - createXml - parse again - test)
+    * Test toJson (parse - createXml - parse again - test)
     */
    public void testToJson() {
       System.out.println("***QueryQosJsonFactoryTest: testToJson ...");
@@ -125,40 +126,41 @@ public class QueryQosJsonFactoryTest extends TestCase {
       try {
          String json = """
                {
-                  "qos": {
-                     "subscribe": {
-                       "id": "_subId:1"
+                 "qos": {
+                   "subscribe": {
+                     "id": "_subId:1"
+                   },
+                   "erase": {
+                     "forceDestroy": true
+                   },
+                   "meta": false,
+                   "content": false,
+                   "local": false,
+                   "subIdGeneratedIncludeClusterNodeId": true,
+                   "initialUpdate": false,
+                   "history": {
+                     "numEntries": 20,
+                     "newestFirst": false
+                   },
+                   "filter": [
+                     {
+                       "type": "myPlugin",
+                       "version": "1.0",
+                       "value": "a!=100"
                      },
-                     "erase": {
-                       "forceDestroy": true
-                     },
-                     "meta": false,
-                     "content": false,
-                     "local": false,
-                     "subIdGeneratedIncludeClusterNodeId": true,
-                     "initialUpdate": false,
-                     "history": {
-                       "numEntries": 20,
-                       "newestFirst": false
-                     },
-                     "filter": [
-                       {
-                         "type": "myPlugin",
-                         "version": "1.0",
-                         "value": "a!=100"
-                       },
-                       {
-                         "type": "anotherPlugin",
-                         "version": "1.1",
-                         "value": "\"lolIwillescape\", {\"thisisnotafield\": \"thisisnotavalue\"}"
-                       }
-                     ]
-                   }
+                     {
+                       "type": "anotherPlugin",
+                       "version": "1.1",
+                       "value": "\\\"lolIwillescape\\\", {\\\"thisisnotafield\\\": \\\"thisisnotavalue\\\"}"
+                     }
+                   ]
                  }
-                  """;
+               }
+               """;
+         log.info("Old JSON: " + json);
          QueryQosData qos = factory.readObject(json);
          String newJson = qos.toJson();
-         log.info("New XML=" + newJson);
+         log.info("New Json=" + newJson);
          qos = factory.readObject(newJson);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
@@ -177,7 +179,8 @@ public class QueryQosJsonFactoryTest extends TestCase {
          assertEquals("", "a!=100", filterArr[0].getQuery().toString());
          assertEquals("", "anotherPlugin", filterArr[1].getType());
          assertEquals("", "1.1", filterArr[1].getVersion());
-         assertEquals("", "\"lolIwillescape\", {\"thisisnotafield\": \"thisisnotavalue\"}", filterArr[1].getQuery().toString());
+         assertEquals("", "\"lolIwillescape\", {\"thisisnotafield\": \"thisisnotavalue\"}",
+               filterArr[1].getQuery().toString());
       } catch (XmlBlasterException e) {
          fail("testToJson failed: " + e.toString());
       }
@@ -219,8 +222,8 @@ public class QueryQosJsonFactoryTest extends TestCase {
       try {
          EraseQos eraseQos = new EraseQos(glob);
          eraseQos.setForceDestroy(true);
-         System.out.println("EraseQos: " + eraseQos.toXml());
-         QueryQosData qos = factory.readObject(eraseQos.toXml());
+         System.out.println("EraseQos: " + eraseQos.toJson());
+         QueryQosData qos = factory.readObject(eraseQos.toJson());
          assertEquals("", true, qos.getForceDestroy());
       } catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());
@@ -244,9 +247,9 @@ public class QueryQosJsonFactoryTest extends TestCase {
          subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
          subscribeQos.setPersistent(true);
-         System.out.println("SubscribeQos: " + subscribeQos.toXml());
+         System.out.println("SubscribeQos: " + subscribeQos.toJson());
 
-         QueryQosData qos = factory.readObject(subscribeQos.toXml());
+         QueryQosData qos = factory.readObject(subscribeQos.toJson());
 
          assertEquals("", false, qos.getWantContent());
          assertEquals("", "MyOwnSentSubscribeId", qos.getSubscriptionId());
@@ -281,8 +284,8 @@ public class QueryQosJsonFactoryTest extends TestCase {
          getQos.setHistoryQos(hh);
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
-         System.out.println("GetQos: " + getQos.toXml());
-         QueryQosData qos = factory.readObject(getQos.toXml());
+         System.out.println("GetQos: " + getQos.toJson());
+         QueryQosData qos = factory.readObject(getQos.toJson());
          assertEquals("", false, qos.getWantContent());
          assertEquals("", 33, qos.getHistoryQos().getNumEntries());
          assertEquals("", false, qos.getHistoryQos().getNewestFirst());

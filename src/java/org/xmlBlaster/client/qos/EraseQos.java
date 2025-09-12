@@ -121,6 +121,15 @@ public final class EraseQos
    public String toXml() {
       return this.queryQosData.toXml();
    }
+   
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * TODO: Properties might need to be added like in toXml
+    * @return An XML ASCII string
+    */
+   public String toJson() {
+      return this.queryQosData.toJson();
+   }
 
    /**
     * Converts the data into a valid XML ASCII string.

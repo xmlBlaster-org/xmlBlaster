@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonToken;
 
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -34,7 +33,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
    @Override
    public QueryQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{}";
+         jsonQos = "{\"qos\": {}}";
       }
 
       QueryQosData queryQosData = new QueryQosData(glob, this, jsonQos, MethodName.UNKNOWN);
@@ -309,18 +308,30 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
       return "QueryQosJsonFactory";
    }
 
+
+   /**
+    * Helper function for parsing AcessFilterQos
+    * 
+    * @param filterQos
+    * @param parser
+    * @return
+    * @throws IOException
+    */
    private boolean jsonToAcessFilterQos(AccessFilterQos filterQos, JsonParser parser) throws IOException {
       if (parser.currentToken() != JsonToken.START_OBJECT) {
          log.warning("Expected start object in Filter Array JSON, skipping this entry");
          return false;
       }
+      boolean typeSet = false;
       while (parser.nextToken() != JsonToken.END_OBJECT) {
          String filterFieldName = parser.currentName();
          parser.nextToken(); // move to value
          if (filterFieldName.equalsIgnoreCase("type")) {
-            System.out.println("filterFieldName: " + filterFieldName);
-            System.out.println("currentToken: " + parser.getValueAsString());
-            filterQos.setType(parser.getValueAsString());
+            String typeValue = parser.getValueAsString();
+            if (typeValue != null && !typeValue.isBlank()) {
+               filterQos.setType(typeValue);
+               typeSet = true;
+            }
          } else if (filterFieldName.equalsIgnoreCase("version")) {
             filterQos.setVersion(parser.getValueAsString());
          } else if (filterFieldName.equalsIgnoreCase("value")) {
@@ -330,17 +341,22 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          }
       }
 
-//             if (getType() == null) {
-//                log.warning("Missing '" + this.tagName + "' attribute 'type' in QoS, ignoring the " + this.tagName + " request");
-//                setType(null);
-//                return false;
-//             }
-//             return true;
-//          }
+      if (!typeSet) {
+         // behave just like in the original QuerQosSaxFactory
+         log.warning("Missing required 'type' attribute in " + filterQos.tagName + " section, ignoring this filter.");
+         return false;
+      }
 
-      return true; // TODO: return false if "type" field is missing!
+      return true;
    }
 
+   /**
+    * Helper function for parsing HistoryQos
+    * 
+    * @param historyQos
+    * @param parser
+    * @return
+    */
    private boolean jsonToHistoryQos(HistoryQos historyQos, JsonParser parser) {
       try {
          // Move to the start of the object

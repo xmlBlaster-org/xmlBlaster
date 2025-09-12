@@ -141,6 +141,15 @@ public final class GetQos
    public String toString() {
       return this.queryQosData.toXml();
    }
+   
+   /**
+    * Converts the data into a valid JSON string.
+    * TODO: Properties might need to be added like in toXml
+    * @return An JSON string
+    */
+   public String toJson() {
+      return this.queryQosData.toJson();
+   }
 
    public String toXml() {
       return toXml((Properties)null);
