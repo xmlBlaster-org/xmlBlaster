@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
@@ -334,9 +336,15 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
             }
          } else if (filterFieldName.equalsIgnoreCase("version")) {
             filterQos.setVersion(parser.getValueAsString());
-         } else if (filterFieldName.equalsIgnoreCase("value")) {
-            filterQos.setQuery(new Query(glob, parser.getValueAsString()));
-         } else {
+         } else if ("value".equalsIgnoreCase(filterFieldName)) {
+            try {
+            String valueString = filterValueToString(parser);
+            filterQos.setQuery(new Query(glob, valueString));
+            } catch (IOException e) {
+               log.warning("Failed to parse 'value' insid FilterQos:");
+               throw e;
+            }
+        } else {
             log.warning("Ignoring unknown attribute \"" + filterFieldName + "\" in " + filterQos.tagName + " section.");
          }
       }
@@ -350,6 +358,19 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
       return true;
    }
 
+   private String filterValueToString(JsonParser parser) throws IOException {
+      String valueString = "";
+      if (parser.currentToken() == JsonToken.START_OBJECT || parser.currentToken() == JsonToken.START_ARRAY) {
+         // read entire object/array as tree and convert to string
+        ObjectMapper mapper = new ObjectMapper(); // slow, could be initialized once as a field
+         JsonNode node = mapper.readTree(parser);
+         valueString = node.toString();
+     } else {
+         // regular primitive/string value
+         valueString = parser.getValueAsString();
+     }
+      return valueString;
+   }
    /**
     * Helper function for parsing HistoryQos
     * 

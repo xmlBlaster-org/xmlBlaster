@@ -71,13 +71,11 @@ public class QueryQosJsonFactoryTest extends TestCase {
                            "type": "myPlugin",
                            "version": "1.0",
                            "value": "a!=100"
-                         },
-                         {
+                         }, {
                            "type": "anotherPluginString",
                            "version": "1.1",
                            "value": "\\\"lolIwillescape\\\", {\\\"thisisnotafield\\\": \\\"thisisnotavalue\\\"}"
-                         },
-                         {
+                         }, {
                            "type": "anotherPluginObject",
                            "version": "1.1",
                            "value": {"a": 1, "b": true}
@@ -116,6 +114,12 @@ public class QueryQosJsonFactoryTest extends TestCase {
          assertEquals("", "1.1", filterArr[1].getVersion());
          assertEquals("", "\"lolIwillescape\", {\"thisisnotafield\": \"thisisnotavalue\"}",
                filterArr[1].getQuery().toString());
+         assertEquals("", "anotherPluginObject", filterArr[2].getType());
+         assertEquals("", "{\"a\":1,\"b\":true}", filterArr[2].getQuery().toString());
+         assertEquals("", "anotherPluginBool", filterArr[3].getType());
+         assertEquals("", "true", filterArr[3].getQuery().toString());
+         assertEquals("", "anotherPluginNumber", filterArr[4].getType());
+         assertEquals("", "100", filterArr[4].getQuery().toString());
       } catch (XmlBlasterException e) {
          fail("testParse failed: " + e.toString());
       }
@@ -150,16 +154,27 @@ public class QueryQosJsonFactoryTest extends TestCase {
                      "newestFirst": false
                    },
                    "filter": [
-                     {
-                       "type": "myPlugin",
-                       "version": "1.0",
-                       "value": "a!=100"
-                     },
-                     {
-                       "type": "anotherPlugin",
-                       "version": "1.1",
-                       "value": "\\\"lolIwillescape\\\", {\\\"thisisnotafield\\\": \\\"thisisnotavalue\\\"}"
-                     }
+                         {
+                           "type": "myPlugin",
+                           "version": "1.0",
+                           "value": "a!=100"
+                         }, {
+                           "type": "anotherPluginString",
+                           "version": "1.1",
+                           "value": "\\\"lolIwillescape\\\", {\\\"thisisnotafield\\\": \\\"thisisnotavalue\\\"}"
+                         }, {
+                           "type": "anotherPluginObject",
+                           "version": "1.1",
+                           "value": {"a": 1, "b": true}
+                         }, {
+                           "type": "anotherPluginBool",
+                           "version": "1.1",
+                           "value": true
+                         },  {
+                           "type": "anotherPluginNumber",
+                           "version": "1.1",
+                           "value": 100
+                         }
                    ]
                  }
                }
@@ -180,14 +195,20 @@ public class QueryQosJsonFactoryTest extends TestCase {
          assertEquals("", 20, qos.getHistoryQos().getNumEntries());
          assertEquals("", false, qos.getHistoryQos().getNewestFirst());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
-         assertEquals("", 2, filterArr.length);
+         assertEquals("", 5, filterArr.length);
          assertEquals("", "myPlugin", filterArr[0].getType());
          assertEquals("", "1.0", filterArr[0].getVersion());
          assertEquals("", "a!=100", filterArr[0].getQuery().toString());
-         assertEquals("", "anotherPlugin", filterArr[1].getType());
+         assertEquals("", "anotherPluginString", filterArr[1].getType());
          assertEquals("", "1.1", filterArr[1].getVersion());
          assertEquals("", "\"lolIwillescape\", {\"thisisnotafield\": \"thisisnotavalue\"}",
                filterArr[1].getQuery().toString());
+         assertEquals("", "anotherPluginObject", filterArr[2].getType());
+         assertEquals("", "{\"a\":1,\"b\":true}", filterArr[2].getQuery().toString());
+         assertEquals("", "anotherPluginBool", filterArr[3].getType());
+         assertEquals("", "true", filterArr[3].getQuery().toString());
+         assertEquals("", "anotherPluginNumber", filterArr[4].getType());
+         assertEquals("", "100", filterArr[4].getQuery().toString());
       } catch (XmlBlasterException e) {
          fail("testToJson failed: " + e.toString());
       }
