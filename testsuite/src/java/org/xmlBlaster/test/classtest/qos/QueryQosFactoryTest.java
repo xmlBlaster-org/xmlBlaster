@@ -12,6 +12,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.QueryQosJsonFactory;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -24,6 +25,7 @@ import junit.framework.TestSuite;
  * java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.qos.QueryQosFactoryTest
  * </pre>
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
+ * @see org.xmlBlaster.test.classtest.qos.QueryQosJsonFactoryTest additional JSON specific tests
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">the xmlBlaster access interface requirement</a>
  */
 public class QueryQosFactoryTest extends TestCase {
@@ -32,6 +34,7 @@ public class QueryQosFactoryTest extends TestCase {
    private static Logger log = Logger.getLogger(QueryQosFactoryTest.class.getName());
    private String currImpl;
    private I_QueryQosFactory factory;
+   private I_QueryQosFactory jsonFactory; // additionally test some JSON functionality
    static I_QueryQosFactory[] IMPL = { 
                    new org.xmlBlaster.util.qos.QueryQosSaxFactory(Global.instance()),
                  };
@@ -41,6 +44,7 @@ public class QueryQosFactoryTest extends TestCase {
       this.glob = glob;
 
       this.factory = IMPL[currImpl];
+      this.jsonFactory = new QueryQosJsonFactory(glob);
    }
 
    protected void setUp() {
@@ -93,10 +97,11 @@ public class QueryQosFactoryTest extends TestCase {
    }
 
    /**
-    * Test toXml (parse - createXml - parse again - test)
+    * Test toXml and test toJson ((parse - createXml - parse again - createJSON - parse again - test)
+    * Two Birds with one Stone
     */
-   public void testToXml() {
-      System.out.println("***QueryQosFactoryTest: testToXml ...");
+   public void testToXmlAndToJson() {
+      System.out.println("***QueryQosFactoryTest: testToXmlAndToJson ...");
       
       try {
          String xml =
@@ -116,6 +121,9 @@ public class QueryQosFactoryTest extends TestCase {
          String newXml = qos.toXml();
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
+         String newJson = qos.toJson();
+         log.info("New JSON=" + newJson);
+         qos = jsonFactory.readObject(newJson);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
          assertEquals("", true, qos.getForceDestroy());
@@ -136,30 +144,25 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", "b<100|a[0]>10", filterArr[1].getQuery().toString());
       }
       catch (XmlBlasterException e) {
-         fail("testToXml failed: " + e.toString());
+         fail("testToXmlAndToJson failed: " + e.toString());
       }
 
-      System.out.println("***QueryQosFactoryTest: testToXml [SUCCESS]");
+      System.out.println("***QueryQosFactoryTest: testToXmlAndToJson [SUCCESS]");
    }
 
    /**
-    * Tests empty xml string
+    * Tests empty XML and JSON string
     */
    public void testDefault() {
       System.out.println("***QueryQosFactoryTest: testDefault ...");
       
       try {
+         // test XML
          QueryQosData qos = factory.readObject((String)null);
-         assertEquals("", null, qos.getSubscriptionId());
-         assertEquals("", true, qos.getWantMeta());
-         assertEquals("", true, qos.getWantContent());
-         assertEquals("", true, qos.getWantLocal());
-         assertEquals("", false, qos.isSubIdGeneratedIncludeClusterNodeId());
-         assertEquals("", true, qos.getWantInitialUpdate());
-         assertEquals("", 1, qos.getHistoryQos().getNumEntries());
-         assertEquals("", true, qos.getHistoryQos().getNewestFirst());
-         AccessFilterQos[] filterArr = qos.getAccessFilterArr();
-         assertTrue("", null == filterArr);
+         assertDefault(qos);
+         // test JSON
+         qos = jsonFactory.readObject((String)null);
+         assertDefault(qos);
       }
       catch (XmlBlasterException e) {
          fail("testDefault failed: " + e.toString());
@@ -168,6 +171,21 @@ public class QueryQosFactoryTest extends TestCase {
       System.out.println("***QueryQosFactoryTest: testDefault [SUCCESS]");
    }
 
+   /**
+    * @param qos: this objects fields will be tested tested
+    */
+   private void assertDefault(QueryQosData qos) {
+      assertEquals("", null, qos.getSubscriptionId());
+      assertEquals("", true, qos.getWantMeta());
+      assertEquals("", true, qos.getWantContent());
+      assertEquals("", true, qos.getWantLocal());
+      assertEquals("", false, qos.isSubIdGeneratedIncludeClusterNodeId());
+      assertEquals("", true, qos.getWantInitialUpdate());
+      assertEquals("", 1, qos.getHistoryQos().getNumEntries());
+      assertEquals("", true, qos.getHistoryQos().getNewestFirst());
+      AccessFilterQos[] filterArr = qos.getAccessFilterArr();
+      assertTrue("", null == filterArr);
+   }
 
    /**
     * Tests client side EraseQos. 
@@ -178,8 +196,11 @@ public class QueryQosFactoryTest extends TestCase {
       try {
          EraseQos eraseQos = new EraseQos(glob);
          eraseQos.setForceDestroy(true);
-         System.out.println("EraseQos: " + eraseQos.toXml());
+         System.out.println("EraseQos (XML): " + eraseQos.toXml());
          QueryQosData qos = factory.readObject(eraseQos.toXml());
+         assertEquals("", true, qos.getForceDestroy());
+         System.out.println("EraseQos (JSON): " + eraseQos.toJson());
+         qos = jsonFactory.readObject(eraseQos.toJson());
          assertEquals("", true, qos.getForceDestroy());
       }
       catch (Throwable e) {
@@ -189,45 +210,66 @@ public class QueryQosFactoryTest extends TestCase {
    }
 
    /**
-    * Tests client side SubscribeQos. 
+    * Tests client side SubscribeQos (Both XML and JSON).
     */
    public void testSubscribeQos() {
       System.out.println("***QueryQosFactoryTest: SubscribeQos ...");
       
       try {
-         SubscribeQos subscribeQos = new SubscribeQos(glob);
-         subscribeQos.setWantContent(false);
-         subscribeQos.setSubscriptionId("MyOwnSentSubscribeId");
-         HistoryQos hh = new HistoryQos(glob, 33);
-         hh.setNewestFirst(false);
-         subscribeQos.setHistoryQos(hh);
-         subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
-         subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
-         subscribeQos.setPersistent(true);
-         System.out.println("SubscribeQos: " + subscribeQos.toXml());
+         SubscribeQos subscribeQos = createSubscribeQos();
+         String xml = subscribeQos.toXml();
 
-         QueryQosData qos = factory.readObject(subscribeQos.toXml());
+         // Test XML
+         System.out.println("SubscribeQos (XML): " + xml);
+         QueryQosData qosFromXml = factory.readObject(xml);
+         assertSubscribeQos(qosFromXml);
 
-         assertEquals("", false, qos.getWantContent());
-         assertEquals("", "MyOwnSentSubscribeId", qos.getSubscriptionId());
-         assertEquals("", 33, qos.getHistoryQos().getNumEntries());
-         assertEquals("", false, qos.getHistoryQos().getNewestFirst());
-         AccessFilterQos[] filterArr = qos.getAccessFilterArr();
-         assertEquals("", 2, filterArr.length);
-         assertEquals("", "ContentLenFilter", filterArr[0].getType());
-         assertEquals("", "1.0", filterArr[0].getVersion());
-         assertEquals("", "800", filterArr[0].getQuery().toString());
-         assertEquals("", "ContentLenFilter2", filterArr[1].getType());
-         assertEquals("", "3.2", filterArr[1].getVersion());
-         assertEquals("", "a<10", filterArr[1].getQuery().toString());
-         assertEquals("", true, qos.getPersistentProp().getValue());
-      }
-      catch (Throwable e) {
+         // Test JSON
+         String json = subscribeQos.toJson(); // Assuming you have a toJson() method
+         System.out.println("SubscribeQos (JSON):\n" + json);
+         QueryQosData qosFromJson = factory.readObject(json);
+         assertSubscribeQos(qosFromJson);
+      } catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());
       }
       System.out.println("***QueryQosFactoryTest: SubscribeQos [SUCCESS]");
    }
 
+   /**
+    * @return SubscibeQos object for Testing
+    */
+   private SubscribeQos createSubscribeQos() {
+      SubscribeQos subscribeQos = new SubscribeQos(glob);
+      subscribeQos.setWantContent(false);
+      subscribeQos.setSubscriptionId("MyOwnSentSubscribeId");
+      HistoryQos hh = new HistoryQos(glob, 33);
+      hh.setNewestFirst(false);
+      subscribeQos.setHistoryQos(hh);
+      subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
+      subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
+      subscribeQos.setPersistent(true);
+      return subscribeQos;
+   }
+
+   /**
+    * @param qos: this objects fields will be tested tested
+    */
+   private void assertSubscribeQos(QueryQosData qos) {
+      assertEquals("", false, qos.getWantContent());
+      assertEquals("", "MyOwnSentSubscribeId", qos.getSubscriptionId());
+      assertEquals("", 33, qos.getHistoryQos().getNumEntries());
+      assertEquals("", false, qos.getHistoryQos().getNewestFirst());
+      AccessFilterQos[] filterArr = qos.getAccessFilterArr();
+      assertEquals("", 2, filterArr.length);
+      assertEquals("", "ContentLenFilter", filterArr[0].getType());
+      assertEquals("", "1.0", filterArr[0].getVersion());
+      assertEquals("", "800", filterArr[0].getQuery().toString());
+      assertEquals("", "ContentLenFilter2", filterArr[1].getType());
+      assertEquals("", "3.2", filterArr[1].getVersion());
+      assertEquals("", "a<10", filterArr[1].getQuery().toString());
+      assertEquals("", true, qos.getPersistentProp().getValue());
+   }
+   
    /**
     * Tests client side GetQos. 
     */
@@ -272,7 +314,7 @@ public class QueryQosFactoryTest extends TestCase {
       for (int i=0; i<IMPL.length; i++) {
          suite.addTest(new QueryQosFactoryTest(glob, "testDefault", i));
          suite.addTest(new QueryQosFactoryTest(glob, "testParse", i));
-         suite.addTest(new QueryQosFactoryTest(glob, "testToXml", i));
+         suite.addTest(new QueryQosFactoryTest(glob, "testToXmlAndToJson", i));
          suite.addTest(new QueryQosFactoryTest(glob, "testEraseQos", i));
          suite.addTest(new QueryQosFactoryTest(glob, "testSubscribeQos", i));
          suite.addTest(new QueryQosFactoryTest(glob, "testGetQos", i));
@@ -292,7 +334,7 @@ public class QueryQosFactoryTest extends TestCase {
          testSub.setUp();
          testSub.testDefault();
          testSub.testParse();
-         testSub.testToXml();
+         testSub.testToXmlAndToJson();
          testSub.testEraseQos();
          testSub.testSubscribeQos();
          testSub.testGetQos();
