@@ -54,7 +54,6 @@ public class QueryQosJsonFactoryTest extends TestCase {
       try {
          String json = """
                   {
-                     "qos": {
                        "subscribe": {
                          "id": "_subId:1"
                        },
@@ -90,7 +89,6 @@ public class QueryQosJsonFactoryTest extends TestCase {
                          }
                        ]
                      }
-                   }
                """;
 
          System.out.println("QueryQuosJson" + json);
@@ -137,7 +135,6 @@ public class QueryQosJsonFactoryTest extends TestCase {
       try {
          String json = """
                {
-                 "qos": {
                    "subscribe": {
                      "id": "_subId:1"
                    },
@@ -177,7 +174,6 @@ public class QueryQosJsonFactoryTest extends TestCase {
                          }
                    ]
                  }
-               }
                """;
          log.info("Old JSON: " + json);
          QueryQosData qos = factory.readObject(json);

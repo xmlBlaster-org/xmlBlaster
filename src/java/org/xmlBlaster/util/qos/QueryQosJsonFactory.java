@@ -35,7 +35,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
    @Override
    public QueryQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{\"qos\": {}}";
+         jsonQos = "{}";
       }
 
       QueryQosData queryQosData = new QueryQosData(glob, this, jsonQos, MethodName.UNKNOWN);
@@ -45,16 +45,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          if (parser.nextToken() != JsonToken.START_OBJECT) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, "Expected start object in QoS JSON");
          }
-         if (parser.currentToken() == JsonToken.START_OBJECT) {
-            parser.nextToken(); // move to value
-            if ("qos".equals(parser.currentName())) {
-               parser.nextToken();
-            } else {
-               log.warning("expectes \"qos\" instead found: " + parser.currentName());
-               parser.skipChildren();
-            }
 
-         }
          while (parser.nextToken() != JsonToken.END_OBJECT) {
             String fieldName = parser.currentName();
             parser.nextToken(); // move to value
@@ -205,7 +196,6 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          gen.useDefaultPrettyPrinter();
 
          gen.writeStartObject(); // root
-         gen.writeObjectFieldStart("qos");
 
          if (queryQosData.getSubscriptionId() != null) {
             gen.writeObjectFieldStart("subscribe");
@@ -289,7 +279,6 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
             gen.writeEndObject();
          }
 
-         gen.writeEndObject(); // qos
          gen.writeEndObject(); // root
 
          gen.close();
@@ -309,7 +298,6 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
    public String getName() {
       return "QueryQosJsonFactory";
    }
-
 
    /**
     * Helper function for parsing AcessFilterQos
@@ -338,13 +326,13 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
             filterQos.setVersion(parser.getValueAsString());
          } else if ("value".equalsIgnoreCase(filterFieldName)) {
             try {
-            String valueString = filterValueToString(parser);
-            filterQos.setQuery(new Query(glob, valueString));
+               String valueString = filterValueToString(parser);
+               filterQos.setQuery(new Query(glob, valueString));
             } catch (IOException e) {
                log.warning("Failed to parse 'value' insid FilterQos:");
                throw e;
             }
-        } else {
+         } else {
             log.warning("Ignoring unknown attribute \"" + filterFieldName + "\" in " + filterQos.tagName + " section.");
          }
       }
@@ -362,15 +350,16 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
       String valueString = "";
       if (parser.currentToken() == JsonToken.START_OBJECT || parser.currentToken() == JsonToken.START_ARRAY) {
          // read entire object/array as tree and convert to string
-        ObjectMapper mapper = new ObjectMapper(); // slow, could be initialized once as a field
+         ObjectMapper mapper = new ObjectMapper(); // slow, could be initialized once as a field
          JsonNode node = mapper.readTree(parser);
          valueString = node.toString();
-     } else {
+      } else {
          // regular primitive/string value
          valueString = parser.getValueAsString();
-     }
+      }
       return valueString;
    }
+
    /**
     * Helper function for parsing HistoryQos
     * 
