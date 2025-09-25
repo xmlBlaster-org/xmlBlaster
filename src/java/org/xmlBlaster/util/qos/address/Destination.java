@@ -5,11 +5,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Holding destination address attributes.
@@ -188,6 +191,34 @@ public class Destination implements java.io.Serializable
          sb.append(">").append(this.destination.getRelativeName()).append("</destination>");
 
       return sb.toString();
+   }
+   
+   /**
+    * Dump state of this object into an open JsonGenerator.
+    * Caller must close the generator.
+    */
+   public final void toJson(JsonGenerator gen) throws IOException {
+      if (this.destination == null) {
+         return;
+      }
+
+      gen.writeStartObject();
+      
+      if (!isExactAddress()) {
+         gen.writeStringField("queryType", queryType);
+      }
+      if (forceQueuing != DEFAULT_forceQueuing) {
+         gen.writeBooleanField("forceQueuing", forceQueuing);
+      }
+
+      // Set the real used destination to support PtP routing
+      if (this.destination.isNodeIdExplicitlyGiven()) {
+         gen.writeStringField("value", this.destination.getAbsoluteName());
+      } else {
+         gen.writeStringField("value", this.destination.getRelativeName());
+      }
+
+      gen.writeEndObject();
    }
 
    /**

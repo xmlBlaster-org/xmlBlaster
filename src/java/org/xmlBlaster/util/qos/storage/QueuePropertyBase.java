@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +20,10 @@ import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.address.AddressBase;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 
 /**
@@ -557,6 +562,85 @@ public abstract class QueuePropertyBase implements Cloneable
    public AddressBase[] getAddresses() {
       return this.addressArr;
    }
+   
+   public void parseJson(JsonParser parser) throws IOException {
+       while (parser.nextToken() != JsonToken.END_OBJECT) {
+           String fieldName = parser.currentName();
+           parser.nextToken(); // move to value
+
+           try {
+               switch (fieldName) {
+                   case "relating":
+                       setRelating(parser.getValueAsString().trim());
+                       break;
+
+                   case "type":
+                       setType(parser.getValueAsString().trim());
+                       break;
+
+                   case "version":
+                       setVersion(parser.getValueAsString().trim());
+                       break;
+
+                   case "maxEntries":
+                       try {
+                           setMaxEntriesUnchecked(parser.getLongValue());
+                       } catch (Exception e) {
+                           log.severe("Wrong format in JSON field 'maxEntries' of \"" 
+                                   + getRootTagName() + "\", expected long, using default.");
+                       }
+                       break;
+
+                   case "maxEntriesCache":
+                       try {
+                           setMaxEntriesCacheUnchecked(parser.getLongValue());
+                       } catch (Exception e) {
+                           log.severe("Wrong format in JSON field 'maxEntriesCache' of \"" 
+                                   + getRootTagName() + "\", expected long, using default.");
+                       }
+                       break;
+
+                   case "maxBytes":
+                       try {
+                           setMaxBytesUnchecked(parser.getLongValue());
+                       } catch (Exception e) {
+                           log.severe("Wrong format in JSON field 'maxBytes' of \"" 
+                                   + getRootTagName() + "\", expected long (bytes), using default.");
+                       }
+                       break;
+
+                   case "maxBytesCache":
+                       try {
+                           setMaxBytesCacheUnchecked(parser.getLongValue());
+                       } catch (Exception e) {
+                           log.severe("Wrong format in JSON field 'maxBytesCache' of \"" 
+                                   + getRootTagName() + "\", expected long (bytes), using default.");
+                       }
+                       break;
+
+                   case "onOverflow":
+                       setOnOverflow(parser.getValueAsString().trim());
+                       break;
+
+                   case "onFailure":
+                       setOnFailure(parser.getValueAsString().trim());
+                       break;
+
+                   default:
+                       log.warning("Ignoring unknown JSON field \"" + fieldName 
+                               + "\" in \"" + getRootTagName() + "\"");
+                       parser.skipChildren();
+               }
+           } catch (Exception e) {
+               log.severe("Error parsing JSON field '" + fieldName 
+                       + "' in <" + getRootTagName() + ">: " + e.getMessage());
+               parser.skipChildren();
+           }
+       }
+       checkConsistency();
+   }
+
+
 
    /**
     * Called for queue start tag
@@ -786,6 +870,64 @@ public abstract class QueuePropertyBase implements Cloneable
 
       return sb.toString();
    }
+   
+   
+   /**
+    * Turns a QueueProperty into JSON
+    * 
+    * @param gen this is where the JSON will be produced into
+    * @throws IOException
+    */
+   public void toJson(JsonGenerator gen) throws IOException {
+
+      gen.writeObjectFieldStart(getRootTagName()); // e.g. "queue": { ... }
+
+      if (this.debug.isModified()) {
+          gen.writeBooleanField("debug", getDebug());
+      }
+
+      gen.writeStringField("relating", getRelating());
+
+      if (this.type.isModified()) {
+          gen.writeStringField("type", getType());
+      }
+      if (this.version.isModified()) {
+          gen.writeStringField("version", getVersion());
+      }
+      if (this.maxEntries.isModified()) {
+          gen.writeNumberField("maxEntries", getMaxEntries());
+      }
+      if (this.maxEntriesCache.isModified()) {
+          gen.writeNumberField("maxEntriesCache", getMaxEntriesCache());
+      }
+      if (this.maxBytes.isModified()) {
+          gen.writeNumberField("maxBytes", getMaxBytes());
+      }
+      if (this.maxBytesCache.isModified()) {
+          gen.writeNumberField("maxBytesCache", getMaxBytesCache());
+      }
+
+      // skipped swap-related fields (not implemented in your XML code either)
+
+      if (this.onOverflow.isModified()) {
+          gen.writeStringField("onOverflow", getOnOverflow());
+      }
+      if (this.onFailure.isModified()) {
+          gen.writeStringField("onFailure", getOnFailure());
+      }
+
+      if (addressArr.length > 0 && addressArr[0] != null) {
+          gen.writeArrayFieldStart("addresses");
+          for (AddressBase ad : addressArr) {
+              if (ad != null) {
+                  ad.toJson(gen); // delegate to each AddressBase
+              }
+          }
+          gen.writeEndArray();
+      }
+
+      gen.writeEndObject(); // end getRootTagName()
+  }
 
    /**
     * returns the global object

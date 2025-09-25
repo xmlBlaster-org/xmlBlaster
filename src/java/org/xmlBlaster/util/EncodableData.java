@@ -6,9 +6,12 @@ Comment:   Handling one client property of QosData
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.xmlBlaster.util.def.Constants;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * This class encapsulates one client property in a QoS. 
@@ -447,6 +450,58 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
       return sb.toString();
    }
+   
+   /**
+    * You may set forceReadable==true to have nicer human readable output.
+    * For normal processing leave forceReadable==false. 
+    * @param extraOffset The indenting prefix
+    * @param tmpTagName If null the default is chosen
+    * @param forceReadable If true the base64 is decoded to a 'readable' string
+    * @return
+    */
+   public void toJson(JsonGenerator gen, String tmpTagName, boolean forceReadable) throws IOException {
+      if (tmpTagName == null) {
+          tmpTagName = this.tagName;
+      }
+
+      gen.writeObjectFieldStart(tmpTagName);
+
+      if (getName() != null) {
+          gen.writeStringField("name", getName());
+      }
+      if (getSize() >= 0) {
+          gen.writeNumberField("size", getSize());
+      }
+      if (getType() != null) {
+          gen.writeStringField("type", getType());
+      }
+
+      String val = null;
+
+      if (forceReadable) {
+          val = getStringValue();
+          if (val != null) {
+              gen.writeStringField("value", val);
+              // early exit since we prefer the readable string form
+              gen.writeEndObject();
+              return;
+          }
+      }
+
+      if (getEncoding() != null) {
+          gen.writeStringField("encoding", getEncoding());
+      }
+      if (getCharset() != null) {
+          gen.writeStringField("charset", getCharset());
+      }
+
+      val = getValueRaw();
+      if (val != null) {
+          gen.writeStringField("value", val);
+      }
+
+      gen.writeEndObject();
+  }
 
    public static void main(String[] args) {
       if (args.length == 0) {

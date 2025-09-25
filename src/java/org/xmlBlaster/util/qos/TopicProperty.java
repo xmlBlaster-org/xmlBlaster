@@ -101,6 +101,14 @@ public final class TopicProperty implements java.io.Serializable
    public boolean isReadonly() {
       return this.readonly.getValue();
    }
+   
+   /**
+    * @return true/false
+    */
+   public boolean isReadonlyModified() {
+      return this.readonly.isModified();
+   }
+
 
    /**
     * The life time of the message topic in state UNREFERENCED
@@ -108,6 +116,13 @@ public final class TopicProperty implements java.io.Serializable
     */
    public long getDestroyDelay() {
       return this.destroyDelay.getValue();
+   }
+   
+   /**
+    * @return true/false
+    */
+   public boolean isDestroyDelayModified() {
+      return this.destroyDelay.isModified();
    }
 
    /**
@@ -127,6 +142,13 @@ public final class TopicProperty implements java.io.Serializable
     */
    public boolean createDomEntry() {
       return this.createDomEntry.getValue();
+   }
+   
+   /**
+    * @return true/false
+    */
+   public boolean isCreateDomEntryModified() {
+      return this.createDomEntry.isModified();
    }
 
    /**

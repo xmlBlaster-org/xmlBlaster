@@ -6,6 +6,7 @@ Comment:   Holding connect address and callback address string including protoco
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -25,6 +26,8 @@ import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.ClientProperty;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 
 /**
@@ -1174,6 +1177,102 @@ public abstract class AddressBase implements Cloneable
       sb.append(offset).append("</").append(rootTag).append(">");
 
       return sb.toString();
+   }
+
+   /**
+    * Turns a AdressBase into JSON
+    * 
+    * @param gen this is where the JSON will be produced into
+    * @throws IOException
+    */
+   public void toJson(JsonGenerator gen) throws IOException {
+      gen.writeObjectFieldStart(rootTag); // e.g. "address": { ... }
+
+      gen.writeStringField("type", getType());
+
+      if (this.version.isModified()) {
+          gen.writeStringField("version", getVersion());
+      }
+      if (this.bootstrapHostname.isModified()) {
+          gen.writeStringField("bootstrapHostname", getBootstrapHostname());
+      }
+      if (this.bootstrapPort.isModified()) {
+          gen.writeNumberField("bootstrapPort", getBootstrapPort());
+      }
+      if (this.sessionId.isModified()) {
+          gen.writeStringField("sessionId", getSecretSessionId());
+      }
+      if (this.pingInterval.isModified()) {
+          gen.writeNumberField("pingInterval", getPingInterval());
+      }
+      if (this.retries.isModified()) {
+          gen.writeNumberField("retries", getRetries());
+      }
+      if (this.delay.isModified()) {
+          gen.writeNumberField("delay", getDelay());
+      }
+      if (this.oneway.isModified()) {
+          gen.writeBooleanField("oneway", oneway());
+      }
+      if (this.dispatcherActive.isModified()) {
+          gen.writeBooleanField("dispatcherActive", isDispatcherActive());
+      }
+      if (this.useForSubjectQueue.isModified()) {
+          gen.writeBooleanField("useForSubjectQueue", this.useForSubjectQueue.getValue());
+      }
+      if (this.dispatchPlugin.isModified()) {
+          gen.writeStringField("dispatchPlugin", this.dispatchPlugin.getValue());
+      }
+      if (this.stallOnPingTimeout.isModified()) {
+          gen.writeBooleanField("stallOnPingTimeout", isStallOnPingTimeout());
+      }
+
+      // rawAddress goes in as a field
+      gen.writeStringField("rawAddress", getRawAddress());
+
+      // burstMode as nested object
+      if (this.collectTime.isModified() || this.burstModeMaxEntries.isModified() || this.burstModeMaxBytes.isModified()) {
+          gen.writeObjectFieldStart("burstMode");
+          if (this.collectTime.isModified()) {
+              gen.writeNumberField("collectTime", getCollectTime());
+          }
+          if (this.burstModeMaxEntries.isModified()) {
+              gen.writeNumberField("maxEntries", getBurstModeMaxEntries());
+          }
+          if (this.burstModeMaxBytes.isModified()) {
+              gen.writeNumberField("maxBytes", getBurstModeMaxBytes());
+          }
+          gen.writeEndObject();
+      }
+
+      // compress as nested object
+      if (this.compressType.isModified()) {
+          gen.writeObjectFieldStart("compress");
+          gen.writeStringField("type", getCompressType());
+          gen.writeNumberField("minSize", getMinSize());
+          gen.writeEndObject();
+      }
+
+      // ptp as boolean or empty object (XML had <ptp/> or <ptp>false</ptp>)
+      if (this.ptpAllowed.isModified()) {
+          gen.writeBooleanField("ptp", this.ptpAllowed.getValue());
+      }
+
+      // pluginAttributes as array of objects
+      if (this.pluginAttributes != null) {
+          gen.writeArrayFieldStart("pluginAttributes");
+          Iterator it = this.pluginAttributes.getClientPropertyMap().values().iterator();
+          while (it.hasNext()) {
+              Object obj = it.next();
+              if (obj instanceof EncodableData) {
+                  EncodableData cp = (EncodableData) obj;
+                  cp.toJson(gen, ClientProperty.ATTRIBUTE_TAG, false); // delegate
+              }
+          }
+          gen.writeEndArray();
+      }
+
+      gen.writeEndObject(); // end rootTag
    }
 
    /**

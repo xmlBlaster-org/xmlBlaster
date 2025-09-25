@@ -178,7 +178,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
    /**
     * Dump state of this object into a XML ASCII string. <br>
     * 
-    * @param extraOffset indenting of tags for nice output
+    * @param deprecated, does nothing
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    @Override
