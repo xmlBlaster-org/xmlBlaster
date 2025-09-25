@@ -7,6 +7,7 @@ import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.MsgQosJsonFactory;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.qos.GetReturnQos;
@@ -33,6 +34,8 @@ public class MsgQosFactoryTest extends TestCase {
    protected Global glob;
    private static Logger log = Logger.getLogger(MsgQosFactoryTest.class.getName());
    int counter = 0;
+   private MsgQosJsonFactory jsonFactory;
+
 
    public MsgQosFactoryTest(String name) {
       super(name);
@@ -40,6 +43,7 @@ public class MsgQosFactoryTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
+      this.jsonFactory = new MsgQosJsonFactory(glob);
 
    }
 
@@ -85,6 +89,9 @@ public class MsgQosFactoryTest extends TestCase {
 
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData qos = factory.readObject(xml);
+         String json = jsonFactory.writeObject(qos, "", null);
+         System.out.println("JSON:\n" + json);
+         qos = jsonFactory.readObject(json);
 
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
@@ -176,6 +183,9 @@ public class MsgQosFactoryTest extends TestCase {
          log.info("lifeTime=" + qos.getLifeTimeProp().toXml());
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
+         String newJson = jsonFactory.writeObject(qos, "", null);
+         System.out.println("new JSON:\n" + newJson);
+         qos = jsonFactory.readObject(newJson);
 
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
@@ -281,6 +291,19 @@ public class MsgQosFactoryTest extends TestCase {
             "</qos>\n";
 
          PublishQosServer qos = new PublishQosServer(new org.xmlBlaster.engine.ServerScope(), xml);
+         System.out.println("qos object created");
+         MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
+         MsgQosData mqos = factory.readObject(xml);
+         System.out.println("mqos object created");
+         String jsonMsgQos = jsonFactory.writeObject(mqos, "", null);
+         System.out.println("publishQosServer JSON:\n" + jsonMsgQos);
+         System.out.println("mqos object serialized");
+         mqos = jsonFactory.readObject(jsonMsgQos);
+         /* TODO: this type of object creation technique would require intervention in code! Maybe we can 
+                  just make the standard xml factory detect JSON and call this factory if it is detecting JSON*/
+         // TODO: This session_name = null so "Invalid destination address, please check your PtP PublishQos" exception gets thrown
+         qos = new PublishQosServer(new org.xmlBlaster.engine.ServerScope(), mqos);
+
 
          assertEquals("", true, qos.isSubscribable());
          assertEquals("", true, qos.isPtp());
@@ -352,7 +375,11 @@ public class MsgQosFactoryTest extends TestCase {
             "   </route>\n" +
             "</qos>\n";
 
-         GetReturnQos qos = new GetReturnQos(glob, xml);
+         MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
+         MsgQosData msgQos = factory.readObject(xml);
+         String jsonMsgQos = jsonFactory.writeObject(msgQos, "", null);
+         System.out.println("GetReturnQos JSON:\n" + jsonMsgQos);
+         GetReturnQos qos = new GetReturnQos(glob, jsonFactory.readObject(jsonMsgQos));
 
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isPersistent());
