@@ -251,11 +251,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          if (list != null && list.length > 0) {
             gen.writeArrayFieldStart("filter");
             for (AccessFilterQos filter : list) {
-               gen.writeStartObject();
-               gen.writeStringField("type", filter.getType());
-               gen.writeStringField("version", filter.getVersion());
-               gen.writeStringField("value", filter.getQuery().toString());
-               gen.writeEndObject();
+               filter.toJson(gen);
             }
             gen.writeEndArray();
          }
@@ -265,7 +261,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          if (querySpecList != null && querySpecList.length > 0) {
             gen.writeArrayFieldStart("querySpec");
             for (QuerySpecQos spec : querySpecList) {
-               gen.writeString(spec.toXml()); // store XML as a JSON string
+               spec.toJson(gen);
             }
             gen.writeEndArray();
          }

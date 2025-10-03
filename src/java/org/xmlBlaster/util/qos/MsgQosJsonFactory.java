@@ -74,74 +74,106 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             switch (fieldName) {
             case "state":
                if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  while (parser.nextToken() != JsonToken.END_OBJECT) {
-                     switch (parser.currentName()) {
-                     case "id":
-                        parser.nextToken();
-                        msgQosData.setState(parser.getValueAsString());
-                        break;
-                     case "info":
-                        parser.nextToken();
-                        msgQosData.setStateInfo(parser.getValueAsString());
-                        break;
-                     default:
-                        parser.skipChildren();
-                     }
-                  }
-               }
-               break;
+                   while (parser.nextToken() != JsonToken.END_OBJECT) {
+                       switch (parser.currentName()) {
+                           case "id":
+                               try {
+                                   parser.nextToken();
+                                   msgQosData.setState(parser.getValueAsString());
+                               } catch (IOException e) {log.severe("Error while parsing 'id' in state");}
+                               break;
 
+                           case "info":
+                               try {
+                                   parser.nextToken();
+                                   msgQosData.setStateInfo(parser.getValueAsString());
+                               } catch (IOException e) {log.severe("Error while parsing 'info' in state");}
+                               break;
+
+                           default:
+                               parser.skipChildren();
+                       }
+                   }
+               } else log.severe("Error state key not followed by an object");
+               break;
             case "subscribable":
-               msgQosData.setSubscribable(parser.getBooleanValue());
+               try {
+                   msgQosData.setSubscribable(parser.getBooleanValue());
+               } catch (IOException e) {log.severe("Error while parsing 'subscribable'");}
                break;
 
-            case "destinations":
+           case "destinations":
                if (parser.currentToken() == JsonToken.START_ARRAY) {
-                  while (parser.nextToken() != JsonToken.END_ARRAY) {
-                     Destination dest = jsonToDestination(parser);
-                     msgQosData.addDestination(dest);
-                  }
-               }
+                   while (parser.nextToken() != JsonToken.END_ARRAY) {
+                       try {
+                           Destination dest = jsonToDestination(parser);
+                           msgQosData.addDestination(dest);
+                       } catch (IOException e) {log.severe("Error while parsing destinations");}
+                   }
+               } else log.severe("Error: 'destinations' key not followed by an array");
                break;
 
-            case "sender":
-               msgQosData.setSender(new SessionName(glob, parser.getValueAsString()));
+           case "sender":
+               try {
+                   msgQosData.setSender(new SessionName(glob, parser.getValueAsString()));
+               } catch (IOException e) {log.severe("Error while parsing 'sender'");}
                break;
 
-            case "priority":
-               msgQosData.setPriority(PriorityEnum.parsePriority(parser.getValueAsString()));
+           case "priority":
+               try {
+                   msgQosData.setPriority(PriorityEnum.parsePriority(parser.getValueAsString()));
+               } catch (IOException e) {log.severe("Error while parsing 'priority'");}
                break;
 
-            case "subscribe":
+           case "subscribe":
                if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  while (parser.nextToken() != JsonToken.END_OBJECT) {
-                     if ("id".equals(parser.currentName())) {
-                        parser.nextToken();
-                        msgQosData.setSubscriptionId(parser.getValueAsString());
-                     }
-                  }
-               }
+                   while (parser.nextToken() != JsonToken.END_OBJECT) {
+                       if ("id".equals(parser.currentName())) {
+                           try {
+                               parser.nextToken();
+                               msgQosData.setSubscriptionId(parser.getValueAsString());
+                           } catch (IOException e) {log.severe("Error while parsing 'id' in subscribe");}
+                       }
+                   }
+               } else log.severe("Error: subscribe key not followed by an object");
                break;
 
             case "expiration":
                if (parser.currentToken() == JsonToken.START_OBJECT) {
+                  boolean containsLifetime = false;
                   while (parser.nextToken() != JsonToken.END_OBJECT) {
                      switch (parser.currentName()) {
                      case "lifeTime":
-                        parser.nextToken();
-                        msgQosData.setLifeTime(parser.getLongValue());
+                        try {
+                           parser.nextToken();
+                           msgQosData.setLifeTime(parser.getLongValue());
+                           containsLifetime = true;
+                        } catch (IOException e) {log.severe("Error while parsing 'lifeTime' in experiation");}
                         break;
+
                      case "remainingLife":
-                        parser.nextToken();
-                        msgQosData.setRemainingLifeStatic(parser.getLongValue());
+                        try {
+                           parser.nextToken();
+                           msgQosData.setRemainingLifeStatic(parser.getLongValue());
+                        } catch (IOException e) {log.severe("Error while parsing 'remainingLife' in experiation");}
                         break;
+
                      case "forceDestroy":
-                        parser.nextToken();
-                        msgQosData.setForceDestroy(parser.getBooleanValue());
+                        try {
+                           parser.nextToken();
+                           msgQosData.setForceDestroy(parser.getBooleanValue());
+                        } catch (IOException e) {log.severe("Error while parsing 'forceDestroy' in experiation");}
                         break;
+
                      default:
+                        log.severe("Invalid expiration key = " + parser.currentName());
                         parser.skipChildren();
                      }
+                  }
+                  if (!containsLifetime) {
+                     log.warning("QoS <expiration> misses lifeTime attribute, setting default of "
+                           + MsgQosData.getMaxLifeTime());
+                     msgQosData.setLifeTime(MsgQosData.getMaxLifeTime());
                   }
                }
                break;
@@ -150,9 +182,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
                String timestamp = parser.getValueAsString().trim();
                try {
                   msgQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(timestamp)));
-               } catch (NumberFormatException e) {
-                  log.severe("Invalid rcvTimestamp - nanos =" + timestamp);
-               }
+               } catch (NumberFormatException e) {log.severe("Invalid rcvTimestamp - nanos =" + timestamp);}
                ;
                break;
 
@@ -162,13 +192,18 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
                      switch (parser.currentName()) {
                      case "index":
                         parser.nextToken();
-                        msgQosData.setQueueIndex(parser.getIntValue());
+                        try {
+                           msgQosData.setQueueIndex(parser.getIntValue());
+                        } catch (IOException e) {log.severe("Invalid queue - index =" + parser.getValueAsString());}
                         break;
                      case "size":
                         parser.nextToken();
-                        msgQosData.setQueueSize(parser.getIntValue());
+                        try {
+                           msgQosData.setQueueSize(parser.getIntValue());
+                        } catch (IOException e) {log.severe("Invalid queue - size =" + parser.getValueAsString());}
                         break;
                      default:
+                        log.severe("Error unknown key insinde queue: " + parser.currentName());
                         parser.skipChildren();
                      }
                   }
@@ -176,44 +211,62 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
                break;
 
             case "administrative":
-               msgQosData.setAdministrative(parser.getBooleanValue());
+               try {
+                  msgQosData.setAdministrative(parser.getBooleanValue());
+               } catch (IOException e) {log.severe("Error while parsing administrative: " + e.getMessage());}
                break;
 
             case "persistent":
-               msgQosData.setPersistent(parser.getBooleanValue());
+               try {
+                  msgQosData.setPersistent(parser.getBooleanValue());
+               } catch (IOException e) {log.severe("Error while parsing persistent: " + e.getMessage());}
                break;
 
             case "forceUpdate":
-               msgQosData.setForceUpdate(parser.getBooleanValue());
+               try {
+                  msgQosData.setForceUpdate(parser.getBooleanValue());
+               } catch (IOException e) {log.severe("Error while parsing forceUpdate: " + e.getMessage());}
                break;
 
             case "redeliver":
-               msgQosData.setRedeliver(parser.getIntValue());
+               try {
+                  msgQosData.setRedeliver(parser.getIntValue());
+               } catch (IOException e) {log.severe("Error while parsing redeliver: " + e.getMessage());}
                break;
 
             case "route":
                if (parser.currentToken() == JsonToken.START_ARRAY) {
                   while (parser.nextToken() != JsonToken.END_ARRAY) {
-                     RouteInfo routeInfo = jsonToRouteInfo(parser);
-                     msgQosData.addRouteInfo(routeInfo);
+                     try { 
+                        RouteInfo routeInfo = jsonToRouteInfo(parser); 
+                        msgQosData.addRouteInfo(routeInfo);
+                     } catch (IOException e) {log.severe("Error while parsing redeliver: " + e.getMessage());}
                   }
                }
                break;
 
             case "isPublish":
-               msgQosData.setMethod(MethodName.PUBLISH);
+               try {
+                  if (parser.getBooleanValue()) msgQosData.setMethod(MethodName.PUBLISH);
+               } catch (IOException e) {log.severe("Error while parsing isPublish");}
                break;
 
             case "isUpdate":
-               msgQosData.setMethod(MethodName.UPDATE);
+               try {
+                  if (parser.getBooleanValue()) msgQosData.setMethod(MethodName.UPDATE);
+               } catch (IOException e) {log.severe("Error while parsing isUpdate");}
                break;
 
             case "isGet":
-               msgQosData.setMethod(MethodName.GET);
+               try {
+                  if (parser.getBooleanValue()) msgQosData.setMethod(MethodName.GET);
+               } catch (IOException e) {log.severe("Error while parsing isGet");}
                break;
 
             case "topicProperty":
+               try {
                msgQosData.setTopicProperty(parseTopicProperty(parser));
+               } catch (IOException e) {log.severe("Error while parsing topicProperty");}
                break;
 
             default:
@@ -224,7 +277,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
       } catch (IOException e) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
-               "Failed to parse JSON QoS: " + e.getMessage());
+               "Failed to parse JSON QoS at: " + e.getMessage());
       }
 
       return msgQosData;
@@ -233,73 +286,102 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
    private TopicProperty parseTopicProperty(JsonParser parser) throws IOException {
       TopicProperty topic = new TopicProperty(glob);
 
-      // We assume parser is currently at START_OBJECT ("topicProperty")
+      // We assume parser is currently at START_OBJECT: "topicProperty": { <--- parser here)
       while (parser.nextToken() != JsonToken.END_OBJECT) {
-          String fieldName = parser.currentName();
-          if (fieldName == null) {
-              continue;
-          }
+         String fieldName = parser.currentName();
+         if (fieldName == null) {
+            continue;
+         }
 
-          parser.nextToken(); // move to the value of this field
+         parser.nextToken(); // move to the value of this field
 
-          switch (fieldName) {
-              case "readonly":
-                  topic.setReadonly(parser.getBooleanValue());
-                  break;
+         switch (fieldName) {
+         case "readonly":
+            try {
+               topic.setReadonly(parser.getBooleanValue());
+            } catch (IOException e) {
+               log.severe("Error while parsing 'readonly'");
+               throw e;
+            }
+            break;
 
-              case "destroyDelay":
-                  topic.setDestroyDelay(parser.getLongValue());
-                  break;
+         case "destroyDelay":
+            try {
+               topic.setDestroyDelay(parser.getLongValue());
+            } catch (IOException e) {
+               log.severe("Error while parsing 'destroyDelay'");
+               throw e;
+            }
+            break;
 
-              case "createDomEntry":
-                  topic.setCreateDomEntry(parser.getBooleanValue());
-                  break;
+         case "createDomEntry":
+            try {
+               topic.setCreateDomEntry(parser.getBooleanValue());
+            } catch (IOException e) {
+               log.severe("Error while parsing 'createDomEntry'");
+               throw e;
+            }
+            break;
 
-              case "msgDistributor":
-                  if (parser.currentToken() == JsonToken.START_OBJECT) {
-                      while (parser.nextToken() != JsonToken.END_OBJECT) {
-                          String subField = parser.currentName();
-                          parser.nextToken();
-                          if ("typeVersion".equals(subField)) {
-                              topic.setMsgDistributor(parser.getText());
-                          } else {
-                              parser.skipChildren();
-                          }
-                      }
-                  } else {
-                      parser.skipChildren();
+         case "msgDistributor":
+            if (parser.currentToken() == JsonToken.START_OBJECT) {
+               while (parser.nextToken() != JsonToken.END_OBJECT) {
+                  String subField = parser.currentName();
+                  parser.nextToken();
+                  try {
+                     if ("typeVersion".equals(subField)) {
+                        topic.setMsgDistributor(parser.getText());
+                     } else {
+                        parser.skipChildren();
+                     }
+                  } catch (IOException e) {
+                     log.severe("Error while parsing 'msgDistributor' subfield");
+                     throw e;
                   }
-                  break;
+               }
+            } else {
+               log.severe("Error while parsing 'msgDistributor' subfield");
+               parser.skipChildren();
+            }
+            break;
 
-              case "persistence":
-                 // this should probably go into the respective classes!
-                 MsgUnitStoreProperty tmpMsgUnitStoreProp = new MsgUnitStoreProperty(glob, glob.getId());
-                 tmpMsgUnitStoreProp.parseJson(parser); // parse the msgUnitStoreProperty Section
-                  topic.setMsgUnitStoreProperty(tmpMsgUnitStoreProp);
-                  break;
+         case "persistence":
+            MsgUnitStoreProperty tmpMsgUnitStoreProp = new MsgUnitStoreProperty(glob, glob.getId());
+            try {
+               tmpMsgUnitStoreProp.parseJson(parser);
+            } catch (IOException e) {
+               log.severe("Error while parsing 'persistence'");
+               throw e;
+            }
+            topic.setMsgUnitStoreProperty(tmpMsgUnitStoreProp);
+            break;
 
-              case "queue":
-                 HistoryQueueProperty tmpHistoryProp = new HistoryQueueProperty(glob, glob.getId());
-                 tmpHistoryProp.parseJson(parser);// parse the historyQueueProperty Section
-                 topic.setHistoryQueueProperty(tmpHistoryProp);
-                  break;
+         case "queue":
+            HistoryQueueProperty tmpHistoryProp = new HistoryQueueProperty(glob, glob.getId());
+            try {
+               tmpHistoryProp.parseJson(parser);
+            } catch (IOException e) {
+               log.severe("Error while parsing 'queue'");
+               throw e;
+            }
+            topic.setHistoryQueueProperty(tmpHistoryProp);
+            break;
 
-              default:
-                  parser.skipChildren(); // ignore unknown fields
-          }
+         default:
+            log.warning("Ignoring unknown QoS, topicProperty field: " + fieldName);
+            parser.skipChildren(); // ignore unknown fields
+         }
       }
-
       return topic;
-  }
+   }
 
    /**
-    * Helper to parse one RouteInfo object from JSON
+    * Helper to parse one RouteInfo 'route' object from JSON
     */
    private RouteInfo jsonToRouteInfo(JsonParser parser) throws IOException {
       NodeId nodeId = null;
       int stratum = 0;
       Timestamp timestamp = new Timestamp(0L);
-
       boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
 
       if (parser.currentToken() == JsonToken.START_OBJECT) {
@@ -307,25 +389,51 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             switch (parser.currentName()) {
             case "id":
                parser.nextToken();
-               nodeId = new NodeId(parser.getValueAsString());
+               try {
+                  nodeId = new NodeId(parser.getValueAsString());
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'id'");
+                  throw e;
+               }
                break;
+
             case "stratum":
                parser.nextToken();
-               stratum = parser.getIntValue();
+               try {
+                  stratum = parser.getIntValue();
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'stratum', expected number");
+                  throw e;
+               }
                break;
+
             case "timestamp":
                parser.nextToken();
-               timestamp = new Timestamp(parser.getLongValue());
+               try {
+                  timestamp = new Timestamp(parser.getLongValue());
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'timestamp', expected number");
+                  throw e;
+               }
                break;
+
             case "dirtyRead":
                parser.nextToken();
-               dirtyRead = parser.getBooleanValue();
+               try {
+                  dirtyRead = parser.getBooleanValue();
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'dirtyRead'");
+                  throw e;
+               }
                break;
+
             default:
+               log.warning("Ignoring unknown QoS, topicProperty field: " + parser.currentName());
                parser.skipChildren();
             }
          }
-      }
+      } else
+         log.severe("Error while parsing routeinfo, excpected startobject after 'route' key, usin default values...");
 
       RouteInfo routeInfo = new RouteInfo(nodeId, stratum, timestamp);
       routeInfo.setDirtyRead(dirtyRead);
@@ -365,39 +473,6 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
       return dest;
    }
    
-   public void topicToJson(JsonGenerator gen, TopicProperty topic) throws IOException {
-      if (topic == null) {
-          return;
-      }
-
-      gen.writeObjectFieldStart("topicProperty"); // "topicProperty": { ... }
-
-      if (topic.isReadonlyModified()) {
-          gen.writeBooleanField("readonly", topic.isReadonly());
-      }
-      if (topic.isDestroyDelayModified()) {
-          gen.writeNumberField("destroyDelay", topic.getDestroyDelay());
-      }
-      if (topic.isCreateDomEntryModified()) {
-          gen.writeBooleanField("createDomEntry", topic.createDomEntry());
-      }
-
-      if (topic.isMsgDistributorModified()) {
-          gen.writeObjectFieldStart("msgDistributor");
-          gen.writeStringField("typeVersion", topic.getMsgDistributor());
-          gen.writeEndObject();
-      }
-
-      if (topic.hasMsgUnitStoreProperty()) {
-          topic.getMsgUnitStoreProperty().toJson(gen); // delegate
-      }
-
-      if (topic.hasHistoryQueueProperty()) {
-          topic.getHistoryQueueProperty().toJson(gen); // delegate
-      }
-
-      gen.writeEndObject(); // end "topic"
-  }
 
    @Override
    public String writeObject(MsgQosData msgQosData, String extraOffset, Properties props) {
@@ -567,6 +642,40 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
          return "{}";
       }
    }
+
+   public void topicToJson(JsonGenerator gen, TopicProperty topic) throws IOException {
+      if (topic == null) {
+          return;
+      }
+
+      gen.writeObjectFieldStart("topicProperty"); // "topicProperty": { ... }
+
+      if (topic.isReadonlyModified()) {
+          gen.writeBooleanField("readonly", topic.isReadonly());
+      }
+      if (topic.isDestroyDelayModified()) {
+          gen.writeNumberField("destroyDelay", topic.getDestroyDelay());
+      }
+      if (topic.isCreateDomEntryModified()) {
+          gen.writeBooleanField("createDomEntry", topic.createDomEntry());
+      }
+
+      if (topic.isMsgDistributorModified()) {
+          gen.writeObjectFieldStart("msgDistributor");
+          gen.writeStringField("typeVersion", topic.getMsgDistributor());
+          gen.writeEndObject();
+      }
+
+      if (topic.hasMsgUnitStoreProperty()) {
+          topic.getMsgUnitStoreProperty().toJson(gen); // delegate
+      }
+
+      if (topic.hasHistoryQueueProperty()) {
+          topic.getHistoryQueueProperty().toJson(gen); // delegate
+      }
+
+      gen.writeEndObject(); // end "topic"
+  }
 
    @Override
    public String getName() {

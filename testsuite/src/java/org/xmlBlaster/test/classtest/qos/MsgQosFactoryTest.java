@@ -131,12 +131,103 @@ public class MsgQosFactoryTest extends TestCase {
 
       System.out.println("***MsgQosFactoryTest: testParse [SUCCESS]");
    }
+   
+   public void testParseJson() {
+      System.out.println("***MsgQosFactoryTest: testParseJson ...");
+      
+      try {
+         String json = """
+                     {
+                        "state": {
+                            "id": "AA",
+                            "info": "SOMETHING"
+                        },
+                        "subscribable": true,
+                        "destinations": [
+                            {
+                                "queryType": "EXACT",
+                                "forceQueuing": true,
+                                "value": "Tim"
+                            },
+                            {
+                                "queryType": "EXACT",
+                                "value": "Ben"
+                            }
+                        ],
+                        "sender": "Gesa",
+                        "priority": "MIN",
+                        "administrative": true,
+                        "persistent": true,
+                        "forceUpdate": false,
+                        "route": [ {
+                                    "id": "bilbo",
+                                    "stratum": 2,
+                                    "timestamp": 9408630500,
+                                    "dirtyRead": true
+                                },
+                                {
+                                    "id": "frodo",
+                                    "stratum": 1,
+                                    "timestamp": 9408630538,
+                                    "dirtyRead": false
+                                },
+                                {
+                                    "id": "heron",
+                                    "stratum": 0,
+                                    "timestamp": 9408630564
+                                }
+                            ]
+                        }
+                               """;
+
+         MsgQosData qos = jsonFactory.readObject(json);
+
+         assertEquals("", "AA", qos.getState());
+         assertEquals("", "SOMETHING", qos.getStateInfo());
+         assertEquals("", true, qos.isPtp());
+         assertEquals("", true, qos.isAdministrative());
+         assertEquals("", true, qos.isPersistent());
+         assertEquals("", false, qos.isForceUpdate());
+         assertEquals("", false, qos.isReadonly());
+         assertEquals("", "Gesa", qos.getSender().getLoginName());
+
+         assertEquals("", 0L, qos.getLifeTime()); // PtP message (because of Destination) is volatile
+         assertEquals("", -1L, qos.getRemainingLifeStatic());
+
+         assertEquals("", 3, qos.getRouteNodes().length);
+         assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
+         assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
+         assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
+         assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
+         assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
+         assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
+
+         assertEquals("", PriorityEnum.MIN_PRIORITY, qos.getPriority());
+         assertEquals("", false, qos.isFromPersistenceStore());
+         assertTrue("no receive timestamp expected", qos.getRcvTimestamp() == null);
+         assertEquals("", true, qos.isSubscribable());
+         assertEquals("", 2, qos.getDestinations().size());
+         assertEquals("", true, ((Destination)qos.getDestinations().get(0)).forceQueuing());
+         assertEquals("", true, ((Destination)qos.getDestinations().get(0)).isExactAddress());
+         assertEquals("", false, ((Destination)qos.getDestinations().get(0)).isXPathQuery());
+         // XPath is currently not supported
+         //assertEquals("", false, ((Destination)qos.getDestinations().get(2)).isExactAddress());
+         //assertEquals("", true, ((Destination)qos.getDestinations().get(2)).isXPathQuery());
+      }
+      catch (XmlBlasterException e) {
+         fail("testParse failed: " + e.toString());
+      }
+
+      System.out.println("***MsgQosFactoryTest: testParse [SUCCESS]");
+   }
 
    /**
-    * Tries with all known tags
+    * Test toXml and test toJson ((parse - createXml - parse again - createJSON - parse again - test)
+    * Two Birds with one Stone
+    * Tries all known tags
     */
-   public void testToXml() {
-      System.out.println("***MsgQosFactoryTest: testToXml ...");
+   public void testToXmlAndToJson() {
+      System.out.println("***MsgQosFactoryTest: testToXmlAndToJson ...");
       
       try {
          String xml =
@@ -184,7 +275,7 @@ public class MsgQosFactoryTest extends TestCase {
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
          String newJson = jsonFactory.writeObject(qos, "", null);
-         System.out.println("new JSON:\n" + newJson);
+         log.info("New XML=" + newJson);
          qos = jsonFactory.readObject(newJson);
 
          assertEquals("", "AA", qos.getState());
@@ -250,7 +341,7 @@ public class MsgQosFactoryTest extends TestCase {
          fail("testToXml failed: " + e.toString());
       }
 
-      System.out.println("***MsgQosFactoryTest: testToXml [SUCCESS]");
+      System.out.println("***MsgQosFactoryTest: testToXmlAndToJson [SUCCESS]");
    }
 
    /**
@@ -290,44 +381,22 @@ public class MsgQosFactoryTest extends TestCase {
             "   </route>\n" +
             "</qos>\n";
 
+         System.out.println("Testing xml GetReturnQos");
          PublishQosServer qos = new PublishQosServer(new org.xmlBlaster.engine.ServerScope(), xml);
-         System.out.println("qos object created");
+         assertPublishQosServer(qos);
+
+         System.out.println("Testing json GetReturnQos");
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData mqos = factory.readObject(xml);
-         System.out.println("mqos object created");
          String jsonMsgQos = jsonFactory.writeObject(mqos, "", null);
          System.out.println("publishQosServer JSON:\n" + jsonMsgQos);
-         System.out.println("mqos object serialized");
          mqos = jsonFactory.readObject(jsonMsgQos);
          /* TODO: this type of object creation technique would require intervention in code! Maybe we can 
                   just make the standard xml factory detect JSON and call this factory if it is detecting JSON*/
          // TODO: This session_name = null so "Invalid destination address, please check your PtP PublishQos" exception gets thrown
+         // overwrite the PublishQosServer object
          qos = new PublishQosServer(new org.xmlBlaster.engine.ServerScope(), mqos);
-
-
-         assertEquals("", true, qos.isSubscribable());
-         assertEquals("", true, qos.isPtp());
-         assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isPersistent());
-         assertEquals("", false, qos.isForceUpdate());
-         assertEquals("", false, qos.isReadonly());
-         assertEquals("", "Gesa", qos.getSender().getLoginName());
-
-         assertEquals("", 3, qos.getRouteNodes().length);
-         assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
-         assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
-         assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
-         assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
-         assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
-         assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
-
-         assertEquals("", PriorityEnum.HIGH_PRIORITY, qos.getPriority());
-         assertEquals("", false, qos.isFromPersistenceStore());
-         Timestamp timestamp = new Timestamp();
-         assertTrue("timestamp.getTimestamp()="+timestamp.getTimestamp()+" qos.getRcvTimestamp().getTimestamp()="+qos.getRcvTimestamp().getTimestamp() , timestamp.getTimestamp() > qos.getRcvTimestamp().getTimestamp());
-         assertTrue("timestamp.getTimestamp()="+timestamp.getTimestamp()+" qos.getRcvTimestamp().getTimestamp()="+qos.getRcvTimestamp().getTimestamp() , timestamp.getTimestamp() < (qos.getRcvTimestamp().getTimestamp()+10000000));
-         assertEquals("", 2, qos.getDestinations().size());
-         assertEquals("", true, ((Destination)qos.getDestinations().get(0)).forceQueuing());
+         assertPublishQosServer(qos);
       }
       catch (XmlBlasterException e) {
          fail("testPublishQosServer failed: " + e.toString());
@@ -336,6 +405,32 @@ public class MsgQosFactoryTest extends TestCase {
       System.out.println("***MsgQosFactoryTest: testPublishQosServer [SUCCESS]");
    }
 
+   private static void assertPublishQosServer(PublishQosServer qos) {
+      assertEquals("", true, qos.isSubscribable());
+      assertEquals("", true, qos.isPtp());
+      assertEquals("", false, qos.isVolatile());
+      assertEquals("", true, qos.isPersistent());
+      assertEquals("", false, qos.isForceUpdate());
+      assertEquals("", false, qos.isReadonly());
+      assertEquals("", "Gesa", qos.getSender().getLoginName());
+
+      assertEquals("", 3, qos.getRouteNodes().length);
+      assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
+      assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
+      assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
+      assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
+
+      assertEquals("", PriorityEnum.HIGH_PRIORITY, qos.getPriority());
+      assertEquals("", false, qos.isFromPersistenceStore());
+      Timestamp timestamp = new Timestamp();
+      assertTrue("timestamp.getTimestamp()="+timestamp.getTimestamp()+" qos.getRcvTimestamp().getTimestamp()="+qos.getRcvTimestamp().getTimestamp() , timestamp.getTimestamp() > qos.getRcvTimestamp().getTimestamp());
+      assertTrue("timestamp.getTimestamp()="+timestamp.getTimestamp()+" qos.getRcvTimestamp().getTimestamp()="+qos.getRcvTimestamp().getTimestamp() , timestamp.getTimestamp() < (qos.getRcvTimestamp().getTimestamp()+10000000));
+      assertEquals("", 2, qos.getDestinations().size());
+      assertEquals("", true, ((Destination)qos.getDestinations().get(0)).forceQueuing());
+   }
+   
    /**
     * Tries with all known tags
     */
@@ -375,27 +470,18 @@ public class MsgQosFactoryTest extends TestCase {
             "   </route>\n" +
             "</qos>\n";
 
+         // Test default creation method
+         System.out.println("Testing xml GetReturnQos");
+         GetReturnQos qos = new GetReturnQos(glob, xml);
+         assertGetReturnQos(qos, timestamp);
+
+         System.out.println("Testing json GetReturnQos");
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData msgQos = factory.readObject(xml);
          String jsonMsgQos = jsonFactory.writeObject(msgQos, "", null);
          System.out.println("GetReturnQos JSON:\n" + jsonMsgQos);
-         GetReturnQos qos = new GetReturnQos(glob, jsonFactory.readObject(jsonMsgQos));
-
-         assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isPersistent());
-         assertEquals("", false, qos.isReadonly());
-         assertEquals("", "Gesa", qos.getSender().getLoginName());
-
-         assertEquals("", 3, qos.getRouteNodes().length);
-         assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
-         assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
-         assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
-         assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
-         assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
-         assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
-
-         assertEquals("", PriorityEnum.HIGH_PRIORITY, qos.getPriority());
-         assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
+         qos = new GetReturnQos(glob, jsonFactory.readObject(jsonMsgQos));
+         assertGetReturnQos(qos, timestamp);
       }
       catch (XmlBlasterException e) {
          fail("testGetReturnQos failed: " + e.toString());
@@ -404,6 +490,24 @@ public class MsgQosFactoryTest extends TestCase {
       System.out.println("***MsgQosFactoryTest: testGetReturnQos [SUCCESS]");
    }
 
+   private static void assertGetReturnQos(GetReturnQos qos, Timestamp timestamp) {
+      assertEquals("", false, qos.isVolatile());
+      assertEquals("", true, qos.isPersistent());
+      assertEquals("", false, qos.isReadonly());
+      assertEquals("", "Gesa", qos.getSender().getLoginName());
+
+      assertEquals("", 3, qos.getRouteNodes().length);
+      assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
+      assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
+      assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
+      assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
+
+      assertEquals("", PriorityEnum.HIGH_PRIORITY, qos.getPriority());
+      assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
+   }
+   
    /**
     * Tries with all known tags
     */
@@ -443,26 +547,18 @@ public class MsgQosFactoryTest extends TestCase {
             "   </route>\n" +
             "   <topic readonly='true'/>\n" +
             "</qos>\n";
-
+         
+         System.out.println("Testing xml UpdateQos");
          UpdateQos qos = new UpdateQos(glob, xml);
+         assertUpdateQos(qos, timestamp);
 
-         assertEquals("", true, qos.isSubscribable());
-         assertEquals("", true, qos.isPtp());
-         assertEquals("", false, qos.isVolatile());
-         assertEquals("", true, qos.isPersistent());
-         assertEquals("", true, qos.isReadonly());
-         assertEquals("", "Gesa", qos.getSender().getLoginName());
-
-         assertEquals("", 3, qos.getRouteNodes().length);
-         assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
-         assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
-         assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
-         assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
-         assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
-         assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
-
-         assertEquals("", PriorityEnum.HIGH_PRIORITY, qos.getPriority());
-         assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
+         System.out.println("Testing json UpdateQos");
+         MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
+         MsgQosData mqos = factory.readObject(xml);
+         String jsonUpdateQos = jsonFactory.writeObject(mqos, null, null);
+         System.out.println("test UpdateQos JSON:\n" + jsonUpdateQos);
+         qos = new UpdateQos(glob, jsonFactory.readObject(jsonUpdateQos));
+         assertUpdateQos(qos, timestamp);
       }
       catch (XmlBlasterException e) {
          fail("testUpdateQos failed: " + e.toString());
@@ -471,6 +567,26 @@ public class MsgQosFactoryTest extends TestCase {
       System.out.println("***MsgQosFactoryTest: testUpdateQos [SUCCESS]");
    }
 
+   private static void assertUpdateQos(UpdateQos qos, Timestamp timestamp) {
+      assertEquals("", true, qos.isSubscribable());
+      assertEquals("", true, qos.isPtp());
+      assertEquals("", false, qos.isVolatile());
+      assertEquals("", true, qos.isPersistent());
+      assertEquals("", true, qos.isReadonly());
+      assertEquals("", "Gesa", qos.getSender().getLoginName());
+
+      assertEquals("", 3, qos.getRouteNodes().length);
+      assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
+      assertEquals("", 0, qos.getRouteNodes()[2].getStratum());
+      assertEquals("", 9408630500L, qos.getRouteNodes()[0].getTimestamp().getTimestamp());
+      assertEquals("", true, qos.getRouteNodes()[0].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[1].getDirtyRead());
+      assertEquals("", false, qos.getRouteNodes()[2].getDirtyRead());
+
+      assertEquals("", PriorityEnum.HIGH_PRIORITY, qos.getPriority());
+      assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
+   }
+   
    /**
     * Tests given rcvTimestamp
     */
@@ -484,9 +600,14 @@ public class MsgQosFactoryTest extends TestCase {
             "   <rcvTimestamp nanos='" + timestamp.getTimestamp() + "'/>\n" + // if from persistent store
             "</qos>\n";
 
+         // Test xml
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData qos = factory.readObject(xml);
+         assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
 
+         // Test JSON
+         String json = "{\"rcvTimestamp\" : " + timestamp.getTimestamp() + "}";
+         qos = jsonFactory.readObject(json);
          assertEquals("", timestamp.getTimestamp(), qos.getRcvTimestamp().getTimestamp());
       }
       catch (XmlBlasterException e) {
@@ -516,6 +637,17 @@ public class MsgQosFactoryTest extends TestCase {
          log.info("Created administrative publish" + xml);
          assertTrue("Missing administrative in " + xml, xml.indexOf("<administrative/>") > -1);
          assertTrue("Wrong priority in " + xml, xml.indexOf("9") > -1 || xml.indexOf("MAX") > -1 );
+         String json = jsonFactory.writeObject(msgQosData, "", null);
+         /*
+            {
+              "priority" : "MAX",
+              "administrative" : true,
+              "isPublish" : true
+             }
+          */
+         log.info("Created administrative publish\n" + json);
+         assertTrue("Missing administrative in " + json, json.indexOf("administrative") > -1);
+         assertTrue("Wrong priority in " + json, json.indexOf("9") > -1 || json.indexOf("MAX") > -1 );
 
       //}
       //catch (XmlBlasterException e) {
@@ -534,20 +666,14 @@ public class MsgQosFactoryTest extends TestCase {
       try {
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData qos = factory.readObject((String)null);
+         System.out.println("Testing xml default");
+         assertDefault(qos);
+         qos = jsonFactory.readObject((String)null);
+         assertDefault(qos);
+         System.out.println("Testing json default");
+
          //qos.addRouteInfo(new RouteInfo(new NodeId("master"), 0, new Timestamp(9408630587L)));
-         assertEquals("", true, qos.isSubscribable());
-         assertEquals("", false, qos.isPtp());
-         assertEquals("", false, qos.isVolatile());
-         assertEquals("", false, qos.isAdministrative());
-         assertEquals("", false, qos.isPersistent());
-         assertEquals("", true, qos.isForceUpdate());
-         assertEquals("", false, qos.isReadonly());
-         assertEquals("", null, qos.getSender());
-         assertEquals("", 0, qos.getRouteNodes().length);
-         assertEquals("", PriorityEnum.NORM_PRIORITY, qos.getPriority());
-         assertEquals("", false, qos.isFromPersistenceStore());
-         assertTrue("", qos.getRcvTimestamp() == null);
-         assertEquals("", null, qos.getDestinations());
+
       }
       catch (XmlBlasterException e) {
          fail("testDefault failed: " + e.toString());
@@ -556,6 +682,22 @@ public class MsgQosFactoryTest extends TestCase {
       System.out.println("***MsgQosFactoryTest: testDefault [SUCCESS]");
    }
 
+   private static void assertDefault(MsgQosData qos) {
+      assertEquals("", true, qos.isSubscribable());
+      assertEquals("", false, qos.isPtp());
+      assertEquals("", false, qos.isVolatile());
+      assertEquals("", false, qos.isAdministrative());
+      assertEquals("", false, qos.isPersistent());
+      assertEquals("", true, qos.isForceUpdate());
+      assertEquals("", false, qos.isReadonly());
+      assertEquals("", null, qos.getSender());
+      assertEquals("", 0, qos.getRouteNodes().length);
+      assertEquals("", PriorityEnum.NORM_PRIORITY, qos.getPriority());
+      assertEquals("", false, qos.isFromPersistenceStore());
+      assertTrue("", qos.getRcvTimestamp() == null);
+      assertEquals("", null, qos.getDestinations());
+   }
+   
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
@@ -566,7 +708,8 @@ public class MsgQosFactoryTest extends TestCase {
       MsgQosFactoryTest testSub = new MsgQosFactoryTest("MsgQosFactoryTest");
       testSub.setUp();
       testSub.testParse();
-      testSub.testToXml();
+      testSub.testParseJson();
+      testSub.testToXmlAndToJson();
       testSub.testFromPersistentStore();
       testSub.testAdministrative();
       testSub.testPublishQosServer();
