@@ -303,12 +303,23 @@ public class Global implements Cloneable
 
       try { // since JKD 1.4:
          URL url = initLogManager(args);
-         if (url != null)
+         if (url != null) {
             log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
+         }
+         logJvmDetails();
       }
       catch (XmlBlasterException e) {
          System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
       }
+   }
+   
+   public void logJvmDetails() {
+     // "java.version: " + System.getProperty("java.version") -> 17.0.11
+     log.info("java.home: " + System.getProperty("java.home")
+              + ", java.runtime.version: " + System.getProperty("java.runtime.version")
+              // + ", java.vendor: " + System.getProperty("java.vendor")
+              + ", java.vm.name: " + System.getProperty("java.vm.name")
+              + ", java.vm.version: " + System.getProperty("java.vm.version"));
    }
    
    public boolean supportJmx() {
@@ -739,6 +750,7 @@ public class Global implements Cloneable
             URL url = initLogManager(args);
             if (url != null)
                log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
+            logJvmDetails();
          }
          catch (XmlBlasterException e) {
             System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
