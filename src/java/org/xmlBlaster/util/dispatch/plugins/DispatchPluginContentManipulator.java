@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.dispatch.ServerDispatchManager;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.Global;
@@ -146,6 +147,14 @@ public class DispatchPluginContentManipulator implements I_Plugin, I_MsgDispatch
    @Override
    public void initialize(Global glob, String typeVersion) throws XmlBlasterException {
       log.info("I_MsgDispatchInterceptor succefully initialized " + typeVersion);
+      if (!(glob instanceof ServerScope)) {
+         return; // should never be reached
+      }
+      synchronized(this) {
+         // We only have one status client in the Global scope
+         // As we have a ServerScope, eg an Authentication plugin could pass more information to us:
+         // Object obj = glob.getObjectEntry("PriorizedDispatchPlugin.xmlBlasterAccess");
+      }
    }
 
    /**
