@@ -77,6 +77,9 @@
       For the above example exists an implementation which you can use or change
       to your needs, see the <i>PriorizedDispatchPlugin</i> link below.
       </p>
+      <p>
+      See org.xmlBlaster.util.dispatch.plugins.DispatchPluginContentManipulator.java which has a minimal setup to get started.
+      </p>
    </description>
    <configuration where="server">
 
@@ -117,6 +120,7 @@
       </p -->
    </configuration>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor</see>
+   <see type="API">org.xmlBlaster.util.dispatch.plugins.DispatchPluginContentManipulator</see>
    <see type="API">org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">dispatch.plugin.priorizedDispatch</see>
