@@ -314,6 +314,14 @@ public class ReferenceEntry extends MsgQueueEntry
       return msgUnitWrapper.getMsgUnit();
    }
 
+   public void setMsgUnit(MsgUnit msgUnit) throws XmlBlasterException {
+      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+      if (msgUnitWrapper == null) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Message " + getUniqueId() + " not found");
+      }
+      msgUnitWrapper.setMsgUnit(msgUnit);
+   }
+
    public void setMsgUnitWrapper(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (msgUnitWrapper == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Given msgUnitWrapper is null");
