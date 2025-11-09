@@ -71,7 +71,7 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     * <pre>
     *  // take messages from queue (none blocking)
     *  // we take all messages with same priority as a bulk ...
-    *  ArrayList entryList = dispatchManager.getQueue().peekSamePriority(-1);
+    *  ArrayList entryList = dispatchManager.getQueue().peekSamePriority(-1, -1L);
     *
     *  // filter expired entries etc. ...
     *  // you should always call this method after taking messages from queue
