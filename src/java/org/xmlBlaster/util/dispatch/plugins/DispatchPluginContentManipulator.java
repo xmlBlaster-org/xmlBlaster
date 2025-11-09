@@ -179,16 +179,21 @@ public class DispatchPluginContentManipulator implements I_Plugin, I_MsgDispatch
       // priority as a bulk ...
       List<I_Entry> entryList = dispatchManager.getQueue().peekSamePriority(-1, -1L);
       entryList = dispatchManager.prepareMsgsFromQueue(entryList);
-      log.info("... " + mgr.getSessionName().getRelativeName() + " -> num messages=" + entryList.size());
+      log.info(mgr.getSessionName().getRelativeName() + " -> num messages=" + entryList.size());
 
       for (I_Entry ientry : entryList) {
          MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry) ientry;
+         String topicId = entry.getMsgKeyData().getOid();
+         String contentMimeExtended = entry.getMsgKeyData().getContentMimeExtended();
+         if (!"jsonContentToBeFiltered".equals(contentMimeExtended)) {
+            log.info("topicId=" + topicId + ",contentMimeExtended=" + contentMimeExtended + " wants no manipulation");
+            continue;
+         }
+
          MsgUnitWrapper msgUnitWrapper = entry.getMsgUnitWrapper().getClone();
          entry.setMsgUnitWrapper(msgUnitWrapper);
-         MsgUnit msgUnit = entry.getMsgUnit();
-         String topicId = msgUnit.getKeyData().getOid();
-         String contentMimeExtended = msgUnit.getKeyData().getContentMimeExtended();
 
+         MsgUnit msgUnit = entry.getMsgUnit();
          String contentStr = msgUnit.getContentStr();
 
          log.info("topicId=" + topicId + ",contentMimeExtended=" + contentMimeExtended
