@@ -766,5 +766,43 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    public StorageId getStorageId() {
       return this.storageId;
    }
+   
+   /**
+    * Copy constructor (shallow copy). Assigns all final fields from the source.
+    * For mutable fields (msgUnit, returnObj, ownerCache, storageId, Timestamps, etc.)
+    * this does a shallow copy: the returned object will reference the same nested objects.
+    *
+    * If you need deep copies of some nested objects, replace the corresponding
+    * assignment with an explicit deep-copy operation.
+    */
+   private MsgUnitWrapper(MsgUnitWrapper other) {
+       this.glob = other.glob;
+       this.uniqueId = other.uniqueId;
+       this.uniqueIdStr = other.uniqueIdStr;
+       this.embeddedType = other.embeddedType;
+       this.immutableSizeInBytes = other.immutableSizeInBytes;
+
+       // primitive / value-type fields
+       this.historyReferenceCounter = other.historyReferenceCounter;
+       this.referenceCounter = other.referenceCounter;
+       this.wantReturnObj = other.wantReturnObj;
+       this.state = other.state;
+       this.stored = other.stored;
+       this.swapped = other.swapped;
+
+       // object fields (shallow copy)
+       this.ownerCache = other.ownerCache;
+       this.returnObj = other.returnObj;
+       this.destroyTimer = other.destroyTimer;
+       this.timerKey = other.timerKey;
+       this.msgUnit = other.msgUnit.getClone();    // <-- deep-copy
+       this.sortTimestamp = other.sortTimestamp;
+       this.storageId = other.storageId;
+   }
+   
+   public MsgUnitWrapper getClone() {
+      MsgUnitWrapper copy = new MsgUnitWrapper(this);
+      return copy;
+   }
 }
 
