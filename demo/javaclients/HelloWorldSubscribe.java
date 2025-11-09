@@ -11,6 +11,8 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.property.Args;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -107,6 +109,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String oid;
    private String domain;
    private String xpath;
+   private String dispatchPlugin;
    private boolean multiSubscribe;
    private boolean persistentSubscribe;
    private boolean notifyOnErase;
@@ -148,6 +151,7 @@ public class HelloWorldSubscribe implements I_Callback
       this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
       this.interactive = glob.getProperty().get("interactive", true);
       this.autoSubscribe = glob.getProperty().get("autoSubscribe", false);
+      this.dispatchPlugin = glob.getProperty().get("dispatchPlugin", ""); // -dispatchPlugin ContentManipulator,1.0
       this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
       this.updateSleep = glob.getProperty().get("updateSleep", 0L);
       this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);
@@ -229,6 +233,7 @@ public class HelloWorldSubscribe implements I_Callback
          else {
             log.info("   -connect/qos/clientProperty[]   ");
          }
+         log.info("   -dispatchPlugin    " + dispatchPlugin);
          log.info("   -interactive       " + interactive);
          log.info("   -autoSubscribe     " + autoSubscribe);
          log.info("   -interactiveUpdate " + this.interactiveUpdate);
@@ -318,6 +323,10 @@ public class HelloWorldSubscribe implements I_Callback
                String key = (String)it.next();
                qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
             }
+         }
+         if (this.dispatchPlugin != null && this.dispatchPlugin.length() > 0) { // "Priority,1.0"
+            CallbackAddress cbAddress = qos.getData().getSessionCbQueueProperty().getCurrentCallbackAddress();
+            cbAddress.setDispatchPlugin(this.dispatchPlugin);
          }
          log.info("ConnectQos is " + qos.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
