@@ -205,6 +205,15 @@ public final class MsgUnit implements java.io.Serializable
       else
          this.content = content;
    }
+   
+   public void setContentStr(String contentStr) {
+      if (contentStr == null || contentStr.length() == 0) {
+         this.content = EMPTY_BYTEARR;
+      }
+      else {
+         this.content = Constants.toUtf8Bytes(contentStr);
+      }
+   }   
 
    /**
     * The key oid, can be null if not a PUBLISH or UPDATE
