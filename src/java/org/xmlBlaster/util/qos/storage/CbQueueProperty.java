@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 /**
@@ -95,6 +97,15 @@ public class CbQueueProperty extends QueuePropertyBase
       this.hasCallbackAddress = true;
    }
 
+   @Override
+   protected void addParsedAddress(AddressBase addr) {
+      // this will always be an Address
+      if (addr instanceof CallbackAddress) {
+         this.setCallbackAddress((CallbackAddress) addr);
+      }
+   }
+
+   
    /**
     */
    public void setCallbackAddresses(CallbackAddress[] addresses) {

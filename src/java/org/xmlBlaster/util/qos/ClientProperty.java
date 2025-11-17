@@ -6,9 +6,16 @@ Comment:   Handling one client property of QosData
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.io.IOException;
+
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * This class encapsulates one client property in a QoS. 
@@ -93,5 +100,85 @@ public final class ClientProperty extends EncodableData
 
    public String toString() {
       return getStringValue();
+   }
+   
+   public static ClientProperty parseCompactClientProperties(Global glob, JsonParser parser) throws XmlBlasterException {
+      try {
+         if (parser.currentToken() != JsonToken.START_OBJECT) {
+            throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
+                  "Expected START_OBJECT for compact clientProperties");
+         }
+
+         String key = null;
+         String type = null;
+         String value = null;
+         String encoding = null;
+         while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = parser.currentName();
+
+            if (fieldName == null) {
+               throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
+                     "Missing key in compact clientProperty entry");
+            }
+
+            // Move to value:
+            JsonToken valueToken = parser.nextToken();
+
+            if ("encoding".equals(fieldName)) {
+               if (valueToken != JsonToken.VALUE_STRING) {
+                  throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "'encoding' must be a string");
+               }
+               encoding = parser.getValueAsString();
+            } else {
+               key = fieldName;
+
+               switch (valueToken) {
+               case VALUE_NUMBER_INT:
+                  long lVal = parser.getLongValue();
+
+                  if (lVal >= Integer.MIN_VALUE && lVal <= Integer.MAX_VALUE) {
+                     type = "int";
+                     value = Integer.toString((int) lVal);
+                  } else {
+                     type = "long";
+                     value = Long.toString(lVal);
+                  }
+                  break;
+
+               case VALUE_NUMBER_FLOAT:
+                  type = "double";
+                  value = Double.toString(parser.getDoubleValue());
+                  break;
+
+               case VALUE_TRUE:
+               case VALUE_FALSE:
+                  type = "boolean";
+                  value = Boolean.toString(parser.getBooleanValue());
+                  break;
+
+               case VALUE_STRING:
+                  type = "string";
+                  value = parser.getValueAsString();
+                  break;
+
+               case VALUE_NULL:
+                  type = "string";
+                  value = null;
+                  break;
+
+               default:
+                  throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
+                        "Unsupported JSON value for compact clientProperty key='" + key + "'");
+
+               }
+            }
+
+         }
+         return new ClientProperty(key, type, encoding, value);
+
+      } catch (IOException e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
+               "Failed to parse compact clientProperties: " + e.getMessage());
+      }
    }
 }

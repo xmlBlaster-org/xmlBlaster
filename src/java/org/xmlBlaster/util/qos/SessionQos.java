@@ -7,12 +7,16 @@ Comment:   Handling one xmlQoS
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
+import java.io.IOException;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.property.PropLong;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+
 import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.property.PropBoolean;
 
@@ -316,6 +320,38 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       sb.append("/>");
 
       return sb.toString();
+   }
+   
+   /**
+    * Dump state of this object into a Json generator.
+    * <br>
+    * format: {key: field, ...}
+    * <br>
+    * @param gen Json generator used to produce the output
+    */
+   public void toJson(JsonGenerator gen) throws IOException {
+      gen.writeStartObject();
+      
+      if (this.sessionNameModified) {
+         gen.writeStringField("name", this.getSessionName().toString());
+      }
+      if (this.sessionTimeout.isModified()) {
+         gen.writeNumberField("timeout", getSessionTimeout());
+     }
+     if (this.maxSessions.isModified()) {
+         gen.writeNumberField("maxSessions", getMaxSessions());
+     }
+     if (this.clearSessions.isModified()) {
+         gen.writeBooleanField("clearSessions", clearSessions());
+     }
+     if (this.reconnectSameClientOnly.isModified()) {
+         gen.writeBooleanField("reconnectSameClientOnly", reconnectSameClientOnly());
+     }
+     if (this.sessionId != null) {
+         gen.writeStringField("sessionId", this.sessionId);
+     }
+
+     gen.writeEndObject();
    }
 
    /**

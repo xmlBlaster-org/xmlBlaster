@@ -28,6 +28,8 @@ import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 
 /**
@@ -1093,6 +1095,8 @@ public abstract class AddressBase implements Cloneable
       character.setLength(0);
    }
 
+   
+   
    /**
     * Dump state of this object into a XML ASCII string.
     */
@@ -1171,6 +1175,7 @@ public abstract class AddressBase implements Cloneable
          while (it.hasNext()) {
             Object obj = it.next();
             EncodableData cp = (EncodableData)obj;
+            
             sb.append(cp.toXml(offset+" ", ClientProperty.ATTRIBUTE_TAG));
          }
       }
@@ -1178,7 +1183,179 @@ public abstract class AddressBase implements Cloneable
 
       return sb.toString();
    }
+   
+   public void parseJson(JsonParser parser) throws IOException {
+      if (parser.currentToken() != JsonToken.START_OBJECT) {
+          throw new IOException("Expected START_OBJECT for " + rootTag);
+      }
 
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+          String fieldName = parser.currentName();
+          parser.nextToken(); // move to value
+
+          try {
+              switch (fieldName) {
+
+                  case "type":
+                      setType(parser.getValueAsString().trim());
+                      break;
+
+                  case "version":
+                      setVersion(parser.getValueAsString().trim());
+                      break;
+
+                  case "bootstrapHostname":
+                  case "hostname": // deprecated, map to bootstrapHostname
+                      setBootstrapHostname(parser.getValueAsString().trim());
+                      break;
+
+                  case "bootstrapPort":
+                  case "port": // deprecated, map to bootstrapPort
+                      try {
+                          setBootstrapPort(parser.getIntValue());
+                      } catch (NumberFormatException e) {
+                          log.severe("Wrong format of <" + rootTag + " " + fieldName
+                                  + ">, expected integer.");
+                      }
+                      break;
+
+                  case "sessionId":
+                      setSecretSessionId(parser.getValueAsString().trim());
+                      break;
+
+                  case "pingInterval":
+                      try {
+                          setPingInterval(parser.getLongValue());
+                      } catch (NumberFormatException e) {
+                          log.severe("Wrong format of <" + rootTag + " pingInterval>, expected long.");
+                      }
+                      break;
+
+                  case "retries":
+                      try {
+                          setRetries(parser.getIntValue());
+                      } catch (NumberFormatException e) {
+                          log.severe("Wrong format of <" + rootTag + " retries>, expected integer.");
+                      }
+                      break;
+
+                  case "delay":
+                      try {
+                          setDelay(parser.getLongValue());
+                      } catch (NumberFormatException e) {
+                          log.severe("Wrong format of <" + rootTag + " delay>, expected long.");
+                      }
+                      break;
+
+                  case "oneway":
+                      setOneway(parser.getValueAsBoolean());
+                      break;
+
+                  case "dispatcherActive":
+                      setDispatcherActive(parser.getValueAsBoolean());
+                      break;
+
+                  case "useForSubjectQueue":
+                      this.useForSubjectQueue.setValue(parser.getValueAsBoolean());
+                      break;
+
+                  case "dispatchPlugin":
+                      this.dispatchPlugin.setValue(parser.getValueAsString().trim());
+                      break;
+
+                  case "stallOnPingTimeout":
+                      this.stallOnPingTimeout.setValue(parser.getValueAsBoolean());
+                      break;
+
+                  case "rawAddress":
+                      setRawAddress(parser.getValueAsString().trim());
+                      break;
+
+                  case "burstMode":
+                      if (parser.currentToken() == JsonToken.START_OBJECT) {
+                          while (parser.nextToken() != JsonToken.END_OBJECT) {
+                              String burstField = parser.currentName();
+                              parser.nextToken();
+                              try {
+                                  switch (burstField) {
+                                      case "collectTime":
+                                          setCollectTime(parser.getLongValue());
+                                          break;
+                                      case "maxEntries":
+                                          setBurstModeMaxEntries(parser.getIntValue());
+                                          break;
+                                      case "maxBytes":
+                                          setBurstModeMaxBytes(parser.getLongValue());
+                                          break;
+                                      default:
+                                          log.warning("Unknown burstMode field: " + burstField);
+                                          parser.skipChildren();
+                                  }
+                              } catch (Exception e) {
+                                  log.severe("Error parsing burstMode field '" + burstField + "': " + e.getMessage());
+                                  parser.skipChildren();
+                              }
+                          }
+                      } else {
+                          parser.skipChildren();
+                      }
+                      break;
+
+                  case "compress":
+                      if (parser.currentToken() == JsonToken.START_OBJECT) {
+                          while (parser.nextToken() != JsonToken.END_OBJECT) {
+                              String compressField = parser.currentName();
+                              parser.nextToken();
+                              try {
+                                  switch (compressField) {
+                                      case "type":
+                                          setCompressType(parser.getValueAsString().trim());
+                                          break;
+                                      case "minSize":
+                                          setMinSize(parser.getLongValue());
+                                          break;
+                                      default:
+                                          log.warning("Unknown compress field: " + compressField);
+                                          parser.skipChildren();
+                                  }
+                              } catch (Exception e) {
+                                  log.severe("Error parsing compress field '" + compressField + "': " + e.getMessage());
+                                  parser.skipChildren();
+                              }
+                          }
+                      } else {
+                          parser.skipChildren();
+                      }
+                      break;
+
+                  case "ptp":
+                      setPtpAllowed(parser.getValueAsBoolean());
+                      break;
+
+                   case "pluginAttributes":
+                      if (parser.currentToken() != JsonToken.START_ARRAY) {
+                         log.warning("Expected START_ARRAY for 'pluginAttributes', got: " + parser.currentToken());
+                         parser.skipChildren();
+                         break;
+                      }
+                      // Loop through array elements
+                      while (parser.nextToken() != JsonToken.END_ARRAY) {
+                              ClientProperty cp = ClientProperty.parseCompactClientProperties(glob, parser);
+                              addClientProperty(cp);
+                      }
+                      break;
+                      
+                  default:
+                      log.warning("Ignoring unknown JSON field '" + fieldName + "' in " + rootTag);
+                      parser.skipChildren();
+              }
+          } catch (Exception e) {
+              log.severe("Error parsing JSON field '" + fieldName + "' in <" + rootTag + ">: " + e.getMessage());
+              parser.skipChildren();
+          }
+      }
+  }
+   
    /**
     * Turns a AdressBase into JSON
     * 
@@ -1186,7 +1363,7 @@ public abstract class AddressBase implements Cloneable
     * @throws IOException
     */
    public void toJson(JsonGenerator gen) throws IOException {
-      gen.writeObjectFieldStart(rootTag); // e.g. "address": { ... }
+      gen.writeObjectFieldStart(rootTag); // e.g. rootTag: "address, callback, addressServer?"
 
       gen.writeStringField("type", getType());
 
@@ -1266,13 +1443,13 @@ public abstract class AddressBase implements Cloneable
               Object obj = it.next();
               if (obj instanceof EncodableData) {
                   EncodableData cp = (EncodableData) obj;
-                  cp.toJson(gen, ClientProperty.ATTRIBUTE_TAG, false); // delegate
+                  cp.toCompactJson(gen); // delegate
               }
           }
           gen.writeEndArray();
       }
 
-      gen.writeEndObject(); // end rootTag
+      gen.writeEndObject(); 
    }
 
    /**

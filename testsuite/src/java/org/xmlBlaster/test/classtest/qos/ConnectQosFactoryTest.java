@@ -33,6 +33,8 @@ public class ConnectQosFactoryTest extends TestCase {
          .getName());
 
    private I_ConnectQosFactory factory;
+   private I_ConnectQosFactory jsonFactory;
+
 
    static I_ConnectQosFactory[] IMPL = { new org.xmlBlaster.util.qos.ConnectQosSaxFactory(
          Global.instance()) };
@@ -46,6 +48,7 @@ public class ConnectQosFactoryTest extends TestCase {
       this.glob = glob;
 
       this.factory = IMPL[currImpl];
+      this.jsonFactory = new org.xmlBlaster.util.qos.ConnectQosJsonFactory(glob);
    }
 
    protected void setUp() {
@@ -54,8 +57,11 @@ public class ConnectQosFactoryTest extends TestCase {
 
    /**
     * Tries with all known tags
+    * <p>
+    * parse XML, toXml, parse new XML, toJson, parseJson, test
+    * @see org.xmlBlaster.test.classtest.ConnectQosTest
     */
-   public void testParse() {
+   public void testParseXmlAndJson() {
       System.out.println("***ConnectQosFactoryTest: testParse ...");
 
       try {
@@ -68,15 +74,23 @@ public class ConnectQosFactoryTest extends TestCase {
 
          ConnectQosData qos = factory.readObject(xml);
 
-         String xml2 = qos.toXml();
-         qos = factory.readObject(xml2);
+         String xml2 = factory.writeObject(qos, null, null);
+         String json = jsonFactory.writeObject(qos, null, null);
+//         System.out.println("ConnectQos JSON:\n" + json);
+//         System.out.println("Xml length:" + xml2.length() + " Json length: " + json.length());
+         qos = jsonFactory.readObject(json);
          log.info(xml2);
+         log.info(json);
+
+         
+//         System.out.println("ConnectQos JSON:\n" + jsonFactory.writeObject(qos, "", null));
+//         System.out.println("Persistant: " + qos.isPersistent());
+
 
          assertTrue(qos.isPersistent());
          Address address = qos.getAddress();
-         assertEquals(true, address.getEnv("useRemoteLoginAsTunnel", false)
-               .getValue());
-         // assertEquals(3412, address.getBootstrapPort());
+         assertEquals(true, address.getEnv("useRemoteLoginAsTunnel", false).getValue());
+         assertEquals(3412, address.getBootstrapPort());
          assertEquals("socket://:7501", address.getRawAddress());
       } catch (XmlBlasterException e) {
          fail("testParse failed: " + e.toString());
@@ -172,7 +186,7 @@ public class ConnectQosFactoryTest extends TestCase {
                "ConnectQosFactoryTest", i);
          testSub.setUp();
          testSub.testDefault();
-         testSub.testParse();
+         testSub.testParseXmlAndJson();
          testSub.testPerformance();
          testSub.testToXml();
          // testSub.tearDown();

@@ -1,5 +1,10 @@
 package org.xmlBlaster.authentication.plugins;
+import java.io.IOException;
+
 import org.xmlBlaster.util.XmlBlasterException;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * A client helper.
@@ -28,6 +33,14 @@ public interface I_SecurityQos {
     * Should be able to parse with or without surrounding &lt;security> tag
     */
    public void parse(String xml) throws XmlBlasterException;
+   
+   /**
+    * Parse given JsonNode which contains the whole <code>attribute</code> tree
+    * 
+    * @param node 
+    * @throws XmlBlasterException
+    */
+   public void parseJson(JsonNode node) throws XmlBlasterException;
 
    /**
     * Set the userId for the login.
@@ -68,5 +81,12 @@ public interface I_SecurityQos {
     * Serialize the information.
     */
    public String toXml(String extraOffset);
+   
+   /**
+    * Serialize information to Json
+    * @param gen will contain the json
+    */
+   public void toJson(JsonGenerator gen) throws IOException;
+
 
 }

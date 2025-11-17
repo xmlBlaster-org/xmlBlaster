@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
@@ -18,6 +19,8 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.property.PropBoolean;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -843,6 +846,20 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
    }
 
+   public void writePropertiesJson(JsonGenerator gen) throws IOException {
+      synchronized (this.clientPropertiesMutex) {
+         if (this.clientProperties.size() > 0) {
+            Object[] arr = this.clientProperties.keySet().toArray();
+            gen.writeArrayFieldStart("properties");
+            for (int i=0; i < arr.length; i++) {
+               ClientProperty p = this.clientProperties.get(arr[i]);
+               p.toCompactJson(gen);
+            }
+            gen.writeEndArray();
+         }
+      }
+   }
+   
    public final String writePropertiesXml(String offset) {
       return writePropertiesXml(offset, false);
    }

@@ -8,6 +8,7 @@ package org.xmlBlaster.util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.def.Constants;
 
@@ -45,6 +46,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
    protected String tagName;
    private long size = -1L;
    private boolean forceCdata = false;
+   private Logger log = Logger.getLogger(this.getClass().getName());
 
    /**
     * @param name  The unique property key
@@ -464,7 +466,8 @@ public class EncodableData implements java.io.Serializable, Cloneable
           tmpTagName = this.tagName;
       }
 
-      gen.writeObjectFieldStart(tmpTagName);
+      gen.writeStartObject();
+      gen.writeStringField("tagName", tmpTagName);
 
       if (getName() != null) {
           gen.writeStringField("name", getName());
@@ -502,6 +505,60 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
       gen.writeEndObject();
   }
+
+   public void toCompactJson(JsonGenerator gen) throws IOException {
+      String key = getName();
+      if (key == null || key.isEmpty()) {
+         log.warning("encodeable data missing key, skipping this property");
+         return;
+      }
+
+      gen.writeStartObject();
+      String type = getType();
+      String raw = getStringValue();  // readable string form
+
+      if (raw == null) {
+          gen.writeNullField(key);
+          gen.writeEndObject();
+          return;
+      }
+
+      // Convert based on type
+      try {
+          switch (type == null ? "" : type.toLowerCase()) {
+              case "int":
+                  gen.writeNumberField(key, Integer.parseInt(raw));
+                  break;
+              case "long":
+                  gen.writeNumberField(key, Long.parseLong(raw));
+                  break;
+              case "float":
+                  gen.writeNumberField(key, Float.parseFloat(raw));
+                  break;
+              case "double":
+                  gen.writeNumberField(key, Double.parseDouble(raw));
+                  break;
+              case "boolean":
+                  gen.writeBooleanField(key, Boolean.parseBoolean(raw));
+                  break;
+
+              case "string":
+              default:
+                  // default fallback: string
+                  gen.writeStringField(key, raw);
+                  break;
+          }
+      }
+      catch (NumberFormatException e) {
+          // fallback: always write string if parsing fails
+          gen.writeStringField(key, raw);
+      }
+      if (getEncoding() != null) {
+         gen.writeStringField("encoding", getEncoding());
+     }
+      gen.writeEndObject();
+  }
+
 
    public static void main(String[] args) {
       if (args.length == 0) {

@@ -6,10 +6,14 @@ Comment:   Holding callback queue properties
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
+
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
+
 
 /**
  * Helper class holding the client side queue properties.
@@ -21,6 +25,7 @@ public class ClientQueueProperty extends QueuePropertyBase
 {
    private static final String ME = "ClientQueueProperty";
    private String defaultType;
+   private Logger log = Logger.getLogger(ClientQueueProperty.class.getName());
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
@@ -47,6 +52,17 @@ public class ClientQueueProperty extends QueuePropertyBase
       if (getCurrentAddress() != null)
          buf.append(" ").append(getCurrentAddress().getSettings());
       return buf.toString();
+   }
+
+
+   @Override
+   protected void addParsedAddress(AddressBase addr) {
+      // this will always be an Address
+      if (addr instanceof Address) {
+         this.setAddress((Address) addr);
+      } else {
+         log.warning("adding of Adress failed. Use addParsedAdress only with an 'Adress' class!");
+         }
    }
 
    /**

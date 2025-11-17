@@ -7,6 +7,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.ConnectQosJsonFactory;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.def.Constants;
@@ -43,6 +44,11 @@ public class ConnectQosTest extends TestCase {
 
    }
 
+   /**
+    * Test the parsing of connectQos to XML and JSON by print
+    * <p/>
+    * parse xml, dum JSON, parse JSON, dump XML, parse XML, dump JSON, parse JSON, test
+    */
    public void testParse() {
       System.out.println("***ConnectQosTest: testParse ...");
       
@@ -112,9 +118,19 @@ public class ConnectQosTest extends TestCase {
 
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
          ConnectQosData qos = factory.readObject(xml); // parse
+         I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
+         String json = jsonFactory.writeObject(qos, null, null); // dump to JSON
+         log.info(factory.writeObject(qos, "  ", null));
+         log.info(json);
+         qos = jsonFactory.readObject(json); // parse JSON
+
          assertEquals("", true, qos.getPersistentProp().getValue());
          String newXml = qos.toXml();                  // dump
          qos = factory.readObject(newXml);             // parse again
+         
+         String newJson = jsonFactory.writeObject(qos, null, null);
+         qos = jsonFactory.readObject(newJson);
+         System.out.println("XML length: " + newXml.replaceAll("\\s+", "").length() + "\nJson length: " + json.replaceAll("\\s+", "").length());
 
          if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
 
@@ -246,9 +262,14 @@ public class ConnectQosTest extends TestCase {
          " </qos>\n";
 
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
+
          ConnectQosData qos = factory.readObject(xml); // parse
          String newXml = qos.toXml();                  // dump
          qos = factory.readObject(newXml);             // parse again
+         String json = jsonFactory.writeObject(qos, null, null);
+         qos = jsonFactory.readObject(json);
+         System.out.println("XML length: " + newXml.replaceAll("\\s+", "").length() + "\nJson length: " + json.replaceAll("\\s+", "").length());
 
          if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
          
@@ -256,6 +277,8 @@ public class ConnectQosTest extends TestCase {
          assertEquals("", "RAM", prop.getType());
          assertEquals("", "1.0", prop.getVersion());
          System.out.println(qos.toXml());
+         System.out.println(jsonFactory.writeObject(qos, null, null));
+
       }
       catch (XmlBlasterException e) {
          fail("testParse2 failed: " + e.toString());
@@ -280,9 +303,12 @@ public class ConnectQosTest extends TestCase {
          "</qos>\n";
 
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
          ConnectQosData qos = factory.readObject(xml); // parse
          String newXml = qos.toXml();                  // dump
          qos = factory.readObject(newXml);             // parse again
+         String json = jsonFactory.writeObject(qos, null, null);
+         qos = jsonFactory.readObject(json);
 
          if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
 

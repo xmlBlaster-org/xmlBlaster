@@ -1,9 +1,18 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
+import java.io.IOException;
+
 import org.xml.sax.Attributes;
+import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
@@ -150,6 +159,39 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
          return;
       }
    }
+   
+   @Override
+   public void parseJson(JsonNode node) throws XmlBlasterException {
+      if (node == null || node.isNull()) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY,"securityService JSON node is null");
+     }
+
+     // --- Mirror SAX behaviour for <securityService type="..." version="..."> ---
+     JsonNode typeNode = node.get("type");
+     JsonNode versionNode = node.get("version");
+
+     if (typeNode != null && !typeNode.isNull()) {
+         this.type = typeNode.asText().trim();
+     } else {
+        throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY,"Missing 'type' attribute in login-qos securityService");
+     }
+
+     if (versionNode != null && !versionNode.isNull()) {
+         this.version = versionNode.asText().trim();
+     } else {
+        throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY,"Missing 'version' attribute in login-qos <securityService>");
+     }
+
+     JsonNode userNode = node.get("user");
+     if (userNode != null && !userNode.isNull()) {
+         this.user = userNode.asText().trim();
+     }
+
+     JsonNode passwdNode = node.get("passwd");
+     if (passwdNode != null && !passwdNode.isNull()) {
+         this.passwd = passwdNode.asText().trim();
+     }
+ }
 
    public String toXml(String extraOffset)
    {
@@ -170,5 +212,27 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       sb.append(offset).append("</securityService>");
       return sb.toString();
    }
+   
+   public void toJson(JsonGenerator gen) throws IOException {
+      gen.writeStartObject();
+
+      if (type != null && !type.isEmpty()) {
+         gen.writeStringField("type", type);
+      }
+      if (version != null && !version.isEmpty()) {
+         gen.writeStringField("version", version);
+      }
+      if (passwd == null)
+         passwd = "";
+      if (user == null)
+         user = "";
+
+      gen.writeStringField("user", user);
+
+      gen.writeStringField("passwd", passwd);
+
+      gen.writeEndObject();
+   }
+
 
 }

@@ -1,5 +1,7 @@
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
+import java.io.IOException;
+
 import org.xml.sax.Attributes;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Base64;
@@ -9,6 +11,10 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
 
 
 /**
@@ -200,6 +206,65 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
          return;
       }
    }
+   
+   @Override
+   public void parseJson(JsonNode node) throws XmlBlasterException {
+       if (node == null || node.isNull()) {
+           throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION,
+                   "parseJson", "securityService JSON node is null");
+       }
+
+       try {
+           JsonNode typeNode = node.get("type");
+           JsonNode versionNode = node.get("version");
+
+           if (typeNode != null && !typeNode.isNull()) {
+               this.type = typeNode.asText().trim();
+           } else {
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION,
+                       "parseJson", "Missing 'type' attribute in securityService JSON");
+           }
+
+           if (versionNode != null && !versionNode.isNull()) {
+               this.version = versionNode.asText().trim();
+           } else {
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION,
+                       "parseJson", "Missing 'version' attribute in securityService JSON");
+           }
+
+           JsonNode userNode = node.get("user");
+           if (userNode != null && !userNode.isNull()) {
+               this.user = userNode.asText().trim();
+           }
+
+           JsonNode passwdNode = node.get("passwd");
+           if (passwdNode != null && !passwdNode.isNull()) {
+               String rawPasswd = passwdNode.asText().trim();
+
+               if (this.useBase64Marker && rawPasswd.startsWith("__base64:")) {
+                   String base64 = rawPasswd.substring("__base64:".length());
+                   try {
+                       byte[] decoded = Base64.decode(base64);
+                       rawPasswd = Constants.toUtf8String(decoded);
+                   } catch (Exception e) {
+                       throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION,
+                               "parseJson",
+                               "Error decoding base64 password: " + e.getMessage(), e);
+                   }
+               }
+
+               this.passwd = rawPasswd;
+           }
+
+       } catch (XmlBlasterException e) {
+           throw e; // rethrow cleanly
+       } catch (Exception e) {
+           throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION,
+                   "parseJson",
+                   "General error parsing securityService JSON: " + e.getMessage(), e);
+       }
+   }
+
 
    public final String toXml()
    {
@@ -230,6 +295,31 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 
       return sb.toString();
    }
+
+   public void toJson(JsonGenerator gen) throws IOException {
+      gen.writeStartObject();
+
+      if (type != null && !type.isEmpty()) {
+          gen.writeStringField("type", type);
+      }
+      if (version != null && !version.isEmpty()) {
+          gen.writeStringField("version", version);
+      }
+      if (user != null && !user.isEmpty()) {
+          gen.writeStringField("user", user);
+      }
+      // Compute the effective password (mirroring XML behavior)
+      String pw = passwd;
+      if (pw != null && useBase64Marker && (pw.indexOf('&') != -1 || pw.indexOf('<') != -1)) {
+          pw = "__base64:" + Base64.encode(Constants.toUtf8Bytes(pw));
+      }
+      if (passwd != null && !passwd.isEmpty()) {
+          gen.writeStringField("passwd", passwd);
+      }
+
+      gen.writeEndObject();
+  }
+
 
 
    /** For testing: java org.xmlBlaster.authentication.plugins.htpasswd.SecurityQos */

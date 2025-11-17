@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos.storage;
 
 import java.io.IOException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,7 +20,9 @@ import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -625,6 +628,26 @@ public abstract class QueuePropertyBase implements Cloneable
                    case "onFailure":
                        setOnFailure(parser.getValueAsString().trim());
                        break;
+                       
+                   case "address":
+                      try {
+                         Address tmpAddr = new Address(glob);
+                         tmpAddr.parseJson(parser);
+                         addParsedAddress(tmpAddr);
+                      } catch (Exception e) {
+                         log.severe("Error while parsing 'address': " + e.getMessage());
+                      }
+                         break;
+                         
+                   case "callback":
+                      try {
+                         CallbackAddress tmpAddr = new CallbackAddress(glob);
+                         tmpAddr.parseJson(parser);
+                         addParsedAddress(tmpAddr);
+                      } catch (Exception e) {
+                         log.severe("Error while parsing 'address': " + e.getMessage());
+                      }
+                         break;
 
                    default:
                        log.warning("Ignoring unknown JSON field \"" + fieldName 
@@ -639,8 +662,13 @@ public abstract class QueuePropertyBase implements Cloneable
        }
        checkConsistency();
    }
-
-
+   /*
+    * add Address using the correct Subclass method
+    */
+   protected void addParsedAddress(AddressBase addr) {
+      // default: do nothing
+      log.warning("trying to add address to unsupported queue, skipping");
+  }
 
    /**
     * Called for queue start tag
@@ -875,59 +903,64 @@ public abstract class QueuePropertyBase implements Cloneable
    /**
     * Turns a QueueProperty into JSON
     * 
+    * @Warning this allows mixing of differnt types of queues! Only serialize a
+    *          single queue type in an array
+    * 
     * @param gen this is where the JSON will be produced into
     * @throws IOException
     */
    public void toJson(JsonGenerator gen) throws IOException {
 
-      gen.writeObjectFieldStart(getRootTagName()); // e.g. "queue": { ... }
+      gen.writeStartObject();
 
       if (this.debug.isModified()) {
-          gen.writeBooleanField("debug", getDebug());
+         gen.writeBooleanField("debug", getDebug());
       }
 
       gen.writeStringField("relating", getRelating());
 
       if (this.type.isModified()) {
-          gen.writeStringField("type", getType());
+         gen.writeStringField("type", getType());
       }
       if (this.version.isModified()) {
-          gen.writeStringField("version", getVersion());
+         gen.writeStringField("version", getVersion());
       }
       if (this.maxEntries.isModified()) {
-          gen.writeNumberField("maxEntries", getMaxEntries());
+         gen.writeNumberField("maxEntries", getMaxEntries());
       }
       if (this.maxEntriesCache.isModified()) {
-          gen.writeNumberField("maxEntriesCache", getMaxEntriesCache());
+         gen.writeNumberField("maxEntriesCache", getMaxEntriesCache());
       }
       if (this.maxBytes.isModified()) {
-          gen.writeNumberField("maxBytes", getMaxBytes());
+         gen.writeNumberField("maxBytes", getMaxBytes());
       }
       if (this.maxBytesCache.isModified()) {
-          gen.writeNumberField("maxBytesCache", getMaxBytesCache());
+         gen.writeNumberField("maxBytesCache", getMaxBytesCache());
       }
 
       // skipped swap-related fields (not implemented in your XML code either)
 
       if (this.onOverflow.isModified()) {
-          gen.writeStringField("onOverflow", getOnOverflow());
+         gen.writeStringField("onOverflow", getOnOverflow());
       }
       if (this.onFailure.isModified()) {
-          gen.writeStringField("onFailure", getOnFailure());
+         gen.writeStringField("onFailure", getOnFailure());
       }
 
       if (addressArr.length > 0 && addressArr[0] != null) {
-          gen.writeArrayFieldStart("addresses");
-          for (AddressBase ad : addressArr) {
-              if (ad != null) {
-                  ad.toJson(gen); // delegate to each AddressBase
-              }
-          }
-          gen.writeEndArray();
-      }
-
-      gen.writeEndObject(); // end getRootTagName()
-  }
+         for (AddressBase ad : addressArr) {
+            if (ad != null) {
+               try {
+                  ad.toJson(gen); 
+               } catch (IOException e) {
+                  log.warning("Unexpected I/O error writing JSON in ConnectQosJsonFactory, AdressBase.toJson: ");
+                  throw e;
+               }
+            }
+         }
+       }
+      gen.writeEndObject();
+   }
 
    /**
     * returns the global object

@@ -7,7 +7,11 @@ Comment:   Holding serverRef address string and protocol string to
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
+import java.io.IOException;
+
 import org.xmlBlaster.util.def.Constants;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Helper class holding serverRef address string and protocol string.
@@ -69,6 +73,16 @@ public class ServerRef
    public final boolean equals(ServerRef other) {
       return this.type.equals(other.getType()) && this.address.equals(other.getAddress());
    }
+   
+   public void toJson(JsonGenerator gen) throws IOException {
+         gen.writeStartObject();        // {
+
+         gen.writeStringField("type", getType());
+         gen.writeStringField("address", getAddress());
+
+         gen.writeEndObject();          // }
+     }
+
 
    /**
     * Dump state of this object into a XML ASCII string.

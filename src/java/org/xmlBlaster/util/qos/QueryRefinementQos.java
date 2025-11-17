@@ -6,12 +6,15 @@ Comment:   Holding filter address string and protocol string
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBuffer;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 
 /**
@@ -245,6 +248,14 @@ public abstract class QueryRefinementQos
       sb.append(offset).append("</").append(this.tagName).append(">");
 
       return sb.toString();
+   }
+   
+   public final void toJson(JsonGenerator gen) throws IOException {
+      gen.writeStartObject();
+      gen.writeStringField("type", this.getType());
+      gen.writeStringField("version", this.getVersion());
+      gen.writeStringField("value", this.getQuery().toString());
+      gen.writeEndObject();
    }
    
    public String toString() {
