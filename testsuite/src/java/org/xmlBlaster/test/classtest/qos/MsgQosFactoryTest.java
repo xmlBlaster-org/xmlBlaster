@@ -181,6 +181,7 @@ public class MsgQosFactoryTest extends TestCase {
                                """;
 
          MsgQosData qos = jsonFactory.readObject(json);
+         log.info(jsonFactory.writeObject(qos, "", null));
 
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
@@ -275,7 +276,7 @@ public class MsgQosFactoryTest extends TestCase {
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
          String newJson = jsonFactory.writeObject(qos, "", null);
-         log.info("New XML=" + newJson);
+         log.info("New Json=" + newJson);
          qos = jsonFactory.readObject(newJson);
 
          assertEquals("", "AA", qos.getState());

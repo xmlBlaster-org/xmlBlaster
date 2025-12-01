@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
@@ -566,102 +567,94 @@ public abstract class QueuePropertyBase implements Cloneable
       return this.addressArr;
    }
    
-   public void parseJson(JsonParser parser) throws IOException {
-       while (parser.nextToken() != JsonToken.END_OBJECT) {
-           String fieldName = parser.currentName();
-           parser.nextToken(); // move to value
+   public void parseJson(JsonParser parser) throws IOException, XmlBlasterException {
+              JacksonUtils.safeObjectLoop(glob, parser, getRootTagName(), (fieldName) -> {
+                 switch (fieldName) {
+                 case "relating":
+                     setRelating(parser.getValueAsString().trim());
+                     break;
 
-           try {
-               switch (fieldName) {
-                   case "relating":
-                       setRelating(parser.getValueAsString().trim());
-                       break;
+                 case "type":
+                     setType(parser.getValueAsString().trim());
+                     break;
 
-                   case "type":
-                       setType(parser.getValueAsString().trim());
-                       break;
+                 case "version":
+                     setVersion(parser.getValueAsString().trim());
+                     break;
 
-                   case "version":
-                       setVersion(parser.getValueAsString().trim());
-                       break;
+                 case "maxEntries":
+                     try {
+                         setMaxEntriesUnchecked(parser.getLongValue());
+                     } catch (Exception e) {
+                         log.severe("Wrong format in JSON field 'maxEntries' of \"" 
+                                 + getRootTagName() + "\", expected long, using default.");
+                     }
+                     break;
 
-                   case "maxEntries":
-                       try {
-                           setMaxEntriesUnchecked(parser.getLongValue());
-                       } catch (Exception e) {
-                           log.severe("Wrong format in JSON field 'maxEntries' of \"" 
-                                   + getRootTagName() + "\", expected long, using default.");
-                       }
-                       break;
+                 case "maxEntriesCache":
+                     try {
+                         setMaxEntriesCacheUnchecked(parser.getLongValue());
+                     } catch (Exception e) {
+                         log.severe("Wrong format in JSON field 'maxEntriesCache' of \"" 
+                                 + getRootTagName() + "\", expected long, using default.");
+                     }
+                     break;
 
-                   case "maxEntriesCache":
-                       try {
-                           setMaxEntriesCacheUnchecked(parser.getLongValue());
-                       } catch (Exception e) {
-                           log.severe("Wrong format in JSON field 'maxEntriesCache' of \"" 
-                                   + getRootTagName() + "\", expected long, using default.");
-                       }
-                       break;
+                 case "maxBytes":
+                     try {
+                         setMaxBytesUnchecked(parser.getLongValue());
+                     } catch (Exception e) {
+                         log.severe("Wrong format in JSON field 'maxBytes' of \"" 
+                                 + getRootTagName() + "\", expected long (bytes), using default.");
+                     }
+                     break;
 
-                   case "maxBytes":
-                       try {
-                           setMaxBytesUnchecked(parser.getLongValue());
-                       } catch (Exception e) {
-                           log.severe("Wrong format in JSON field 'maxBytes' of \"" 
-                                   + getRootTagName() + "\", expected long (bytes), using default.");
-                       }
-                       break;
+                 case "maxBytesCache":
+                     try {
+                         setMaxBytesCacheUnchecked(parser.getLongValue());
+                     } catch (Exception e) {
+                         log.severe("Wrong format in JSON field 'maxBytesCache' of \"" 
+                                 + getRootTagName() + "\", expected long (bytes), using default.");
+                     }
+                     break;
 
-                   case "maxBytesCache":
-                       try {
-                           setMaxBytesCacheUnchecked(parser.getLongValue());
-                       } catch (Exception e) {
-                           log.severe("Wrong format in JSON field 'maxBytesCache' of \"" 
-                                   + getRootTagName() + "\", expected long (bytes), using default.");
-                       }
-                       break;
+                 case "onOverflow":
+                     setOnOverflow(parser.getValueAsString().trim());
+                     break;
 
-                   case "onOverflow":
-                       setOnOverflow(parser.getValueAsString().trim());
-                       break;
-
-                   case "onFailure":
-                       setOnFailure(parser.getValueAsString().trim());
+                 case "onFailure":
+                     setOnFailure(parser.getValueAsString().trim());
+                     break;
+                     
+                 case "address":
+                    try {
+                       Address tmpAddr = new Address(glob);
+                       tmpAddr.parseJson(parser);
+                       addParsedAddress(tmpAddr);
+                    } catch (Exception e) {
+                       log.severe("Error while parsing 'address': " + e.getMessage());
+                    }
                        break;
                        
-                   case "address":
-                      try {
-                         Address tmpAddr = new Address(glob);
-                         tmpAddr.parseJson(parser);
-                         addParsedAddress(tmpAddr);
-                      } catch (Exception e) {
-                         log.severe("Error while parsing 'address': " + e.getMessage());
-                      }
-                         break;
-                         
-                   case "callback":
-                      try {
-                         CallbackAddress tmpAddr = new CallbackAddress(glob);
-                         tmpAddr.parseJson(parser);
-                         addParsedAddress(tmpAddr);
-                      } catch (Exception e) {
-                         log.severe("Error while parsing 'address': " + e.getMessage());
-                      }
-                         break;
+                 case "callback":
+                    try {
+                       CallbackAddress tmpAddr = new CallbackAddress(glob);
+                       tmpAddr.parseJson(parser);
+                       addParsedAddress(tmpAddr);
+                    } catch (Exception e) {
+                       log.severe("Error while parsing 'address': " + e.getMessage());
+                    }
+                       break;
 
-                   default:
-                       log.warning("Ignoring unknown JSON field \"" + fieldName 
-                               + "\" in \"" + getRootTagName() + "\"");
-                       parser.skipChildren();
-               }
-           } catch (Exception e) {
-               log.severe("Error parsing JSON field '" + fieldName 
-                       + "' in <" + getRootTagName() + ">: " + e.getMessage());
-               parser.skipChildren();
-           }
-       }
+                 default:
+                     log.warning("Ignoring unknown JSON field \"" + fieldName 
+                             + "\" in \"" + getRootTagName() + "\"");
+                     parser.skipChildren();
+             }
+              });
        checkConsistency();
    }
+
    /*
     * add Address using the correct Subclass method
     */

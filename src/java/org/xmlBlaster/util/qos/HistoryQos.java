@@ -5,8 +5,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
+import org.xmlBlaster.util.XmlBlasterException;
+
+import com.fasterxml.jackson.core.JsonParser;
+
 import org.xml.sax.Attributes;
 
 /*
@@ -159,7 +165,28 @@ public final class HistoryQos
       character.setLength(0);
    }
 
+   public void fromJson(JsonParser parser) throws IOException, XmlBlasterException {
+      JacksonUtils.safeObjectLoop(glob, parser, "history", (fieldName) -> {
+         switch (fieldName) {
+         case "numEntries":
+            int numEntries = parser.getIntValue();
+            this.setNumEntries(numEntries);
+            break;
 
+         case "newestFirst":
+            boolean newestFirst = parser.getBooleanValue();
+            this.setNewestFirst(newestFirst);
+            break;
+
+         default:
+            log.warning("Ignoring unknown attribute " + fieldName + " in history section.");
+            parser.skipChildren(); // Skip the value of the unknown field
+            break;
+         }
+      });
+   }
+
+   
    /**
     * Dump state of this object into a XML ASCII string.
     */

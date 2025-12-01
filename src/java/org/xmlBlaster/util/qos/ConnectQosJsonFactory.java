@@ -7,8 +7,8 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -43,38 +43,24 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
       JsonFactory factory = new JsonFactory();
 
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
-         if (parser.nextToken() != JsonToken.START_OBJECT) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE,
-                  "Expected start object in ConnectQos JSON");
-         }
-
-         while (parser.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = parser.currentName();
-            if (fieldName == null)
-               continue;
-            parser.nextToken();
-
+         // step to first Object:
+         parser.nextToken();
+         JacksonUtils.safeObjectLoop(glob, parser, "ConnectQosData", (fieldName) -> {
             switch (fieldName) {
             case "serverRefs":
                try {
-                  if (parser.currentToken() == JsonToken.START_ARRAY) {
-                     while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        try {
-                           ServerRef serverRef = jsonToServerRef(parser);
-                           connectQosData.addServerRef(serverRef);
-                        } catch (IOException e) {
-                           log.severe("Parsing failed inside 'serverRefs");
-                           log.severe("Skipping parsing...");
-                           parser.skipChildren();
-                           throw e;
-                        }
-
+                  JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                     try {
+                        ServerRef serverRef = jsonToServerRef(parser);
+                        connectQosData.addServerRef(serverRef);
+                     } catch (IOException e) {
+                        log.severe("Parsing failed inside 'serverRefs");
+                        log.severe("Skipping parsing...");
+                        parser.skipChildren();
+                        throw e;
                      }
-                  } else {
-                     parser.skipChildren(); // ignore unexpected value
-                     log.severe("Expected an Array of serverRef Objects inside 'serverRefs'");
-                     log.severe("Skipping parsing...");
-                  }
+                  });
+
                } catch (Exception e) {
                   log.severe("Error while parsing 'serverRef': " + e.getMessage());
                }
@@ -82,13 +68,14 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
 
             case "securityService":
                try {
+                  // determine Type of securityService before creation
                   ObjectMapper mapper = new ObjectMapper();
                   JsonNode node = mapper.readTree(parser);
                   JsonNode scSvTypeNode = node.findValue("type");
                   if (scSvTypeNode == null || scSvTypeNode.asText().isEmpty()) {
                      log.severe("Missing 'type' attribute in 'securityService'");
                      throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
-                           "ConnectQosJson 'SecurityService' missing 'version'");
+                           "ConnectQosJson 'SecurityService' missing 'type'");
                   }
                   JsonNode scSrvVersionNode = node.findValue("version");
                   if (scSrvVersionNode == null || scSrvVersionNode.asText().isEmpty()) {
@@ -111,25 +98,18 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
 
             case "clientQueueArr":
                try {
-                  if (parser.currentToken() == JsonToken.START_ARRAY) {
-                     while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        try {
-                           ClientQueueProperty tmpProp = new ClientQueueProperty(glob, null);
-                           tmpProp.parseJson(parser);
-                           connectQosData.addClientQueueProperty(tmpProp);
-                        } catch (IOException e) {
-                           log.severe("Parsing failed inside the Array of client cqQueuepropertie Objects");
-                           log.severe("Skipping parsing...");
-                           parser.skipChildren();
-                           throw e;
-                        }
-
+                  JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                     try {
+                        ClientQueueProperty tmpProp = new ClientQueueProperty(glob, null);
+                        tmpProp.parseJson(parser);
+                        connectQosData.addClientQueueProperty(tmpProp);
+                     } catch (IOException | XmlBlasterException e) {
+                        log.severe("Parsing failed inside the Array of client cqQueuepropertie Objects");
+                        log.severe("Skipping parsing...");
+                        parser.skipChildren();
+                        throw e;
                      }
-                  } else {
-                     parser.skipChildren(); // ignore unexpected value
-                     log.severe("Expected an Array of client cqQueuepropertie Objects inside 'clientQueueArr'");
-                     log.severe("Skipping parsing...");
-                  }
+                  });
                } catch (Exception e) {
                   log.severe("Error while parsing 'clientQueueArr': " + e.getMessage());
                }
@@ -221,36 +201,32 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
 
             case "properties":
                try {
-                  if (parser.currentToken() == JsonToken.START_ARRAY) {
-                     while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        try {
-                           ClientProperty cp = ClientProperty.parseCompactClientProperties(glob, parser);
-                           connectQosData.addClientProperty(cp);
-                        } catch (XmlBlasterException e) {
-                           log.severe("Parsing failed inside the Array of 'properties' with Error: " + e.getMessage());
-                           log.severe("Skipping parsing...");
-                           parser.skipChildren();
-                           throw e;
-                        }
-
+                  JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                     try {
+                        ClientProperty cp = ClientProperty.parseCompactClientProperties(glob, parser);
+                        connectQosData.addClientProperty(cp);
+                     } catch (XmlBlasterException e) {
+                        log.severe("Parsing failed inside the Array of 'properties' with Error: " + e.getMessage());
+                        log.severe("Skipping parsing...");
+                        parser.skipChildren();
+                        throw e;
                      }
-                  } else {
-                     parser.skipChildren(); // ignore unexpected value
-                     log.severe("Expected an Array of 'properties");
-                     log.severe("Skipping parsing...");
-                  }
-
+                  });
                } catch (Exception e) {
                   log.severe("Error while parsing 'properties': " + e.getMessage());
                }
                break;
 
             default:
-               log.warning("Ignoring unknown ConnectQos field: " + fieldName);
-               parser.skipChildren();
+               try {
+                  log.warning("Ignoring unknown ConnectQos field: " + fieldName);
+                  parser.skipChildren();
+               } catch (IOException e) {
+                  log.severe("skipping childeren failed in ConnectQos 'default', aborting");
+                  return;
+               }
             }
-         }
-
+         });
       } catch (IOException e) {
          log.severe("Failed to parse JSON ConnectQos: " + e.getMessage());
       }
@@ -265,13 +241,8 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
     * @param sessionQos
     * @throws IOException
     */
-   private void jsonToSessionQos(JsonParser parser, SessionQos sessionQos) throws IOException {
-      while (parser.nextToken() != JsonToken.END_OBJECT) {
-         String fieldName = parser.currentName();
-         if (fieldName == null)
-            continue;
-         parser.nextToken();
-
+   private void jsonToSessionQos(JsonParser parser, SessionQos sessionQos) throws IOException, XmlBlasterException {
+      JacksonUtils.safeObjectLoop(glob, parser, "sessionQos", (fieldName) -> {
          switch (fieldName) {
          case "name":
             try {
@@ -335,34 +306,27 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
             log.warning("Ignoring unknown ConnectQos field: " + fieldName);
             parser.skipChildren();
          }
-      }
+
+      });
    }
 
    private ServerRef jsonToServerRef(JsonParser parser) throws IOException, XmlBlasterException {
 
-      // Expect START_OBJECT
-      if (parser.currentToken() != JsonToken.START_OBJECT) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, "ServerRef must start with an object '{'.");
-      }
-
-      String type = null;
-      String addr = null;
-      while (parser.nextToken() != JsonToken.END_OBJECT) {
-         String fieldName = parser.currentName();
-         if (fieldName == null) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, "Expected a field name in ServerRef.");
-         }
-
-         // Move to field value
-         parser.nextToken();
-
+      // get access to Fields inside the loop
+      class Holder {
+         String type;
+         String addr;
+     }
+     Holder h = new Holder();
+     
+      JacksonUtils.safeObjectLoop(glob, parser, "serverRef", (fieldName) -> {
          switch (fieldName) {
          case "type":
-            type = parser.getValueAsString();
+            h.type = parser.getValueAsString();
             break;
 
          case "address":
-            addr = parser.getValueAsString();
+            h.addr = parser.getValueAsString();
             break;
 
          default:
@@ -370,20 +334,21 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
             parser.skipChildren(); // ignore unknown fields
             break;
          }
-      }
 
-      // Validation
-      if (type == null || type.isEmpty()) {
+      });
+
+//Validation
+      if (h.type == null || h.type.isEmpty()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION,
                "Missing mandatory field 'type' in ServerRef");
       }
 
-      if (addr == null || addr.isEmpty()) {
+      if (h.addr == null || h.addr.isEmpty()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION,
                "Missing mandatory field 'address' in ServerRef");
       }
-
-      return new ServerRef(type, addr);
+      
+      return new ServerRef(h.type, h.addr);
    }
 
    /**

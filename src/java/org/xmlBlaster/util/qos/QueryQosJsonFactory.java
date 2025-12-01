@@ -5,12 +5,9 @@ import java.util.Properties;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -42,35 +39,20 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
 
       JsonFactory factory = new JsonFactory();
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
-         if (parser.nextToken() != JsonToken.START_OBJECT) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, "Expected start object in QoS JSON");
-         }
-
-         while (parser.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = parser.currentName();
-            parser.nextToken(); // move to value
-
+         //step to first object
+         parser.nextToken();
+         JacksonUtils.safeObjectLoop(glob, parser, "QueryQos", (fieldName) -> {
             switch (fieldName) {
             case "subscribe":
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  while (parser.nextToken() != JsonToken.END_OBJECT) {
-                     if ("id".equals(parser.currentName())) {
-                        parser.nextToken();
-                        queryQosData.setSubscriptionId(parser.getValueAsString());
-                     }
-                  }
-               }
+               queryQosData.setSubscriptionId(JacksonUtils.notNullValueAsString(glob, parser));
                break;
 
             case "erase":
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  while (parser.nextToken() != JsonToken.END_OBJECT) {
-                     if ("forceDestroy".equals(parser.currentName())) {
-                        parser.nextToken();
-                        queryQosData.setForceDestroy(parser.getBooleanValue());
-                     }
+               JacksonUtils.safeObjectLoop(glob, parser, fieldName, (f) -> {
+                  if (f == "forceDestroy") {
+                     queryQosData.setForceDestroy(parser.getBooleanValue());
                   }
-               }
+               });
                break;
 
             case "meta":
@@ -110,66 +92,75 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
                break;
             case "filter":
                // JSON "filter" may be an object or an array of objects
-               if (parser.currentToken() == JsonToken.START_ARRAY) {
-                  while (parser.nextToken() != JsonToken.END_ARRAY) {
-                     AccessFilterQos tmpFilter = new AccessFilterQos(glob);
-                     boolean ok = jsonToAcessFilterQos(tmpFilter, parser);
-                     if (ok) {
-                        queryQosData.addAccessFilter(tmpFilter);
-                     } else {
-                        tmpFilter = null;
-                     }
-                  }
-               } else if (parser.currentToken() == JsonToken.START_OBJECT) {
+               JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
                   AccessFilterQos tmpFilter = new AccessFilterQos(glob);
-                  boolean ok = jsonToAcessFilterQos(tmpFilter, parser);
-                  if (ok) {
-                     queryQosData.addAccessFilter(tmpFilter);
-                  } else {
-                     tmpFilter = null;
-                  }
-               } else {
-                  parser.skipChildren(); // ignore unexpected value
-                  log.warning("Ignoring unknown filter field: " + fieldName);
-               }
+                  tmpFilter.fromJson(parser);
+                  queryQosData.addAccessFilter(tmpFilter);
+               });
                break;
 
             case "history":
-               // JSON "history" may be an object
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  HistoryQos tmpHistory = new HistoryQos(glob);
-                  boolean ok = jsonToHistoryQos(tmpHistory, parser); // Assuming you have a method to parse JSON into
-                                                                     // HistoryQos
-                  if (ok) {
-                     queryQosData.setHistoryQos(tmpHistory);
-                  } else {
-                     tmpHistory = null;
-                  }
-               } else {
-                  parser.skipChildren(); // ignore unexpected value
-                  log.warning("Ignoring unknown history field: " + fieldName);
+               try {
+                  // JSON "history" may be an object
+               HistoryQos tmpHistory = new HistoryQos(glob);
+               tmpHistory.fromJson(parser);
+               queryQosData.setHistoryQos(tmpHistory);
+               } catch (IOException | XmlBlasterException e) {
+                  log.warning("Error parsing 'history': " +  e.getMessage());
+                  throw e;
                }
                break;
 
-//                    case "querySpec":
-//                        QuerySpecQos spec = new QuerySpecQos(glob);
-//                        spec.fromJson(parser);
-//                        queryQosData.addQuerySpec(spec);
-//                        break;
-//
-//                    case "method":
-//                        queryQosData.setMethod(MethodName.valueOf(parser.getValueAsString().toUpperCase()));
-//                        break;
+            case "querySpec":
+               JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                  QuerySpecQos spec = new QuerySpecQos(glob);
+                  spec.fromJson(parser);
+                  queryQosData.addQuerySpec(spec);
+               });
+               break;
+
+            case "methodName":
+               try {
+                  String val = JacksonUtils.notNullValueAsString(glob, parser);
+                  
+                  switch (val) {
+                  case ("isErase"): {
+                     queryQosData.setMethod(MethodName.ERASE);
+                     break;
+                  }
+                  case ("isGet"): {
+                     queryQosData.setMethod(MethodName.GET);
+                     break;
+                  }
+                  case ("isSubscribe"): {
+                     queryQosData.setMethod(MethodName.SUBSCRIBE);
+                     break;
+                  }
+                  case ("isUnSubscribe"): {
+                     queryQosData.setMethod(MethodName.UNSUBSCRIBE);
+                     break;
+                  }
+                  default:
+                     throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "Error at '" + fieldName + "'", "Unexpected value: " + val);
+                  }
+
+               } catch (IOException | XmlBlasterException e) {
+                  throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE, "Error parsing '" + fieldName + "'", e.getMessage());
+               }
+               break;
 
             default:
                log.warning("Ignoring unknown QoS field: " + fieldName);
+               System.out.println("currentValue: " + parser.getValueAsString());
                parser.skipChildren();
             }
-         }
 
-      } catch (IOException e) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
-               "Failed to parse JSON QoS: " + e.getMessage());
+         });
+
+      } catch (IOException | XmlBlasterException e) {
+         log.warning(e.getMessage());
+         throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
+               "Failed to parse JSON QoS: ", e.getMessage());
       }
 
       return queryQosData;
@@ -198,9 +189,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          gen.writeStartObject(); // root
 
          if (queryQosData.getSubscriptionId() != null) {
-            gen.writeObjectFieldStart("subscribe");
-            gen.writeStringField("id", queryQosData.getSubscriptionId());
-            gen.writeEndObject();
+            gen.writeStringField("subscribe", queryQosData.getSubscriptionId());
          }
 
          if (queryQosData.getForceDestroyProp().isModified()) {
@@ -274,6 +263,22 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
             gen.writeBooleanField("newestFirst", historyQos.getNewestFirst());
             gen.writeEndObject();
          }
+         
+         // detirmine method name
+         String methodName = null;
+         if (queryQosData.getMethod() == MethodName.ERASE) {
+            methodName = "isErase";
+         }
+         else if (queryQosData.getMethod() == MethodName.GET) {
+            methodName = "isGet";
+         }
+         else if (queryQosData.getMethod() == MethodName.SUBSCRIBE) {
+            methodName = "isSubscribe";
+         }
+         else if (queryQosData.getMethod() == MethodName.UNSUBSCRIBE) {
+            methodName = "isUnSubscribe";
+         }
+         if (methodName != null) {gen.writeStringField("methodName", methodName);}
 
          gen.writeEndObject(); // root
 
@@ -293,111 +298,6 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
    @Override
    public String getName() {
       return "QueryQosJsonFactory";
-   }
-
-   /**
-    * Helper function for parsing AcessFilterQos
-    * 
-    * @param filterQos
-    * @param parser
-    * @return
-    * @throws IOException
-    */
-   private boolean jsonToAcessFilterQos(AccessFilterQos filterQos, JsonParser parser) throws IOException {
-      if (parser.currentToken() != JsonToken.START_OBJECT) {
-         log.warning("Expected start object in Filter Array JSON, skipping this entry");
-         return false;
-      }
-      boolean typeSet = false;
-      while (parser.nextToken() != JsonToken.END_OBJECT) {
-         String filterFieldName = parser.currentName();
-         parser.nextToken(); // move to value
-         if (filterFieldName.equalsIgnoreCase("type")) {
-            String typeValue = parser.getValueAsString();
-            if (typeValue != null && !typeValue.isBlank()) {
-               filterQos.setType(typeValue);
-               typeSet = true;
-            }
-         } else if (filterFieldName.equalsIgnoreCase("version")) {
-            filterQos.setVersion(parser.getValueAsString());
-         } else if ("value".equalsIgnoreCase(filterFieldName)) {
-            try {
-               String valueString = filterValueToString(parser);
-               filterQos.setQuery(new Query(glob, valueString));
-            } catch (IOException e) {
-               log.warning("Failed to parse 'value' insid FilterQos:");
-               throw e;
-            }
-         } else {
-            log.warning("Ignoring unknown attribute \"" + filterFieldName + "\" in " + filterQos.tagName + " section.");
-         }
-      }
-
-      if (!typeSet) {
-         // behave just like in the original QuerQosSaxFactory
-         log.warning("Missing required 'type' attribute in " + filterQos.tagName + " section, ignoring this filter.");
-         return false;
-      }
-
-      return true;
-   }
-
-   private String filterValueToString(JsonParser parser) throws IOException {
-      String valueString = "";
-      if (parser.currentToken() == JsonToken.START_OBJECT || parser.currentToken() == JsonToken.START_ARRAY) {
-         // read entire object/array as tree and convert to string
-         ObjectMapper mapper = new ObjectMapper(); // slow, could be initialized once as a field
-         JsonNode node = mapper.readTree(parser);
-         valueString = node.toString();
-      } else {
-         // regular primitive/string value
-         valueString = parser.getValueAsString();
-      }
-      return valueString;
-   }
-
-   /**
-    * Helper function for parsing HistoryQos
-    * 
-    * @param historyQos
-    * @param parser
-    * @return
-    */
-   private boolean jsonToHistoryQos(HistoryQos historyQos, JsonParser parser) {
-      try {
-         // Move to the start of the object
-         if (parser.currentToken() != JsonToken.START_OBJECT) {
-            log.warning("Expected START_OBJECT for history QoS");
-            return false;
-         }
-
-         // Iterate through the fields of the JSON object
-         while (parser.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = parser.currentName();
-            parser.nextToken(); // Move to the value
-
-            switch (fieldName) {
-            case "numEntries":
-               int numEntries = parser.getIntValue();
-               historyQos.setNumEntries(numEntries);
-               break;
-
-            case "newestFirst":
-               boolean newestFirst = parser.getBooleanValue();
-               historyQos.setNewestFirst(newestFirst);
-               break;
-
-            default:
-               log.warning("Ignoring unknown attribute " + fieldName + " in history section.");
-               parser.skipChildren(); // Skip the value of the unknown field
-               break;
-            }
-         }
-         return true; // Successfully parsed the history QoS
-      } catch (IOException e) {
-         log.severe("Error parsing history QoS: " + e.getMessage());
-         return false; // Indicate failure
-      }
    }
 
 }

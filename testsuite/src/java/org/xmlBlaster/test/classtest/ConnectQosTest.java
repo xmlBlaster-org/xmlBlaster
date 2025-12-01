@@ -9,6 +9,7 @@ import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosJsonFactory;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.test.classtest.qos.ConnectQosFactoryTest;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.def.Constants;
 
@@ -38,8 +39,13 @@ public class ConnectQosTest extends TestCase {
    public ConnectQosTest(String name) {
       super(name);
    }
+   
+   public ConnectQosTest(Global glob, String name) {
+      super(name);
+      this.glob = glob;
+   }
 
-   protected void setUp() {
+   public void setUp() {
       this.glob = Global.instance();
 
    }
@@ -377,6 +383,18 @@ public class ConnectQosTest extends TestCase {
 
       System.out.println("***ConnectQosTest: testCredential [SUCCESS]");
    }
+
+   public static Test suite() {
+      TestSuite suite = new TestSuite();
+      Global glob = Global.instance();
+         suite.addTest(new ConnectQosTest(glob, "testParse"));
+         suite.addTest(new ConnectQosTest(glob, "testParse2"));
+         suite.addTest(new ConnectQosTest(glob, "testParse3"));
+         suite.addTest(new ConnectQosTest(glob, "testClientConnectQos"));
+         suite.addTest(new ConnectQosTest(glob, "testCredential"));
+      return suite;
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.ConnectQosTest

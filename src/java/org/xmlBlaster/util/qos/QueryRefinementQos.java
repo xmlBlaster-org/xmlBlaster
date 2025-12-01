@@ -7,14 +7,18 @@ Comment:   Holding filter address string and protocol string
 package org.xmlBlaster.util.qos;
 
 import java.io.IOException;
+
 import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 
 
 /**
@@ -212,7 +216,26 @@ public abstract class QueryRefinementQos
       }
       character.setLength(0);
    }
-
+   
+   public void fromJson(JsonParser parser) throws IOException, XmlBlasterException {
+      JacksonUtils.safeObjectLoop(glob, parser, tagName, (fieldName) -> {
+         switch (fieldName) {
+         case "type":
+            setType(JacksonUtils.notNullValueAsString(glob, parser));
+            break;
+         case "version":
+            setVersion(JacksonUtils.notNullValueAsString(glob, parser));
+            break;
+         case "value":
+            setQuery(new Query(glob, JacksonUtils.notNullValueAsString(glob, parser).trim()));
+            break;
+         default:
+            log.warning("unknown fieldName inside '" + tagName + "': '" + fieldName + "' skipping");
+            parser.skipChildren();
+            break;
+         }
+      });
+   }
 
    /**
     * Dump state of this object into a XML ASCII string.

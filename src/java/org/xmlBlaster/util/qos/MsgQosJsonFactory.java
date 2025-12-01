@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -60,221 +61,248 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
       }
 
       MsgQosData msgQosData = new MsgQosData(glob, this, jsonQos, MethodName.UNKNOWN);
-
+      // strict mode für das werfen von Exceptions
       JsonFactory factory = new JsonFactory();
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
-         if (parser.nextToken() != JsonToken.START_OBJECT) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, "Expected start object in QoS JSON");
-         }
 
-         while (parser.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = parser.currentName();
-            parser.nextToken(); // move to value
-
+         parser.nextToken(); // move to first Object
+         JacksonUtils.safeObjectLoop(glob, parser, "MsgQosJson", (fieldName) -> {
             switch (fieldName) {
             case "state":
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                   while (parser.nextToken() != JsonToken.END_OBJECT) {
-                       switch (parser.currentName()) {
-                           case "id":
-                               try {
-                                   parser.nextToken();
-                                   msgQosData.setState(parser.getValueAsString());
-                               } catch (IOException e) {log.severe("Error while parsing 'id' in state");}
-                               break;
+               JacksonUtils.safeObjectLoop(glob, parser, "state", (innerFieldName) -> {
+                     switch (innerFieldName) {
+                     case "id":
+                           msgQosData.setState(JacksonUtils.notNullValueAsString(glob, parser));
+                           break;
 
-                           case "info":
-                               try {
-                                   parser.nextToken();
-                                   msgQosData.setStateInfo(parser.getValueAsString());
-                               } catch (IOException e) {log.severe("Error while parsing 'info' in state");}
-                               break;
-
-                           default:
-                               parser.skipChildren();
-                       }
-                   }
-               } else log.severe("Error state key not followed by an object");
-               break;
-            case "subscribable":
-               try {
-                   msgQosData.setSubscribable(parser.getBooleanValue());
-               } catch (IOException e) {log.severe("Error while parsing 'subscribable'");}
-               break;
-
-           case "destinations":
-               if (parser.currentToken() == JsonToken.START_ARRAY) {
-                   while (parser.nextToken() != JsonToken.END_ARRAY) {
-                       try {
-                           Destination dest = jsonToDestination(parser);
-                           msgQosData.addDestination(dest);
-                       } catch (IOException e) {log.severe("Error while parsing destinations");}
-                   }
-               } else log.severe("Error: 'destinations' key not followed by an array");
-               break;
-
-           case "sender":
-               try {
-                   msgQosData.setSender(new SessionName(glob, parser.getValueAsString()));
-               } catch (IOException e) {log.severe("Error while parsing 'sender'");}
-               break;
-
-           case "priority":
-               try {
-                   msgQosData.setPriority(PriorityEnum.parsePriority(parser.getValueAsString()));
-               } catch (IOException e) {log.severe("Error while parsing 'priority'");}
-               break;
-
-           case "subscribe":
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                   while (parser.nextToken() != JsonToken.END_OBJECT) {
-                       if ("id".equals(parser.currentName())) {
-                           try {
-                               parser.nextToken();
-                               msgQosData.setSubscriptionId(parser.getValueAsString());
-                           } catch (IOException e) {log.severe("Error while parsing 'id' in subscribe");}
-                       }
-                   }
-               } else log.severe("Error: subscribe key not followed by an object");
-               break;
-
-            case "expiration":
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  boolean containsLifetime = false;
-                  while (parser.nextToken() != JsonToken.END_OBJECT) {
-                     switch (parser.currentName()) {
-                     case "lifeTime":
-                        try {
-                           parser.nextToken();
-                           msgQosData.setLifeTime(parser.getLongValue());
-                           containsLifetime = true;
-                        } catch (IOException e) {log.severe("Error while parsing 'lifeTime' in experiation");}
-                        break;
-
-                     case "remainingLife":
-                        try {
-                           parser.nextToken();
-                           msgQosData.setRemainingLifeStatic(parser.getLongValue());
-                        } catch (IOException e) {log.severe("Error while parsing 'remainingLife' in experiation");}
-                        break;
-
-                     case "forceDestroy":
-                        try {
-                           parser.nextToken();
-                           msgQosData.setForceDestroy(parser.getBooleanValue());
-                        } catch (IOException e) {log.severe("Error while parsing 'forceDestroy' in experiation");}
+                     case "info":
+                           msgQosData.setStateInfo(JacksonUtils.notNullValueAsString(glob, parser));
                         break;
 
                      default:
-                        log.severe("Invalid expiration key = " + parser.currentName());
-                        parser.skipChildren();
+                        log.severe("Ignoring Unknown field '" + innerFieldName + "' in Object '" + fieldName + "'");
+                        JacksonUtils.skipArrayOrObject(parser);
+                        break;
                      }
+                  });
+               break;
+               
+            case "subscribable":
+               // remove try-catch to stop parsing if 'getBooleanValue' throws
+               try {
+                  msgQosData.setSubscribable(parser.getBooleanValue());
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'subscribable'");
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
+               break;
+
+            case "destinations":
+               try {
+                  JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                     Destination dest = jsonToDestination(parser);
+                     msgQosData.addDestination(dest);
+                  });
+               } catch (IOException e) {
+                  log.severe("Error while parsing destinations");
+               }
+               break;
+
+            case "sender":
+               try {
+                  msgQosData.setSender(new SessionName(glob, JacksonUtils.notNullValueAsString(glob, parser)));
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'sender'");
+               }
+               break;
+
+            case "priority":
+               try {
+                  msgQosData.setPriority(PriorityEnum.parsePriority(JacksonUtils.notNullValueAsString(glob, parser)));
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'priority'");
+               }
+               break;
+
+            case "subscribe":
+               JacksonUtils.safeObjectLoop(glob, parser, "state", (innerFieldName) -> {
+                     if ("id".equals(innerFieldName)) {
+
+                           msgQosData.setSubscriptionId(JacksonUtils.notNullValueAsString(glob, parser));
+                     }});
+               break;
+
+            case "expiration":
+               class Holder {
+                  boolean containsLifetime = false;
+               }
+               Holder h = new Holder();
+               JacksonUtils.safeObjectLoop(glob, parser, fieldName, (innerFieldName) -> {
+                  switch (innerFieldName) {
+                  case "lifeTime":
+                     try {
+                        msgQosData.setLifeTime(parser.getLongValue());
+                        h.containsLifetime = true;
+                     } catch (IOException e) {
+                        log.severe("Error while parsing 'lifeTime' in experiation");
+                     }
+                     break;
+
+                  case "remainingLife":
+                     try {
+                        msgQosData.setRemainingLifeStatic(parser.getLongValue());
+                     } catch (IOException e) {
+                        log.severe("Error while parsing 'remainingLife' in experiation");
+                     }
+                     break;
+
+                  case "forceDestroy":
+                     try {
+                        msgQosData.setForceDestroy(parser.getBooleanValue());
+                     } catch (IOException e) {
+                        log.severe("Error while parsing 'forceDestroy' in experiation");
+                     }
+                     break;
+
+                  default:
+                     log.severe("Invalid expiration key = " + parser.currentName());
+                     JacksonUtils.skipArrayOrObject(parser);
                   }
-                  if (!containsLifetime) {
-                     log.warning("QoS <expiration> misses lifeTime attribute, setting default of "
-                           + MsgQosData.getMaxLifeTime());
-                     msgQosData.setLifeTime(MsgQosData.getMaxLifeTime());
-                  }
+               });
+               if (!h.containsLifetime) {
+                  log.warning("QoS <expiration> misses lifeTime attribute, setting default of "
+                        + MsgQosData.getMaxLifeTime());
+                  msgQosData.setLifeTime(MsgQosData.getMaxLifeTime());
                }
                break;
 
             case "rcvTimestamp":
-               String timestamp = parser.getValueAsString().trim();
+               String timestamp = JacksonUtils.notNullValueAsString(glob, parser).trim();
                try {
                   msgQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(timestamp)));
-               } catch (NumberFormatException e) {log.severe("Invalid rcvTimestamp - nanos =" + timestamp);}
-               ;
+               } catch (NumberFormatException e) {
+                  log.severe("Invalid rcvTimestamp - nanos =" + timestamp);
+               };
                break;
 
             case "queue":
-               if (parser.currentToken() == JsonToken.START_OBJECT) {
-                  while (parser.nextToken() != JsonToken.END_OBJECT) {
-                     switch (parser.currentName()) {
-                     case "index":
-                        parser.nextToken();
-                        try {
-                           msgQosData.setQueueIndex(parser.getIntValue());
-                        } catch (IOException e) {log.severe("Invalid queue - index =" + parser.getValueAsString());}
-                        break;
-                     case "size":
-                        parser.nextToken();
-                        try {
-                           msgQosData.setQueueSize(parser.getIntValue());
-                        } catch (IOException e) {log.severe("Invalid queue - size =" + parser.getValueAsString());}
-                        break;
-                     default:
-                        log.severe("Error unknown key insinde queue: " + parser.currentName());
-                        parser.skipChildren();
+               JacksonUtils.safeObjectLoop(glob, parser, fieldName, (innerFieldName) -> {
+                  switch (innerFieldName) {
+                  case "index":
+                     try {
+                        msgQosData.setQueueIndex(parser.getIntValue());
+                     } catch (IOException e) {
+                        log.severe("Invalid queue - index =" + parser.getValueAsString());
+                        JacksonUtils.skipArrayOrObject(parser);
                      }
+                     break;
+                  case "size":
+                     try {
+                        msgQosData.setQueueSize(parser.getIntValue());
+                     } catch (IOException e) {
+                        log.severe("Invalid queue - size =" + parser.getValueAsString());
+                        JacksonUtils.skipArrayOrObject(parser);
+                     }
+                     break;
+                  default:
+                     log.severe("Skipping unknown filed name insinde queue: " + parser.currentName());
+                     JacksonUtils.skipArrayOrObject(parser);
+                     break;
                   }
-               }
+               });
                break;
 
             case "administrative":
                try {
                   msgQosData.setAdministrative(parser.getBooleanValue());
-               } catch (IOException e) {log.severe("Error while parsing administrative: " + e.getMessage());}
+               } catch (IOException e) {
+                  log.severe("Error while parsing administrative: " + e.getMessage());
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "persistent":
                try {
                   msgQosData.setPersistent(parser.getBooleanValue());
-               } catch (IOException e) {log.severe("Error while parsing persistent: " + e.getMessage());}
+               } catch (IOException e) {
+                  log.severe("Error while parsing persistent: " + e.getMessage());
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "forceUpdate":
                try {
                   msgQosData.setForceUpdate(parser.getBooleanValue());
-               } catch (IOException e) {log.severe("Error while parsing forceUpdate: " + e.getMessage());}
+               } catch (IOException e) {
+                  log.severe("Error while parsing forceUpdate: " + e.getMessage());
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "redeliver":
                try {
                   msgQosData.setRedeliver(parser.getIntValue());
-               } catch (IOException e) {log.severe("Error while parsing redeliver: " + e.getMessage());}
+               } catch (IOException e) {
+                  log.severe("Error while parsing redeliver: " + e.getMessage());
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "route":
-               if (parser.currentToken() == JsonToken.START_ARRAY) {
-                  while (parser.nextToken() != JsonToken.END_ARRAY) {
-                     try { 
-                        RouteInfo routeInfo = jsonToRouteInfo(parser); 
-                        msgQosData.addRouteInfo(routeInfo);
-                     } catch (IOException e) {log.severe("Error while parsing redeliver: " + e.getMessage());}
+               JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                  try {
+                     RouteInfo routeInfo = jsonToRouteInfo(parser);
+                     msgQosData.addRouteInfo(routeInfo);
+                  } catch (IOException e) {
+                     log.severe("Error while parsing redeliver: " + e.getMessage());
+                     JacksonUtils.skipArrayOrObject(parser);
                   }
-               }
+               });
                break;
 
             case "isPublish":
                try {
-                  if (parser.getBooleanValue()) msgQosData.setMethod(MethodName.PUBLISH);
-               } catch (IOException e) {log.severe("Error while parsing isPublish");}
+                  if (parser.getBooleanValue())
+                     msgQosData.setMethod(MethodName.PUBLISH);
+               } catch (IOException e) {
+                  log.severe("Error while parsing isPublish");
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "isUpdate":
                try {
-                  if (parser.getBooleanValue()) msgQosData.setMethod(MethodName.UPDATE);
-               } catch (IOException e) {log.severe("Error while parsing isUpdate");}
+                  if (parser.getBooleanValue())
+                     msgQosData.setMethod(MethodName.UPDATE);
+               } catch (IOException e) {
+                  log.severe("Error while parsing isUpdate");
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "isGet":
                try {
-                  if (parser.getBooleanValue()) msgQosData.setMethod(MethodName.GET);
-               } catch (IOException e) {log.severe("Error while parsing isGet");}
+                  if (parser.getBooleanValue())
+                     msgQosData.setMethod(MethodName.GET);
+               } catch (IOException e) {
+                  log.severe("Error while parsing isGet");
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             case "topicProperty":
                try {
-               msgQosData.setTopicProperty(parseTopicProperty(parser));
-               } catch (IOException e) {log.severe("Error while parsing topicProperty");}
+                  msgQosData.setTopicProperty(parseTopicProperty(parser));
+               } catch (IOException e) {
+                  log.severe("Error while parsing topicProperty");
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
                break;
 
             default:
                log.warning("Ignoring unknown QoS field: " + fieldName);
-               parser.skipChildren();
             }
-         }
-
+         });
       } catch (IOException e) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
                "Failed to parse JSON QoS at: " + e.getMessage());
@@ -282,19 +310,11 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
       return msgQosData;
    }
-   
-   private TopicProperty parseTopicProperty(JsonParser parser) throws IOException {
+
+   private TopicProperty parseTopicProperty(JsonParser parser) throws IOException, XmlBlasterException {
       TopicProperty topic = new TopicProperty(glob);
 
-      // We assume parser is currently at START_OBJECT: "topicProperty": { <--- parser here)
-      while (parser.nextToken() != JsonToken.END_OBJECT) {
-         String fieldName = parser.currentName();
-         if (fieldName == null) {
-            continue;
-         }
-
-         parser.nextToken(); // move to the value of this field
-
+      JacksonUtils.safeObjectLoop(glob, parser, "topicProperty", (fieldName) -> {
          switch (fieldName) {
          case "readonly":
             try {
@@ -324,32 +344,26 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             break;
 
          case "msgDistributor":
-            if (parser.currentToken() == JsonToken.START_OBJECT) {
-               while (parser.nextToken() != JsonToken.END_OBJECT) {
-                  String subField = parser.currentName();
-                  parser.nextToken();
-                  try {
-                     if ("typeVersion".equals(subField)) {
-                        topic.setMsgDistributor(parser.getText());
-                     } else {
-                        parser.skipChildren();
-                     }
-                  } catch (IOException e) {
-                     log.severe("Error while parsing 'msgDistributor' subfield");
-                     throw e;
+            JacksonUtils.safeObjectLoop(glob, parser, fieldName, (subField) -> {
+               try {
+                  if ("typeVersion".equals(subField)) {
+                     topic.setMsgDistributor(JacksonUtils.notNullValueAsString(glob, parser));
+                  } else {
+                     parser.skipChildren();
                   }
+               } catch (IOException e) {
+                  log.severe("Error while parsing 'msgDistributor' subfield");
+                  throw e;
                }
-            } else {
-               log.severe("Error while parsing 'msgDistributor' subfield");
-               parser.skipChildren();
-            }
+
+            });
             break;
 
          case "persistence":
-            MsgUnitStoreProperty tmpMsgUnitStoreProp = new MsgUnitStoreProperty(glob, glob.getId());
+            MsgUnitStoreProperty tmpMsgUnitStoreProp = new MsgUnitStoreProperty(glob, null);
             try {
                tmpMsgUnitStoreProp.parseJson(parser);
-            } catch (IOException e) {
+            } catch (IOException | XmlBlasterException e) {
                log.severe("Error while parsing 'persistence'");
                throw e;
             }
@@ -360,7 +374,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             HistoryQueueProperty tmpHistoryProp = new HistoryQueueProperty(glob, glob.getId());
             try {
                tmpHistoryProp.parseJson(parser);
-            } catch (IOException e) {
+            } catch (IOException | XmlBlasterException e) {
                log.severe("Error while parsing 'queue'");
                throw e;
             }
@@ -371,89 +385,64 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             log.warning("Ignoring unknown QoS, topicProperty field: " + fieldName);
             parser.skipChildren(); // ignore unknown fields
          }
-      }
+      });
+
       return topic;
    }
 
    /**
     * Helper to parse one RouteInfo 'route' object from JSON
     */
-   private RouteInfo jsonToRouteInfo(JsonParser parser) throws IOException {
-      NodeId nodeId = null;
-      int stratum = 0;
-      Timestamp timestamp = new Timestamp(0L);
-      boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
+   private RouteInfo jsonToRouteInfo(JsonParser parser) throws IOException, XmlBlasterException {
+      class Holder {
+         NodeId nodeId = null;
+         int stratum = 0;
+         Timestamp timestamp = new Timestamp(0L);
+         boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
+      }
+      Holder h = new Holder();
 
-      if (parser.currentToken() == JsonToken.START_OBJECT) {
-         while (parser.nextToken() != JsonToken.END_OBJECT) {
-            switch (parser.currentName()) {
-            case "id":
-               parser.nextToken();
-               try {
-                  nodeId = new NodeId(parser.getValueAsString());
-               } catch (IOException e) {
-                  log.severe("Error while parsing 'id'");
-                  throw e;
-               }
-               break;
+      try {
+      JacksonUtils.safeObjectLoop(glob, parser, "route", (fieldName) -> {
+         switch (fieldName) {
+         case "id":
+               h.nodeId = new NodeId(JacksonUtils.notNullValueAsString(glob, parser));
+            break;
 
-            case "stratum":
-               parser.nextToken();
-               try {
-                  stratum = parser.getIntValue();
-               } catch (IOException e) {
-                  log.severe("Error while parsing 'stratum', expected number");
-                  throw e;
-               }
-               break;
+         case "stratum":
+               h.stratum = parser.getIntValue();
+            break;
 
-            case "timestamp":
-               parser.nextToken();
-               try {
-                  timestamp = new Timestamp(parser.getLongValue());
-               } catch (IOException e) {
-                  log.severe("Error while parsing 'timestamp', expected number");
-                  throw e;
-               }
-               break;
+         case "timestamp":
+               h.timestamp = new Timestamp(parser.getLongValue());
+            break;
 
-            case "dirtyRead":
-               parser.nextToken();
-               try {
-                  dirtyRead = parser.getBooleanValue();
-               } catch (IOException e) {
-                  log.severe("Error while parsing 'dirtyRead'");
-                  throw e;
-               }
-               break;
+         case "dirtyRead":
+               h.dirtyRead = parser.getBooleanValue();
+            break;
 
-            default:
-               log.warning("Ignoring unknown QoS, topicProperty field: " + parser.currentName());
-               parser.skipChildren();
-            }
+         default:
+            log.warning("Ignoring unknown QoS, topicProperty field: " + parser.currentName());
+            JacksonUtils.skipArrayOrObject(parser);
          }
-      } else
-         log.severe("Error while parsing routeinfo, excpected startobject after 'route' key, usin default values...");
 
-      RouteInfo routeInfo = new RouteInfo(nodeId, stratum, timestamp);
-      routeInfo.setDirtyRead(dirtyRead);
+      });
+      } catch (XmlBlasterException | IOException e) {
+         log.warning("Error parsing RouteInfo: " + e.getLocalizedMessage());
+         log.warning("Attempting to continue with default values ...");
+      }
+
+      RouteInfo routeInfo = new RouteInfo(h.nodeId, h.stratum, h.timestamp);
+      routeInfo.setDirtyRead(h.dirtyRead);
       return routeInfo;
    }
 
-   private Destination jsonToDestination(JsonParser parser) throws IOException {
+   private Destination jsonToDestination(JsonParser parser) throws IOException, XmlBlasterException {
       Destination dest = new Destination();
 
-      if (parser.currentToken() != JsonToken.START_OBJECT) {
-         parser.skipChildren(); // not a proper object, skip
-         return dest;
-      }
-
-      while (parser.nextToken() != JsonToken.END_OBJECT) {
-         String fieldName = parser.currentName();
-         parser.nextToken(); // move to value
-
+      JacksonUtils.safeObjectLoop(glob, parser, "destination", (fieldName) -> {
          if ("queryType".equalsIgnoreCase(fieldName)) {
-            String queryType = parser.getValueAsString();
+            String queryType = JacksonUtils.notNullValueAsString(glob, parser);
             if ("EXACT".equalsIgnoreCase(queryType) || "XPATH".equalsIgnoreCase(queryType)) {
                dest.setQueryType(queryType);
             } else {
@@ -462,17 +451,16 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
          } else if ("forceQueuing".equalsIgnoreCase(fieldName)) {
             dest.forceQueuing(parser.getBooleanValue());
          } else if ("value".equalsIgnoreCase(fieldName)) {
-            dest.setDestination(new SessionName(glob, parser.getValueAsString()));
+            dest.setDestination(new SessionName(glob, JacksonUtils.notNullValueAsString(glob, parser)));
          } else {
             log.warning("Skipping unknown Destination field name: " + fieldName);
             // unknown field, skip gracefully
-            parser.skipChildren();
+            JacksonUtils.skipArrayOrObject(parser);
          }
-      }
+      });
 
       return dest;
    }
-   
 
    @Override
    public String writeObject(MsgQosData msgQosData, String extraOffset, Properties props) {
@@ -645,37 +633,39 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
    public void topicToJson(JsonGenerator gen, TopicProperty topic) throws IOException {
       if (topic == null) {
-          return;
+         return;
       }
 
       gen.writeObjectFieldStart("topicProperty"); // "topicProperty": { ... }
 
       if (topic.isReadonlyModified()) {
-          gen.writeBooleanField("readonly", topic.isReadonly());
+         gen.writeBooleanField("readonly", topic.isReadonly());
       }
       if (topic.isDestroyDelayModified()) {
-          gen.writeNumberField("destroyDelay", topic.getDestroyDelay());
+         gen.writeNumberField("destroyDelay", topic.getDestroyDelay());
       }
       if (topic.isCreateDomEntryModified()) {
-          gen.writeBooleanField("createDomEntry", topic.createDomEntry());
+         gen.writeBooleanField("createDomEntry", topic.createDomEntry());
       }
 
       if (topic.isMsgDistributorModified()) {
-          gen.writeObjectFieldStart("msgDistributor");
-          gen.writeStringField("typeVersion", topic.getMsgDistributor());
-          gen.writeEndObject();
+         gen.writeObjectFieldStart("msgDistributor");
+         gen.writeStringField("typeVersion", topic.getMsgDistributor());
+         gen.writeEndObject();
       }
 
       if (topic.hasMsgUnitStoreProperty()) {
-          topic.getMsgUnitStoreProperty().toJson(gen); // delegate
+         gen.writeFieldName("persistence");
+         topic.getMsgUnitStoreProperty().toJson(gen);
       }
 
       if (topic.hasHistoryQueueProperty()) {
-          topic.getHistoryQueueProperty().toJson(gen); // delegate
+         gen.writeFieldName("queue");
+         topic.getHistoryQueueProperty().toJson(gen);
       }
 
       gen.writeEndObject(); // end "topic"
-  }
+   }
 
    @Override
    public String getName() {

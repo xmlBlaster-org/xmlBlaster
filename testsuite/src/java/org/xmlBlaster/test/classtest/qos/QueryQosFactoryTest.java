@@ -13,6 +13,7 @@ import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.QueryQosJsonFactory;
+import org.xmlBlaster.util.qos.QuerySpecQos;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -121,8 +122,8 @@ public class QueryQosFactoryTest extends TestCase {
          String newXml = qos.toXml();
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
-         String newJson = qos.toJson();
-         log.info("New JSON=" + newJson);
+         String newJson = jsonFactory.writeObject(qos, null, null);
+         log.info("New JSON=\n" + newJson);
          qos = jsonFactory.readObject(newJson);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());
@@ -144,7 +145,7 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", "b<100|a[0]>10", filterArr[1].getQuery().toString());
       }
       catch (XmlBlasterException e) {
-         fail("testToXmlAndToJson failed: " + e.toString());
+         fail("testToXmlAndToJson failed: " + e.getMessage());
       }
 
       System.out.println("***QueryQosFactoryTest: testToXmlAndToJson [SUCCESS]");
@@ -225,9 +226,9 @@ public class QueryQosFactoryTest extends TestCase {
          assertSubscribeQos(qosFromXml);
 
          // Test JSON
-         String json = subscribeQos.toJson(); // Assuming you have a toJson() method
+         String json = subscribeQos.toJson();
          System.out.println("SubscribeQos (JSON):\n" + json);
-         QueryQosData qosFromJson = factory.readObject(json);
+         QueryQosData qosFromJson = jsonFactory.readObject(json);
          assertSubscribeQos(qosFromJson);
       } catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());
@@ -272,6 +273,8 @@ public class QueryQosFactoryTest extends TestCase {
    
    /**
     * Tests client side GetQos. 
+    * <br>
+    * both xml and json 
     */
    public void testGetQos() {
       System.out.println("***QueryQosFactoryTest: GetQos ...");
@@ -284,24 +287,36 @@ public class QueryQosFactoryTest extends TestCase {
          getQos.setHistoryQos(hh);
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
+
          System.out.println("GetQos: " + getQos.toXml());
          QueryQosData qos = factory.readObject(getQos.toXml());
-         assertEquals("", false, qos.getWantContent());
-         assertEquals("", 33, qos.getHistoryQos().getNumEntries());
-         assertEquals("", false, qos.getHistoryQos().getNewestFirst());
-         AccessFilterQos[] filterArr = qos.getAccessFilterArr();
-         assertEquals("", 2, filterArr.length);
-         assertEquals("", "ContentLenFilter", filterArr[0].getType());
-         assertEquals("", "1.0", filterArr[0].getVersion());
-         assertEquals("", "800", filterArr[0].getQuery().toString());
-         assertEquals("", "ContentLenFilter2", filterArr[1].getType());
-         assertEquals("", "3.2", filterArr[1].getVersion());
-         assertEquals("", "a<10", filterArr[1].getQuery().toString());
+         assertGetQos(qos);
+         qos = jsonFactory.readObject(getQos.toJson());
+         System.out.println("GetQos: " + getQos.toJson());
+         assertGetQos(qos);
+
       }
       catch (Throwable e) {
-         System.out.println("Test failed: " + e.toString());
+        fail("Test failed: " + e.toString());
       }
       System.out.println("***QueryQosFactoryTest: GetQos [SUCCESS]");
+   }
+   
+   /**
+    * @param qos: this objects fields will be tested tested
+    */
+   private void assertGetQos(QueryQosData qos) {
+      assertEquals("", false, qos.getWantContent());
+      assertEquals("", 33, qos.getHistoryQos().getNumEntries());
+      assertEquals("", false, qos.getHistoryQos().getNewestFirst());
+      AccessFilterQos[] filterArr = qos.getAccessFilterArr();
+      assertEquals("", 2, filterArr.length);
+      assertEquals("", "ContentLenFilter", filterArr[0].getType());
+      assertEquals("", "1.0", filterArr[0].getVersion());
+      assertEquals("", "800", filterArr[0].getQuery().toString());
+      assertEquals("", "ContentLenFilter2", filterArr[1].getType());
+      assertEquals("", "3.2", filterArr[1].getVersion());
+      assertEquals("", "a<10", filterArr[1].getQuery().toString());
    }
 
    /**

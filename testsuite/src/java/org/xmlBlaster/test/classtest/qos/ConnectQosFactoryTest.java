@@ -167,7 +167,7 @@ public class ConnectQosFactoryTest extends TestCase {
       Global glob = new Global();
       for (int i = 0; i < IMPL.length; i++) {
          suite.addTest(new ConnectQosFactoryTest(glob, "testDefault", i));
-         suite.addTest(new ConnectQosFactoryTest(glob, "testParse", i));
+         suite.addTest(new ConnectQosFactoryTest(glob, "testParseXmlAndJson", i));
          suite.addTest(new ConnectQosFactoryTest(glob, "testToXml", i));
          suite.addTest(new ConnectQosFactoryTest(glob, "testPerformance", i));
       }
