@@ -400,7 +400,7 @@ TODO
       <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
       <echo message="         -DADD_HSQLDB=false    does not add hsqldb.jar, no embedded database support [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support for clients [true]"/>
-      <echo message="         -DADD_EMAIL=true      mail.jar,activaton.jar, for EMAIL support [false]"/>
+      <echo message="         -DADD_EMAIL=true      jakarta.mail-2.0.1.jar,activaton.jar, for EMAIL support [false]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_LOGGINGPROP=[property file] Adds your customized logging.properties file"/>
@@ -847,7 +847,7 @@ TODO
         includes="jboss-service.xml"
         prefix="META-INF"/>
       <fileset dir="${lib.dir}"
-        includes="activation.jar,omquery.jar,xtdash.jar,remotecons.jar,joda-time.jar,jax.jar,xmlrpc3/commons-logging-1.1.jar,xmlrpc3/ws-commons-util-1.0.2.jar,xmlrpc3/xmlrpc-client-3.1.1.jar,xmlrpc3/xmlrpc-common-3.1.1.jar,xmlrpc3/xmlrpc-server-3.1.1.jar,gnu-regexp.jar,tinySQL.jar,jzlib.jar"
+        includes="jakarta.activation-2.0.1.jar,omquery.jar,xtdash.jar,remotecons.jar,joda-time.jar,jax.jar,xmlrpc3/commons-logging-1.1.jar,xmlrpc3/ws-commons-util-1.0.2.jar,xmlrpc3/xmlrpc-client-3.1.1.jar,xmlrpc3/xmlrpc-common-3.1.1.jar,xmlrpc3/xmlrpc-server-3.1.1.jar,gnu-regexp.jar,tinySQL.jar,jzlib.jar"
         />                                             
       <fileset dir="${build.dir}/sar"
         includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
@@ -1790,11 +1790,11 @@ TODO
             </copy>
          </default>
       </switch>
-      <switch value="${ADD_EMAIL}"> <!-- last task to force our javamail.jar -->
+      <switch value="${ADD_EMAIL}"> <!-- last task to force our javajakarta.mail-2.0.1.jar -->
          <case value="true">
-            <echo message="Adding activation.jar/mail.jar for EMAIL support" />
-            <unjar src="${lib.dir}/activation.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/mail.jar" dest="${dist-classes.dir}" />
+            <echo message="Adding jakarta.activation-2.0.1.jar/jakarta.mail-2.0.1.jar for EMAIL support" />
+            <unjar src="${lib.dir}/jakarta.activation-2.0.1.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/jakarta.mail-2.0.1.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
             <echo message="ADD_EMAIL=${ADD_EMAIL}: No EMAIL support added." />
@@ -2031,9 +2031,9 @@ TODO
       </switch>
       <switch value="${ADD_EMAIL}">
          <case value="true">
-            <echo message="Adding ${lib.dir}/activation.jar and ${lib.dir}/mail.jar EMAIL libraries" />
-            <unjar src="${lib.dir}/activation.jar" dest="${dist-client.dir}/classes" />
-            <unjar src="${lib.dir}/mail.jar" dest="${dist-client.dir}/classes" />
+            <echo message="Adding ${lib.dir}/jakarta.activation-2.0.1.jar and ${lib.dir}/jakarta.mail-2.0.1.jar EMAIL libraries" />
+            <unjar src="${lib.dir}/jakarta.activation-2.0.1.jar" dest="${dist-client.dir}/classes" />
+            <unjar src="${lib.dir}/jakarta.mail-2.0.1.jar" dest="${dist-client.dir}/classes" />
          </case>
          <default>
             <echo message="ADD_EMAIL=${ADD_EMAIL}: No email support jar files added" />
