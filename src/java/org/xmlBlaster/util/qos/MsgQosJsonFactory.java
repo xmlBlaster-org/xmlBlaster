@@ -125,9 +125,8 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
                break;
 
             case "subscribe":
-               JacksonUtils.safeObjectLoop(glob, parser, "state", (innerFieldName) -> {
+               JacksonUtils.safeObjectLoop(glob, parser, "subscribe", (innerFieldName) -> {
                      if ("id".equals(innerFieldName)) {
-
                            msgQosData.setSubscriptionId(JacksonUtils.notNullValueAsString(glob, parser));
                      }});
                break;
@@ -620,6 +619,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             gen.writeStringField("properties", propsXml);
          }
 
+         // isVolatile is ignored because it is deprecated
          gen.writeEndObject(); // close root
          gen.close();
 
