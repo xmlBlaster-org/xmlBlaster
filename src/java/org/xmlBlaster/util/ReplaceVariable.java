@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -78,93 +80,74 @@ public final class ReplaceVariable
     /**
     * Replace dynamic variables, e.g. ${XY} with their values.
     * <p />
-    * The maximum replacement (nesting) depth is 50.
     * @param text The value string which may contain zero to many ${...} variables
     * @param cb The callback supplied by you which replaces the found keys (from ${key})
     * @return The new value where all resolvable ${} are replaced.
     * @throws IllegalArgumentException if matching "}" is missing
     */
    public final String replace(String text, I_ReplaceVariable cb) {
-	  if (text == null) return null;
-	  if (cb == null) return text;
-      int minIndex = 0;
-      for (int ii = 0;; ii++) {
-         int fromIndex = text.indexOf(this.startToken, minIndex);
-         if (fromIndex == -1) {
-        	 return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
-         }
-         if (escapeToken != null) {
-             int fromIndexEscaped = text.indexOf(this.escapeToken+this.startToken, minIndex);
-             if (fromIndexEscaped != -1 && fromIndexEscaped == fromIndex - this.escapeToken.length()) {
-            	 // isEscaped, e.g. \${A}
-            	 minIndex = fromIndex + this.escapeToken.length() + this.startToken.length();
-            	 continue;
-             }
-         }
-         minIndex = 0;
-         
-         if (fromIndex+1 >= text.length()) {
-            if (this.throwException) {
-                throw new IllegalArgumentException("Invalid variable '" + text.substring(fromIndex) +
-                         "', expecting " + this.startToken + this.endToken + " syntax.");
-             }
-            return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
-         }
-
-         int to = text.indexOf(this.endToken, fromIndex+1);
-         //System.out.println("ReplaceVariable: Trying fromIndex=" + fromIndex + " toIndex=" + to + " '" + text.substring(fromIndex,to+1) + "'");
-
-         if (allowRecursive) {  // to support "${A${B}}"
-            int fromTmp = text.indexOf(this.startToken, fromIndex+1);
-            boolean isNotEscaped = true; // true, we ignore possible escape token, eg. \${var} -> \5, if var is 5. 
-            if (escapeToken != null) {
-                int fromTmpEscaped = text.indexOf(this.escapeToken+this.startToken, fromIndex+1);
-                isNotEscaped = fromTmpEscaped == -1 || fromTmpEscaped != fromTmp - this.escapeToken.length();
+      if (text == null) return null;
+      if (cb == null) return text;
+      
+     
+      return doReplace(text, cb, 0, 0, text.length(), new HashMap<String, String>());
+   }
+   
+   /**
+    * Recursive call to replace nested
+    * @param text
+    * @param cb
+    * @param nestingDepth
+    * @param startOffset
+    * @param endOffset
+    * @param replaceCache
+    * @return
+    */
+   private final String doReplace(String text, I_ReplaceVariable cb, int nestingDepth, int startOffset, int endOffset, Map<String, String> replaceCache) {
+      if (nestingDepth > 0 && !this.allowRecursive) {
+         String part = text.substring(startOffset, endOffset);
+         return replaceCache.computeIfAbsent(part, (s) -> cb.get(s));
+      }
+      
+      StringBuilder result = new StringBuilder(text.length());
+      String escapedStart = escapeToken + startToken;
+      for (int i = startOffset; i < endOffset; i++) {
+         char ch = text.charAt(i);
+         if (escapeToken != null && text.regionMatches(i, escapedStart, 0, escapedStart.length())) {
+            result.append(startToken);
+            i += escapedStart.length() - 1;
+            continue;
+         } else if (nestingDepth < this.maxNest && text.regionMatches(i, startToken, 0, startToken.length())) {
+            // find corresponding end token
+            int depth = 1;
+            int end = i + startToken.length();
+            for (; end < endOffset; end++) {
+               if (text.regionMatches(end, startToken, 0, startToken.length())) {
+                  depth++;
+               } else if (text.regionMatches(end, endToken, 0, endToken.length())) {
+                  depth--;
+                  if (depth == 0)
+                     break;
+               }
             }
-            if (fromTmp != -1 
-            		&& isNotEscaped
-            		&& to != -1 
-            		&& fromTmp < to) {
-               fromIndex = fromTmp;
-               to = text.indexOf(this.endToken, fromTmp);
-            }
-         }
-
-         if (to == -1) {
-            if (this.throwException) {
-               throw new IllegalArgumentException("Invalid variable '" + text.substring(fromIndex) +
+            
+            if (depth != 0 && this.throwException) {
+               throw new IllegalArgumentException("Invalid variable '" + text.substring(startOffset) +
                         "', expecting " + this.startToken + this.endToken + " syntax.");
             }
-            return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
-         }
-         String sub = text.substring(fromIndex, to + this.endToken.length()); // "${XY}"
-         String subKey = sub.substring(this.startToken.length(), sub.length() - this.endToken.length()); // "XY"
-         String subValue = cb.get(subKey);
-         if (subValue != null) {
-            //System.out.println("ReplaceVariable: fromIndex=" + fromIndex + " sub=" + sub + " subValue=" + subValue);
-        	if (escapeToken == null) {
-        		// different legacy behaviour, e.g. all subsequent tokens of same var name will be replaced by its value, 
-        		// eg. "1: ${XY), 2: ${XY}" -> "1: 100, 2: 100", even if to ends after the first ${XY}
-                text = replaceAll(text, fromIndex, sub, subValue);
-        	} else {
-        		// with introduction of escape Token, ensure only values in current interval are replaced, 
-        		// e.g. correct: "1: ${XY), 2: \${XY}" -> "1: 100, 2: ${XY}" vs. 
-        		//    incorrect: "1: ${XY), 2: \${XY}" -> "1: 100, 2: \100" (if case)
-                text = replaceAll(text, fromIndex, to, sub, subValue);
-        	}
-         }
-         else {
-            minIndex = fromIndex+1;  // to support all recursions
-         }
 
-         if (ii > this.maxNest) {
-            if (this.throwException) {
-               throw new IllegalArgumentException("ReplaceVariable: Maximum nested depth of " + this.maxNest + " reached for '" + text + "'.");
-            }
-            System.out.println("ReplaceVariable: Maximum nested depth of " + this.maxNest + " reached for '" + text + "'.");
-            return (escapeToken == null) ? text : text.replace(this.escapeToken+this.startToken, this.startToken);
+            // replace recursive
+            String replacement = doReplace(text, cb, nestingDepth + 1, i + startToken.length(), end, replaceCache);
+            result.append(replacement);
+            i = end;
+            continue;
          }
+         result.append(ch);
       }
+      if (nestingDepth > 0) { // replace self
+         return replaceCache.computeIfAbsent(result.toString(), (s) -> cb.get(s));
+      }
+      return result.toString();
    }
 
    /**
@@ -178,16 +161,6 @@ public final class ReplaceVariable
      return template.contains(this.startToken) && template.contains(this.endToken); // "${" "}"
    }
    
-
-   /**
-   * Replace all occurrences of "from" with to "to" in the range from fromIndex to toIndex.
-   */
-   private final static String replaceAll(String str, int fromIndex, int toIndex, String from, String to) {
-      if (str == null || str.length() < 1 || from == null || to == null)
-         return str;
-      return str.substring(0, fromIndex) + str.substring(fromIndex, toIndex+1).replace(from, to) + str.substring(toIndex+1);
-   }
-
    /**
    * Replace all occurrences of "from" with to "to" in the range from fromIndex to the end of string.
    */
