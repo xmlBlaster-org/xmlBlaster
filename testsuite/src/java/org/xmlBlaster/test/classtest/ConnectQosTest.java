@@ -120,6 +120,7 @@ public class ConnectQosTest extends TestCase {
          "   <clientProperty name='intKey' type='int'>123</clientProperty>\n" +
          "   <clientProperty name='StringKey' type='String' encoding='" + Constants.ENCODING_BASE64 + "'>QmxhQmxhQmxh</clientProperty>\n" +
          "   <persistent>true</persistent>\n" +
+         "   <refreshSession/>" +
          "</qos>\n";
 
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
@@ -241,6 +242,7 @@ public class ConnectQosTest extends TestCase {
          //assertEquals("", "http:...", addr.getAddress().trim()); // from client queue property
          assertEquals("", false, qos.isPtpAllowed());
          assertEquals("", "joe", qos.getUserId());
+         assertEquals("", true, qos.getRefreshSession());
       }
       catch (XmlBlasterException e) {
          fail("testParse failed: " + e.toString());
