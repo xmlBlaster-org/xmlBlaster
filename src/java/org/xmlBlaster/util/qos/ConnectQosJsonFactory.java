@@ -56,7 +56,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
                      } catch (IOException e) {
                         log.severe("Parsing failed inside 'serverRefs");
                         log.severe("Skipping parsing...");
-                        parser.skipChildren();
+                        JacksonUtils.skipArrayOrObject(parser);
                         throw e;
                      }
                   });
@@ -106,7 +106,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
                      } catch (IOException | XmlBlasterException e) {
                         log.severe("Parsing failed inside the Array of client cqQueuepropertie Objects");
                         log.severe("Skipping parsing...");
-                        parser.skipChildren();
+                        JacksonUtils.skipArrayOrObject(parser);
                         throw e;
                      }
                   });
@@ -177,7 +177,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
 
             case "instanceId":
                try {
-                  connectQosData.setInstanceId(parser.getValueAsString());
+                  connectQosData.setInstanceId(JacksonUtils.notNullValueAsString(glob, parser));
                } catch (Exception e) {
                   log.severe("Error while parsing 'instanceId': " + e.getMessage());
                }
@@ -208,7 +208,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
                      } catch (XmlBlasterException e) {
                         log.severe("Parsing failed inside the Array of 'properties' with Error: " + e.getMessage());
                         log.severe("Skipping parsing...");
-                        parser.skipChildren();
+                        JacksonUtils.skipArrayOrObject(parser);
                         throw e;
                      }
                   });
@@ -220,7 +220,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
             default:
                try {
                   log.warning("Ignoring unknown ConnectQos field: " + fieldName);
-                  parser.skipChildren();
+                  JacksonUtils.skipArrayOrObject(parser);
                } catch (IOException e) {
                   log.severe("skipping childeren failed in ConnectQos 'default', aborting");
                   return;
@@ -230,7 +230,6 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
       } catch (IOException e) {
          log.severe("Failed to parse JSON ConnectQos: " + e.getMessage());
       }
-
       return connectQosData;
    }
 
@@ -247,9 +246,9 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
          case "name":
             try {
                if (glob.isServerSide()) { // Force the server node ID on connect
-                  sessionQos.setSessionName(new SessionName(glob, glob.getNodeId(), parser.getValueAsString()));
+                  sessionQos.setSessionName(new SessionName(glob, glob.getNodeId(), JacksonUtils.notNullValueAsString(glob, parser)));
                } else {
-                  sessionQos.setSessionName(new SessionName(glob, parser.getValueAsString()));
+                  sessionQos.setSessionName(new SessionName(glob, JacksonUtils.notNullValueAsString(glob, parser)));
                }
             } catch (IOException e) {
                log.severe("Error while parsing 'id'");
@@ -295,7 +294,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
 
          case "sessionId":
             try {
-               sessionQos.setSecretSessionId(parser.getValueAsString());
+               sessionQos.setSecretSessionId(JacksonUtils.notNullValueAsString(glob, parser));
             } catch (Exception e) {
                log.severe("Error while parsing 'sessionId': " + e.getMessage());
                throw new IOException("Error parsing 'sessionId'", e);
@@ -304,7 +303,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
 
          default:
             log.warning("Ignoring unknown ConnectQos field: " + fieldName);
-            parser.skipChildren();
+            JacksonUtils.skipArrayOrObject(parser);
          }
 
       });
@@ -322,16 +321,16 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
       JacksonUtils.safeObjectLoop(glob, parser, "serverRef", (fieldName) -> {
          switch (fieldName) {
          case "type":
-            h.type = parser.getValueAsString();
+            h.type = JacksonUtils.notNullValueAsString(glob, parser);
             break;
 
          case "address":
-            h.addr = parser.getValueAsString();
+            h.addr = JacksonUtils.notNullValueAsString(glob, parser);
             break;
 
          default:
             log.warning("ignoring unknown field '" + fieldName + "' inside 'serverRef'");
-            parser.skipChildren(); // ignore unknown fields
+            JacksonUtils.skipArrayOrObject(parser); // ignore unknown fields
             break;
          }
 
