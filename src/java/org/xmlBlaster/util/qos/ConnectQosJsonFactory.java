@@ -199,21 +199,19 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
                }
                break;
 
-            case "properties":
+            case "clientProperties":
                try {
                   JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
                      try {
                         ClientProperty cp = ClientProperty.parseCompactClientProperties(glob, parser);
                         connectQosData.addClientProperty(cp);
                      } catch (XmlBlasterException e) {
-                        log.severe("Parsing failed inside the Array of 'properties' with Error: " + e.getMessage());
-                        log.severe("Skipping parsing...");
-                        JacksonUtils.skipArrayOrObject(parser);
+                        log.severe("Parsing failed inside the Array of 'clientProperty' with Error: " + e.getMessage());
                         throw e;
                      }
                   });
                } catch (Exception e) {
-                  log.severe("Error while parsing 'properties': " + e.getMessage());
+                  log.severe("Error while parsing 'clientProperty': " + e.getMessage());
                }
                break;
 
@@ -454,7 +452,7 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
             gen.writeEndArray();
          }
 
-         // properties (fallback XML serialization like MsgQosData)
+         // clientProperty
          data.writePropertiesJson(gen);
 
          gen.writeEndObject(); // root }

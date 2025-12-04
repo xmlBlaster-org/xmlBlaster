@@ -5,10 +5,14 @@ import java.util.logging.Logger;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
@@ -68,8 +72,14 @@ public class QueryQosFactoryTest extends TestCase {
            "   <local>false</local>\n" +
            "   <subIdGeneratedIncludeClusterNodeId>true</subIdGeneratedIncludeClusterNodeId>\n" +
            "   <initialUpdate>false</initialUpdate>\n" +
+           "   <updateOneway>true</updateOneway>\n" +
+           "   <notify>false</notify>\n" +
            "   <filter type='myPlugin' version='1.0'>a!=100</filter>\n" +
            "   <filter type='anotherPlugin' version='1.1'><![CDATA[b<100|a[0]>10]]></filter>\n" +
+           "   <multiSubscribe>false</multiSubscribe>" +
+           "   <querySpec type='QueueQuery'><![CDATA[\n" +
+           "     maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0]]>\n" +
+           "   </querySpec>" +
            "</qos>\n";
 
          QueryQosData qos = factory.readObject(xml);
@@ -81,6 +91,8 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
          assertEquals("", false, qos.getWantInitialUpdate());
+         assertEquals("updateOneway", true, qos.getWantUpdateOneway());
+         assertEquals("notify", false, qos.getWantNotify());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
          assertEquals("", 2, filterArr.length);
          assertEquals("", "myPlugin", filterArr[0].getType());
@@ -89,6 +101,9 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", "anotherPlugin", filterArr[1].getType());
          assertEquals("", "1.1", filterArr[1].getVersion());
          assertEquals("", "b<100|a[0]>10", filterArr[1].getQuery().toString());
+         assertEquals("Multisubscribe not beeing disabled", false, qos.getMultiSubscribe());
+         assertEquals("queryspec type", "QueueQuery", qos.getQuerySpecArr()[0].getType());
+         assertEquals("queryspec content", "maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0", qos.getQuerySpecArr()[0].getQuery().toString());
       }
       catch (XmlBlasterException e) {
          fail("testParse failed: " + e.toString());
@@ -114,9 +129,18 @@ public class QueryQosFactoryTest extends TestCase {
            "   <local>false</local>\n" +
            "   <subIdGeneratedIncludeClusterNodeId>true</subIdGeneratedIncludeClusterNodeId>\n" +
            "   <initialUpdate>false</initialUpdate>\n" +
+           "   <updateOneway>true</updateOneway>\n" +
+           "   <notify>false</notify>\n" +
            "   <history numEntries='20' newestFirst='false'/>\n" +
            "   <filter type='myPlugin' version='1.0'>a!=100</filter>\n" +
            "   <filter type='anotherPlugin' version='1.1'><![CDATA[b<100|a[0]>10]]></filter>\n" +
+           "   <multiSubscribe>false</multiSubscribe>" +
+           "   <querySpec type='QueueQuery'><![CDATA[\n" +
+           "     maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0]]>\n" +
+           "   </querySpec>" +
+           "   <clientProperty name='intKey' type='int'>123</clientProperty>\n" +
+           "   <clientProperty name='StringKey' type='String' encoding='" + Constants.ENCODING_BASE64 + "'>QmxhQmxhQmxh</clientProperty>\n" +
+
            "</qos>\n";
          QueryQosData qos = factory.readObject(xml);
          String newXml = qos.toXml();
@@ -133,6 +157,8 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
          assertEquals("", false, qos.getWantInitialUpdate());
+         assertEquals("updateOneway", true, qos.getWantUpdateOneway());
+         assertEquals("notify", false, qos.getWantNotify());
          assertEquals("", 20, qos.getHistoryQos().getNumEntries());
          assertEquals("", false, qos.getHistoryQos().getNewestFirst());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
@@ -143,6 +169,22 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", "anotherPlugin", filterArr[1].getType());
          assertEquals("", "1.1", filterArr[1].getVersion());
          assertEquals("", "b<100|a[0]>10", filterArr[1].getQuery().toString());
+         assertEquals("Multisubscribe not beeing disabled", false, qos.getMultiSubscribe());
+         assertEquals("queryspec type", "QueueQuery", qos.getQuerySpecArr()[0].getType());
+         assertEquals("queryspec content", "maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0", qos.getQuerySpecArr()[0].getQuery().toString());
+
+         assertEquals("Wrong number of clientProperties", 2, qos.getClientPropertyArr().length);
+         {
+            String prop = qos.getClientProperty("StringKey", (String)null);
+            assertTrue("Missing client property", prop != null);
+            assertEquals("Wrong base64 decoding", "BlaBlaBla", prop); // Base64: QmxhQmxhQmxh -> BlaBlaBla
+         }
+
+         {
+            int prop = qos.getClientProperty("intKey", -1);
+            assertEquals("Wrong value", 123, prop);
+         }
+
       }
       catch (XmlBlasterException e) {
          fail("testToXmlAndToJson failed: " + e.getMessage());
@@ -230,12 +272,12 @@ public class QueryQosFactoryTest extends TestCase {
          System.out.println("SubscribeQos (JSON):\n" + json);
          QueryQosData qosFromJson = jsonFactory.readObject(json);
          assertSubscribeQos(qosFromJson);
+
       } catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());
       }
       System.out.println("***QueryQosFactoryTest: SubscribeQos [SUCCESS]");
    }
-
    /**
     * @return SubscibeQos object for Testing
     */
@@ -318,6 +360,58 @@ public class QueryQosFactoryTest extends TestCase {
       assertEquals("", "3.2", filterArr[1].getVersion());
       assertEquals("", "a<10", filterArr[1].getQuery().toString());
    }
+   
+   public void testUnsubscribeQos() {
+      System.out.println("***QueryQosFactoryTest: UnSubscribeQos ...");
+
+      try {
+          UnSubscribeQos unsubscribeQos = createUnsubscribeQos();
+          String xml = unsubscribeQos.toXml();
+
+          // Test XML
+          System.out.println("UnSubscribeQos (XML): " + xml);
+          QueryQosData qosFromXml = factory.readObject(xml);
+          assertUnsubscribeQos(qosFromXml);
+
+          // Test JSON
+          String json = unsubscribeQos.toJson();
+          System.out.println("UnSubscribeQos (JSON):\n" + json);
+          QueryQosData qosFromJson = jsonFactory.readObject(json);
+          assertUnsubscribeQos(qosFromJson);
+
+      } catch (Throwable e) {
+          System.out.println("Test failed: " + e.toString());
+          fail("UnSubscribeQos test failed: " + e.toString());
+      }
+
+      System.out.println("***QueryQosFactoryTest: UnSubscribeQos [SUCCESS]");
+  }
+
+  /**
+   * @return UnSubscribeQos object for testing
+   */
+  private UnSubscribeQos createUnsubscribeQos() {
+      UnSubscribeQos uq = new UnSubscribeQos(glob);
+
+      uq.setPersistent(false); // test persistence flag
+      uq.addClientProperty(UnSubscribeQos.CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED, true);
+
+      return uq;
+  }
+
+  /**
+   * Validate the UnSubscribeQos data extracted from XML/JSON
+   */
+  private void assertUnsubscribeQos(QueryQosData qos) {
+      assertEquals("", MethodName.UNSUBSCRIBE, qos.getMethod());
+      assertEquals("", false, qos.getPersistentProp().getValue());
+
+      ClientProperty cp = qos.getClientProperty(UnSubscribeQos.CP_ASYNC_UNSUBSCRIBE_WITHOUT_SUBSCRIPTIONID_ALLOWED);
+      assertNotNull("Client property missing", cp);
+      assertEquals("", true, cp.getBooleanValue());
+  }
+
+
 
    /**
     * Method is used by TestRunner to load these tests
@@ -333,6 +427,7 @@ public class QueryQosFactoryTest extends TestCase {
          suite.addTest(new QueryQosFactoryTest(glob, "testEraseQos", i));
          suite.addTest(new QueryQosFactoryTest(glob, "testSubscribeQos", i));
          suite.addTest(new QueryQosFactoryTest(glob, "testGetQos", i));
+         suite.addTest(new QueryQosFactoryTest(glob, "testUnsubscribeQos", i));
       }
       return suite;
    }
@@ -353,6 +448,7 @@ public class QueryQosFactoryTest extends TestCase {
          testSub.testEraseQos();
          testSub.testSubscribeQos();
          testSub.testGetQos();
+         testSub.testUnsubscribeQos();
          //testSub.tearDown();
       }
    }

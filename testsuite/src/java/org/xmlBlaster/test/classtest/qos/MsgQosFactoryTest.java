@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -226,13 +227,13 @@ public class MsgQosFactoryTest extends TestCase {
       try {
          String xml = "<qos>\n" + "   <state id='AA' info='SOMETHING'/>\n" + "   <subscribable>false</subscribable>\n"
                + "   <destination queryType='EXACT' forceQueuing='true'>\n" + "      Tim\n" + "   </destination>\n"
-               + "   <destination queryType='EXACT'>\n" + "      Ben\n" + "   </destination>\n" +
+               + "   <destination queryType='EXACT'>\n" + "      Ben\n" + "   </destination>\n"
                /*
                 * "   <destination queryType='XPATH'>\n" + "      //[GROUP='Manager']\n" +
                 * "   </destination>\n" + "   <destination queryType='XPATH'>\n" +
                 * "      //ROLE/[@id='Developer']\n" + "   </destination>\n" +
                 */
-               "   <sender>\n" + "      Gesa\n" + "   </sender>\n" + "   <priority>MIN</priority>\n"
+               + "   <sender>\n" + "      Gesa\n" + "   </sender>\n" + "   <priority>MIN</priority>\n"
                + "   <expiration lifeTime='2400' remainingLife='12000' forceDestroy='true'/>\n"
                + "   <rcvTimestamp nanos='1234'/>\n" + "   <administrative/>\n" + "   <persistent/>\n"
                + "   <forceUpdate>false</forceUpdate>\n" + "   <route>\n"
@@ -243,8 +244,10 @@ public class MsgQosFactoryTest extends TestCase {
                + "      <persistence relating='msgUnitStore' type='TO' version='3.0' maxEntries='4' maxBytes='40' onOverflow='deadMessage'/>\n"
                + "      <queue relating='history' type='HI' version='2.0' maxEntries='3' maxBytes='30' onOverflow='deadMessage'/>\n"
                + "   </topic>\n"
-               + "<queue index='7' size='42'/>"
-               + "<redeliver>12</redeliver>" // mark this message as beeing redilivered for the 12th time
+               + "   <queue index='7' size='42'/>"
+               + "   <redeliver>12</redeliver>" // mark this message as beeing redilivered for the 12th time
+               + "   <clientProperty name='intKey' type='int'>123</clientProperty>\n"
+               + "   <clientProperty name='StringKey' type='String' encoding='" + Constants.ENCODING_BASE64 + "'>QmxhQmxhQmxh</clientProperty>\n"
                + "</qos>\n";
 
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
@@ -323,6 +326,18 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", 42, qos.getQueueSize());
          
          assertEquals("", 12, qos.getRedeliver());
+         
+         assertEquals("Wrong number of clientProperties", 2, qos.getClientPropertyArr().length);
+         {
+            String prop = qos.getClientProperty("StringKey", (String)null);
+            assertTrue("Missing client property", prop != null);
+            assertEquals("Wrong base64 decoding", "BlaBlaBla", prop); // Base64: QmxhQmxhQmxh -> BlaBlaBla
+         }
+
+         {
+            int prop = qos.getClientProperty("intKey", -1);
+            assertEquals("Wrong value", 123, prop);
+         }
 
       } catch (XmlBlasterException e) {
          fail("testToXml failed: " + e.toString());

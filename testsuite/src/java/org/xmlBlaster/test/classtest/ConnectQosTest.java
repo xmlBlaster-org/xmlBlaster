@@ -206,7 +206,7 @@ public class ConnectQosTest extends TestCase {
             assertEquals("", "http:/www.mars.universe:8080/RPC2", addr.getRawAddress());
          }
 
-         assertEquals("Wrong number of clientProperties", 2, qos.getClientProperties().size());
+         assertEquals("Wrong number of clientProperties", 2, qos.getClientPropertyArr().length);
          {
             String prop = qos.getClientProperty("StringKey", (String)null);
             assertTrue("Missing client property", prop != null);

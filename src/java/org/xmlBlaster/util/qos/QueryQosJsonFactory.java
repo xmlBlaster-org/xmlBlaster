@@ -149,6 +149,22 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
                }
                break;
 
+            case "clientProperties":
+               try {
+                  JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                     try {
+                        ClientProperty cp = ClientProperty.parseCompactClientProperties(glob, parser);
+                        queryQosData.addClientProperty(cp);
+                     } catch (XmlBlasterException e) {
+                        log.severe("Parsing failed inside the Array of 'clientProperty' with Error: " + e.getMessage());
+                        throw e;
+                     }
+                  });
+               } catch (Exception e) {
+                  log.severe("Error while parsing 'clientProperty': " + e.getMessage());
+               }
+               break;
+               
             default:
                log.warning("Ignoring unknown QoS field: " + fieldName);
                System.out.println("currentValue: " + parser.getValueAsString());
@@ -279,6 +295,9 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
             methodName = "isUnSubscribe";
          }
          if (methodName != null) {gen.writeStringField("methodName", methodName);}
+         
+         // clientProperty
+         queryQosData.writePropertiesJson(gen);
 
          gen.writeEndObject(); // root
 

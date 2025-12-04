@@ -850,7 +850,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       synchronized (this.clientPropertiesMutex) {
          if (this.clientProperties.size() > 0) {
             Object[] arr = this.clientProperties.keySet().toArray();
-            gen.writeArrayFieldStart("properties");
+            gen.writeArrayFieldStart("clientProperties");
             for (int i=0; i < arr.length; i++) {
                ClientProperty p = this.clientProperties.get(arr[i]);
                p.toCompactJson(gen);

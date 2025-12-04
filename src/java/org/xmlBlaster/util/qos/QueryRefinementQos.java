@@ -19,6 +19,9 @@ import org.xmlBlaster.util.XmlBuffer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 /**
@@ -227,7 +230,7 @@ public abstract class QueryRefinementQos
             setVersion(JacksonUtils.notNullValueAsString(glob, parser));
             break;
          case "value":
-            setQuery(new Query(glob, JacksonUtils.notNullValueAsString(glob, parser).trim()));
+            setQuery(new Query(glob, filterValueToString(parser).trim()));
             break;
          default:
             log.warning("unknown fieldName inside '" + tagName + "': '" + fieldName + "' skipping");
@@ -236,6 +239,21 @@ public abstract class QueryRefinementQos
          }
       });
    }
+   
+   private String filterValueToString(JsonParser parser) throws IOException, XmlBlasterException {
+      String valueString = "";
+      if (parser.currentToken() == JsonToken.START_OBJECT || parser.currentToken() == JsonToken.START_ARRAY) {
+         // read entire object/array as tree and convert to string
+         ObjectMapper mapper = new ObjectMapper(); // slow, could be initialized once as a field
+         JsonNode node = mapper.readTree(parser);
+         valueString = node.toString();
+      } else {
+         // regular primitive/string value
+         valueString = JacksonUtils.notNullValueAsString(glob, parser);
+      }
+      return valueString;
+   }
+
 
    /**
     * Dump state of this object into a XML ASCII string.

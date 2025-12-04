@@ -297,6 +297,22 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
                   JacksonUtils.skipArrayOrObject(parser);
                }
                break;
+               
+            case "clientProperties":
+               try {
+                  JacksonUtils.safeArrayLoop(glob, parser, fieldName, () -> {
+                     try {
+                        ClientProperty cp = ClientProperty.parseCompactClientProperties(glob, parser);
+                        msgQosData.addClientProperty(cp);
+                     } catch (XmlBlasterException e) {
+                        log.severe("Parsing failed inside the Array of 'clientProperty' with Error: " + e.getMessage());
+                        throw e;
+                     }
+                  });
+               } catch (Exception e) {
+                  log.severe("Error while parsing 'clientProperty': " + e.getMessage());
+               }
+               break;
 
             default:
                log.warning("Ignoring unknown QoS field: " + fieldName);
@@ -618,6 +634,9 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
          if (propsXml != null && !propsXml.isEmpty()) {
             gen.writeStringField("properties", propsXml);
          }
+         
+         // clientProperty
+         msgQosData.writePropertiesJson(gen);
 
          // isVolatile is ignored because it is deprecated
          gen.writeEndObject(); // close root

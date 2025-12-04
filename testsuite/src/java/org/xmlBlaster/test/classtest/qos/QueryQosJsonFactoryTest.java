@@ -54,9 +54,7 @@ public class QueryQosJsonFactoryTest extends TestCase {
       try {
          String json = """
                   {
-                       "subscribe": {
-                         "id": "_subId:1"
-                       },
+                       "subscribe": "_subId:1",
                        "erase": {
                          "forceDestroy": true
                        },
@@ -135,9 +133,7 @@ public class QueryQosJsonFactoryTest extends TestCase {
       try {
          String json = """
                {
-                   "subscribe": {
-                     "id": "_subId:1"
-                   },
+                   "subscribe": "_subId:1",
                    "erase": {
                      "forceDestroy": true
                    },
