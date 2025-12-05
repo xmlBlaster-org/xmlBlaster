@@ -138,6 +138,9 @@ public final class ReplaceVariable
 
             // replace recursive
             String replacement = doReplace(text, cb, nestingDepth + 1, i + startToken.length(), end, replaceCache);
+            if (replacement == null) {
+               replacement = text.substring(i, end+1);
+            }
             result.append(replacement);
             i = end;
             continue;
