@@ -460,6 +460,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @param tmpTagName If null the default is chosen
     * @param forceReadable If true the base64 is decoded to a 'readable' string
     * @return
+    * @deprecated use toCompactJson instead
     */
    public void toJson(JsonGenerator gen, String tmpTagName, boolean forceReadable) throws IOException {
       if (tmpTagName == null) {
