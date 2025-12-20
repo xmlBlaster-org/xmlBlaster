@@ -319,7 +319,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             }
          });
       } catch (IOException e) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
+         throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
                "Failed to parse JSON QoS at: " + e.getMessage());
       }
 
@@ -479,6 +479,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
    @Override
    public String writeObject(MsgQosData msgQosData, String extraOffset, Properties props) {
+      // Copied from toXML of <a>org.xmlBlaster.util.qos.MsgQosSaxFactory
       final boolean forceReadable = (props != null) && props.containsKey(Constants.TOXML_FORCEREADABLE)
             ? Boolean.parseBoolean(props.getProperty(Constants.TOXML_FORCEREADABLE))
             : false;

@@ -738,9 +738,9 @@ public class MsgQosFactoryTest extends TestCase {
       System.out.println("***MsgQosFactoryTest: testSubscribe [SUCCESS]");
    }
    
-   public void testyMethodTags() {
+   public void testMethodTags() {
       try {
-         System.out.println("***MsgQosFactoryTest: testyMethodTags ...");
+         System.out.println("***MsgQosFactoryTest: testMethodTags ...");
 
          // Test all method tags and the MethodName they must map to
          Map<String, MethodName> cases = new HashMap<>();
@@ -770,7 +770,7 @@ public class MsgQosFactoryTest extends TestCase {
          }
 
       } catch (XmlBlasterException e) {
-         fail("testyMethodTags failed: " + e.toString());
+         fail("testMethodTags failed: " + e.toString());
       }
 
       System.out.println("***MsgQosFactoryTest: testyMethodTags [SUCCESS]");
@@ -822,7 +822,7 @@ public class MsgQosFactoryTest extends TestCase {
       testSub.testToXmlAndToJson();
       testSub.testSubscribe();
       testSub.testReadonlyTag();
-      testSub.testyMethodTags();
+      testSub.testMethodTags();
       testSub.testMsgDistributor();
       // testSub.testPtPAdressingStyle(); //currently unused because SAX parsing is
       // broken
