@@ -1220,7 +1220,7 @@ TODO
          <fileset dir="${report.dir}">
             <include name="TEST-*.xml"/>
          </fileset>
-         <report format="frames" todir="${report.dir}/html"/>
+         <report format="noframes" todir="${report.dir}/html"/>
       </junitreport>
       <echo message="Test results written to '${report.htmlfile}'"/>
    </target>
