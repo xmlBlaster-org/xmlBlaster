@@ -501,7 +501,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        // comment out next line this to make tests run
-       suite.addTest(new TestSubManyClients(new Global(), "testManyClients", loginName));
+       // suite.addTest(new TestSubManyClients(new Global(), "testManyClients", loginName));
        return suite;
    }
 

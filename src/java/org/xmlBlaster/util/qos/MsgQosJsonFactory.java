@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.SessionName;
@@ -58,6 +59,9 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
    public MsgQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
+      } else if (JacksonUtils.isXML(jsonQos)) {
+         // use Sax parser if string is XML
+         return glob.getMsgQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       MsgQosData msgQosData = new MsgQosData(glob, this, jsonQos, MethodName.UNKNOWN);
@@ -319,6 +323,8 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             }
          });
       } catch (IOException e) {
+         log.severe("Failed to parse JSON MsgQos: " + e.getMessage());
+         log.info("faulty JSON: " + jsonQos);
          throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
                "Failed to parse JSON QoS at: " + e.getMessage());
       }
@@ -630,12 +636,6 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
             topicToJson(gen, msgQosData.getTopicProperty());
          }
 
-         // extra properties (serialized as XML string here for simplicity)
-         String propsXml = msgQosData.writePropertiesXml(null, forceReadable || forceReadableBase64);
-         if (propsXml != null && !propsXml.isEmpty()) {
-            gen.writeStringField("properties", propsXml);
-         }
-         
          // clientProperty
          msgQosData.writePropertiesJson(gen);
 

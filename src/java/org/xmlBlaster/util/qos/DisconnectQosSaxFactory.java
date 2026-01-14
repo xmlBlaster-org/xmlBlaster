@@ -9,6 +9,8 @@ package org.xmlBlaster.util.qos;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
@@ -52,6 +54,9 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
    public synchronized DisconnectQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
+      } else if (JacksonUtils.isJson(xmlQos)) {
+         // use JSON parser if string is not XML
+         return glob.getDisconnectQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       this.disconnectQosData = new DisconnectQosData(glob, this, xmlQos);

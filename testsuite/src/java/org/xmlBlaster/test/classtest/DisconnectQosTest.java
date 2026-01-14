@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.DiscconnectQosJsonFactory;
+import org.xmlBlaster.util.qos.DisconnectQosJsonFactory;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -35,7 +35,7 @@ public class DisconnectQosTest extends TestCase {
    protected Global glob;
    int counter = 0;
    private DisconnectQosSaxFactory factory;
-   private DiscconnectQosJsonFactory jsonFactory;
+   private DisconnectQosJsonFactory jsonFactory;
 
    public DisconnectQosTest(String name) {
       super(name);
@@ -44,7 +44,7 @@ public class DisconnectQosTest extends TestCase {
    protected void setUp() {
       this.glob = Global.instance();
       this.factory = new DisconnectQosSaxFactory(glob);
-      this.jsonFactory = new DiscconnectQosJsonFactory(glob);
+      this.jsonFactory = new DisconnectQosJsonFactory(glob);
    }
 
    public void testParse() {

@@ -74,15 +74,20 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginRegistry;
 import org.xmlBlaster.util.property.Property;
+import org.xmlBlaster.util.qos.ConnectQosJsonFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.DisconnectQosJsonFactory;
 import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
 import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.I_StatusQosFactory;
+import org.xmlBlaster.util.qos.MsgQosJsonFactory;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.qos.QueryQosJsonFactory;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
+import org.xmlBlaster.util.qos.StatusQosJsonFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.qos.StatusQosSaxFactory;
 import org.xmlBlaster.util.qos.address.Address;
@@ -184,6 +189,8 @@ public class Global implements Cloneable
    protected volatile CbServerPluginManager cbServerPluginManager;
 
    private volatile HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
+   
+   private volatile boolean jsonParsing;
 
    protected Hashtable logChannels = new Hashtable();
 
@@ -194,6 +201,7 @@ public class Global implements Cloneable
    /** Must be loaded in runlevel 0 or 1 before any access as not synchronized */
    protected I_Checkpoint checkpointPlugin;
 
+   // the currently used implementation of Interface
    protected volatile I_MsgKeyFactory msgKeyFactory;
    protected volatile I_QueryKeyFactory queryKeyFactory;
    protected volatile I_ConnectQosFactory connectQosFactory;
@@ -201,6 +209,23 @@ public class Global implements Cloneable
    protected volatile I_MsgQosFactory msgQosFactory;
    protected volatile I_QueryQosFactory queryQosFactory;
    protected volatile I_StatusQosFactory statusQosFactory;
+
+   // concrete instances initialized lazily
+   // switching takes minimal effort
+   // XML
+   protected volatile ConnectQosSaxFactory connectQosSaxFactory;
+   protected volatile DisconnectQosSaxFactory disconnectQosSaxFactory;
+   protected volatile MsgQosSaxFactory msgQosSaxFactory;
+   protected volatile QueryQosSaxFactory queryQosSaxFactory;
+   protected volatile StatusQosQuickParseFactory statusQosQuickParseFactory;
+   protected volatile StatusQosSaxFactory statusQosSaxFactory;
+
+   // JSON
+   protected volatile ConnectQosJsonFactory connectQosJsonFactory;
+   protected volatile DisconnectQosJsonFactory disconnectQosJsonFactory;
+   protected volatile MsgQosJsonFactory msgQosJsonFactory;
+   protected volatile QueryQosJsonFactory queryQosJsonFactory;
+   protected volatile StatusQosJsonFactory statusQosJsonFactory;
 
    protected volatile I_TimeoutManager pingTimer;
    protected volatile Timeout burstModeTimer;
@@ -311,6 +336,8 @@ public class Global implements Cloneable
       catch (XmlBlasterException e) {
          System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
       }
+      // uncomment to switch to json parsing
+      // this.switchToJsonParsing();
    }
    
    public void logJvmDetails() {
@@ -1074,7 +1101,8 @@ public class Global implements Cloneable
       if (this.connectQosFactory == null) {
          synchronized (this) {
             if (this.connectQosFactory == null) {
-               this.connectQosFactory = new ConnectQosSaxFactory(this);
+               this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
+               this.connectQosFactory = this.connectQosSaxFactory;
             }
          }
       }
@@ -1088,7 +1116,8 @@ public class Global implements Cloneable
       if (this.disconnectQosFactory == null) {
          synchronized (this) {
             if (this.disconnectQosFactory == null) {
-               this.disconnectQosFactory = new DisconnectQosSaxFactory(this);
+               this.disconnectQosSaxFactory = new DisconnectQosSaxFactory(this);
+               this.disconnectQosFactory = this.disconnectQosSaxFactory;
             }
          }
       }
@@ -1102,7 +1131,8 @@ public class Global implements Cloneable
       if (this.msgQosFactory == null) {
          synchronized (this) {
             if (this.msgQosFactory == null) {
-               this.msgQosFactory = new MsgQosSaxFactory(this);
+               this.msgQosSaxFactory = new MsgQosSaxFactory(this);
+               this.msgQosFactory = this.msgQosSaxFactory;
             }
          }
       }
@@ -1116,7 +1146,8 @@ public class Global implements Cloneable
       if (this.queryQosFactory == null) {
          synchronized (this) {
             if (this.queryQosFactory == null) {
-               this.queryQosFactory = new QueryQosSaxFactory(this);
+               this.queryQosSaxFactory = new QueryQosSaxFactory(this);
+               this.queryQosFactory = queryQosSaxFactory;
             }
          }
       }
@@ -1134,7 +1165,8 @@ public class Global implements Cloneable
             if (this.statusQosFactory == null) {
                //this.statusQosFactory = new StatusQosSaxFactory(this);
                // Caution: Ignores ClientProperty
-               this.statusQosFactory = new StatusQosQuickParseFactory(this);
+               this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+               this.statusQosFactory = this.statusQosQuickParseFactory;
             }
          }
       }
@@ -1150,16 +1182,116 @@ public class Global implements Cloneable
          synchronized (this) {
             if (this.statusQosFactory == null) {
                if (methodName.isSubscribe()) { // Changed 2017 marcel as I need ClientProperty
-                  this.statusQosFactory = new StatusQosSaxFactory(this);
+                  this.statusQosSaxFactory = new StatusQosSaxFactory(this);
+                  this.statusQosFactory = this.statusQosSaxFactory;
                }
                else {
                   // Caution: Ignores ClientProperty
-                  this.statusQosFactory = new StatusQosQuickParseFactory(this);
+                  this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+                  this.statusQosFactory = statusQosQuickParseFactory;
                }
             }
          }
       }
       return this.statusQosFactory;
+   }
+   
+   public void switchToJsonParsing() {
+      synchronized (this) {
+         // this.msgKeyFactory = new MsgKeyJsonFactory // TODO: might be missing
+         // this.queryKeyFactory // TODO: might be missing as well
+         this.connectQosJsonFactory = new ConnectQosJsonFactory(this);
+         this.connectQosFactory = this.connectQosJsonFactory;
+         this.disconnectQosJsonFactory = new DisconnectQosJsonFactory(this);
+         this.disconnectQosFactory = this.disconnectQosJsonFactory;
+         this.msgQosJsonFactory = new MsgQosJsonFactory(this);
+         this.msgQosFactory = this.msgQosJsonFactory;
+         this.queryQosJsonFactory = new QueryQosJsonFactory(this);
+         this.queryQosFactory = this.queryQosJsonFactory;
+         this.statusQosJsonFactory = new StatusQosJsonFactory(this);
+         this.statusQosFactory = this.statusQosJsonFactory;
+         this.jsonParsing = true; // currently does nothing
+         
+         /* I also need to init the Sax parsers for XML due to switching compatibility
+          * This allows lazy initialization when this setting is not in use
+          */
+         this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
+         this.disconnectQosSaxFactory = new DisconnectQosSaxFactory(this);
+         this.msgQosSaxFactory = new MsgQosSaxFactory(this);
+         this.queryQosSaxFactory = new QueryQosSaxFactory(this);
+         this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+      }
+   }
+
+   // unused!
+   //// QueryKeyFactory
+   //public synchronized void useJsonQueryKeyFactory() {
+   //    this.queryKeyFactory = this.queryKeyJsonFactory == null ? this.queryKeyJsonFactory = new QueryKeyJsonFactory(this) : this.queryKeyJsonFactory;
+   //}
+   //public synchronized void useSaxQueryKeyFactory() {
+   //    this.queryKeyFactory = this.queryKeySaxFactory;
+   //}
+   
+   /**
+    * supported factory types for switching between Sax(XML) and Jackson(JSON)
+    * parsing
+    */
+   public enum FactoryType {
+      SAX,
+      JACKSON,
+      QUICKPARSE
+   }
+
+   public I_ConnectQosFactory getConnectQosFactory(FactoryType type) {
+      switch (type) {
+      case JACKSON:
+         return this.connectQosJsonFactory == null ? this.connectQosJsonFactory = new ConnectQosJsonFactory(this)
+               : this.connectQosJsonFactory;
+      default:
+         return this.connectQosSaxFactory;
+      }
+   }
+
+   public I_DisconnectQosFactory getDisconnectQosFactory(FactoryType type) {
+      switch (type) {
+      case JACKSON:
+         return this.disconnectQosJsonFactory == null ? this.disconnectQosJsonFactory = new DisconnectQosJsonFactory(this)
+         : this.disconnectQosJsonFactory;
+      default:
+         return this.disconnectQosSaxFactory;
+      }
+   }
+
+   public I_MsgQosFactory getMsgQosFactory(FactoryType type) {
+      switch (type) {
+      case JACKSON:
+         return this.msgQosJsonFactory == null ? this.msgQosJsonFactory = new MsgQosJsonFactory(this)
+               : this.msgQosJsonFactory;
+      default:
+         return this.msgQosSaxFactory;
+      }
+   }
+
+   public I_QueryQosFactory getQueryQosFactory(FactoryType type) {
+      switch (type) {
+      case JACKSON:
+         return this.queryQosJsonFactory == null ? this.queryQosJsonFactory = new QueryQosJsonFactory(this)
+               : this.queryQosJsonFactory;
+      default:
+         return this.queryQosSaxFactory;
+      }
+   }
+
+   public I_StatusQosFactory getStatusQosFactory(FactoryType type) {
+      switch (type) {
+      case JACKSON:
+         return this.statusQosJsonFactory == null ? this.statusQosJsonFactory = new StatusQosJsonFactory(this)
+               : this.statusQosJsonFactory;
+      case QUICKPARSE:
+         return this.statusQosQuickParseFactory;
+      default:
+         return this.statusQosSaxFactory;
+      }
    }
 
    /**

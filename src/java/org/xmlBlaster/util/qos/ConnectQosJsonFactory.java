@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -37,6 +38,9 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
    public ConnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
+      } else if (JacksonUtils.isXML(jsonQos)) {
+         // use Sax parser if string is XML
+         return glob.getConnectQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       ConnectQosData connectQosData = new ConnectQosData(glob);
@@ -227,6 +231,9 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
          });
       } catch (IOException e) {
          log.severe("Failed to parse JSON ConnectQos: " + e.getMessage());
+         log.info("faulty JSON: " + jsonQos);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
+               "Failed to parse JSON QoS at: " + e.getMessage());
       }
       return connectQosData;
    }

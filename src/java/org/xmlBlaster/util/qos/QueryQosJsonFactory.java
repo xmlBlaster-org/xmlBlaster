@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
@@ -33,6 +34,9 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
    public QueryQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
+      } else if (JacksonUtils.isXML(jsonQos)) {
+         // use Sax parser if string is XML
+         return glob.getQueryQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       QueryQosData queryQosData = new QueryQosData(glob, this, jsonQos, MethodName.UNKNOWN);
@@ -174,7 +178,8 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
          });
 
       } catch (IOException | XmlBlasterException e) {
-         log.warning(e.getMessage());
+         log.severe("Failed to parse JSON QueryQos: " + e.getMessage());
+         log.info("faulty JSON: " + jsonQos);
          throw new XmlBlasterException(glob, ErrorCode.USER_WRONG_API_USAGE,
                "Failed to parse JSON QoS: ", e.getMessage());
       }

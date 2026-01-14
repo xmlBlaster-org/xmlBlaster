@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -154,6 +156,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    public synchronized MsgQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
+      } else if (JacksonUtils.isJson(xmlQos)) {
+         // use JSON parser if string is not XML
+         return glob.getMsgQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       //this.inState = false;

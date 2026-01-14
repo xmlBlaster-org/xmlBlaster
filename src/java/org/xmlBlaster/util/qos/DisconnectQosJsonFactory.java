@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -15,13 +16,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 
-public class DiscconnectQosJsonFactory implements I_DisconnectQosFactory {
+public class DisconnectQosJsonFactory implements I_DisconnectQosFactory {
 
    private final Global glob;
    private static Logger log = Logger.getLogger(MsgQosJsonFactory.class.getName());
 
 
-   public DiscconnectQosJsonFactory(Global glob) {
+   public DisconnectQosJsonFactory(Global glob) {
       this.glob = glob;
    }
 
@@ -29,8 +30,10 @@ public class DiscconnectQosJsonFactory implements I_DisconnectQosFactory {
    public DisconnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
+      } else if (JacksonUtils.isXML(jsonQos)) {
+         // use Sax parser if string is XML
+         return glob.getDisconnectQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
-
       DisconnectQosData disconnectQosData = new DisconnectQosData(glob);
       JsonFactory factory = new JsonFactory();
 
@@ -73,6 +76,7 @@ public class DiscconnectQosJsonFactory implements I_DisconnectQosFactory {
 
       } catch (IOException e) {
          log.severe("Failed to parse JSON DisconnectQos: " + e.getMessage());
+         log.info("faulty JSON: " + jsonQos);
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT,
                "Failed to parse JSON QoS at: " + e.getMessage());
       }

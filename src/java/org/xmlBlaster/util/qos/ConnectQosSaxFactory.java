@@ -9,6 +9,8 @@ package org.xmlBlaster.util.qos;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
+import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -139,6 +141,9 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    public synchronized ConnectQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
+      } else if (JacksonUtils.isJson(xmlQos)) {
+         // use JSON parser if string is not XML
+         return glob.getConnectQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       this.inQueue = false;

@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -34,6 +35,9 @@ public class StatusQosJsonFactory implements I_StatusQosFactory {
 
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
+      } else if (JacksonUtils.isXML(jsonQos)) {
+         // use Sax parser if string is XML
+         return glob.getStatusQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       StatusQosData statusQosData =
@@ -168,6 +172,8 @@ public class StatusQosJsonFactory implements I_StatusQosFactory {
          });
 
       } catch (IOException e) {
+         log.severe("Failed to parse JSON StatusQos: " + e.getMessage());
+         log.info("faulty JSON: " + jsonQos);
          throw new XmlBlasterException(
                glob,
                ErrorCode.USER_WRONG_API_USAGE,

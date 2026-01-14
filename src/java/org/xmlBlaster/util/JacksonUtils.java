@@ -21,6 +21,41 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 public abstract class JacksonUtils {
 
    protected static final Logger log = Logger.getLogger(JacksonUtils.class.getName());
+   
+   // TODO: Implement switch for enabling or disabling strict mode
+//   public enum ParseErrorPolicy {
+//      THROW,            // strict JSON (default)
+//      LENIENT,          // log only, best-effort parsing
+//      GLOBAL_DEFAULT    // use the default value from Global
+//   }
+   
+   /**
+    * check if str starts with '&lt', returns `false` if `null` or length is `0`
+    * 
+    * @param str
+    * @return `true` if str is XML, `false` when `null` or has length `0`
+    */
+   public static boolean isXML(String str) {
+      if (str == null || str.length() == 0) {
+         return false;
+      } else {
+      return str.trim().startsWith("<");
+      }
+   }
+   /**
+    * check if str does not starts with '&lt', returns `false` if `null` or length is `0`
+    * 
+    * @param str
+    * @return `true` if str is not XML and `false` if `null` or has length `0`
+    */
+   public static boolean isJson(String str) {
+      if (str == null || str.length() == 0) {
+         return false;
+      } else {
+         String trimmedStr = str.trim();
+      return trimmedStr.startsWith("{") || trimmedStr.startsWith("[");
+      }
+   }
 
    // Wir wollen nur im Fall Invalid Json eine exception werfen
    public static final ObjectMapper MAPPER = new ObjectMapper()
