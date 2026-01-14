@@ -39,4 +39,7 @@ Class-Path: xmlrpc3/commons-logging-1.1.jar
  org.eclipse.paho.mqttv5.client-1.2.5.jar 
  slf4j-api-1.7.21.jar 
  slf4j-jdk14-1.7.21.jar 
- Java-WebSocket-1.6.0.jar
+ Java-WebSocket-1.6.0.jar 
+ jackson-core-2.19.2.jar 
+ jackson-databind-2.19.2.jar 
+ jackson-annotations-2.19.2.jar 

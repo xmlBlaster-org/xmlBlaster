@@ -126,6 +126,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    #CLASSPATH=${XMLBLASTER_HOME}/lib/cpptasks.jar:${CLASSPATH}
 
+   # Jackson
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jackson-core-2.19.2.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jackson-databind-2.19.2.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jackson-annotations-2.19.2.jar
+
    # Mail support
    CLASSPATH=${XMLBLASTER_HOME}/lib/mail.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/activation.jar:${CLASSPATH}
