@@ -52,14 +52,14 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/org.eclipse.paho.client.mqttv3-1.2.5.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/org.eclipse.paho.mqttv5.client-1.2.5.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/Java-WebSocket-1.6.0.jar"/>
-	<classpathentry exported="true" kind="var" path="XMLBLASTER_HOME"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-1.2-api-2.16.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-api-2.16.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/log4j-core-2.16.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jakarta.activation-2.0.1.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jakarta.mail-2.0.1.jar"/>
-	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-databind-2.19.2.jar"/>
-	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-core-2.19.2.jar"/>
-	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-annotations-2.19.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jackson-annotations-2.19.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jackson-core-2.19.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jackson-databind-2.19.2.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>
