@@ -16,9 +16,11 @@ import java.util.StringTokenizer;
  */
 public final class ReplaceVariable
 {
+   public static final String START_TOKEN_DEFAULT = "${";
+   public static final String END_TOKEN_DEFAULT = "}";
    private int maxNest = 2000;
-   private String startToken = "${";
-   private String endToken = "}";
+   private String startToken = START_TOKEN_DEFAULT;
+   private String endToken = END_TOKEN_DEFAULT;
    private String escapeToken =  null; // to be backward compatible, else PREFERRED_ESCAPE_TOKEN;
    /**
     * the member escapeToken is default null, but if to set, prefer following value 
@@ -162,6 +164,17 @@ public final class ReplaceVariable
        return false;
      }
      return template.contains(this.startToken) && template.contains(this.endToken); // "${" "}"
+   }
+   
+   /**
+    * @param template 
+    * @returns true if contains "${"
+    */
+   public static boolean hasReplacementTokens(final String template) {
+     if (template == null || template.length() == 0) {
+       return false;
+     }
+     return template.contains(START_TOKEN_DEFAULT) && template.contains(END_TOKEN_DEFAULT); // "${" "}"
    }
    
    /**
