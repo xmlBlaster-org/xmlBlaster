@@ -14,6 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -61,7 +62,8 @@ public final class ConnectQos
     */
    public ConnectQos(Global glob, String userId, String passwd) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.connectQosData = new ConnectQosData(this.glob, this.glob.getConnectQosFactory(), null, null);
+      // this.connectQosData = new ConnectQosData(this.glob, this.glob.getConnectQosFactory(), null, null);
+      this.connectQosData = I_ConnectQosFactory.parse(glob, null);
       this.connectQosData.loadClientPlugin(null, null, userId, passwd);
       init();
    }

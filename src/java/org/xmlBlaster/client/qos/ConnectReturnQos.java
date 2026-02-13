@@ -7,6 +7,7 @@ import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -71,7 +72,9 @@ public class ConnectReturnQos {
    }
 
    public ConnectReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this(glob, glob.getConnectQosFactory().readObject(xmlQos));
+      //this(glob, glob.getConnectQosFactory().readObject(xmlQos));
+      this(glob, I_ConnectQosFactory.parse(glob, xmlQos));
+      
    }
 
    /**

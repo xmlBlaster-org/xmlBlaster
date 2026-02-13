@@ -18,6 +18,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.log.I_LogListener;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -130,7 +131,8 @@ public class AppletServlet extends HttpServlet implements I_LogListener
       ConnectQos connectQos;
       boolean warnAuth = false;
       if (qos.toLowerCase().indexOf("securityservice") >= 0) {
-         connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos)); // Applet provides authentication
+         //connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos)); // Applet provides authentication
+         connectQos = new ConnectQos(glob, I_ConnectQosFactory.parse(glob, qos));
       }
       else {
          connectQos = new ConnectQos(glob);  // User servlets default authentication setting

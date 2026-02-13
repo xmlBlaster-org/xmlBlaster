@@ -14,6 +14,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -54,8 +55,9 @@ public final class ConnectQosServer
       //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
-   public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
+   public ConnectQosServer(Global glob, String qos) throws XmlBlasterException {
+      // this.connectQosData = glob.getConnectQosFactory().readObject(qos);
+      this.connectQosData = I_ConnectQosFactory.parse(glob, qos);
    }
 
    /**

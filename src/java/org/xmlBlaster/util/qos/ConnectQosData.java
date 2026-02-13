@@ -117,7 +117,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       this(glob, null, null, null);
       initialize(glob);
    }
-   
+
+   public ConnectQosData(Global glob, I_ConnectQosFactory factory) throws XmlBlasterException {
+      this(glob, factory, null, null);
+      initialize(glob);
+   }
+
    /**
     * Constructs the specialized quality of service object for a connect() or connect-return call. 
     * NOTE: The serialData is not parsed - use the factory for it.
@@ -129,7 +134,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     */
    public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) throws XmlBlasterException {
       super(glob, serialData, org.xmlBlaster.util.def.MethodName.CONNECT);
-      this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
+      // this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
+      this.factory = (factory == null) ? this.glob.getConnectQosFactory(serialData) : factory;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side
    }

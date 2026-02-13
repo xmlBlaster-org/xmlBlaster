@@ -5,6 +5,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
@@ -26,8 +27,9 @@ public final class ConnectReturnQosServer {
       setServerInstanceId(this.glob.getInstanceId());
    }
 
-   public ConnectReturnQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this(glob, glob.getConnectQosFactory().readObject(xmlQos));
+   public ConnectReturnQosServer(Global glob, String qos) throws XmlBlasterException {
+      // this(glob, glob.getConnectQosFactory().readObject(xmlQos));
+      this(glob, I_ConnectQosFactory.parse(glob, qos));
    }
 
    public ConnectQosData getData() {

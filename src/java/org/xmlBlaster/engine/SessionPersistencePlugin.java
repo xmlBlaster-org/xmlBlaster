@@ -30,6 +30,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
@@ -85,7 +86,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	         if (entries[i] instanceof SessionEntry) {
 	            // do connect
 	            SessionEntry entry = (SessionEntry)entries[i];
-	            ConnectQosData data = this.global.getConnectQosFactory().readObject(entry.getQos());
+	            // ConnectQosData data = this.global.getConnectQosFactory().readObject(entry.getQos());
+               ConnectQosData data = I_ConnectQosFactory.parse(this.global, entry.getQos());
 	            
 	            //String absolute = data.getSessionName().getAbsoluteName();
 	            if (data.getSessionName().isPubSessionIdInternal()) {

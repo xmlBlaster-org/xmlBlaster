@@ -18,6 +18,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
@@ -165,7 +166,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                String qos = Util.getParameter(req, "xmlBlaster.connectQos", null);
                if (qos == null || qos.length() < 1)
                   throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Missing connect QoS. Pass xmlBlaster.connectQos='<qos> ... </qos>' with your URL in your POST in a hidden form field or in your cookie.");
-               connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos));
+               // connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos));
+               connectQos = new ConnectQos(glob, I_ConnectQosFactory.parse(glob, qos));
             }
             else {
                String loginName = Util.getParameter(req, "xmlBlaster.loginName", null);    // "Joe";

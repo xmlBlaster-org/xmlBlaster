@@ -141,10 +141,11 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    public synchronized ConnectQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
-      } else if (JacksonUtils.isJson(xmlQos)) {
-         // use JSON parser if string is not XML
-         return glob.getConnectQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
+//      else if (JacksonUtils.isJson(xmlQos)) {
+//         // use JSON parser if string is not XML
+//         return glob.getConnectQosFactory(FactoryType.JACKSON).readObject(xmlQos);
+//      }
 
       this.inQueue = false;
       this.inSecurityService = false;

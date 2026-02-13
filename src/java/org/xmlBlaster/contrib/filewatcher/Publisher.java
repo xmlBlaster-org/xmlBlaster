@@ -36,6 +36,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 
 
@@ -236,7 +237,8 @@ public class Publisher implements I_Timeout {
 
       tmp  = info_.get("mom.connectQos", null);
       if (tmp != null) {
-         ConnectQosData data = this.global.getConnectQosFactory().readObject(tmp);
+         // ConnectQosData data = this.global.getConnectQosFactory().readObject(tmp);
+         ConnectQosData data = I_ConnectQosFactory.parse(this.global, tmp);
          this.connectQos = new ConnectQos(this.global, data);
       }
       else {

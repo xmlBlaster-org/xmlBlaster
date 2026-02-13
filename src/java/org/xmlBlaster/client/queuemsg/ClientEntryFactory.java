@@ -30,6 +30,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
@@ -157,7 +158,8 @@ public class ClientEntryFactory implements I_EntryFactory
                   "Expected 1 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
             String qos = (String)obj[0];
-            ConnectQosData connectQosData = glob.getConnectQosFactory().readObject(qos);
+            // ConnectQosData connectQosData = glob.getConnectQosFactory().readObject(qos);
+            ConnectQosData connectQosData = I_ConnectQosFactory.parse(glob, qos);
             return new MsgQueueConnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                                             new Timestamp(timestamp), sizeInBytes, connectQosData);
          }
@@ -266,7 +268,8 @@ public class ClientEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Object '" + type + "' not implemented, you can't use synchronous GET requests in queues.");
          }
          else if (methodName == MethodName.CONNECT) {
-            ConnectQosData connectQosData = glob.getConnectQosFactory().readObject(qos);
+            // ConnectQosData connectQosData = glob.getConnectQosFactory().readObject(qos);
+            ConnectQosData connectQosData = I_ConnectQosFactory.parse(glob, qos);
             return new MsgQueueConnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                                             new Timestamp(timestamp), sizeInBytes, connectQosData);
          }

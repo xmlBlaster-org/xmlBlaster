@@ -28,6 +28,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 /**
@@ -101,7 +102,8 @@ public class FileWriter extends GlobalInfo implements I_Callback {
 
       String tmp  = this.global.get("mom.connectQos", (String)null, null, this.pluginConfig);
       if (tmp != null) {
-         ConnectQosData data = this.global.getConnectQosFactory().readObject(tmp);
+         // ConnectQosData data = this.global.getConnectQosFactory().readObject(tmp);
+         ConnectQosData data = I_ConnectQosFactory.parse(this.global, tmp);
          this.connectQos = new ConnectQos(this.global, data);
          Object tmpObj = globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
          if (tmpObj != null)

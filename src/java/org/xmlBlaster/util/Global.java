@@ -213,7 +213,7 @@ public class Global implements Cloneable
    // concrete instances initialized lazily
    // switching takes minimal effort
    // XML
-   protected volatile ConnectQosSaxFactory connectQosSaxFactory;
+   // protected volatile ConnectQosSaxFactory connectQosSaxFactory;
    protected volatile DisconnectQosSaxFactory disconnectQosSaxFactory;
    protected volatile MsgQosSaxFactory msgQosSaxFactory;
    protected volatile QueryQosSaxFactory queryQosSaxFactory;
@@ -221,7 +221,7 @@ public class Global implements Cloneable
    protected volatile StatusQosSaxFactory statusQosSaxFactory;
 
    // JSON
-   protected volatile ConnectQosJsonFactory connectQosJsonFactory;
+   // protected volatile ConnectQosJsonFactory connectQosJsonFactory;
    protected volatile DisconnectQosJsonFactory disconnectQosJsonFactory;
    protected volatile MsgQosJsonFactory msgQosJsonFactory;
    protected volatile QueryQosJsonFactory queryQosJsonFactory;
@@ -1094,20 +1094,20 @@ public class Global implements Cloneable
       return this.queryKeyFactory;
    }
 
-   /**
+   /*
     * Return a factory parsing QoS XML strings from connect() and connect-return messages.
     */
-   public final I_ConnectQosFactory getConnectQosFactory() {
-      if (this.connectQosFactory == null) {
-         synchronized (this) {
-            if (this.connectQosFactory == null) {
-               this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
-               this.connectQosFactory = this.connectQosSaxFactory;
-            }
-         }
-      }
-      return this.connectQosFactory;
-   }
+//   public final I_ConnectQosFactory getConnectQosSaxFactory() {
+//      if (this.connectQosFactory == null) {
+//         synchronized (this) {
+//            if (this.connectQosFactory == null) {
+//               this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
+//               this.connectQosFactory = this.connectQosSaxFactory;
+//            }
+//         }
+//      }
+//      return this.connectQosFactory;
+//   }
 
    /**
     * Return a factory parsing QoS XML strings from disconnect() requests.
@@ -1196,32 +1196,32 @@ public class Global implements Cloneable
       return this.statusQosFactory;
    }
    
-   public void switchToJsonParsing() {
-      synchronized (this) {
-         // this.msgKeyFactory = new MsgKeyJsonFactory // TODO: might be missing
-         // this.queryKeyFactory // TODO: might be missing as well
-         this.connectQosJsonFactory = new ConnectQosJsonFactory(this);
-         this.connectQosFactory = this.connectQosJsonFactory;
-         this.disconnectQosJsonFactory = new DisconnectQosJsonFactory(this);
-         this.disconnectQosFactory = this.disconnectQosJsonFactory;
-         this.msgQosJsonFactory = new MsgQosJsonFactory(this);
-         this.msgQosFactory = this.msgQosJsonFactory;
-         this.queryQosJsonFactory = new QueryQosJsonFactory(this);
-         this.queryQosFactory = this.queryQosJsonFactory;
-         this.statusQosJsonFactory = new StatusQosJsonFactory(this);
-         this.statusQosFactory = this.statusQosJsonFactory;
-         this.jsonParsing = true; // currently does nothing
-         
-         /* I also need to init the Sax parsers for XML due to switching compatibility
-          * This allows lazy initialization when this setting is not in use
-          */
-         this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
-         this.disconnectQosSaxFactory = new DisconnectQosSaxFactory(this);
-         this.msgQosSaxFactory = new MsgQosSaxFactory(this);
-         this.queryQosSaxFactory = new QueryQosSaxFactory(this);
-         this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
-      }
-   }
+//   public void switchToJsonParsing() {
+//      synchronized (this) {
+//         // this.msgKeyFactory = new MsgKeyJsonFactory // TODO: might be missing
+//         // this.queryKeyFactory // TODO: might be missing as well
+//         // this.connectQosJsonFactory = new ConnectQosJsonFactory(this);
+//         this.connectQosFactory = this.connectQosJsonFactory;
+//         this.disconnectQosJsonFactory = new DisconnectQosJsonFactory(this);
+//         this.disconnectQosFactory = this.disconnectQosJsonFactory;
+//         this.msgQosJsonFactory = new MsgQosJsonFactory(this);
+//         this.msgQosFactory = this.msgQosJsonFactory;
+//         this.queryQosJsonFactory = new QueryQosJsonFactory(this);
+//         this.queryQosFactory = this.queryQosJsonFactory;
+//         this.statusQosJsonFactory = new StatusQosJsonFactory(this);
+//         this.statusQosFactory = this.statusQosJsonFactory;
+//         this.jsonParsing = true; // currently does nothing
+//         
+//         /* I also need to init the Sax parsers for XML due to switching compatibility
+//          * This allows lazy initialization when this setting is not in use
+//          */
+//         // this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
+//         this.disconnectQosSaxFactory = new DisconnectQosSaxFactory(this);
+//         this.msgQosSaxFactory = new MsgQosSaxFactory(this);
+//         this.queryQosSaxFactory = new QueryQosSaxFactory(this);
+//         this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+//      }
+//   }
 
    // unused!
    //// QueryKeyFactory
@@ -1239,18 +1239,69 @@ public class Global implements Cloneable
    public enum FactoryType {
       SAX,
       JACKSON,
-      QUICKPARSE
-   }
-
-   public I_ConnectQosFactory getConnectQosFactory(FactoryType type) {
-      switch (type) {
-      case JACKSON:
-         return this.connectQosJsonFactory == null ? this.connectQosJsonFactory = new ConnectQosJsonFactory(this)
-               : this.connectQosJsonFactory;
-      default:
-         return this.connectQosSaxFactory;
+      QUICKPARSE; // not yet implemented
+      
+      public static FactoryType lookup(Global glob) {
+         if (glob == null)
+            glob = Global.instance();
+         final String DEFAULT_FORMAT = "xml";
+         String qosFormat = DEFAULT_FORMAT;
+         try {
+            qosFormat = glob.get("qosFormat", DEFAULT_FORMAT, null, null);
+         } catch (XmlBlasterException e) {
+            e.printStackTrace();
+         }
+         if (DEFAULT_FORMAT.equals(qosFormat)) {
+            return FactoryType.SAX;
+         }
+         else if ("json".equals(qosFormat)) {
+            return FactoryType.JACKSON;
+         }
+         return FactoryType.SAX;         
       }
    }
+   
+   public FactoryType getFactoryType() {
+      return FactoryType.lookup(this);
+   }
+   
+   /**
+    * <pre>
+    * java HelloWorld -qosFormat json
+    * java HelloWorld -qosFormat xml
+    * </pre>
+    */
+   public I_ConnectQosFactory getConnectQosFactory() {
+      FactoryType factoryType = getFactoryType();
+      if (factoryType == FactoryType.JACKSON) {
+         return new ConnectQosJsonFactory(this);
+      }
+      else {
+         return new ConnectQosSaxFactory(this);
+      }
+   }
+   
+   public I_ConnectQosFactory getConnectQosFactory(String serialData) {
+      if (serialData != null && !serialData.isBlank()) {
+         if (JacksonUtils.isJson(serialData)) {
+            return new ConnectQosJsonFactory(this); 
+         }
+         else {
+            return new ConnectQosSaxFactory(this);
+         }
+      }
+      return getConnectQosFactory();
+   }
+
+//   public I_ConnectQosFactory getConnectQosFactory(FactoryType type) {
+//      switch (type) {
+//      case JACKSON:
+//         return this.connectQosJsonFactory == null ? this.connectQosJsonFactory = new ConnectQosJsonFactory(this)
+//               : this.connectQosJsonFactory;
+//      default:
+//         return this.connectQosSaxFactory;
+//      }
+//   }
 
    public I_DisconnectQosFactory getDisconnectQosFactory(FactoryType type) {
       switch (type) {

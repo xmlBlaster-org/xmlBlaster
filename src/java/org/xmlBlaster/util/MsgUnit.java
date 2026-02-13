@@ -16,6 +16,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.QosData;
 
 /**
@@ -86,7 +87,8 @@ public final class MsgUnit implements java.io.Serializable
          this.keyData = this.glob.getQueryKeyFactory().readObject(key);
       }
       else if (methodName == MethodName.CONNECT) {
-         this.qosData = this.glob.getConnectQosFactory().readObject(qos);
+         // this.qosData = this.glob.getConnectQosFactory().readObject(qos);
+         this.qosData = I_ConnectQosFactory.parse(glob, qos);
          this.keyData = null;
       }
       else if (methodName == MethodName.DISCONNECT) {

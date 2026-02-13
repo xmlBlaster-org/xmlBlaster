@@ -21,7 +21,6 @@ import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,12 +37,13 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
    public ConnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
-      } else if (JacksonUtils.isXML(jsonQos)) {
-         // use Sax parser if string is XML
-         return glob.getConnectQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
+//      } else if (JacksonUtils.isXML(jsonQos)) {
+//         // use Sax parser if string is XML
+//         return glob.getConnectQosFactory(FactoryType.SAX).readObject(jsonQos);
+//      }
 
-      ConnectQosData connectQosData = new ConnectQosData(glob);
+      ConnectQosData connectQosData = new ConnectQosData(glob, this);
       JsonFactory factory = new JsonFactory();
 
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {

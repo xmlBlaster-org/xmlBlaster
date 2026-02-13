@@ -21,6 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
@@ -131,7 +132,8 @@ public class StartupTasks implements I_Plugin {
          String tmp  = this.global.get("connectQos", (String)null, null, pluginInfo);
          if (tmp != null) {
             this.connectQos = new ConnectQos(this.global, 
-                  this.global.getConnectQosFactory().readObject(tmp));
+                  // this.global.getConnectQosFactory().readObject(tmp));
+                  I_ConnectQosFactory.parse(this.global, tmp));
          }
          else {
             String loginName = this.global.get("loginName", "_StartupTasks", null, this.pluginInfo);

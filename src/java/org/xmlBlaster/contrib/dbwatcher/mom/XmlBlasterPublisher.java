@@ -53,6 +53,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
@@ -269,7 +270,8 @@ public class XmlBlasterPublisher implements
 
       String hardConnectQos  = info.get(MOM_CONNECT_QOS, (String)null);
       if (hardConnectQos != null) {
-         this.connectQos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(hardConnectQos));
+         // this.connectQos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(hardConnectQos));
+         this.connectQos = new ConnectQos(this.glob, I_ConnectQosFactory.parse(this.glob, hardConnectQos));
       }
       else {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);

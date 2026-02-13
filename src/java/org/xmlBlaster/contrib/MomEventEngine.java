@@ -43,6 +43,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 public class MomEventEngine implements I_Callback, I_ChangePublisher {
@@ -151,7 +152,8 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
 
       tmp  = info.get("mom.connectQos", (String)null);
       if (tmp != null) {
-         this.connectQos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(tmp));
+         // this.connectQos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(tmp));
+         this.connectQos = new ConnectQos(this.glob, I_ConnectQosFactory.parse(this.glob, tmp));
       }
       else {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
