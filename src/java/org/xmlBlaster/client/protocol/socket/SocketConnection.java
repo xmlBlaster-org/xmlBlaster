@@ -356,10 +356,10 @@ public class SocketConnection implements I_XmlBlasterConnection
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME+".connect()", "Please specify a valid QoS");
       if (log.isLoggable(Level.FINER)) log.finer("Entering connect");
       if (isConnected() && isLoggedIn()) {
-         log.warning("You are already logged in, we try again: " + toXml());
+         log.warning("You are already logged in, not retried: " + toXml());
          Thread.dumpStack();
          //log.warn(ME, "You are already logged in, no relogin possible.");
-         //return "";
+         return "";
       }
 
       connectLowlevel(this.clientAddress);
