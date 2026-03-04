@@ -47,9 +47,9 @@ public class IsoDateParser {
    static {
       // Creates 2006-07-16 21:20:30.450+0000: illegal , must be +00:00
       //utcFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SZ", Locale.US);
-      utcFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S", Locale.US);
+      utcFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
       utcFmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-      utcFmtT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S", Locale.US);
+      utcFmtT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US);
       utcFmtT.setTimeZone(TimeZone.getTimeZone("GMT"));
       //Calendar utcCal = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
    }
