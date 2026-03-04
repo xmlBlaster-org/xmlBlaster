@@ -264,7 +264,7 @@ public class PluginManagerBase implements I_PluginManager {
 
    /**
     * TODO Clean this method since it uses knowledge of the server side
-    * @param pluginInfo
+    * @param pluginInfo eg QueuePlugin[CACHE][1.0] from xmlBlaster.properties
     * @return
     */
    private PluginInfo checkPluginInfoInRunLevelInfos(PluginInfo pluginInfo) throws XmlBlasterException {

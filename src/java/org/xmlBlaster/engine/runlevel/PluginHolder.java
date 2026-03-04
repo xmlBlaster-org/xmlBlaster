@@ -20,6 +20,8 @@ import java.util.TreeSet;
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
+ * 
+ * Configured in xmlBlasterPlugins.xml
  * <pre>
  *
  *  &lt;plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
@@ -99,8 +101,8 @@ public class PluginHolder {
     * plugin configuration is not found in the specified node, then it is
     * searched in the defaults. If none is found there either, then a null is
     * returned.
-    * @param node the nodeId scope on which to do the request or null
-    * @param id the unique string identifying the plugin
+    * @param node the clusterNodeId scope on which to do the request or null
+    * @param id the unique string identifying the plugin "CACHE,1.0"
     */
    public PluginConfig getPluginConfig(String node, String id) {
       if (log.isLoggable(Level.FINER)) log.finer("id '" + id + "', node '" + node + "'");
