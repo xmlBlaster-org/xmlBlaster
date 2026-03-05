@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/j2ee/**|**/jms/**|**/jmx/**|**/test/AllTests*|**/util/JndiDumper*|org/xmlBlaster/test/classtest/AllTests.java|org/xmlBlaster/test/classtest/Sql92SelectorTest.java|org/xmlBlaster/test/qos/AllTests.java|org/xmlBlaster/test/qos/TestCorbaThreads.java|org/xmlBlaster/test/stress/AllTests.java|org/xmlBlaster/test/stress/MassiveSubTest.java|org/xmlBlaster/test/stress/MassiveSubTestOne.java" kind="src" path=""/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/xmlBlaster"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlunit.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/javax.jms.jar"/>
-	<classpathentry kind="lib" path="/home/clemi/work/projects/xmlBlasterJson/xmlBlaster/lib/jackson-core-2.19.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jackson-annotations-2.19.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jackson-core-2.19.2.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jackson-databind-2.19.2.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
