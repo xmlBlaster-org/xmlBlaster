@@ -72,7 +72,7 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     */
    public StatusQosData(Global glob, I_StatusQosFactory factory, String serialData, MethodName methodName) {
       super(glob, serialData, methodName);
-      this.factory = (factory==null) ? glob.getStatusQosFactory(methodName) : factory;
+      this.factory = (factory==null) ? glob.getStatusQosFactory(serialData, methodName) : factory;
    }
 
    /**

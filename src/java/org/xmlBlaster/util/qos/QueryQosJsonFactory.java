@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
@@ -30,13 +29,15 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
       this.glob = glob;
    }
 
-   @Override
+   /**
+    * Parses the given Qos and returns a QueryQosData holding the data. 
+    * Parsing of update() and publish() QoS is supported here.
+    * @Override
+    * @param jsonQos e.g. the <b>JSON</b> based ASCII string
+    */
    public QueryQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
-      } else if (JacksonUtils.isXML(jsonQos)) {
-         // use Sax parser if string is XML
-         return glob.getQueryQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       QueryQosData queryQosData = new QueryQosData(glob, this, jsonQos, MethodName.UNKNOWN);

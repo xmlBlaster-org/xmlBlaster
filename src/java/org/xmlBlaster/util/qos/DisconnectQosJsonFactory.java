@@ -26,15 +26,20 @@ public class DisconnectQosJsonFactory implements I_DisconnectQosFactory {
       this.glob = glob;
    }
 
+   /**
+    * Parses the given Qos and returns a DisconnectQosData holding the data. 
+    * Parsing of disconnect() QoS is supported here.
+    * @param jsonQos e.g. the <b>JSON </b>based ASCII string
+    */
    @Override
    public DisconnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
-      } else if (JacksonUtils.isXML(jsonQos)) {
-         // use Sax parser if string is XML
-         return glob.getDisconnectQosFactory(FactoryType.SAX).readObject(jsonQos);
-      }
-      DisconnectQosData disconnectQosData = new DisconnectQosData(glob);
+      } 
+      
+      DisconnectQosData disconnectQosData = new DisconnectQosData(glob, this);
+      
+      // TODO: early return if "{}"
       JsonFactory factory = new JsonFactory();
 
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {

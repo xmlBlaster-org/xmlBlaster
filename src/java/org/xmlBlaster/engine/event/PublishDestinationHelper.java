@@ -11,6 +11,7 @@ import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
@@ -72,7 +73,7 @@ public class PublishDestinationHelper {
          String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
       MsgQosData msgQosData = null;
       if (this.qos != null) {
-         msgQosData = this.eventPlugin.getServerScope().getMsgQosFactory().readObject(this.qos);
+         msgQosData = I_MsgQosFactory.parse(this.eventPlugin.getServerScope(), this.qos);
       }
       else {
          PublishQos publishQos = new PublishQos(this.eventPlugin.getServerScope());

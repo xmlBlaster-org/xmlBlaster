@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.DisconnectQosData;
+import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
 
 /**
  * This class encapsulates the qos of a disconnect() invocation. 
@@ -29,9 +30,9 @@ public final class DisconnectQosServer
       this.disconnectQosData = (disconnectQosData == null) ? new DisconnectQosData(this.glob) : disconnectQosData;
    }
 
-   public DisconnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
+   public DisconnectQosServer(Global glob, String serialData) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.disconnectQosData = glob.getDisconnectQosFactory().readObject(xmlQos);
+      this.disconnectQosData = I_DisconnectQosFactory.parse(glob, serialData);
    }
 
    public DisconnectQosData getData() {

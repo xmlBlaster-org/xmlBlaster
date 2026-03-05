@@ -8,8 +8,6 @@ package org.xmlBlaster.util.qos;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Global.FactoryType;
-import org.xmlBlaster.util.JacksonUtils;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
@@ -80,14 +78,11 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    /**
     * Parses the given xml Qos and returns a QueryQosData holding the data. 
     * Parsing of update() and publish() QoS is supported here.
-    * @param the XML based ASCII string
+    * @param xmlQos the <b>XML</b> based ASCII string
     */
    public synchronized QueryQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
-      } else if (JacksonUtils.isJson(xmlQos)) {
-         // use JSON parser if string is not XML
-         return glob.getQueryQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       this.tmpFilter = null;

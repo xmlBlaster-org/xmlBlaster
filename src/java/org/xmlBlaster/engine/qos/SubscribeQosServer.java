@@ -12,6 +12,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QuerySpecQos;
 
 /**
@@ -46,11 +47,11 @@ public final class SubscribeQosServer
    
    /**
     * Constructs the specialized quality of service object for a subscribe() call.
-    * @param the XML based ASCII string
+    * @param the XML/JSON based ASCII string
     */
-   public SubscribeQosServer(Global glob, String xmlQos) throws XmlBlasterException {
+   public SubscribeQosServer(Global glob, String serialData) throws XmlBlasterException {
       this.glob = glob;
-      this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
+      this.queryQosData = I_QueryQosFactory.parse(glob, serialData);
    }
 
    /**

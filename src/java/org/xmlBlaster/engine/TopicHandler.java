@@ -56,6 +56,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -2579,7 +2580,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String"))
          uq = new UnSubscribeQos(serverScope);
       else
-         uq = new UnSubscribeQos(serverScope, serverScope.getQueryQosFactory().readObject(qos));
+         uq = new UnSubscribeQos(serverScope, I_QueryQosFactory.parse(serverScope, qos));
       UnSubscribeQosServer uqs = new UnSubscribeQosServer(serverScope, uq.getData());
       String[] ret = serverScope.getRequestBroker().unSubscribe(sessionInfo, uk.getData(), uqs);
 

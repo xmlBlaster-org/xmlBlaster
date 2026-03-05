@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 
 /**
@@ -31,10 +32,10 @@ public final class UpdateReturnQosServer
    private final StatusQosData statusQosData;
 
    /**
-    * Constructor which parses XML string.
+    * Constructor which parses XML/JSON string.
     */
-   public UpdateReturnQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+   public UpdateReturnQosServer(Global glob, String serialData) throws XmlBlasterException {
+      this.statusQosData = I_StatusQosFactory.parse(glob, serialData);
    }
 
    /**

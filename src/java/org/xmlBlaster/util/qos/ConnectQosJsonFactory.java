@@ -32,7 +32,15 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
    public ConnectQosJsonFactory(Global glob) {
       this.glob = glob;
    }
-
+   
+   /**
+    * Parses the given Qos and returns a ConnectQosData holding the data. 
+    * Parsing of connect() QoS is supported here.
+    * <pre>
+    * java HelloWorld3 -qosFormat json
+    * </pre>
+    * @param jsonQos e.g. the <b>JSON</b> based ASCII string
+    */
    @Override
    public ConnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {

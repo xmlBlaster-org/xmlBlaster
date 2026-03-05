@@ -7,6 +7,7 @@ package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
@@ -38,10 +39,10 @@ public final class EraseQosServer
 
    /**
     * Constructs the specialized quality of service object for a erase() call.
-    * @param the XML based ASCII string
+    * @param the XML/JSON based ASCII string
     */
-   public EraseQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
+   public EraseQosServer(Global glob, String serialData) throws XmlBlasterException {
+      this.queryQosData = I_QueryQosFactory.parse(glob, serialData);
    }
 
    /**

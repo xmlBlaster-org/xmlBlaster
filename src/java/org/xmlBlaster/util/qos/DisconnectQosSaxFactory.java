@@ -49,14 +49,12 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
    /**
     * Parses the given xml Qos and returns a DisconnectQosData holding the data. 
     * Parsing of disconnect() QoS is supported here.
-    * @param the XML based ASCII string
+    * @param xmlQos the <b>XML</b> based ASCII string
     */
+   @Override
    public synchronized DisconnectQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
-      } else if (JacksonUtils.isJson(xmlQos)) {
-         // use JSON parser if string is not XML
-         return glob.getDisconnectQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       this.disconnectQosData = new DisconnectQosData(glob, this, xmlQos);

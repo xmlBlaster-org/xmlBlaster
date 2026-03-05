@@ -55,13 +55,15 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
    }
 
+   /**
+    * Parses the given Qos and returns a MsgQosData holding the data. 
+    * Parsing of update() and publish() QoS is supported here.
+    * @param jsonQos e.g. the <b>JSON</b> based ASCII string
+    */
    @Override
    public MsgQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
-      } else if (JacksonUtils.isXML(jsonQos)) {
-         // use Sax parser if string is XML
-         return glob.getMsgQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       MsgQosData msgQosData = new MsgQosData(glob, this, jsonQos, MethodName.UNKNOWN);

@@ -151,14 +151,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    /**
     * Parses the given xml Qos and returns a MsgQosData holding the data. 
     * Parsing of update() and publish() QoS is supported here.
-    * @param the XML based ASCII string
+    * @param xmlQos the <b>XML</b> based ASCII string
     */
+   @Override
    public synchronized MsgQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
-      } else if (JacksonUtils.isJson(xmlQos)) {
-         // use JSON parser if string is not XML
-         return glob.getMsgQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       //this.inState = false;

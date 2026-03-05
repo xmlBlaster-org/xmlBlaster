@@ -7,6 +7,7 @@ package org.xmlBlaster.util.qos;
 
 import java.util.Properties;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -17,12 +18,30 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public interface I_MsgQosFactory
 {
+
    /**
     * Parses the given Qos and returns a MsgQosData holding the data. 
     * Parsing of update() and publish() QoS is supported here.
-    * @param e.g. the XML based ASCII string
+    * @param qos e.g. the XML/JSON based ASCII string
     */
-   MsgQosData readObject(String xmlQos) throws XmlBlasterException;
+   MsgQosData readObject(String qos) throws XmlBlasterException;
+
+   /**
+    * Parses the given Qos and returns a MsgQosData holding the data. 
+    * 
+    * <pre>
+    * java HelloWorld3 -qosFormat json
+    * </pre>
+    * @param global current instance of global, will be initialized if null
+    * @param qos e.g. the XML based ASCII string or JSON
+    */
+   public static MsgQosData parse(Global global, String qos) throws XmlBlasterException {
+      if (global == null) {
+         global = Global.instance();
+      }
+      I_MsgQosFactory factory = global.getMsgQosFactory(qos);
+      return factory.readObject(qos);
+   }
 
    /**
     * Serialize the given data object.  

@@ -31,6 +31,9 @@ import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFactory;
@@ -95,7 +98,7 @@ public class ClientEntryFactory implements I_EntryFactory
             String qos = (String)obj[0];
             String key = (String)obj[1];
             byte[] content = (byte[])obj[2];
-            MsgQosData msgQosData = glob.getMsgQosFactory().readObject(qos);
+            MsgQosData msgQosData = I_MsgQosFactory.parse(glob, qos);
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, msgQosData);
             return new MsgQueuePublishEntry(glob, methodName, PriorityEnum.toPriorityEnum(priority), storageId,
@@ -111,7 +114,7 @@ public class ClientEntryFactory implements I_EntryFactory
             return new MsgQueueSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
                        glob.getQueryKeyFactory().readObject(key),
-                       glob.getQueryQosFactory().readObject(qos));
+                       I_QueryQosFactory.parse(glob, qos));
 
          }
          else if (methodName == MethodName.UNSUBSCRIBE) {
@@ -169,7 +172,7 @@ public class ClientEntryFactory implements I_EntryFactory
                   "Expected 1 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
             String qos = (String)obj[0];
-            DisconnectQos disconnectQos = new DisconnectQos(glob, glob.getDisconnectQosFactory().readObject(qos));
+            DisconnectQos disconnectQos = new DisconnectQos(glob, I_DisconnectQosFactory.parse(glob, qos));
             return new MsgQueueDisconnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                                             new Timestamp(timestamp), sizeInBytes, disconnectQos);
          }
@@ -237,7 +240,7 @@ public class ClientEntryFactory implements I_EntryFactory
          // MethodName.EXCEPTION
          if (methodName == MethodName.PUBLISH_ONEWAY || methodName == MethodName.PUBLISH
                || methodName == MethodName.PUBLISH_ARR) {
-            MsgQosData msgQosData = glob.getMsgQosFactory().readObject(qos);
+            MsgQosData msgQosData = I_MsgQosFactory.parse(glob, qos);
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, msgQosData);
             return new MsgQueuePublishEntry(glob, methodName, PriorityEnum.toPriorityEnum(priority), storageId,
@@ -247,7 +250,7 @@ public class ClientEntryFactory implements I_EntryFactory
             return new MsgQueueSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
                        glob.getQueryKeyFactory().readObject(key),
-                       glob.getQueryQosFactory().readObject(qos));
+                       I_QueryQosFactory.parse(glob, qos));
 
          }
          else if (methodName == MethodName.UNSUBSCRIBE) {
@@ -274,7 +277,7 @@ public class ClientEntryFactory implements I_EntryFactory
                                             new Timestamp(timestamp), sizeInBytes, connectQosData);
          }
          else if (methodName == MethodName.DISCONNECT) {
-            DisconnectQos disconnectQos = new DisconnectQos(glob, glob.getDisconnectQosFactory().readObject(qos));
+            DisconnectQos disconnectQos = new DisconnectQos(glob, I_DisconnectQosFactory.parse(glob, qos));
             return new MsgQueueDisconnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                                             new Timestamp(timestamp), sizeInBytes, disconnectQos);
          }

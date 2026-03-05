@@ -51,10 +51,6 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
     * @param the XML based ASCII string
     */
    public synchronized StatusQosData readObject(String xmlQos) throws XmlBlasterException {
-      if (JacksonUtils.isJson(xmlQos)) {
-         // use JSON parser if string is not XML
-         return glob.getStatusQosFactory(FactoryType.SAX).readObject(xmlQos);
-      }
       statusQosData = new StatusQosData(glob, this, xmlQos, MethodName.UNKNOWN);
       if (xmlQos != null && xmlQos.length() > 15) { // "<qos/>" or "<qos></qos>"
 

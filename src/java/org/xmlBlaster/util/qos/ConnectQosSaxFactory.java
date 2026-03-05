@@ -136,7 +136,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * Parses the given xml Qos and returns a ConnectQosData holding the data. 
     * Parsing of connect() and connect-return QoS is supported here.
     * This call is thread safe if not intermixed with <tt>getConnectQosData()</tt> calls.
-    * @param the XML based ASCII string
+    * @param xmlQos the <b>XML</b> based ASCII string
     */
    public synchronized ConnectQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {

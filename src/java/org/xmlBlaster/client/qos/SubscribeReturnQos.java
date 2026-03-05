@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -34,20 +35,20 @@ public final class SubscribeReturnQos
    private final boolean isFakedReturn;
 
    /**
-    * Constructor which parses XML string.
+    * Constructor which parses XML/JSON string.
     * Use this for real returns from a server (-> isFakedReturn=false).
     */
-   public SubscribeReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this(glob, xmlQos, false);
+   public SubscribeReturnQos(Global glob, String serialData) throws XmlBlasterException {
+      this(glob, serialData, false);
    }
 
    /**
-    * Constructor which parses XML string.
+    * Constructor which parses XML/JSON string.
     * @param isFakedReturn true if the return value is faked from the client (on missing server connection)
     */
-   public SubscribeReturnQos(Global glob, String xmlQos, boolean isFakedReturn) throws XmlBlasterException {
+   public SubscribeReturnQos(Global glob, String serialData, boolean isFakedReturn) throws XmlBlasterException {
       this.isFakedReturn = isFakedReturn;
-      this.statusQosData = glob.getStatusQosFactory(MethodName.SUBSCRIBE).readObject(xmlQos);
+      this.statusQosData = I_StatusQosFactory.parse(glob, serialData, MethodName.SUBSCRIBE);;
       this.statusQosData.setMethod(MethodName.SUBSCRIBE);
    }
 

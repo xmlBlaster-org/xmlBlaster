@@ -1109,118 +1109,46 @@ public class Global implements Cloneable
 //      return this.connectQosFactory;
 //   }
 
-   /**
-    * Return a factory parsing QoS XML strings from disconnect() requests.
-    */
-   public final I_DisconnectQosFactory getDisconnectQosFactory() {
-      if (this.disconnectQosFactory == null) {
-         synchronized (this) {
-            if (this.disconnectQosFactory == null) {
-               this.disconnectQosSaxFactory = new DisconnectQosSaxFactory(this);
-               this.disconnectQosFactory = this.disconnectQosSaxFactory;
-            }
-         }
-      }
-      return this.disconnectQosFactory;
-   }
-
-   /**
-    * Return a factory parsing QoS XML strings from publish() and update() messages.
-    */
-   public final I_MsgQosFactory getMsgQosFactory() {
-      if (this.msgQosFactory == null) {
-         synchronized (this) {
-            if (this.msgQosFactory == null) {
-               this.msgQosSaxFactory = new MsgQosSaxFactory(this);
-               this.msgQosFactory = this.msgQosSaxFactory;
-            }
-         }
-      }
-      return this.msgQosFactory;
-   }
-
-   /**
-    * Return a factory parsing QoS XML strings from publish() and update() messages.
-    */
-   public final I_QueryQosFactory getQueryQosFactory() {
-      if (this.queryQosFactory == null) {
-         synchronized (this) {
-            if (this.queryQosFactory == null) {
-               this.queryQosSaxFactory = new QueryQosSaxFactory(this);
-               this.queryQosFactory = queryQosSaxFactory;
-            }
-         }
-      }
-      return this.queryQosFactory;
-   }
-
-   /**
-    * Return a factory parsing QoS XML strings from subcribe(), unSubscribe() and erase() returns.
-    * 
-    * Caution: Ignores ClientProperty, they are not parsed
-    */
-   public final I_StatusQosFactory getStatusQosFactory() {
-      if (this.statusQosFactory == null) {
-         synchronized (this) {
-            if (this.statusQosFactory == null) {
-               //this.statusQosFactory = new StatusQosSaxFactory(this);
-               // Caution: Ignores ClientProperty
-               this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
-               this.statusQosFactory = this.statusQosQuickParseFactory;
-            }
-         }
-      }
-      return this.statusQosFactory;
-   }
-
-   public final I_StatusQosFactory getStatusQosFactory(MethodName methodName) {
-      if (methodName == null) {
-         return getStatusQosFactory();
-      }
-
-      if (this.statusQosFactory == null) {
-         synchronized (this) {
-            if (this.statusQosFactory == null) {
-               if (methodName.isSubscribe()) { // Changed 2017 marcel as I need ClientProperty
-                  this.statusQosSaxFactory = new StatusQosSaxFactory(this);
-                  this.statusQosFactory = this.statusQosSaxFactory;
-               }
-               else {
-                  // Caution: Ignores ClientProperty
-                  this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
-                  this.statusQosFactory = statusQosQuickParseFactory;
-               }
-            }
-         }
-      }
-      return this.statusQosFactory;
-   }
-   
-//   public void switchToJsonParsing() {
-//      synchronized (this) {
-//         // this.msgKeyFactory = new MsgKeyJsonFactory // TODO: might be missing
-//         // this.queryKeyFactory // TODO: might be missing as well
-//         // this.connectQosJsonFactory = new ConnectQosJsonFactory(this);
-//         this.connectQosFactory = this.connectQosJsonFactory;
-//         this.disconnectQosJsonFactory = new DisconnectQosJsonFactory(this);
-//         this.disconnectQosFactory = this.disconnectQosJsonFactory;
-//         this.msgQosJsonFactory = new MsgQosJsonFactory(this);
-//         this.msgQosFactory = this.msgQosJsonFactory;
-//         this.queryQosJsonFactory = new QueryQosJsonFactory(this);
-//         this.queryQosFactory = this.queryQosJsonFactory;
-//         this.statusQosJsonFactory = new StatusQosJsonFactory(this);
-//         this.statusQosFactory = this.statusQosJsonFactory;
-//         this.jsonParsing = true; // currently does nothing
-//         
-//         /* I also need to init the Sax parsers for XML due to switching compatibility
-//          * This allows lazy initialization when this setting is not in use
-//          */
-//         // this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
-//         this.disconnectQosSaxFactory = new DisconnectQosSaxFactory(this);
-//         this.msgQosSaxFactory = new MsgQosSaxFactory(this);
-//         this.queryQosSaxFactory = new QueryQosSaxFactory(this);
-//         this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+//   /**
+//    * Return a factory parsing QoS XML strings from subscribe(), unSubscribe() and erase() returns.
+//    * 
+//    * Caution: Ignores ClientProperty, they are not parsed
+//    */
+//   public final I_StatusQosFactory getStatusQosFactory() {
+//      if (this.statusQosFactory == null) {
+//         synchronized (this) {
+//            if (this.statusQosFactory == null) {
+//               //this.statusQosFactory = new StatusQosSaxFactory(this);
+//               // Caution: Ignores ClientProperty
+//               this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+//               this.statusQosFactory = this.statusQosQuickParseFactory;
+//            }
+//         }
 //      }
+//      return this.statusQosFactory;
+//   }
+//
+//   public final I_StatusQosFactory getStatusQosFactory(MethodName methodName) {
+//      if (methodName == null) {
+//         return getStatusQosFactory();
+//      }
+//
+//      if (this.statusQosFactory == null) {
+//         synchronized (this) {
+//            if (this.statusQosFactory == null) {
+//               if (methodName.isSubscribe()) { // Changed 2017 marcel as I need ClientProperty
+//                  this.statusQosSaxFactory = new StatusQosSaxFactory(this);
+//                  this.statusQosFactory = this.statusQosSaxFactory;
+//               }
+//               else {
+//                  // Caution: Ignores ClientProperty
+//                  this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
+//                  this.statusQosFactory = statusQosQuickParseFactory;
+//               }
+//            }
+//         }
+//      }
+//      return this.statusQosFactory;
 //   }
 
    // unused!
@@ -1303,46 +1231,148 @@ public class Global implements Cloneable
 //      }
 //   }
 
-   public I_DisconnectQosFactory getDisconnectQosFactory(FactoryType type) {
-      switch (type) {
-      case JACKSON:
-         return this.disconnectQosJsonFactory == null ? this.disconnectQosJsonFactory = new DisconnectQosJsonFactory(this)
-         : this.disconnectQosJsonFactory;
-      default:
-         return this.disconnectQosSaxFactory;
+
+   /**
+    * Return a factory parsing QoS XML or JSON strings from disconnect() requests.
+    */
+   public I_DisconnectQosFactory getDisconnectQosFactory() {
+      FactoryType factoryType = getFactoryType();
+      if (factoryType == FactoryType.JACKSON) {
+         return new DisconnectQosJsonFactory(this);
+      }
+      else {
+         return new DisconnectQosSaxFactory(this);
       }
    }
 
-   public I_MsgQosFactory getMsgQosFactory(FactoryType type) {
-      switch (type) {
-      case JACKSON:
-         return this.msgQosJsonFactory == null ? this.msgQosJsonFactory = new MsgQosJsonFactory(this)
-               : this.msgQosJsonFactory;
-      default:
-         return this.msgQosSaxFactory;
+   /**
+    * Return a factory parsing QoS strings from disconnect() requests.
+    * 
+    * @param serialData determines whether XML or JSON needs to be parsed
+    */
+   public I_DisconnectQosFactory getDisconnectQosFactory(String serialData) {
+      if (serialData != null && !serialData.isBlank()) {
+         if (JacksonUtils.isJson(serialData)) {
+            return new DisconnectQosJsonFactory(this); 
+         }
+         else {
+            return new DisconnectQosSaxFactory(this);
+         }
+      }
+      return getDisconnectQosFactory();
+   }
+   
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    */
+   public I_MsgQosFactory getMsgQosFactory() {
+      FactoryType factoryType = getFactoryType();
+      if (factoryType == FactoryType.JACKSON) {
+         return new MsgQosJsonFactory(this);
+      }
+      else {
+         return new MsgQosSaxFactory(this);
       }
    }
 
-   public I_QueryQosFactory getQueryQosFactory(FactoryType type) {
-      switch (type) {
-      case JACKSON:
-         return this.queryQosJsonFactory == null ? this.queryQosJsonFactory = new QueryQosJsonFactory(this)
-               : this.queryQosJsonFactory;
-      default:
-         return this.queryQosSaxFactory;
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    * 
+    * @param serialData determines whether XML or JSON needs to be parsed
+    */
+   public I_MsgQosFactory getMsgQosFactory(String serialData) {
+      if (serialData != null && !serialData.isBlank()) {
+         if (JacksonUtils.isJson(serialData)) {
+            return new MsgQosJsonFactory(this); 
+         }
+         else {
+            return new MsgQosSaxFactory(this);
+         }
+      }
+      return getMsgQosFactory();
+   }
+
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    */
+   public I_QueryQosFactory getQueryQosFactory() {
+      FactoryType factoryType = getFactoryType();
+      if (factoryType == FactoryType.JACKSON) {
+         return new QueryQosJsonFactory(this);
+      }
+      else {
+         return new QueryQosSaxFactory(this);
       }
    }
 
-   public I_StatusQosFactory getStatusQosFactory(FactoryType type) {
-      switch (type) {
-      case JACKSON:
-         return this.statusQosJsonFactory == null ? this.statusQosJsonFactory = new StatusQosJsonFactory(this)
-               : this.statusQosJsonFactory;
-      case QUICKPARSE:
-         return this.statusQosQuickParseFactory;
-      default:
-         return this.statusQosSaxFactory;
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    * 
+    * @param serialData determines whether XML or JSON needs to be parsed
+    */
+   public I_QueryQosFactory getQueryQosFactory(String serialData) {
+      if (serialData != null && !serialData.isBlank()) {
+         if (JacksonUtils.isJson(serialData)) {
+            return new QueryQosJsonFactory(this); 
+         }
+         else {
+            return new QueryQosSaxFactory(this);
+         }
       }
+      return getQueryQosFactory();
+   }
+
+  /*
+   * Return a factory parsing QoS XML strings from subscribe(), unSubscribe() and
+   * erase() returns.
+   * 
+   * Caution: Ignores ClientProperty, they are not parsed
+   */
+   public I_StatusQosFactory getStatusQosFactory() {
+      FactoryType factoryType = getFactoryType();
+      if (factoryType == FactoryType.JACKSON) {
+         return new StatusQosJsonFactory(this);
+      } /*
+         * else if (factoryType == FactoryType.SAX) { TODO: return new
+         * StatusQosSaxFactory(this) }
+         */ 
+      else {
+         // caution ignores clientProperty
+         return new StatusQosQuickParseFactory(this);
+      }
+   }
+
+   
+   /**
+    * Return a factory parsing QoS XML/JSON strings from publish() and update() messages.
+    * 
+    * @param serialData determines whether XML or JSON needs to be parsed
+    */
+   public I_StatusQosFactory getStatusQosFactory(String serialData) {
+      return getStatusQosFactory(serialData, null);
+   }
+   
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    * 
+    * @param serialData determines whether XML or JSON needs to be parsed
+    * @param methodName used to determine, whether quickparsefactory or SAX factory
+    *                   should be returned, if serialData is XML
+    */
+   public I_StatusQosFactory getStatusQosFactory(String serialData, MethodName methodName) {
+      if (serialData != null && !serialData.isBlank()) {
+         if (JacksonUtils.isJson(serialData)) {
+            return new StatusQosJsonFactory(this); 
+         }
+         else if (methodName != null && methodName.isSubscribe()) {
+            // clientProperties need to be parsed
+            return new StatusQosSaxFactory(this);
+         } else {
+            // no clientProperties needed
+            return new StatusQosQuickParseFactory(this);
+         }
+      }
+      return getStatusQosFactory();
    }
 
    /**

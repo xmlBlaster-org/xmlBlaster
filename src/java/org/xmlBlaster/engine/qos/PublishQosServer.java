@@ -11,6 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.SessionName;
@@ -64,20 +65,20 @@ public final class PublishQosServer
    /**
     * Constructs the specialized quality of service object for a publish() call,
     * and parses the given XML string.
-    * @param the XML based ASCII string
+    * @param serialData The XML or JSON based ASCII string
     */
-   public PublishQosServer(ServerScope glob, String xmlQos) throws XmlBlasterException {
-      this(glob, xmlQos, false);
+   public PublishQosServer(ServerScope glob, String serialData) throws XmlBlasterException {
+      this(glob, serialData, false);
    }
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
     * For internal use only, this message is sent from the persistence layer
-    * @param xmlQos The XML based ASCII string
+    * @param serialData The XML or JSON based ASCII string
     * @param fromPersistenceStore true if recovered from persistency
     */
-   public PublishQosServer(ServerScope glob, String xmlQos, boolean fromPersistenceStore) throws XmlBlasterException {
-      this(glob, glob.getMsgQosFactory().readObject(xmlQos), fromPersistenceStore);
+   public PublishQosServer(ServerScope glob, String serialData, boolean fromPersistenceStore) throws XmlBlasterException {
+      this(glob, I_MsgQosFactory.parse(glob, serialData), fromPersistenceStore);
    }
 
    /**

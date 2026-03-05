@@ -35,12 +35,16 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
       this(glob, null, null);
    }
 
+   public DisconnectQosData(Global glob, I_DisconnectQosFactory factory) {
+      this(glob, factory, null);
+   }
+   
    /**
     * Parses the given ASCII logout QoS. 
     */
    public DisconnectQosData(Global glob, I_DisconnectQosFactory factory, String serialData) {
       super(glob, serialData, org.xmlBlaster.util.def.MethodName.DISCONNECT);
-      this.factory = (factory == null) ? this.glob.getDisconnectQosFactory() : factory;
+      this.factory = (factory == null) ? this.glob.getDisconnectQosFactory(serialData) : factory;
    }
 
    /**

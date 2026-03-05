@@ -37,6 +37,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 
 
@@ -477,7 +478,7 @@ public class Publisher implements I_Timeout {
       if (replSourceEngine == null || origQos == null)
          return origQos;
       
-      MsgQosData msgQosData = global.getMsgQosFactory().readObject(origQos);
+      MsgQosData msgQosData = I_MsgQosFactory.parse(this.global, origQos);
       MsgQosData preparedMsgQosData = replSourceEngine.preparePubQos(msgQosData);
       return preparedMsgQosData.toXml();
    }
@@ -502,7 +503,7 @@ public class Publisher implements I_Timeout {
                InputStream is = directoryManager.getContentStream(infos[i]);
                Global glob = access.getGlobal();
                MsgKeyData keyData = glob.getMsgKeyFactory().readObject(publishKey);
-               MsgQosData qosData = glob.getMsgQosFactory().readObject(publishQos);
+               MsgQosData qosData = I_MsgQosFactory.parse(glob, publishQos);
                qosData.addClientProperty(ContribConstants.FILENAME_ATTR, infos[i].getRelativeName());
                qosData.addClientProperty(ContribConstants.FILE_DATE, infos[i].getTimestamp());
                qosData.addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE, log), maximumChunkSize);

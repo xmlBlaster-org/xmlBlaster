@@ -16,6 +16,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.email.AttachmentHolder;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -594,7 +595,7 @@ public class MsgInfo {
          ErrorCode errorCode = ErrorCode.INTERNAL; // default setting
          try{
             // See serialization in XmlScriptInterpreter.java
-            StatusQosData data = glob.getStatusQosFactory().readObject(msg.getQos());
+            StatusQosData data = I_StatusQosFactory.parse(glob, msg.getQos());
             errorCode = ErrorCode.toErrorCode(data.getStateInfo());
          }
          catch (Throwable e) {

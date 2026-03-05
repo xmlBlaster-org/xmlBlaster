@@ -17,6 +17,9 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QosData;
 
 /**
@@ -71,7 +74,7 @@ public final class MsgUnit implements java.io.Serializable
          // The proper way, but then we need to import package engine.qos
          //PublishQosServer qos = new PublishQosServer(glob, qos); // sets timestamp etc.
          //this.qosData = qos.getData();
-         this.qosData = this.glob.getMsgQosFactory().readObject(qos);
+         this.qosData = I_MsgQosFactory.parse(this.glob, qos);
          //boolean fromPersistenceStore = false;
          //if (!fromPersistenceStore)
          //   this.qosData.touchRcvTimestamp();
@@ -83,7 +86,7 @@ public final class MsgUnit implements java.io.Serializable
       }
       else if (methodName == MethodName.SUBSCRIBE || methodName == MethodName.UNSUBSCRIBE ||
                methodName == MethodName.GET || methodName == MethodName.ERASE) {
-         this.qosData = this.glob.getQueryQosFactory().readObject(qos);
+         this.qosData = I_QueryQosFactory.parse(this.glob, qos);
          this.keyData = this.glob.getQueryKeyFactory().readObject(key);
       }
       else if (methodName == MethodName.CONNECT) {
@@ -92,7 +95,7 @@ public final class MsgUnit implements java.io.Serializable
          this.keyData = null;
       }
       else if (methodName == MethodName.DISCONNECT) {
-         this.qosData = this.glob.getDisconnectQosFactory().readObject(qos);
+         this.qosData = I_DisconnectQosFactory.parse(this.glob, qos);
          this.keyData = null;
       }
       else {

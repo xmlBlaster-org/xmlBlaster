@@ -35,9 +35,6 @@ public class StatusQosJsonFactory implements I_StatusQosFactory {
 
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
          jsonQos = "{}";
-      } else if (JacksonUtils.isXML(jsonQos)) {
-         // use Sax parser if string is XML
-         return glob.getStatusQosFactory(FactoryType.SAX).readObject(jsonQos);
       }
 
       StatusQosData statusQosData =

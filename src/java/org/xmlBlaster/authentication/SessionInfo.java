@@ -59,6 +59,7 @@ import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -978,7 +979,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
          uq = new SubscribeQos(glob);
       }
       else {
-         uq = new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos));
+         uq = new SubscribeQos(glob, I_QueryQosFactory.parse(glob, qos));
       }
       SubscribeQosServer uqs = new SubscribeQosServer(glob, uq.getData());
 
@@ -1009,7 +1010,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 	         uq = new GetQos(glob);
 	      }
 	      else {
-	         uq = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
+	         uq = new GetQos(glob, I_QueryQosFactory.parse(glob, qos));
 	      }
 	      GetQosServer uqs = new GetQosServer(glob, uq.getData());
 
@@ -1040,7 +1041,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String"))
          uq = new UnSubscribeQos(glob);
       else
-         uq = new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos));
+         uq = new UnSubscribeQos(glob, I_QueryQosFactory.parse(glob, qos));
       UnSubscribeQosServer uqs = new UnSubscribeQosServer(glob, uq.getData());
 
       String[] ret = glob.getRequestBroker().unSubscribe(this, uk.getData(), uqs);

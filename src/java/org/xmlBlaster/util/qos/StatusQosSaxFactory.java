@@ -74,9 +74,6 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
    public synchronized StatusQosData readObject(String xmlQos) throws XmlBlasterException {
       if (xmlQos == null) {
          xmlQos = "<qos/>";
-      } else if (JacksonUtils.isJson(xmlQos)) {
-         // use JSON parser if string is not XML
-         return glob.getStatusQosFactory(FactoryType.JACKSON).readObject(xmlQos);
       }
 
       //this.inState = false;

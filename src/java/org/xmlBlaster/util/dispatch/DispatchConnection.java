@@ -14,6 +14,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -358,7 +359,7 @@ abstract public class DispatchConnection implements I_Timeout
          // Ignore "" returns as this was specified to always return in older xmlBlaster versions
          if (returnVal.length() > 0 && returnVal.indexOf("OK") == -1) {
             // Fake a server standby exception: ping() is not specified to transport a remote XmlBlasterException but carries standby information in the state id.
-            StatusQosData qos = glob.getStatusQosFactory().readObject(returnVal);
+            StatusQosData qos = I_StatusQosFactory.parse(glob, returnVal);
             if (!Constants.STATE_OK.equals(qos.getState())) {
                throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY,
                            glob.getId(), ME, (String)null,

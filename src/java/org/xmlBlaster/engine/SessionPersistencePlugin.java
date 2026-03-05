@@ -31,6 +31,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
@@ -147,7 +148,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                   try {
                      SubscribeEntry subscribeEntry = (SubscribeEntry)entry;
                      //QueryKeyData keyData = queryKeyFactory.readObject(subscribeEntry.getKey());
-                     QueryQosData qosData = global.getQueryQosFactory().readObject(subscribeEntry.getQos());
+                     QueryQosData qosData = I_QueryQosFactory.parse(global, subscribeEntry.getQos());
                      //String key = keyData.getOid() + qosData.getSender().getAbsoluteName();
 
                      SessionName sessionName = new SessionName(global, subscribeEntry.getSessionName());
@@ -200,7 +201,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             // do connect
             SubscribeEntry entry = (SubscribeEntry)entries[i];
             String qos = entry.getQos();
-            QueryQosData qosData = global.getQueryQosFactory().readObject(qos);
+            QueryQosData qosData = I_QueryQosFactory.parse(global, qos);
 
             ClientProperty clientProperty = qosData.getClientProperty(Constants.PERSISTENCE_ID);
             if (clientProperty == null) {

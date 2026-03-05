@@ -15,6 +15,7 @@ import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.def.MethodName;
 import java.util.Map;
 
@@ -62,8 +63,8 @@ public final class GetReturnQos
    /**
     * Constructs the specialized quality of service object for a get() call.
     */
-   public GetReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this(glob, glob.getMsgQosFactory().readObject(xmlQos));
+   public GetReturnQos(Global glob, String serailData) throws XmlBlasterException {
+      this(glob, I_MsgQosFactory.parse(glob, serailData));
    }
 
    /**

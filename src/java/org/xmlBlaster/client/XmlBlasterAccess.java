@@ -72,6 +72,7 @@ import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.DisconnectQosData;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -1197,7 +1198,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public SubscribeReturnQos subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
       return subscribe(new SubscribeKey(glob, glob.getQueryKeyFactory().readObject(xmlKey)),
-                       new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new SubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)) );
    }
 
    /**
@@ -1226,7 +1227,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public SubscribeReturnQos subscribe(java.lang.String xmlKey, java.lang.String qos, I_Callback cb) throws XmlBlasterException {
       return subscribe(new SubscribeKey(glob, glob.getQueryKeyFactory().readObject(xmlKey)),
-                       new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)),
+                       new SubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)),
                        cb );
    }
 
@@ -1260,7 +1261,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public MsgUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
       return get(new GetKey(glob, glob.getQueryKeyFactory().readObject(xmlKey)),
-                 new GetQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                 new GetQos(glob, I_QueryQosFactory.parse(glob, qos)) );
    }
 
    /**
@@ -1354,7 +1355,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public UnSubscribeReturnQos[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
       return unSubscribe(new UnSubscribeKey(glob, glob.getQueryKeyFactory().readObject(xmlKey)),
-                       new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new UnSubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)) );
    }
 
    /**
@@ -1423,7 +1424,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public EraseReturnQos[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
       return erase(new EraseKey(glob, glob.getQueryKeyFactory().readObject(xmlKey)),
-                       new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new EraseQos(glob, I_QueryQosFactory.parse(glob, qos)) );
    }
    
    /**
@@ -1826,7 +1827,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       qos = checkQueryKeyQos(url, qos);
       try {
          UnSubscribeKey usk = new UnSubscribeKey(glob, url);
-         UnSubscribeReturnQos[] usrq = unSubscribe(usk, new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         UnSubscribeReturnQos[] usrq = unSubscribe(usk, new UnSubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)));
          if (usrq == null) return new String[0];
          String[] ret = new String[usrq.length];
          if (ret.length < 1) {
@@ -1847,7 +1848,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       qos = checkQueryKeyQos(url, qos);
       try {
          SubscribeKey usk = new SubscribeKey(glob, url);
-         SubscribeReturnQos srq = subscribe(usk, new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         SubscribeReturnQos srq = subscribe(usk, new SubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)));
          if (srq == null) return "";
          return srq.toXml();
       }
@@ -1861,7 +1862,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       qos = checkQueryKeyQos(url, qos);
       try {
          GetKey gk = new GetKey(glob, url);
-         MsgUnit[] msgs = get(gk, new GetQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         MsgUnit[] msgs = get(gk, new GetQos(glob, I_QueryQosFactory.parse(glob, qos)));
          if (msgs == null) return new String[0];
          if (msgs == null || msgs.length < 1) {
             return new String[] { "get('"+url+"') did not match any topic" };
@@ -1884,7 +1885,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       qos = checkQueryKeyQos(url, qos);
       try {
          EraseKey ek = new EraseKey(glob, url);
-         EraseReturnQos[] erq = erase(ek, new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         EraseReturnQos[] erq = erase(ek, new EraseQos(glob, I_QueryQosFactory.parse(glob, qos)));
          if (erq == null) return new String[0];
          String[] ret = new String[erq.length];
          if (ret.length < 1) {
@@ -2500,7 +2501,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                    "maxEntries="+maxEntries+"&amp;maxSize=-1&amp;consumable="+consumable+"&amp;waitingDelay="+timeout+
                    "</querySpec>" +
                    "</qos>";
-      GetQos getQos = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
+      GetQos getQos = new GetQos(glob, I_QueryQosFactory.parse(glob, qos));
       MsgUnit[] msgs = get(getKey, getQos);
       if (log.isLoggable(Level.FINEST)) log.finest(getLogId()+"Got " + msgs.length + " reply :\n" + ((msgs.length>0)?msgs[0].toXml():""));
       return msgs;

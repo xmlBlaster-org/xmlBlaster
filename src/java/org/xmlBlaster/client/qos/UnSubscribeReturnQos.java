@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -33,10 +34,10 @@ public final class UnSubscribeReturnQos
    private final StatusQosData statusQosData;
 
    /**
-    * Constructor which parses XML string. 
+    * Constructor which parses XML/JSON string. 
     */
-   public UnSubscribeReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this.statusQosData = glob.getStatusQosFactory(MethodName.UNSUBSCRIBE).readObject(xmlQos);
+   public UnSubscribeReturnQos(Global glob, String serialData) throws XmlBlasterException {
+      this.statusQosData = I_StatusQosFactory.parse(glob, serialData, MethodName.UNSUBSCRIBE);;
       this.statusQosData.setMethod(MethodName.UNSUBSCRIBE);
    }
 

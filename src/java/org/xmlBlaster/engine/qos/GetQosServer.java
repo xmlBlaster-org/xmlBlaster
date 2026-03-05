@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QuerySpecQos;
 
 /**
@@ -41,10 +42,10 @@ public final class GetQosServer
 
    /**
     * Constructs the specialized quality of service object for a get() call.
-    * @param the XML based ASCII string
+    * @param the XML/JSON based ASCII string
     */
-   public GetQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
+   public GetQosServer(Global glob, String serialData) throws XmlBlasterException {
+      this.queryQosData = I_QueryQosFactory.parse(glob, serialData);
    }
 
    /**

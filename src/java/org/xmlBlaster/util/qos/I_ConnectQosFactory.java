@@ -20,7 +20,15 @@ public interface I_ConnectQosFactory
 {
    // public static final ConnectQosSaxFactory connectQosSaxFactory = new ConnectQosSaxFactory(Global.instance());
    
-   ConnectQosData readObject(String xmlQos) throws XmlBlasterException;
+   /**
+    * Parses the given Qos and returns a ConnectQosData holding the data. 
+    * Parsing of connect() QoS is supported here.
+    * <pre>
+    * java HelloWorld3 -qosFormat json
+    * </pre>
+    * @param qos e.g. the based ASCII string
+    */
+   ConnectQosData readObject(String qos) throws XmlBlasterException;
    
    /**
     * Return a factory parsing QoS XML strings from connect() and connect-return messages.
@@ -42,7 +50,8 @@ public interface I_ConnectQosFactory
     * <pre>
     * java HelloWorld3 -qosFormat json
     * </pre>
-    * @param qos e.g. the XML based ASCII string or JSON
+    * @param global current instance of global, will be initialized if null
+    * @param qos e.g. the XML/JSON based ASCII string or JSON
     */
    public static ConnectQosData parse(Global global, String qos) throws XmlBlasterException {
       if (global == null)

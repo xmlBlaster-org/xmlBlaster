@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.Constants;
@@ -39,8 +40,8 @@ public final class PublishReturnQos
    /**
     * Constructor which parses XML string.
     */
-   public PublishReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this.statusQosData = glob.getStatusQosFactory(MethodName.PUBLISH).readObject(xmlQos);
+   public PublishReturnQos(Global glob, String serialData) throws XmlBlasterException {
+      this.statusQosData = I_StatusQosFactory.parse(glob, serialData, MethodName.PUBLISH);;
       this.statusQosData.setMethod(MethodName.PUBLISH);
    }
 
