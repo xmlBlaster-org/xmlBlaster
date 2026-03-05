@@ -81,7 +81,7 @@ public final class MsgUnit implements java.io.Serializable
          this.keyData = this.glob.getMsgKeyFactory().readObject(key);
       }
       else if (methodName == MethodName.UPDATE || methodName == MethodName.UPDATE_ONEWAY) {
-         this.qosData = this.glob.getMsgQosFactory().readObject(qos);
+         this.qosData = I_MsgQosFactory.parse(this.glob, qos);
          this.keyData = this.glob.getMsgKeyFactory().readObject(key);
       }
       else if (methodName == MethodName.SUBSCRIBE || methodName == MethodName.UNSUBSCRIBE ||

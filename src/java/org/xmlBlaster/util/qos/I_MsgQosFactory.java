@@ -22,6 +22,9 @@ public interface I_MsgQosFactory
    /**
     * Parses the given Qos and returns a MsgQosData holding the data. 
     * Parsing of update() and publish() QoS is supported here.
+    * <p />
+    * Hint: Use I_MsgQosFactory.parse(glob, xmlQos) instead of glob.getMsgQosFactory().readObject(xmlQos)) to support JSON and XML
+    * 
     * @param qos e.g. the XML/JSON based ASCII string
     */
    MsgQosData readObject(String qos) throws XmlBlasterException;

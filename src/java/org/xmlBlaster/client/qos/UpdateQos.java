@@ -17,6 +17,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
@@ -77,7 +78,7 @@ public final class UpdateQos
     * Constructs the specialized quality of service object for a update() call.
     */
    public UpdateQos(Global glob, String xmlQos) throws XmlBlasterException {
-      this(glob, glob.getMsgQosFactory().readObject(xmlQos));
+      this(glob, I_MsgQosFactory.parse(glob, xmlQos));
    }
    
    /**
