@@ -893,8 +893,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * @return never null 
     */
    public SessionInfo[] getSessionsToClear(ConnectQosServer q) {
-      if (q.clearSessions() == true && getNumSessions() > 0) {
+      int num = getNumSessions();
+      if (q.clearSessions() == true && num > 0) {
          SessionInfo[] arr = getSessions();
+         int max = getMaxSessions();
          if (q.isSessionLimitsPubSessionIdSpecific()) {
             // Special case: only destroy pubSessionId<0 if we are also <0 and vice versa
             boolean isInternal = q.getSessionQos().getSessionName().isPubSessionIdInternal();
@@ -904,13 +906,13 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                    list.add(arr[i]);
             }
             if (list.size() == 0)
-               log.info(getId() + "pubSessionId=" + q.getSessionQos().getSessionName().getPublicSessionId() + ", max sessions = " + getNumSessions() + " is reached");
+               log.info(getId() + "pubSessionId=" + q.getSessionQos().getSessionName().getPublicSessionId() + ", clearSessions=" + q.clearSessions() + ",numSessions=" + num + " of maxSessions=" + max);
             else
-               log.warning(getId() + " clear " + list.size() + " sessions, isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
+               log.warning(getId() + " clear " + list.size() + " sessions, isInternal=" + isInternal + ", clearSessions=" + q.clearSessions() + ", numSessions=" + num + " of maxSessions=" + max + " reached");
             return (SessionInfo[])list.toArray(new SessionInfo[list.size()]);
           }
           else {
-              log.warning(getId() + " clear " + arr.length + " sessions, max=" + getNumSessions() + " reached");
+              log.warning(getId() + " clear " + arr.length + " sessions, numSessions=" + num + " of maxSessions=" + max + " reached");
               return arr;
           }
       }
