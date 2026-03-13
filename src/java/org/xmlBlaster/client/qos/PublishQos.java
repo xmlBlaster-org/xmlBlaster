@@ -56,7 +56,7 @@ public final class PublishQos
 
    public PublishQos(Global glob, String serialData) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.msgQosData = new MsgQosData(this.glob, this.glob.getMsgQosFactory(), serialData, MethodName.PUBLISH); 
+      this.msgQosData = new MsgQosData(this.glob, this.glob.getMsgQosFactory(serialData), serialData, MethodName.PUBLISH); 
       this.msgQosData.setMethod(MethodName.PUBLISH);
    }
    

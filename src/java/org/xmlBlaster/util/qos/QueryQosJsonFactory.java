@@ -37,7 +37,7 @@ public class QueryQosJsonFactory implements I_QueryQosFactory {
     */
    public QueryQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{}";
+         return new QueryQosData(glob, this, "{}", MethodName.UNKNOWN);
       }
 
       QueryQosData queryQosData = new QueryQosData(glob, this, jsonQos, MethodName.UNKNOWN);

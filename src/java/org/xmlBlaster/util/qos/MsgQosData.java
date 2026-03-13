@@ -147,11 +147,11 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /**
     * Constructs the specialized quality of service object for a publish() call.
     * For internal use only, this message is sent from the persistence layer
-    * @param the XML based ASCII string
+    * @param serialData XML/JSON based ASCII string
     */
    public MsgQosData(Global glob, I_MsgQosFactory factory, String serialData, MethodName methodName) {
       super(glob, serialData, methodName);
-      this.factory = (factory == null) ? this.glob.getMsgQosFactory() : factory;
+      this.factory = (factory == null) ? this.glob.getMsgQosFactory(serialData) : factory;
    }
 
    /**

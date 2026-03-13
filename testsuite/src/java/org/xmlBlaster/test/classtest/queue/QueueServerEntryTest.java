@@ -142,7 +142,7 @@ public class QueueServerEntryTest extends TestCase {
          PublishKey key = new PublishKey(glob, "someKey");
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
          MsgQosData msgQosData = publishQosServer.getData();
-         ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
+         ((MsgQosSaxFactory)glob.getMsgQosFactory("<qos/>")).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
          String state = Constants.STATE_EXPIRED;
          msgQosData.setState(state);
@@ -272,7 +272,7 @@ public class QueueServerEntryTest extends TestCase {
          PublishKey key = new PublishKey(glob, "someKey");
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos><persistent/></qos>");
          MsgQosData msgQosData = publishQosServer.getData();
-         ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
+         ((MsgQosSaxFactory)glob.getMsgQosFactory("<qos/>")).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
          msgQosData.setState("state");
          msgQosData.setSubscriptionId("someId");

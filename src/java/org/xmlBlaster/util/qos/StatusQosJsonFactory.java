@@ -34,13 +34,13 @@ public class StatusQosJsonFactory implements I_StatusQosFactory {
    public StatusQosData readObject(String jsonQos) throws XmlBlasterException {
 
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{}";
+         return new StatusQosData(glob, this, "{}", MethodName.UNKNOWN);
       }
 
       StatusQosData statusQosData =
             new StatusQosData(glob, this, jsonQos, MethodName.UNKNOWN);
 
-      JsonFactory factory = new JsonFactory();
+      JsonFactory factory = glob.getJsonFactory();
 
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
 
@@ -191,7 +191,7 @@ public class StatusQosJsonFactory implements I_StatusQosFactory {
       return toJson(statusQosData, extraOffset, props, dumpClientProperties);
    }
    
-   public static final String toJson(
+   public final String toJson(
          StatusQosData statusQosData,
          String extraOffset,
          Properties props,
@@ -199,7 +199,7 @@ public class StatusQosJsonFactory implements I_StatusQosFactory {
 
       try {
          StringWriter writer = new StringWriter();
-         JsonFactory factory = new JsonFactory();
+         JsonFactory factory = glob.getJsonFactory();
          JsonGenerator gen = factory.createGenerator(writer);
          gen.useDefaultPrettyPrinter();
 

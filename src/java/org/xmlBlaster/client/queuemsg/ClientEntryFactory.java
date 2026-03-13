@@ -127,7 +127,7 @@ public class ClientEntryFactory implements I_EntryFactory
             return new MsgQueueUnSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
                        new UnSubscribeKey(glob, glob.getQueryKeyFactory().readObject(key)),
-                       new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new UnSubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)) );
 
          }
          else if (methodName == MethodName.ERASE) {
@@ -140,7 +140,7 @@ public class ClientEntryFactory implements I_EntryFactory
             return new MsgQueueEraseEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
                        new EraseKey(glob, glob.getQueryKeyFactory().readObject(key)),
-                       new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new EraseQos(glob, I_QueryQosFactory.parse(glob, qos)) );
 
          }
          else if (methodName == MethodName.GET) {
@@ -153,7 +153,7 @@ public class ClientEntryFactory implements I_EntryFactory
              return new MsgQueueGetEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                         new Timestamp(timestamp), sizeInBytes,
                         new GetKey(glob, glob.getQueryKeyFactory().readObject(key)),
-                        new GetQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                        new GetQos(glob, I_QueryQosFactory.parse(glob, qos)) );
          }
          else if (methodName == MethodName.CONNECT) {
             if (obj.length != 1) {
@@ -257,14 +257,14 @@ public class ClientEntryFactory implements I_EntryFactory
             return new MsgQueueUnSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
                        new UnSubscribeKey(glob, glob.getQueryKeyFactory().readObject(key)),
-                       new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new UnSubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)) );
 
          }
          else if (methodName == MethodName.ERASE) {
             return new MsgQueueEraseEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
                        new EraseKey(glob, glob.getQueryKeyFactory().readObject(key)),
-                       new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       new EraseQos(glob, I_QueryQosFactory.parse(glob, qos)) );
 
          }
          else if (methodName == MethodName.GET) {

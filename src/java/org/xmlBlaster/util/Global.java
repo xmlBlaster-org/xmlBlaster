@@ -98,6 +98,8 @@ import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
+import com.fasterxml.jackson.core.JsonFactory;
+
 /**
  * Global variables to avoid singleton.
  * <p>
@@ -210,22 +212,8 @@ public class Global implements Cloneable
    protected volatile I_QueryQosFactory queryQosFactory;
    protected volatile I_StatusQosFactory statusQosFactory;
 
-   // concrete instances initialized lazily
-   // switching takes minimal effort
-   // XML
-   // protected volatile ConnectQosSaxFactory connectQosSaxFactory;
-   protected volatile DisconnectQosSaxFactory disconnectQosSaxFactory;
-   protected volatile MsgQosSaxFactory msgQosSaxFactory;
-   protected volatile QueryQosSaxFactory queryQosSaxFactory;
-   protected volatile StatusQosQuickParseFactory statusQosQuickParseFactory;
-   protected volatile StatusQosSaxFactory statusQosSaxFactory;
-
-   // JSON
-   // protected volatile ConnectQosJsonFactory connectQosJsonFactory;
-   protected volatile DisconnectQosJsonFactory disconnectQosJsonFactory;
-   protected volatile MsgQosJsonFactory msgQosJsonFactory;
-   protected volatile QueryQosJsonFactory queryQosJsonFactory;
-   protected volatile StatusQosJsonFactory statusQosJsonFactory;
+   // factory used to create the JSON parses
+   protected JsonFactory jsonFactory;
 
    protected volatile I_TimeoutManager pingTimer;
    protected volatile Timeout burstModeTimer;
@@ -1067,6 +1055,21 @@ public class Global implements Cloneable
    }
 
    /**
+    * Return the Jackson factory for creating JSON parsers.
+    */
+   public final JsonFactory getJsonFactory() {
+      if (this.jsonFactory == null) {
+         synchronized (this) {
+            if (this.jsonFactory == null) {
+               this.jsonFactory = new JsonFactory();
+               // configuration for parser and generator
+            }
+         }
+      }
+      return this.jsonFactory;
+   }
+
+   /**
     * Return a factory parsing key XML strings from publish() and update() messages.
     */
    public final I_MsgKeyFactory getMsgKeyFactory() {
@@ -1094,71 +1097,6 @@ public class Global implements Cloneable
       return this.queryKeyFactory;
    }
 
-   /*
-    * Return a factory parsing QoS XML strings from connect() and connect-return messages.
-    */
-//   public final I_ConnectQosFactory getConnectQosSaxFactory() {
-//      if (this.connectQosFactory == null) {
-//         synchronized (this) {
-//            if (this.connectQosFactory == null) {
-//               this.connectQosSaxFactory = new ConnectQosSaxFactory(this);
-//               this.connectQosFactory = this.connectQosSaxFactory;
-//            }
-//         }
-//      }
-//      return this.connectQosFactory;
-//   }
-
-//   /**
-//    * Return a factory parsing QoS XML strings from subscribe(), unSubscribe() and erase() returns.
-//    * 
-//    * Caution: Ignores ClientProperty, they are not parsed
-//    */
-//   public final I_StatusQosFactory getStatusQosFactory() {
-//      if (this.statusQosFactory == null) {
-//         synchronized (this) {
-//            if (this.statusQosFactory == null) {
-//               //this.statusQosFactory = new StatusQosSaxFactory(this);
-//               // Caution: Ignores ClientProperty
-//               this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
-//               this.statusQosFactory = this.statusQosQuickParseFactory;
-//            }
-//         }
-//      }
-//      return this.statusQosFactory;
-//   }
-//
-//   public final I_StatusQosFactory getStatusQosFactory(MethodName methodName) {
-//      if (methodName == null) {
-//         return getStatusQosFactory();
-//      }
-//
-//      if (this.statusQosFactory == null) {
-//         synchronized (this) {
-//            if (this.statusQosFactory == null) {
-//               if (methodName.isSubscribe()) { // Changed 2017 marcel as I need ClientProperty
-//                  this.statusQosSaxFactory = new StatusQosSaxFactory(this);
-//                  this.statusQosFactory = this.statusQosSaxFactory;
-//               }
-//               else {
-//                  // Caution: Ignores ClientProperty
-//                  this.statusQosQuickParseFactory = new StatusQosQuickParseFactory(this);
-//                  this.statusQosFactory = statusQosQuickParseFactory;
-//               }
-//            }
-//         }
-//      }
-//      return this.statusQosFactory;
-//   }
-
-   // unused!
-   //// QueryKeyFactory
-   //public synchronized void useJsonQueryKeyFactory() {
-   //    this.queryKeyFactory = this.queryKeyJsonFactory == null ? this.queryKeyJsonFactory = new QueryKeyJsonFactory(this) : this.queryKeyJsonFactory;
-   //}
-   //public synchronized void useSaxQueryKeyFactory() {
-   //    this.queryKeyFactory = this.queryKeySaxFactory;
-   //}
    
    /**
     * supported factory types for switching between Sax(XML) and Jackson(JSON)
@@ -1194,10 +1132,17 @@ public class Global implements Cloneable
    }
    
    /**
+    * Return a factory parsing QoS XML or JSON strings from connect() requests.
+    * according to the command line arguments set (default XML).
     * <pre>
     * java HelloWorld -qosFormat json
     * java HelloWorld -qosFormat xml
     * </pre>
+    * 
+    * <p><b>WARNING</b>: parsing a format with the wrong factory will cause an exception
+    * add `serialData` as argument to get the correct factory or use the parse method</p>
+    * Best use the function below:
+    * @see org.xmlBlaster.util.qos.I_ConnectQosFactory#parse(Global, String)
     */
    public I_ConnectQosFactory getConnectQosFactory() {
       FactoryType factoryType = getFactoryType();
@@ -1209,6 +1154,14 @@ public class Global implements Cloneable
       }
    }
    
+   /**
+    * Return a factory parsing QoS strings from connect() requests.
+    * 
+    * @param serialData used to determine the correct factory implementation
+    * @return factory implementation suitable for parsing `serialData`
+    * 
+    * @see org.xmlBlaster.util.qos.I_ConnectQosFactory#parse(Global, String)
+    */
    public I_ConnectQosFactory getConnectQosFactory(String serialData) {
       if (serialData != null && !serialData.isBlank()) {
          if (JacksonUtils.isJson(serialData)) {
@@ -1221,19 +1174,18 @@ public class Global implements Cloneable
       return getConnectQosFactory();
    }
 
-//   public I_ConnectQosFactory getConnectQosFactory(FactoryType type) {
-//      switch (type) {
-//      case JACKSON:
-//         return this.connectQosJsonFactory == null ? this.connectQosJsonFactory = new ConnectQosJsonFactory(this)
-//               : this.connectQosJsonFactory;
-//      default:
-//         return this.connectQosSaxFactory;
-//      }
-//   }
-
-
    /**
     * Return a factory parsing QoS XML or JSON strings from disconnect() requests.
+    * according to the command line arguments set (default XML).
+    * <pre>
+    * java HelloWorld -qosFormat json
+    * java HelloWorld -qosFormat xml
+    * </pre>
+    * 
+    * <p><b>WARNING</b>: parsing a format with the wrong factory will cause an exception
+    * add `serialData` as argument to get the correct factory or use the parse method</p>
+    * Best use the function below:
+    * @see org.xmlBlaster.util.qos.I_DisconnectQosFactory#parse(Global, String)
     */
    public I_DisconnectQosFactory getDisconnectQosFactory() {
       FactoryType factoryType = getFactoryType();
@@ -1248,7 +1200,10 @@ public class Global implements Cloneable
    /**
     * Return a factory parsing QoS strings from disconnect() requests.
     * 
-    * @param serialData determines whether XML or JSON needs to be parsed
+    * @param serialData used to determine the correct factory implementation
+    * @return factory implementation suitable for parsing `serialData`
+    * 
+    * @see org.xmlBlaster.util.qos.I_DisconnectQosFactory#parse(Global, String)
     */
    public I_DisconnectQosFactory getDisconnectQosFactory(String serialData) {
       if (serialData != null && !serialData.isBlank()) {
@@ -1264,6 +1219,16 @@ public class Global implements Cloneable
    
    /**
     * Return a factory parsing QoS XML strings from publish() and update() messages.
+    * according to the command line arguments set (default XML).
+    * <pre>
+    * java HelloWorld -qosFormat json
+    * java HelloWorld -qosFormat xml
+    * </pre>
+    * 
+    * <p><b>WARNING</b>: parsing a format with the wrong factory will cause an exception
+    * add `serialData` as argument to get the correct factory or use the parse method</p>
+    * Best use the function below:
+    * @see org.xmlBlaster.util.qos.I_MsgQosFactory#parse(Global, String)
     */
    public I_MsgQosFactory getMsgQosFactory() {
       FactoryType factoryType = getFactoryType();
@@ -1278,7 +1243,10 @@ public class Global implements Cloneable
    /**
     * Return a factory parsing QoS XML strings from publish() and update() messages.
     * 
-    * @param serialData determines whether XML or JSON needs to be parsed
+    * @param serialData used to determine the correct factory implementation
+    * @return factory implementation suitable for parsing `serialData`
+    * 
+    * @see org.xmlBlaster.util.qos.I_MsgQosFactory#parse(Global, String)
     */
    public I_MsgQosFactory getMsgQosFactory(String serialData) {
       if (serialData != null && !serialData.isBlank()) {
@@ -1294,6 +1262,16 @@ public class Global implements Cloneable
 
    /**
     * Return a factory parsing QoS XML strings from publish() and update() messages.
+    * according to the command line arguments set (default XML).
+    * <pre>
+    * java HelloWorld -qosFormat json
+    * java HelloWorld -qosFormat xml
+    * </pre>
+    * 
+    * <p><b>WARNING</b>: parsing a format with the wrong factory will cause an exception
+    * add `serialData` as argument to get the correct factory or use the parse method</p>
+    * Best use the function below:
+    * @see org.xmlBlaster.util.qos.I_QueryQosFactory#parse(Global, String)
     */
    public I_QueryQosFactory getQueryQosFactory() {
       FactoryType factoryType = getFactoryType();
@@ -1308,7 +1286,10 @@ public class Global implements Cloneable
    /**
     * Return a factory parsing QoS XML strings from publish() and update() messages.
     * 
-    * @param serialData determines whether XML or JSON needs to be parsed
+    * @param serialData used to determine the correct factory implementation
+    * @return factory implementation suitable for parsing `serialData`
+    * 
+    * @see org.xmlBlaster.util.qos.I_StatusQosFactory#parse(Global, String)
     */
    public I_QueryQosFactory getQueryQosFactory(String serialData) {
       if (serialData != null && !serialData.isBlank()) {
@@ -1322,21 +1303,26 @@ public class Global implements Cloneable
       return getQueryQosFactory();
    }
 
-  /*
-   * Return a factory parsing QoS XML strings from subscribe(), unSubscribe() and
-   * erase() returns.
-   * 
-   * Caution: Ignores ClientProperty, they are not parsed
-   */
+   /**
+    * Return a factory parsing QoS XML strings from subscribe(), unSubscribe() and
+    * erase() returns.
+    * <pre>
+    * java HelloWorld -qosFormat json 
+    * java HelloWorld -qosFormat xml 
+    * </pre>
+    * 
+    * <p><b>Caution</b>: Ignores ClientProperty, they are not parsed</p>
+    * <p><b>WARNING</b>: parsing a format with the wrong factory will cause an
+    * exception add `serialData` as argument to get the correct factory or use the
+    * parse method</p>
+    * Best use the function below:
+    * @see org.xmlBlaster.util.qos.I_StatusQosFactory#parse(Global, String)
+    */
    public I_StatusQosFactory getStatusQosFactory() {
       FactoryType factoryType = getFactoryType();
       if (factoryType == FactoryType.JACKSON) {
          return new StatusQosJsonFactory(this);
-      } /*
-         * else if (factoryType == FactoryType.SAX) { TODO: return new
-         * StatusQosSaxFactory(this) }
-         */ 
-      else {
+      } else {
          // caution ignores clientProperty
          return new StatusQosQuickParseFactory(this);
       }
@@ -1344,9 +1330,13 @@ public class Global implements Cloneable
 
    
    /**
-    * Return a factory parsing QoS XML/JSON strings from publish() and update() messages.
+    * Return a factory parsing QoS XML strings from subscribe(), unSubscribe() and
+    * erase() returns.
     * 
-    * @param serialData determines whether XML or JSON needs to be parsed
+    * @param serialData used to determine the correct factory implementation
+    * @return factory implementation suitable for parsing `serialData`
+    * 
+    * @see org.xmlBlaster.util.qos.I_StatusQosFactory#parse(Global, String)
     */
    public I_StatusQosFactory getStatusQosFactory(String serialData) {
       return getStatusQosFactory(serialData, null);
@@ -1358,6 +1348,8 @@ public class Global implements Cloneable
     * @param serialData determines whether XML or JSON needs to be parsed
     * @param methodName used to determine, whether quickparsefactory or SAX factory
     *                   should be returned, if serialData is XML
+    *
+    * @see org.xmlBlaster.util.qos.I_StatusQosFactory#parse(Global, String, MethodName)
     */
    public I_StatusQosFactory getStatusQosFactory(String serialData, MethodName methodName) {
       if (serialData != null && !serialData.isBlank()) {

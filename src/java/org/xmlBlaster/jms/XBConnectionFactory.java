@@ -26,6 +26,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 
 /**
  * XBConnectionFactory
@@ -65,7 +66,7 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
    private ConnectQos parseConnectQos(String qosLitteral) throws XmlBlasterException {
       if (qosLitteral == null || qosLitteral.length() < 6) 
          return new ConnectQos(this.global);
-      return new ConnectQos(this.global, (new ConnectQosSaxFactory(global)).readObject(qosLitteral));      
+      return new ConnectQos(this.global, I_ConnectQosFactory.parse(this.global, qosLitteral));      
    }
    
    public XBConnectionFactory() throws XmlBlasterException {

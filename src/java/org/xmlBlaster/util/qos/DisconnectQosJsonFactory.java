@@ -34,13 +34,12 @@ public class DisconnectQosJsonFactory implements I_DisconnectQosFactory {
    @Override
    public DisconnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{}";
+         return new DisconnectQosData(glob, this, "{}");
       } 
       
       DisconnectQosData disconnectQosData = new DisconnectQosData(glob, this);
       
-      // TODO: early return if "{}"
-      JsonFactory factory = new JsonFactory();
+      JsonFactory factory = glob.getJsonFactory();
 
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
 
@@ -104,10 +103,10 @@ public class DisconnectQosJsonFactory implements I_DisconnectQosFactory {
     *
     * @return internal state of the DisconnectQos as a JSON string
     */
-   public static final String toJson(DisconnectQosData data, Properties props) {
+   public final String toJson(DisconnectQosData data, Properties props) {
       try {
          StringWriter writer = new StringWriter();
-         JsonFactory factory = new JsonFactory();
+         JsonFactory factory = glob.getJsonFactory();
          JsonGenerator gen = factory.createGenerator(writer);
          gen.useDefaultPrettyPrinter();
 

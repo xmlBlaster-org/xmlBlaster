@@ -44,15 +44,11 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
    @Override
    public ConnectQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{}";
+         return new ConnectQosData(glob, this);
       }
-//      } else if (JacksonUtils.isXML(jsonQos)) {
-//         // use Sax parser if string is XML
-//         return glob.getConnectQosFactory(FactoryType.SAX).readObject(jsonQos);
-//      }
 
       ConnectQosData connectQosData = new ConnectQosData(glob, this);
-      JsonFactory factory = new JsonFactory();
+      JsonFactory factory = this.glob.getJsonFactory();
 
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
          // step to first Object:
@@ -374,14 +370,14 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
       return toJson(qosData, extraOffset, props);
    }
 
-   public static final String toJson(ConnectQosData data, String extraOffset, Properties props) {
+   public final String toJson(ConnectQosData data, String extraOffset, Properties props) {
       final boolean noSecurity = (props != null) && props.containsKey(Constants.TOXML_NOSECURITY)
             ? Boolean.parseBoolean(props.getProperty(Constants.TOXML_NOSECURITY))
             : false;
 
       try {
          StringWriter writer = new StringWriter();
-         JsonFactory factory = new JsonFactory();
+         JsonFactory factory = glob.getJsonFactory();
          JsonGenerator gen = factory.createGenerator(writer);
          gen.useDefaultPrettyPrinter();
 

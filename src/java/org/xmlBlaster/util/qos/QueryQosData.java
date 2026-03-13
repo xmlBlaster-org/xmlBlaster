@@ -109,7 +109,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     */
    public QueryQosData(Global glob, I_QueryQosFactory factory, String serialData, MethodName methodName) {
       super(glob, serialData, methodName);
-      this.factory = (factory==null) ? glob.getQueryQosFactory() : factory;
+      this.factory = (factory==null) ? glob.getQueryQosFactory(serialData) : factory;
       this.containsHistoryQos = (this.historyQos != null);
    }
 

@@ -63,12 +63,12 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
    @Override
    public MsgQosData readObject(String jsonQos) throws XmlBlasterException {
       if (jsonQos == null || jsonQos.trim().isEmpty()) {
-         jsonQos = "{}";
+         return new MsgQosData(glob, this, "{}", MethodName.UNKNOWN);
       }
 
       MsgQosData msgQosData = new MsgQosData(glob, this, jsonQos, MethodName.UNKNOWN);
       // strict mode für das werfen von Exceptions
-      JsonFactory factory = new JsonFactory();
+      JsonFactory factory = glob.getJsonFactory();
       try (JsonParser parser = factory.createParser(new StringReader(jsonQos))) {
 
          parser.nextToken(); // move to first Object
@@ -501,7 +501,7 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
       try {
          StringWriter writer = new StringWriter();
-         JsonFactory factory = new JsonFactory();
+         JsonFactory factory = glob.getJsonFactory();
          JsonGenerator gen = factory.createGenerator(writer);
          gen.useDefaultPrettyPrinter();
 

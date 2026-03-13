@@ -123,7 +123,7 @@ public class ConnectQosTest extends TestCase {
          "   <refreshSession/>" +
          "</qos>\n";
 
-         I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         I_ConnectQosFactory factory = this.glob.getConnectQosFactory(xml);
          ConnectQosData qos = factory.readObject(xml); // parse
          I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
          String json = jsonFactory.writeObject(qos, null, null); // dump to JSON
@@ -132,7 +132,7 @@ public class ConnectQosTest extends TestCase {
          qos = jsonFactory.readObject(json); // parse JSON
 
          assertEquals("", true, qos.getPersistentProp().getValue());
-         String newXml = qos.toXml();                  // dump
+         String newXml = factory.writeObject(qos, "", null); // dump
          qos = factory.readObject(newXml);             // parse again
          
          String newJson = jsonFactory.writeObject(qos, null, null);

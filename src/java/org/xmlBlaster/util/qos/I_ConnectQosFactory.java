@@ -18,8 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public interface I_ConnectQosFactory
 {
-   // public static final ConnectQosSaxFactory connectQosSaxFactory = new ConnectQosSaxFactory(Global.instance());
-   
+
    /**
     * Parses the given Qos and returns a ConnectQosData holding the data. 
     * Parsing of connect() QoS is supported here.
@@ -29,21 +28,7 @@ public interface I_ConnectQosFactory
     * @param qos e.g. the based ASCII string
     */
    ConnectQosData readObject(String qos) throws XmlBlasterException;
-   
-   /**
-    * Return a factory parsing QoS XML strings from connect() and connect-return messages.
-   public static I_ConnectQosFactory getConnectQosSaxFactory() {
-      if (connectQosSaxFactory == null) {
-         synchronized (I_ConnectQosFactory.class) {
-            if (connectQosSaxFactory == null) {
-               connectQosSaxFactory = new ConnectQosSaxFactory(Global.instance());
-            }
-         }
-      }
-      return connectQosSaxFactory;
-   }
-    */
-   
+
    /**
     * Parses the given Qos and returns a ConnectQosData holding the data. 
     * Parsing of connect() QoS is supported here.
@@ -58,19 +43,6 @@ public interface I_ConnectQosFactory
          global = Global.instance();
       I_ConnectQosFactory factory = global.getConnectQosFactory(qos);
       return factory.readObject(qos);
-//      if (JacksonUtils.isJson(qos)) {
-//         return new ConnectQosJsonFactory(global).readObject(qos);
-//         // return global.getConnectQosFactory(FactoryType.JACKSON).readObject(qos);
-//      }
-//      else if (JacksonUtils.isXML(qos)) {
-//         // return new ConnectQosSaxFactory(global).readObject(qos);
-//         // return global.getConnectQosSaxFactory().readObject(qos);
-//         return new ConnectQosSaxFactory(global).readObject(qos);
-//         // return global.getConnectQosFactory(FactoryType.SAX).readObject(qos);
-//      }
-//      else {
-//         throw new XmlBlasterException(global, ErrorCode.INTERNAL_NOTIMPLEMENTED, "I_ConnectQosFactory qos type");
-//      }
    }
 
    /**
