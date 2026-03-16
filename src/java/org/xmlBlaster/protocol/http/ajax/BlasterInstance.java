@@ -288,7 +288,7 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 		// Allow e.g. __sys__Login
 		if (/*updateKey.isInternal() ||*/ !updateQos.isOk()) {
 			log.warning(id + " Ignoring received message " + updateKey.toXml() + " "
-					+ updateQos.toXml());
+					+ updateQos.serialize());
 			return "";
 		}
 		MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, updateQos.getData());

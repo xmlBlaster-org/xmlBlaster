@@ -20,8 +20,8 @@ import org.xmlBlaster.util.def.MethodName;
 /**
  * This class encapsulates the qos of a publish() message.
  * <p />
- * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCII-XML string with the toXml() method.
+ * So you don't need to type the 'ugly' XML/JSON ASCII string by yourself.
+ * After construction access the ASCII-XML/JSON string with the serialize() method.
  * <br />
  * A typical <b>publish</b> qos in Publish/Subcribe mode could look like this:<br />
  * <pre>
@@ -323,19 +323,19 @@ public final class PublishQos
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XMLJSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
    public String toString() {
-      return toXml();
+      return serialize();
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
-      return this.msgQosData.toXml();
+   public String serialize() {
+      return this.msgQosData.serialize();
    }
 
    /**
@@ -352,11 +352,11 @@ public final class PublishQos
          qos.setForceUpdate(true);
          qos.setReadonly(true);
          qos.setLifeTime(60000);
-         System.out.println(qos.toXml());
+         System.out.println(qos.serialize());
       }
       {
          PublishQos qos =new PublishQos(null);
-         System.out.println("Minimal '" + qos.toXml() + "'");
+         System.out.println("Minimal '" + qos.serialize() + "'");
       }
    }
 }

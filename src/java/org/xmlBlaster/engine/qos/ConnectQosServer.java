@@ -365,7 +365,7 @@ public final class ConnectQosServer
     * @return internal state of the connect QoS as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      return this.connectQosData.toXml(extraOffset);
+      return this.connectQosData.serialize(extraOffset);
    }
 
    /**
@@ -376,7 +376,7 @@ public final class ConnectQosServer
     * @return internal state of the connect QoS as a XML ASCII string
     */
    public String toXml(String extraOffset, Properties props) {
-      return this.connectQosData.toXml(extraOffset, props);
+      return this.connectQosData.serialize(extraOffset, props);
    }
 
    /**
@@ -384,7 +384,7 @@ public final class ConnectQosServer
     * @return An XML ASCII string
     */
    public String toXml() {
-      return this.connectQosData.toXml();
+      return this.connectQosData.serialize();
    }
 
    public boolean isSessionLimitsPubSessionIdSpecific() {

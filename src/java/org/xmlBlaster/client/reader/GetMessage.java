@@ -87,7 +87,7 @@ public class GetMessage
 
       GetKey xmlKeyWr = new GetKey(glob, xmlKey, queryType);
       GetQos xmlQos = new GetQos(glob);
-      MsgUnit[] msgs = xmlBlasterConnection.get(xmlKeyWr.toXml(), xmlQos.toXml());
+      MsgUnit[] msgs = xmlBlasterConnection.get(xmlKeyWr.toXml(), xmlQos.serialize());
       log.info("Got " + msgs.length + " messages for '" + xmlKey + "'");
       for (int ii=0; ii<msgs.length; ii++) {
          System.out.println("\n" + msgs[ii].toXml());

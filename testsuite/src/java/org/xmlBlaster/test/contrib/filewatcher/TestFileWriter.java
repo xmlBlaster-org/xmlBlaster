@@ -531,7 +531,7 @@ public class TestFileWriter extends TestCase {
          address.setCollectTime(0L);
          connQos.getClientQueueProperty().setType("RAM");
          connQos.getClientQueueProperty().setVersion("1.0");
-         return connQos.toXml();
+         return connQos.serialize();
       }
       catch (XmlBlasterException ex) {
          fail("an exception when building the connect qos: " + ex.getMessage());

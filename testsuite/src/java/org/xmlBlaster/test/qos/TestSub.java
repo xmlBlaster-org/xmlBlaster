@@ -92,7 +92,7 @@ public class TestSub extends TestCase implements I_Callback
          String passwd = "secret";
          ConnectQos qos = new ConnectQos(glob, senderName, passwd);
          if (log.isLoggable(Level.FINE))
-           log.fine("the connect qos is: " + qos.toXml());
+           log.fine("the connect qos is: " + qos.serialize());
          
          CallbackAddress cbAddress = new CallbackAddress(this.glob);
          cbAddress.setSecretSessionId(cbSessionId); // to protect our callback server - see method update()
@@ -146,7 +146,7 @@ public class TestSub extends TestCase implements I_Callback
       try {
          SubscribeReturnQos subscribeReturnQos = senderConnection.subscribe(xmlKey, null);
          subscribeOid = subscribeReturnQos.getSubscriptionId();
-         log.info("Success: Subscribe subscription-id=" + subscribeOid + " done: " + subscribeReturnQos.toXml());
+         log.info("Success: Subscribe subscription-id=" + subscribeOid + " done: " + subscribeReturnQos.serialize());
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
@@ -211,7 +211,7 @@ public class TestSub extends TestCase implements I_Callback
    public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       log.info("Receiving update of message oid=" + updateKey.getOid() + "...");
-      log.info("subscribeOid=" + subscribeOid + ":" + updateQos.toXml());
+      log.info("subscribeOid=" + subscribeOid + ":" + updateQos.serialize());
 
       numReceived += 1;
 

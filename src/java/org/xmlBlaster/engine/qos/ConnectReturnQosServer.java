@@ -37,11 +37,11 @@ public final class ConnectReturnQosServer {
    }
 
    public String toXml() {
-      return this.connectQosData.toXml();
+      return this.connectQosData.serialize();
    }
 
    public String toXml(String extraOffset) {
-      return this.connectQosData.toXml(extraOffset);
+      return this.connectQosData.serialize(extraOffset);
    }
 
    public void setSecretSessionId(String id) {

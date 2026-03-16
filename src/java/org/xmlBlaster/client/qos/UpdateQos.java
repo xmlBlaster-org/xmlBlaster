@@ -380,35 +380,35 @@ public final class UpdateQos
    }
    
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @return internal state of the RequestBroker as a XML ASCII string
+    * @return internal state of the RequestBroker as a XML/JSON ASCII string
     */
-   public String toXml() {
-      return toXml((String)null, (Properties)null);
+   public String serialize() {
+      return serialize((String)null, (Properties)null);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the RequestBroker as a XML ASCII string
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @return internal state of the RequestBroker as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset) {
-      return this.msgQosData.toXml(extraOffset);
+   public String serialize(String extraOffset) {
+      return this.msgQosData.serialize(extraOffset);
    }
 
    /**
-    * Overwrite qosData.toXml
+    * Overwrite qosData.serialize
     * @param extraOffset
     * @param forceReadable
     * @return
     */
-   public String toXml(String extraOffset, Properties props) {
-      return this.msgQosData.toXml(extraOffset, props);
+   public String serialize(String extraOffset, Properties props) {
+      return this.msgQosData.serialize(extraOffset, props);
    }
 
    public String toString() {
-      return toXml(null);
+      return serialize(null);
    }
 }

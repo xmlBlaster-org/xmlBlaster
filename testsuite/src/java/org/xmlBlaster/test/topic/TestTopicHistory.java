@@ -141,7 +141,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          EraseQos eq = new EraseQos(glob);
          eq.setForceDestroy(forceDestroy);
          EraseKey ek = new EraseKey(glob, publishOid);
-         EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] er = con.erase(ek.toXml(), eq.serialize());
          return er;
       } catch(XmlBlasterException e) {
          fail("Erase XmlBlasterException: " + e.getMessage());
@@ -205,7 +205,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, publishOid);
          SubscribeQos sq = new SubscribeQos(glob);
-         subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
+         subscribeReturnQos = con.subscribe(sk.toXml(), sq.serialize());
          log.info("Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
          log.severe("subscribe() XmlBlasterException: " + e.getMessage());
@@ -222,7 +222,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          // Subscribe for the volatile message
          UnSubscribeKey sk = new UnSubscribeKey(glob, subscribeReturnQos.getSubscriptionId());
          UnSubscribeQos sq = new UnSubscribeQos(glob);
-         con.unSubscribe(sk.toXml(), sq.toXml());
+         con.unSubscribe(sk.toXml(), sq.serialize());
          log.info("UnSubscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
          log.severe("unSubscribe() XmlBlasterException: " + e.getMessage());

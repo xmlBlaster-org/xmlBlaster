@@ -157,7 +157,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          cbProp.setMaxEntriesCache(numSubscribers+1000);
          this.updateInterceptor = new MsgInterceptor(this.glob, log, this); // Collect received msgs
          ConnectReturnQos connectReturnQos = oneConnection.connect(connectQos, this.updateInterceptor);
-         log.info("Connected: " + connectReturnQos.toXml());
+         log.info("Connected: " + connectReturnQos.serialize());
       }
       catch (Exception e) {
           log.severe("Login failed: " + e.toString());
@@ -259,7 +259,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
          
          SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
-         String subQos = subQosW.toXml();
+         String subQos = subQosW.serialize();
          
          manyClients = new Client[numSubscribers];
          if (maxSubPerCon >0 ) {
@@ -301,9 +301,9 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                         //cbProp.setMaxBytes(4000);
                         //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
                         //connectQos.setSubjectQueueProperty(cbProp);
-                        log.fine("Login qos: " +  connectQos.toXml());
+                        log.fine("Login qos: " +  connectQos.serialize());
                         ConnectReturnQos connectReturnQos = manyConnections[ci].connect(connectQos, this);
-                        log.info("Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.toXml());
+                        log.info("Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.serialize());
                      }
                      catch (Exception e) {
                         log.severe("Login failed: " + e.toString());
@@ -321,7 +321,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                   sub.connection = gg.getXmlBlasterAccess();
                   ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
                   ConnectReturnQos connectReturnQos = sub.connection.connect(connectQos, this);
-                  log.info("Connected: " + connectReturnQos.toXml());
+                  log.info("Connected: " + connectReturnQos.serialize());
                }
                catch (Exception e) {
                   log.severe("Login failed: " + e.toString());

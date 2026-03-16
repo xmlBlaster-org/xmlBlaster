@@ -143,9 +143,9 @@ public class HelloWorldGet
                qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
             }
          }
-         log.info("ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.serialize());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster
-         log.info("Connect success as " + crq.toXml());
+         log.info("Connect success as " + crq.serialize());
          
          MsgUnit[] msgs = null;
          if (queryOid != null) {
@@ -182,14 +182,14 @@ public class HelloWorldGet
             }
 
             log.info("GetKey=\n" + gk.toXml());
-            log.info("GetQos=\n" + gq.toXml());
+            log.info("GetQos=\n" + gq.serialize());
 
             if (interactive) {
                log.info("Hit a key to get '" + ((oid.length() > 0) ? oid : xpath) + "'");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
 
-            msgs = con.get(gk.toXml(), gq.toXml());
+            msgs = con.get(gk.toXml(), gq.serialize());
          }
 
          for(int imsg=0; imsg<msgs.length; imsg++) {

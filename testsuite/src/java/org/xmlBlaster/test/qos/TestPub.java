@@ -154,7 +154,7 @@ public class TestPub extends TestCase implements I_Callback
                       "</key>";
       PublishQos qosWrapper = new PublishQos(glob);
       qosWrapper.setReadonly(true);
-      String qos = qosWrapper.toXml(); // == "<qos><topic readonly='true'/></qos>"
+      String qos = qosWrapper.serialize(); // == "<qos><topic readonly='true'/></qos>"
 
       if (first) {
          try {

@@ -192,7 +192,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
                       "</key>";
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
-      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.serialize());
       msgUnitArr = new MsgUnit[] { msgUnit };
       con.publish(msgUnit);
       log.info("Success: Publishing of " + oid + " done");

@@ -70,7 +70,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       
       public ConnectReturnQos connect(ConnectQos qos, I_Callback callback) 
          throws XmlBlasterException {
-         this.qos = qos.toXml();
+         this.qos = qos.serialize();
          if (this.doRemoteCalls) return super.connect(qos, callback);
          return null;         
       }
@@ -130,7 +130,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       }
 
       public boolean disconnect(DisconnectQos qos) {
-         this.qos = qos.toXml();
+         this.qos = qos.serialize();
          log.fine("disconnect: " + key + " " + qos);
          if (this.doRemoteCalls) return super.disconnect(qos);
          return false;

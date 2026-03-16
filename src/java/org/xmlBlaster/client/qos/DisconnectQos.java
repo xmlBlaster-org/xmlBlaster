@@ -16,8 +16,8 @@ import org.xmlBlaster.util.property.PropBoolean;
 /**
  * This class encapsulates the qos of a logout() or disconnect()
  * <p />
- * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCII-XML string with the toXml() method.
+ * So you don't need to type the 'ugly' XML/JSON ASCII string by yourself.
+ * After construction access the ASCII-XML/JSON string with the serialize() method.
  * <br />
  * A typical <b>logout</b> qos could look like this:<br />
  * <pre>
@@ -155,19 +155,19 @@ public class DisconnectQos
     * @return An XML ASCII string
     */
    public String toString() {
-      return this.disconnectQosData.toXml();
+      return this.disconnectQosData.serialize();
    }
 
    /**
     * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
-      return this.disconnectQosData.toXml();
+   public String serialize() {
+      return this.disconnectQosData.serialize();
    }
    
-   public final String toXml(String extraOffset, Properties props) {
-      return this.disconnectQosData.toXml(extraOffset, props);
+   public final String serialize(String extraOffset, Properties props) {
+      return this.disconnectQosData.serialize(extraOffset, props);
    }
 
    /**

@@ -455,7 +455,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     	  // (sending back leads to dead lock from publisher->slave->master->loopback->slave in socket tunneling mode)
     	  log.severe("Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
         		  + "' as destination cluster '" + destination.getDestination().getAbsoluteName() 
-        		  + "' is sender cluster (circular loop), please check your configuration: topicId=" + msgUnit.getKeyOid() + " " + msgUnit.getQosData().toXmlReadable());
+        		  + "' is sender cluster (circular loop), please check your configuration: topicId=" + msgUnit.getKeyOid() + " " + msgUnit.getQosData().serializeReadable());
           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, 
         		  "Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
         		  + "' as destination cluster '" + destination.getDestination().getAbsoluteName() 
@@ -502,7 +502,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     	  // (sending back leads to dead lock from publisher->slave->master->loopback->slave in socket tunneling mode)
     	  log.severe("Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
         		  + "' as destination cluster '" + clusterNode.getId()
-        		  + "' is sender cluster (circular loop), please check your configuration: topicId=" + msgUnit.getKeyOid() + " " + msgUnit.getQosData().toXmlReadable());
+        		  + "' is sender cluster (circular loop), please check your configuration: topicId=" + msgUnit.getKeyOid() + " " + msgUnit.getQosData().serializeReadable());
           throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, 
         		  "Rejecting cluster message from '" + msgUnit.getQosData().getSender().getAbsoluteName()
         		  + "' as destination cluster '" + clusterNode.getId() 

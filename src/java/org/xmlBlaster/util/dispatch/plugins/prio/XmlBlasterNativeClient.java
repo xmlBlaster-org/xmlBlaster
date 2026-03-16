@@ -168,7 +168,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       pq.setSubscribable(false); // For the time being we don't allow others to subscribe on the PtP notification
       pq.setState(action);
       pq.setStateInfo("Notification about special message treatment in plugin " + pluginName + ", dispatcher state=" + currStatus);
-      MsgUnit msgUnit = new MsgUnit(glob, "<key oid='" + entry.getKeyOid() + "'/>", "", pq.toXml());
+      MsgUnit msgUnit = new MsgUnit(glob, "<key oid='" + entry.getKeyOid() + "'/>", "", pq.serialize());
       //xmlBlasterImpl.publish(sessionId, msgUnit);
       xmlBlasterCon.publish(msgUnit);
    }
@@ -192,7 +192,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       SubscribeKey sk = new SubscribeKey(glob, msgOid);
       SubscribeQos sq = new SubscribeQos(glob);
       //String ret = xmlBlasterImpl.subscribe(sessionId, sk.toXml(), sq.toXml());
-      SubscribeReturnQos subscribeReturnQos = xmlBlasterCon.subscribe(sk.toXml(), sq.toXml());
+      SubscribeReturnQos subscribeReturnQos = xmlBlasterCon.subscribe(sk.toXml(), sq.serialize());
 
       // Remember subscriptions of this I_Notify instance ...
       synchronized (subscriptionsByNotifierMap) {
@@ -261,7 +261,7 @@ public final class XmlBlasterNativeClient implements I_Callback
                UnSubscribeKey uk = new UnSubscribeKey(glob, subscribeRetQos.getSubscriptionId());
                UnSubscribeQos uq = new UnSubscribeQos(glob);
                //xmlBlasterImpl.unSubscribe(sessionId, uk.toXml(), uq.toXml());
-               xmlBlasterCon.unSubscribe(uk.toXml(), uq.toXml());
+               xmlBlasterCon.unSubscribe(uk.toXml(), uq.serialize());
             }
             catch (XmlBlasterException e) {
                log.warning("Unsubscribe failed: " + e.getMessage());
@@ -281,7 +281,7 @@ public final class XmlBlasterNativeClient implements I_Callback
          UpdateReturnQos q = new UpdateReturnQos(glob);
          q.setState("ERROR");
          q.setStateInfo("Callback access denied");
-         return q.toXml();
+         return q.serialize();
       }
 
       if (updateKey.isInternal()) return "";

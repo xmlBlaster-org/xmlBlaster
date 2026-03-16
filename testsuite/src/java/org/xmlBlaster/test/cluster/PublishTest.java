@@ -155,7 +155,7 @@ public class PublishTest extends TestCase {
          EraseKey ek = new EraseKey(glob, oid);
          ek.setDomain(domain);
          EraseQos eq = new EraseQos(glob);
-         bilboCon.erase(ek.toXml(), eq.toXml());
+         bilboCon.erase(ek.toXml(), eq.serialize());
 
          // Check if erased ...
          gk = new GetKey(glob, oid);
@@ -170,7 +170,7 @@ public class PublishTest extends TestCase {
          SubscribeKey sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos srq = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         SubscribeReturnQos srq = heronCon.subscribe(sk.toXml(), sq.serialize(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                assertInUpdate = serverHelper.getHeronGlob().getId() + ": Receiving unexpected asynchronous update message";
                assertEquals(assertInUpdate, oid, updateKey.getOid());
@@ -199,7 +199,7 @@ public class PublishTest extends TestCase {
          pk = new PublishKey(glob, oid, "text/plain", "1.0");
          pk.setDomain(domain);
          pq = new PublishQos(glob);
-         msgUnit = new MsgUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), contentStr.getBytes(), pq.serialize());
          prq = bilboCon.publish(msgUnit);
          log.info("Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
@@ -229,7 +229,7 @@ public class PublishTest extends TestCase {
          sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
          sq = new SubscribeQos(glob);
-         srq = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         srq = frodoCon.subscribe(sk.toXml(), sq.serialize(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("frodoCon - Receiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler, state=" + updateQos.getState());
                updateCounterFrodo++;
@@ -251,7 +251,7 @@ public class PublishTest extends TestCase {
          System.err.println("->Check unSubscribe from client frodo ...");
          UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
-         frodoCon.unSubscribe(uk.toXml(), uq.toXml());
+         frodoCon.unSubscribe(uk.toXml(), uq.serialize());
 
          System.err.println("->Check publish, frodo should not get it ...");
          pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);

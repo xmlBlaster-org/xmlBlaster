@@ -253,7 +253,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          this.msgKeyData = msgKeyData;
       }
 
-      if (log.isLoggable(Level.FINEST)) log.finest(ME+": administrativeInitialize()" + publishQos.toXml());
+      if (log.isLoggable(Level.FINEST)) log.finest(ME+": administrativeInitialize()" + publishQos.serialize());
 
       this.creatorSessionName = publishQos.getSender();
       this.topicProperty = publishQos.getTopicProperty();
@@ -750,7 +750,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
            log.warning(ME+": "+e.getMessage());
          }
          else {
-           log.severe(ME+": "+e.getMessage() + " publisher=" + publisherSessionInfo.getSessionName().getAbsoluteName() + " qos=" + msgUnit.getQosData().toXmlReadable());
+           log.severe(ME+": "+e.getMessage() + " publisher=" + publisherSessionInfo.getSessionName().getAbsoluteName() + " qos=" + msgUnit.getQosData().serializeReadable());
            e.printStackTrace();
          }
          throw e;

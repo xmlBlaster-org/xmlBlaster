@@ -63,7 +63,7 @@ public class HelloWorld8
             ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(receiverName+": Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
-                  log.info(receiverName+": Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
+                  log.info(receiverName+": Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.serialize());
 
                   if (updateKey.isInternal()) return "";
                   if (updateQos.isErased()) return "";

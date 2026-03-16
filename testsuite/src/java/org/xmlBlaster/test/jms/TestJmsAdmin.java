@@ -62,7 +62,7 @@ public class TestJmsAdmin extends XMLTestCase {
       this.qos.setPersistent(true);
       this.qos.setMaxSessions(100000);
       this.env = new Hashtable();
-      this.env.put(XBPropertyNames.CONNECT_QOS, qos.toXml());
+      this.env.put(XBPropertyNames.CONNECT_QOS, qos.serialize());
    
    }
 
@@ -124,13 +124,13 @@ public class TestJmsAdmin extends XMLTestCase {
 
          if (log.isLoggable(Level.FINE)) {
             System.out.println("--------------------------------------");
-            System.out.println(qos.toXml());
+            System.out.println(qos.serialize());
             System.out.println("--------------------------------------");
-            System.out.println(qos1.toXml());
+            System.out.println(qos1.serialize());
             System.out.println("--------------------------------------");
          }
          
-         assertXMLEqual(qos.toXml(), qos1.toXml());
+         assertXMLEqual(qos.serialize(), qos1.serialize());
       }
       catch (Exception ex) {
          ex.printStackTrace();

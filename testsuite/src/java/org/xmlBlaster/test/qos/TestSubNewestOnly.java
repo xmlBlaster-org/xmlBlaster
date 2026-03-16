@@ -145,7 +145,7 @@ public class TestSubNewestOnly extends TestCase implements I_Callback {
 					.subscribe(key, qos);
 			subscribeOid = subscribeReturnQos.getSubscriptionId();
 			log.info("Success: Subscribe subscription-id=" + subscribeOid
-					+ " done: " + subscribeReturnQos.toXml());
+					+ " done: " + subscribeReturnQos.serialize());
 		} catch (XmlBlasterException e) {
 			log.warning("XmlBlasterException: " + e.getMessage());
 			assertTrue("subscribe - XmlBlasterException: " + e.getMessage(),

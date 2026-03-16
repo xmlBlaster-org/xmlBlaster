@@ -126,7 +126,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
          PublishQos qosWrapper = new PublishQos(glob); // the same as "<qos></qos>"
-         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qosWrapper.toXml());
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qosWrapper.serialize());
          connection.publish(msgUnit);
          log.info("Success, published a message");
       } catch(XmlBlasterException e) {

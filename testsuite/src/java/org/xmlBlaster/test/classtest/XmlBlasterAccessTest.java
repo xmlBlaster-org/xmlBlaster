@@ -259,7 +259,7 @@ public class XmlBlasterAccessTest extends TestCase {
       assertEquals("", false, xmlBlasterAccess.isConnected());
 
       ConnectQos q = new ConnectQos(null);
-      log.info("Default ConnectQos=" + q.toXml() + " retries=" + q.getAddress().getRetries() + " delay=" + q.getAddress().getDelay());
+      log.info("Default ConnectQos=" + q.serialize() + " retries=" + q.getAddress().getRetries() + " delay=" + q.getAddress().getDelay());
       assertEquals("", -1, q.getAddress().getRetries()); // retry forever
       assertEquals("", q.getAddress().getDefaultDelay(), q.getAddress().getDelay()); // 5000L
       assertTrue("", q.getAddress().getDelay() > 0);

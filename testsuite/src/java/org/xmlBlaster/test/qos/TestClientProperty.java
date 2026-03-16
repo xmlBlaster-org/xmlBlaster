@@ -108,7 +108,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          qos.addClientProperty("oneKey", "oneValue");
          qos.addClientProperty("twoKey", "twoValue");
          qos.addClientProperty("threeKey", new Integer(55));
-         String literal = qos.toXml();
+         String literal = qos.serialize();
          
          ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
          ConnectQosData data = factory.readObject(literal);
@@ -126,7 +126,7 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
       qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
+      String literal = qos.serialize();
       
       DisconnectQosSaxFactory factory = new DisconnectQosSaxFactory(this.glob);
       try {
@@ -146,7 +146,7 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
       qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
+      String literal = qos.serialize();
       
       MsgQosSaxFactory factory = new MsgQosSaxFactory(this.glob);
       try {
@@ -166,7 +166,7 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
       qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
+      String literal = qos.serialize();
       
       QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
       try {
@@ -186,7 +186,7 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
       qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
+      String literal = qos.serialize();
       
       ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
       try {
@@ -207,7 +207,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          qos.addClientProperty("oneKey", "oneValue");
          qos.addClientProperty("twoKey", "twoValue");
          qos.addClientProperty("threeKey", new Integer(55));
-         String literal = qos.toXml();
+         String literal = qos.serialize();
          
          QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
          QueryQosData data = factory.readObject(literal);
@@ -225,7 +225,7 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
       qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
+      String literal = qos.serialize();
       
       QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
       try {
@@ -250,7 +250,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
          ConnectQos connQos = new ConnectQos(glob, "clientProperty", passwd);
-         if (log.isLoggable(Level.FINE)) log.fine("the connect qos is: " + connQos.toXml());
+         if (log.isLoggable(Level.FINE)) log.fine("the connect qos is: " + connQos.serialize());
          senderConnection.connect(connQos, this); // Login to xmlBlaster
 
          // publish 

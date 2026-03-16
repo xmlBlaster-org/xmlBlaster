@@ -102,7 +102,7 @@ public final class UnSubscribeQos
     * @return An XML ASCII string
     */
    public String toString() {
-      return this.queryQosData.toXml();
+      return this.queryQosData.serialize();
    }
    
    /**
@@ -115,14 +115,14 @@ public final class UnSubscribeQos
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
-      return this.queryQosData.toXml();
+   public String serialize() {
+      return this.queryQosData.serialize();
    }
 
-   public String toXml(Properties props) {
-      return this.queryQosData.toXml((String)null, props);
+   public String serialize(Properties props) {
+      return this.queryQosData.serialize((String)null, props);
    }
 }

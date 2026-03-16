@@ -128,7 +128,7 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
     * Object[1] = key.toXml()
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.subscribeQosData.toXml(), this.subscribeKeyData.toXml() };
+      Object[] obj = { this.subscribeQosData.serialize(), this.subscribeKeyData.toXml() };
       return obj;
    }
 
@@ -145,7 +145,7 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       out.write(this.subscribeKeyData.toXml().getBytes());
-      out.write(this.subscribeQosData.toXml((String)null, props).getBytes());
+      out.write(this.subscribeQosData.serialize((String)null, props).getBytes());
    }
    /**
     * Returns a shallow clone

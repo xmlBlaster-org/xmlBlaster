@@ -411,10 +411,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
             // TODO: Check if physical IP:PORT is identical
             if (this.fatherGlob.getClusterManager().getMyClusterNode().getId().equals(getId())) {
-               log.severe("We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + connectQosData.toXml());
+               log.severe("We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + connectQosData.serialize());
                return null;
             }
-            if (log.isLoggable(Level.FINEST)) log.finest("Connecting to other cluster node, ConnectQos=" + connectQosData.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Connecting to other cluster node, ConnectQos=" + connectQosData.serialize());
 
             ConnectQos connectQos = new ConnectQos(this.remoteGlob, connectQosData);
             if (useRemoteLoginAsTunnel) {

@@ -65,11 +65,11 @@ public class Latency implements I_Callback
 
          PublishKey pk = new PublishKey(glob, "Latency", "text/xml", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.serialize());
 
          SubscribeKey sk = new SubscribeKey(glob, "Latency");
          SubscribeQos sq = new SubscribeQos(glob);
-         con.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con.subscribe(sk.toXml(), sq.serialize()).getSubscriptionId();
 
          int numSend = glob.getProperty().get("numSend", 10);
 

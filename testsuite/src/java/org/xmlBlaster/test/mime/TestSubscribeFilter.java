@@ -115,7 +115,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          SubscribeQos qos = new SubscribeQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
+         String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.serialize()).getSubscriptionId();
          log.info("Success: Subscribe subscription-id=" + subscribeOid + " done");
 
          con.subscribe("<key oid='" + Constants.OID_DEAD_LETTER + "'/>", "<qos/>");

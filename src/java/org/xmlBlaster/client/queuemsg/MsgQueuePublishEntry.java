@@ -189,7 +189,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
     * @return qos.toXml, key.toXml, contentBytes
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.msgUnit.getQosData().toXml(),
+      Object[] obj = { this.msgUnit.getQosData().serialize(),
                        this.msgUnit.getKeyData().toXml(),
                        this.msgUnit.getContent() };
       return obj;

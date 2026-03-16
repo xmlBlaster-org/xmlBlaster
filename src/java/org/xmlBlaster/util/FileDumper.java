@@ -71,7 +71,7 @@ public class FileDumper {
          Properties props = new Properties();
          if (!forceBase64)
         	 props.put(Constants.TOXML_FORCEREADABLE, ""+true);
-         String qos = (qosData == null) ? "" : qosData.toXml("", props);
+         String qos = (qosData == null) ? "" : qosData.serialize("", props);
          String oid = (keyData == null) ? "" : keyData.getOid();
 
          fn = Global.getStrippedString(fn); // Strip chars like ":" so that fn is usable as a file name
@@ -141,7 +141,7 @@ public class FileDumper {
          to.close();
       }
       catch (Throwable e) {
-         log.severe("Dumping of message failed: " + (qosData == null ? "" : qosData.toXml())
+         log.severe("Dumping of message failed: " + (qosData == null ? "" : qosData.serialize())
                + (keyData == null ? "" : keyData.toXml()) + new String(content));
       }
       return fnStr;

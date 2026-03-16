@@ -132,7 +132,7 @@ public class TestPtSession extends TestCase {
          for(int i=0; i<sessionNameArr.length; i++)
             pq.addDestination(new Destination(sessionNameArr[i]));
          
-         MsgUnit msgUnit = new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.serialize());
 
          PublishReturnQos rq = conHolder.con.publish(msgUnit);
          

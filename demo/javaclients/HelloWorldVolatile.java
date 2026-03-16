@@ -111,7 +111,7 @@ public class HelloWorldVolatile implements I_Callback
                    " content=" + new String(content) + " from xmlBlaster");
 
       UpdateReturnQos uq = new UpdateReturnQos(glob);
-      return uq.toXml();
+      return uq.serialize();
    }
 
    /**

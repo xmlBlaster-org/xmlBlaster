@@ -77,7 +77,7 @@ public class DemoCb implements I_Callback {
             + new String(content) + "' from xmlBlaster");
 
       UpdateReturnQos uq = new UpdateReturnQos(glob);
-      return uq.toXml();
+      return uq.serialize();
    }
 
    public static void main(String args[]) {

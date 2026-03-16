@@ -216,7 +216,7 @@ public class EntrySize {
          log.info("Hit a key for new MsgQueuePublishEntry RAM size test ...");
          try { System.in.read(); } catch(java.io.IOException e) {}
          for(int i=0; i<numCreate; i++) {
-            MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQos.toXml());
+            MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQos.serialize());
             entryArr[i] = new MsgQueuePublishEntry(glob, msgUnit, storageId);
             if (i > 0 && (i % step) == 0) {
                log.info("Overall created #" + i + ": Created " + step + " new MsgQueuePublishEntry instances, msgUnitSize=" + msgUnit.size() + ", hit a key to create more ...");
@@ -262,7 +262,7 @@ public class EntrySize {
             SubscribeQos sq = new SubscribeQos(glob);
             entryArr[i] = new MsgQueueSubscribeEntry(glob, storageId, sk.getData(), sq.getData());
             if (i > 0 && (i % step) == 0) {
-               int loadSize = sk.toXml().length() + sq.toXml().length();
+               int loadSize = sk.toXml().length() + sq.serialize().length();
                log.info("Overall created #" + i + ": Created " + step + " new MsgQueueSubscribeEntry instances, key+qos size=" + loadSize + ", hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }

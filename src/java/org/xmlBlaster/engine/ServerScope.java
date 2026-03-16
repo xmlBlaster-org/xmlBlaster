@@ -855,7 +855,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
                content = content.substring(0, maxLength) + " ...";
             }
             tmpList.add("  <content size='"+wrapper.getMsgUnit().getContent().length+"'>"+content+"</content>");
-            tmpList.add("  "+wrapper.getMsgQosData().toXml((String)null, props));
+            tmpList.add("  "+wrapper.getMsgQosData().serialize((String)null, props));
          }
          tmpList.add("</MsgUnit>");
       }

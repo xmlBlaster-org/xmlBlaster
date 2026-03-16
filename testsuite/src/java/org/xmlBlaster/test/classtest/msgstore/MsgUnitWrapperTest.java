@@ -138,7 +138,7 @@ public class MsgUnitWrapperTest extends TestCase {
 
          // The remaing life changes so we can't compare the XML strings directly:
          //assertEquals("OLD="+msgUnitWrapper.getMsgQosData().toXml()+"\nNEW="+newWrapper.getMsgQosData().toXml(), msgUnitWrapper.getMsgQosData().toXml(), newWrapper.getMsgQosData().toXml());
-         assertEquals("", msgUnitWrapper.getMsgQosData().toXml().length(), newWrapper.getMsgQosData().toXml().length());
+         assertEquals("", msgUnitWrapper.getMsgQosData().serialize().length(), newWrapper.getMsgQosData().serialize().length());
          assertEquals("", msgUnitWrapper.getMsgKeyData().toXml(), newWrapper.getMsgKeyData().toXml());
 
          assertTrue("Not different instances", msgUnitWrapper != newWrapper);

@@ -338,7 +338,7 @@ public class ClientPropertyTest extends XMLTestCase {
       data.addClientProperty(prop2);
       data.addClientProperty(prop3);
       data.addClientProperty(prop4);
-      String xml = data.toXml();
+      String xml = data.serialize();
       System.out.println("The content of the qos is '" + xml + "'");
       MsgQosSaxFactory parser = new MsgQosSaxFactory(this.glob);
       MsgQosData data1 = parser.readObject(xml);

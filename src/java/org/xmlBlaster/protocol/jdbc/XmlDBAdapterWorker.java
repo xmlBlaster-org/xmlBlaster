@@ -66,7 +66,7 @@ public class XmlDBAdapterWorker extends Thread {
          PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", "SQLQuery");
          PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
          byte[] keyBytes = Constants.toUtf8Bytes(key.toXml());
-         byte[] qosBytes = Constants.toUtf8Bytes(qos.toXml());
+         byte[] qosBytes = Constants.toUtf8Bytes(qos.serialize());
          
          for (int ii=0; ii<msgArr.length; ii++) {
             MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[ii], keyBytes, msgArr[ii].getContent(), qosBytes);

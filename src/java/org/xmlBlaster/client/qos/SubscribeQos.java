@@ -244,11 +244,11 @@ public final class SubscribeQos
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
    public String toString() {
-      return this.queryQosData.toXml();
+      return this.queryQosData.serialize();
    }
 
    /**
@@ -261,11 +261,11 @@ public final class SubscribeQos
    }
    
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
-      return this.queryQosData.toXml();
+   public String serialize() {
+      return this.queryQosData.serialize();
    }
    
    /**
@@ -288,7 +288,7 @@ public final class SubscribeQos
          qos.setWantContent(false);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "3.2", new Query(glob, "a<10")));
-         System.out.println(qos.toXml());
+         System.out.println(qos.serialize());
       }
       catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());

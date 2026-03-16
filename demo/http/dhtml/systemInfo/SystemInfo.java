@@ -110,7 +110,7 @@ public class SystemInfo extends HttpServlet
          SubscribeKey xmlKey = new SubscribeKey(null, actionType);
          SubscribeQos xmlQos = new SubscribeQos(null);
 
-         String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml()).getSubscriptionId();
+         String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.serialize()).getSubscriptionId();
          log.info("Subscribed to " + actionType + "=" + ret);
 
          // NOTE: The callback messages (update()) are handled by our

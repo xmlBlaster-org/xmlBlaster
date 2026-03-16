@@ -128,7 +128,7 @@ public class TestPubBurstMode extends TestCase
                       "   </TestPubBurstMode-AGENT>" +
                       "</key>";
       PublishQos qosWrapper = new PublishQos(glob);
-      String qos = qosWrapper.toXml(); // == "<qos></qos>"
+      String qos = qosWrapper.serialize(); // == "<qos></qos>"
 
       MsgUnit[] msgUnitArr = new MsgUnit[numPublish];
       try {

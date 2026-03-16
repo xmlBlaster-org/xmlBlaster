@@ -418,7 +418,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          return obj;
       }
       else {
-         Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml(),
+         Object[] obj = { this.msgUnit.getQosData().serialize(), this.msgUnit.getKeyData().toXml(),
                           this.msgUnit.getContent(), Integer.valueOf(this.referenceCounter),
                           Integer.valueOf(this.historyReferenceCounter) };
          return obj;

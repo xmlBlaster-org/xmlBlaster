@@ -205,7 +205,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
             ClientProperty clientProperty = qosData.getClientProperty(Constants.PERSISTENCE_ID);
             if (clientProperty == null) {
-               log.severe("SubscribeQos with missing " + Constants.PERSISTENCE_ID + ": " + qosData.toXml());
+               log.severe("SubscribeQos with missing " + Constants.PERSISTENCE_ID + ": " + qosData.serialize());
                long uniqueId = new Timestamp().getTimestamp();
                qosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
             }
@@ -228,7 +228,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             try {
 	            // TODO remove the setting of client properties and invoke directly requestBroker.subscribe with subscribeQosServer.inhibitInitialUpdates(true);
 	            // also get the sessionInfo object from authenticate => eliminate sessionIds
-	            this.global.getAuthenticate().getXmlBlaster().subscribe(this.addressServer, sessionId, entry.getKey(), qosData.toXml());
+	            this.global.getAuthenticate().getXmlBlaster().subscribe(this.addressServer, sessionId, entry.getKey(), qosData.serialize());
             }
             catch (XmlBlasterException e) {
             	//e.printStackTrace();
@@ -379,7 +379,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       StorageId storageId = null;
       if (sessionInfo.getPersistenceUniqueId() == 0) {
          long uniqueId = new Timestamp().getTimestamp(); // new session
-         SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size(), storageId);
+         SessionEntry entry = new SessionEntry(connectQosData.serialize(), uniqueId, connectQosData.size(), storageId);
          if (log.isLoggable(Level.FINE)) log.fine("addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
          sessionInfo.setPersistenceUniqueId(uniqueId);
          this.sessionStore.put(entry);
@@ -390,7 +390,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.sessionStore.change(uniqueId, new I_ChangeCallback() {
             public I_MapEntry changeEntry(I_MapEntry mapEntry)
                   throws XmlBlasterException {
-               SessionEntry sessionEntry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size(),
+               SessionEntry sessionEntry = new SessionEntry(connectQosData.serialize(), uniqueId, connectQosData.size(),
                      null);
                if (log.isLoggable(Level.FINE)) log.fine("changeSession (persistent) for uniqueId: '" + sessionEntry.getUniqueId() + "'");
                return sessionEntry;
@@ -455,7 +455,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       log.info("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' "
             + sessionInfo.getSessionName().getAbsoluteName());
       // String sessionId = getOriginalSessionId(connectQosData.getSessionQos().getSecretSessionId());
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L, null);
+      SessionEntry entry = new SessionEntry(connectQosData.serialize(), uniqueId, 0L, null);
       int num = this.sessionStore.remove(entry);
       if (num != 1) {
          XmlBlasterException ex = sessionInfo.getTransportConnectFail();
@@ -467,7 +467,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    }
    
    public boolean removeSession(long uniqueId, ConnectQosData connectQosData) {
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L, null);
+      SessionEntry entry = new SessionEntry(connectQosData.serialize(), uniqueId, 0L, null);
       try {
          int num = this.sessionStore.remove(entry);
          return (num > 0);
@@ -497,7 +497,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData subscribeQosData = subscriptionInfo.getQueryQosData();
       if (log.isLoggable(Level.FINEST)) log.finest("subscriptionAdd: key='" + data.toXml() + "'");
-      if (subscribeQosData != null) if (log.isLoggable(Level.FINEST)) log.finest("subscriptionAdd: qos='" + subscribeQosData.toXml() + "'");
+      if (subscribeQosData != null) if (log.isLoggable(Level.FINEST)) log.finest("subscriptionAdd: qos='" + subscribeQosData.serialize() + "'");
       if (subscribeQosData == null || !subscribeQosData.isPersistent()) return;
 
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
@@ -515,9 +515,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
          // to be found when the client usubscribes after a server crash ...
          subscribeQosData.setSubscriptionId(subscriptionInfo.getSubscriptionId());
-         SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo
+         SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.serialize(), sessionInfo
                .getConnectQos().getSessionName().getAbsoluteName(), uniqueId, 0L, null);
-         if (log.isLoggable(Level.FINE)) log.fine("subscriptionAdd: putting to persistence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.toXml() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("subscriptionAdd: putting to persistence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.serialize() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
          this.subscribeStore.put(entry);
       }

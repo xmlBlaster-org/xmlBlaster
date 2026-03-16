@@ -131,7 +131,7 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKey xmlKeyWr = new SubscribeKey(glob, xmlKey, queryType);
          SubscribeQos xmlQos = new SubscribeQos(glob);
-         SubscribeReturnQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
+         SubscribeReturnQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.serialize());
          String subscriptionId = ret.getSubscriptionId();
          log.info("Subscribed to [" + xmlKey + "] " + queryType + ", subscriptionId=" + subscriptionId);
          return subscriptionId;
@@ -153,7 +153,7 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKey xmlKey = new SubscribeKey(glob, subscriptionId);
          SubscribeQos xmlQos = new SubscribeQos(glob);
-         xmlBlasterConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
+         xmlBlasterConnection.unSubscribe(xmlKey.toXml(), xmlQos.serialize());
          if (log.isLoggable(Level.FINE)) log.fine("Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
          log.warning("unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.getMessage());
@@ -172,7 +172,7 @@ public class SubscribeMessage implements I_Callback
       System.out.println("<content>");
       System.out.println(updateQos.getContentStrNoEx(content));
       System.out.println("</content>");
-      System.out.println(updateQos.toXml());
+      System.out.println(updateQos.serialize());
       System.out.println("</xmlBlaster>");
       System.out.println("============= END " + updateKey.getOid() + " =========================");
       System.out.println("");

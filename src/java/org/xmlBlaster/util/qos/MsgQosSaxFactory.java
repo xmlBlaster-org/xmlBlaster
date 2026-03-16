@@ -946,7 +946,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          xml = FileLocator.readAsciiFile(fn);
          //xml = new String(FileLocator.readFile(fn), "windows-1252");
          MsgQosData data = f.readObject(xml);
-         String newXml = data.toXml("",null);
+         String newXml = data.serialize("",null);
          System.out.println("CP1252=" + data.getClientProperty("CP1252"));
          System.out.println("CP1252-BASE64=" + data.getClientProperty("CP1252-BASE64"));
          System.out.println(newXml);

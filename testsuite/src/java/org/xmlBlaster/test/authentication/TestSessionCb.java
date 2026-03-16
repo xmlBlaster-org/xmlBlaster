@@ -74,7 +74,7 @@ public class TestSessionCb extends TestCase
          try {
             EraseKey ek = new EraseKey(glob, oid);
             EraseQos eq = new EraseQos(glob);
-            con2.erase(ek.toXml(), eq.toXml());
+            con2.erase(ek.toXml(), eq.serialize());
          } catch (XmlBlasterException e) {
             log.severe(e.toString());
          }
@@ -105,7 +105,7 @@ public class TestSessionCb extends TestCase
          assertInUpdate = null;
          con1.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info("****** Con1 update arrived" + updateKey.toXml() + updateQos.toXml());
+                  log.info("****** Con1 update arrived" + updateKey.toXml() + updateQos.serialize());
                   assertInUpdate = glob1.getId() + ": Did not expect message update in first handler";
                   fail(assertInUpdate); // This is routed to server, not to junit
                   return "";
@@ -114,7 +114,7 @@ public class TestSessionCb extends TestCase
 
          SubscribeKey sk = new SubscribeKey(glob1, oid);
          SubscribeQos sq = new SubscribeQos(glob1);
-         con1.subscribe(sk.toXml(), sq.toXml());
+         con1.subscribe(sk.toXml(), sq.serialize());
 
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
@@ -127,7 +127,7 @@ public class TestSessionCb extends TestCase
          qos = new ConnectQos(glob2);  // force a new session
          con2.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info("****** Con2 update arrived" + updateKey.toXml() + updateQos.toXml());
+                  log.info("****** Con2 update arrived" + updateKey.toXml() + updateQos.serialize());
                   assertInUpdate = glob2.getId() + "Reveiving asynchronous message '" + updateKey.getOid() + "' in second handler";
                   log.info(assertInUpdate);
                   return "";
@@ -136,11 +136,11 @@ public class TestSessionCb extends TestCase
 
          sk = new SubscribeKey(glob2, oid);
          sq = new SubscribeQos(glob2);
-         con2.subscribe(sk.toXml(), sq.toXml());
+         con2.subscribe(sk.toXml(), sq.serialize());
 
          sk = new SubscribeKey(glob2, Constants.OID_DEAD_LETTER);
          sq = new SubscribeQos(glob2);
-         con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         con2.subscribe(sk.toXml(), sq.serialize(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                deadMessageCounter++;
                log.info("****** Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
@@ -153,7 +153,7 @@ public class TestSessionCb extends TestCase
 
          PublishKey pk = new PublishKey(glob2, oid, "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob2);
-         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.serialize());
          con2.publish(msgUnit);
          log.info("Published message oid=" + oid);
 

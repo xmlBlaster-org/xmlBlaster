@@ -89,7 +89,7 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
       
       // ConnectQos connQos = new ConnectQos(this.global, (ConnectQosData)this.connectQos.getData().clone());
       ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.global);
-      ConnectQos connQos = new ConnectQos(this.global, factory.readObject(this.connectQos.toXml()));
+      ConnectQos connQos = new ConnectQos(this.global, factory.readObject(this.connectQos.serialize()));
       
       if (user != null) {
          connQos.setUserId(user);
@@ -167,7 +167,7 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
    public Reference getReference() {
       Reference ret = new Reference(this.getClass().getName(), XBObjectFactory.class.getName(), null);
       ret.add(new StringRefAddr("" + this.forQueues, null));         
-      ret.add(new StringRefAddr(this.connectQos.toXml(), null));         
+      ret.add(new StringRefAddr(this.connectQos.serialize(), null));         
       for (int i=0; i < this.args.length; i++) {
          ret.add(new StringRefAddr(this.args[i], null));         
       }
@@ -195,7 +195,7 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
    public void writeExternal(java.io.ObjectOutput oo) throws IOException {
       oo.writeLong(SER_VERSION);
       oo.writeBoolean(this.forQueues);
-      oo.writeObject(this.connectQos.toXml());
+      oo.writeObject(this.connectQos.serialize());
       oo.writeObject(this.args);
    }
          

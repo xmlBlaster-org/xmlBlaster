@@ -49,7 +49,7 @@ public class HelloWorld5
             ConnectReturnQos conRetQos = sender.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info("Receiving asynchronous message '" + updateKey.getOid() + "' in sender default handler" );
-                  log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
+                  log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.serialize());
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
@@ -66,7 +66,7 @@ public class HelloWorld5
             ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info("Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
-                  log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
+                  log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.serialize());
 
                   if (updateKey.isInternal()) return "";
                   if (updateQos.isErased()) return "";

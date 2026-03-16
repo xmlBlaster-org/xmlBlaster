@@ -328,10 +328,10 @@ public class HelloWorldSubscribe implements I_Callback
             CallbackAddress cbAddress = qos.getData().getSessionCbQueueProperty().getCurrentCallbackAddress();
             cbAddress.setDispatchPlugin(this.dispatchPlugin);
          }
-         log.info("ConnectQos is " + qos.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
+         log.info("ConnectQos is " + qos.serialize().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          // crq can be null if '-dispatch/connection/doSendConnect false' is set
-         log.info("Connect success as " + ((crq==null)?" faked connect":crq.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>")));
+         log.info("Connect success as " + ((crq==null)?" faked connect":crq.serialize().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>")));
 
          subscribe(); // first time
 
@@ -369,7 +369,7 @@ public class HelloWorldSubscribe implements I_Callback
                   uk.setDomain(domain);
                UnSubscribeQos uq = new UnSubscribeQos(glob);
                log.info("UnSubscribeKey=\n" + uk.toXml());
-               log.info("UnSubscribeQos=\n" + uq.toXml());
+               log.info("UnSubscribeQos=\n" + uq.serialize());
                UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
                log.info("UnSubscribe on " + urqArr.length + " subscriptions done");
             }
@@ -457,7 +457,7 @@ public class HelloWorldSubscribe implements I_Callback
          }
 
          log.info("SubscribeKey=\n" + sk.toXml());
-         log.info("SubscribeQos=\n" + sq.toXml());
+         log.info("SubscribeQos=\n" + sq.serialize());
 
          if (firstConnect && (interactive && !autoSubscribe)) {
             Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
@@ -469,8 +469,8 @@ public class HelloWorldSubscribe implements I_Callback
          subscribeServerId = con.getConnectReturnQos().getSecretSessionId() + con.getConnectReturnQos().getServerInstanceId();
 
          log.info("Subscribed to topic '" + ((oid.length() > 0) ? oid : xpath) +
-                        "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.toXml(null, true));
-         if (log.isLoggable(Level.FINEST)) log.finest("Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
+                        "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.serialize(null, true));
+         if (log.isLoggable(Level.FINEST)) log.finest("Subscribed: " + sk.toXml() + sq.serialize() + srq.serialize());
       }
       catch (XmlBlasterException e) {
          log.severe(e.getMessage());
@@ -515,7 +515,7 @@ public class HelloWorldSubscribe implements I_Callback
             }
          }
          System.out.println("</content>");
-         System.out.println(updateQos.toXml());
+         System.out.println(updateQos.serialize());
          System.out.println("</xmlBlaster>");
       }
 

@@ -283,11 +283,11 @@ public final class MsgUnit implements java.io.Serializable
     * @return never null
     */
    public String getQos() {
-      return this.qosData.toXml();
+      return this.qosData.serialize();
    }
 
    public byte[] getQosBytes() {
-      return Constants.toUtf8Bytes(qosData.toXml());
+      return Constants.toUtf8Bytes(qosData.serialize());
    }
    /**
     * The parsed key. 
@@ -355,7 +355,7 @@ public final class MsgUnit implements java.io.Serializable
       return new MsgUnitRaw(this,
                             (this.keyData == null) ? null : Constants.toUtf8Bytes(this.keyData.toXml()),
                             this.content,
-                            (this.qosData == null) ? null : Constants.toUtf8Bytes(this.qosData.toXml()));
+                            (this.qosData == null) ? null : Constants.toUtf8Bytes(this.qosData.serialize()));
    }
 
    /**
@@ -446,7 +446,7 @@ public final class MsgUnit implements java.io.Serializable
       MsgUnitRaw msgUnitRaw = new MsgUnitRaw(
             (this.keyData != null) ? this.keyData.toXml(extraOffset) : "",
             this.content,
-            this.qosData.toXml(extraOffset, props));
+            this.qosData.serialize(extraOffset, props));
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       try {
          msgUnitRaw.toXml(extraOffset, out, props, qosData.getContentCharset());
@@ -489,7 +489,7 @@ public final class MsgUnit implements java.io.Serializable
       }
 
 
-      String qosXml = (qosData==null) ? "" : qosData.toXml(extraOffset, props);
+      String qosXml = (qosData==null) ? "" : qosData.serialize(extraOffset, props);
       if (qosXml.length() > 0) {
          out.write(offsetB2);
          out.write(Constants.toUtf8Bytes(qosXml));

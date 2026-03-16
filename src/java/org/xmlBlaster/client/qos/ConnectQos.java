@@ -374,18 +374,18 @@ public final class ConnectQos
 
    /**
     * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * @return An XML/JSON ASCII string
     */
    public String toString() {
-      return toXml();
+      return serialize();
    }
 
    /**
     * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
-      return this.connectQosData.toXml();
+   public String serialize() {
+      return this.connectQosData.serialize();
    }
 
    /**
@@ -499,11 +499,11 @@ public final class ConnectQos
       {
          ConnectQos qos =new ConnectQos(new Global(args), "joe/2", "secret");//new SessionName(glob, "joe"));
          qos.addClientProperty(Constants.UPDATE_BULK_ACK, "true");
-         System.out.println(qos.toXml());
+         System.out.println(qos.serialize());
       }
       {
          ConnectQos qos =new ConnectQos(null);
-         System.out.println("Minimal:" + qos.toXml());
+         System.out.println("Minimal:" + qos.serialize());
       }
    }
 

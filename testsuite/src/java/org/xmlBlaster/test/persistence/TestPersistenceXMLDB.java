@@ -258,7 +258,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
       System.out.println(updateKey.toXml());
       System.out.println((new String(content)).toString());
-      System.out.println(updateQos.toXml());
+      System.out.println(updateQos.serialize());
 
       assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());

@@ -152,7 +152,7 @@ public class PublishFile
       }
       if (xmlQos == null) {
          PublishQos publishQos = new PublishQos(glob);
-         xmlQos = publishQos.toXml();  // default qos = "<qos></qos>"
+         xmlQos = publishQos.serialize();  // default qos = "<qos></qos>"
       }
 
       feed(xmlKey, content, xmlQos);
@@ -222,7 +222,7 @@ public class PublishFile
          MsgUnit msgUnit = new MsgUnit(glob, xmlKey, content, qos);
          StopWatch stop = new StopWatch();
          PublishReturnQos publish = senderConnection.publish(msgUnit);
-         log.info("Success: Publishing done: " + publish.toXml() + "\n" + stop.nice());
+         log.info("Success: Publishing done: " + publish.serialize() + "\n" + stop.nice());
          //log.info(ME, "Success: Publishing done, returned message oid=" + publish.getKeyOid() + stop.nice());
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());

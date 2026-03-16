@@ -772,7 +772,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * The number of bytes of stringified qos
     */
    public int size() {
-      return this.toXml().length();
+      return this.serialize().length();
    }
 
    /**
@@ -794,35 +794,54 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * @return An XML/JSON ASCII string
     */
    public String toString() {
-      return toXml();
+      return serialize();
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
     */
-   public String toXml() {
-      return toXml((String)null);
+   public String serialize() {
+      return serialize((String)null);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the connect QoS as a XML ASCII string
+    * @return internal state of the connect QoS as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset) {
-      return toXml(extraOffset, (Properties)null);
+   public String serialize(String extraOffset) {
+      return serialize(extraOffset, (Properties)null);
    }
 
-   public String toXml(String extraOffset, Properties props) {
+   public String serialize(String extraOffset, Properties props) {
       return this.factory.writeObject(this, extraOffset, props);
    }
    
-   public String toXml(String extraOffset, boolean forceReadable) {
+   /**
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @param forceReadable If true, any base64 is decoded to be more human readable 
+    * @return internal state of the connect QoS as a XML/JSON ASCII string
+    */
+   public String serialize(String extraOffset, boolean forceReadable) {
       Properties props = null;
       if (forceReadable) {
          props = new Properties();

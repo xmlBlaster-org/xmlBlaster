@@ -127,7 +127,7 @@ public class PtPTest extends TestCase {
             Destination destination = new Destination(sessionName);
             destination.forceQueuing(true);
             pq.addDestination(destination);
-            log.info("Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.toXml());
+            log.info("Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.serialize());
             MsgUnit msgUnit = new MsgUnit(pk, (contentStr+"-"+i).getBytes(), pq);
             PublishReturnQos prq = bilboCon.publish(msgUnit);
             log.info("Published message to destination='" + sessionName +

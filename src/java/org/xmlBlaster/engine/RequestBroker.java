@@ -313,7 +313,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
          org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          this.xmlKeyLoginEvent = publishKey.getData();
-         this.publishQosLoginEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false); // take copy
+         this.publishQosLoginEvent = new PublishQosServer(glob, publishQos.getData().serialize(), false); // take copy
       }
 
       this.publishLogoutEvent = glob.getProperty().get("logoutEvent", true);
@@ -321,7 +321,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
          org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, Constants.EVENT_OID_LOGOUT/*"__sys__Logout"*/, "text/plain");
          this.xmlKeyLogoutEvent = publishKey.getData();
-         this.publishQosLogoutEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false);
+         this.publishQosLogoutEvent = new PublishQosServer(glob, publishQos.getData().serialize(), false);
       }
 
       this.publishUserList = glob.getProperty().get("userListEvent", true);
@@ -806,7 +806,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 	               }
                }
 
-               return qos.toXml((String)null, propertiesBounced);
+               return qos.serialize((String)null, propertiesBounced);
             }
          }
 
@@ -890,7 +890,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                                           "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" +
                                           sessionInfo.getId() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
-         return qos.toXml((String)null, propertiesBounced);
+         return qos.serialize((String)null, propertiesBounced);
       }
       catch (XmlBlasterException e) {
          log.warning(e.getMessage());
@@ -1125,7 +1125,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       // "__sys__UserList";
       if (this.publishUserList && this.state == ALIVE) {
          // Create QoS with new timestamp
-         PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().toXml(), false);
+         PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().serialize(), false);
          //publishQosUserListEvent.clearRoutes();
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyUserListEvent,
                                  this.authenticate.getSubjectList().getBytes(), //content.getBytes(),
@@ -1492,7 +1492,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          int ii = 0;
          while (it.hasNext()) {
             qos.setSubscriptionId(it.next());
-            oidArr[ii++] = qos.toXml();
+            oidArr[ii++] = qos.serialize();
          }
          return oidArr;
       }
@@ -1524,7 +1524,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       else {
          PublishQosServer qos = new PublishQosServer(glob, msgQosData);
          // Since xmlBlaster 1.6: We need to serialize and replace the original Global with ServerScope
-         MsgUnit msgUnit = new MsgUnit(glob, updateKey.getData().toXml(), content, qos.getData().toXml());
+         MsgUnit msgUnit = new MsgUnit(glob, updateKey.getData().toXml(), content, qos.getData().serialize());
          //MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, qos.getData());
          return publish(sessionInfo, msgUnit, true);
       }
@@ -1601,7 +1601,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
              statRetQos.setKeyOid(msgUnit.getKeyOid());
              statRetQos.setState(Constants.STATE_OK);
              statRetQos.setRcvTimestamp(publishQos.getRcvTimestamp());
-             return new PublishReturnQos(glob, statRetQos).toXml();
+             return new PublishReturnQos(glob, statRetQos).serialize();
     	 }
     	  
          if (msgUnit == null) {
@@ -1667,7 +1667,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                I_Checkpoint cp = glob.getCheckpointPlugin();
                                if (cp != null)
                                   cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
-                               return publishReturnQos.toXml();
+                               return publishReturnQos.serialize();
                             }
                          }
                       }
@@ -1683,7 +1683,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                publishReturnQos = ret.getPublishReturnQos();
                                if (ret.getNodeMasterInfo().isDirtyRead() == false) {
                                   if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeMasterInfo().getId() + ", dirtyRead==false nothing more to do");
-                                  return publishReturnQos.toXml();
+                                  return publishReturnQos.serialize();
                                }
                                // else we publish it locally as well (dirty read!)
                             }
@@ -1814,7 +1814,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                            I_Checkpoint cp = glob.getCheckpointPlugin();
                            if (cp != null)
                               cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
-                           return publishReturnQos.toXml();
+                           return publishReturnQos.serialize();
                         }
                         /*
                         if (publishReturnQos != null) {
@@ -1842,7 +1842,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                            publishReturnQos = ret.getPublishReturnQos();
                            if (ret.getNodeMasterInfo().isDirtyRead() == false) {
                               if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeMasterInfo().getId() + ", dirtyRead==false nothing more to do");
-                              return publishReturnQos.toXml();
+                              return publishReturnQos.serialize();
                            }
                            // else we publish it locally as well (dirty read!)
                         }
@@ -1922,7 +1922,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
          }
 
-         return publishReturnQos.toXml(); // Use the return value of the cluster master node
+         return publishReturnQos.serialize(); // Use the return value of the cluster master node
       }
       catch (XmlBlasterException e) {
          if (log.isLoggable(Level.FINE)) log.fine("Throwing exception in publish: " + e.toXml()); // Remove again
@@ -2113,7 +2113,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          int ii = 0;
          while (it.hasNext()) {
             qos.setKeyOid((String)it.next());
-            oidArr[ii++] = qos.toXml();
+            oidArr[ii++] = qos.serialize();
          }
          return oidArr;
       }

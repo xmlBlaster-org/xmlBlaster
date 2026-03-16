@@ -119,7 +119,7 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
       }
       else if (this.verbosity == 2) {
          getLog().info("Receiving update #" + (count()+1) + " of a message cbSessionId=" + cbSessionId +
-                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
+                      updateKey.toXml() + "\n" + new String(content) + updateQos.serialize());
       }
 
       if (this.countErased || !updateQos.isErased()) {
@@ -129,7 +129,7 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
          return testsuite.update(cbSessionId, updateKey, content, updateQos);
       else {
          UpdateReturnQos qos = new UpdateReturnQos(getGlobal());
-         return qos.toXml();
+         return qos.serialize();
       }
    }
    

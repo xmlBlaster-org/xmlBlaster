@@ -74,7 +74,7 @@ public final class UpdateReturnQosServer
     * @return The XML representation
     */
    public final String toXml(String extraOffset) {
-      return this.statusQosData.toXml(extraOffset, (Properties)null);
+      return this.statusQosData.serialize(extraOffset, (Properties)null);
    }
 
    public final String toString() {

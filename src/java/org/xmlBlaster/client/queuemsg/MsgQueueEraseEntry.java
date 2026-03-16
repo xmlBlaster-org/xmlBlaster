@@ -133,7 +133,7 @@ public final class MsgQueueEraseEntry extends MsgQueueEntry
     * Object[1] = key.toXml()
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.eraseQos.toXml(), this.eraseKey.toXml() };
+      Object[] obj = { this.eraseQos.serialize(), this.eraseKey.toXml() };
       return obj;
    }
 

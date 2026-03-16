@@ -324,13 +324,13 @@ public final class NodeConnectQos
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<").append(MethodName.CONNECT.getMethodName()).append(">");
-      sb.append(getConnectQosData().toXml(extraOffset + Constants.INDENT));
+      sb.append(getConnectQosData().serialize(extraOffset + Constants.INDENT));
       sb.append(offset).append("</").append(MethodName.CONNECT.getMethodName()).append(">");
       
       DisconnectQos dis = getDisconnectQos();
       if (dis != null) {
          sb.append(offset).append("<").append(MethodName.DISCONNECT.getMethodName()).append(">");
-         sb.append(dis.toXml(extraOffset + Constants.INDENT, props));
+         sb.append(dis.serialize(extraOffset + Constants.INDENT, props));
          sb.append(offset).append("</").append(MethodName.DISCONNECT.getMethodName()).append(">");
       }
 

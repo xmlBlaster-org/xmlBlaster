@@ -299,7 +299,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       MsgQueueSubscribeEntry subscribeEntry = (MsgQueueSubscribeEntry)entry;
 
       String key = subscribeEntry.getSubscribeKeyData().toXml();
-      String qos = subscribeEntry.getSubscribeQosData().toXml();
+      String qos = subscribeEntry.getSubscribeQosData().serialize();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.SUBSCRIBE, new MsgUnitRaw(key, (byte[])null, qos));
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
@@ -338,7 +338,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       MsgQueueUnSubscribeEntry unSubscribeEntry = (MsgQueueUnSubscribeEntry)entry;
 
       String key = unSubscribeEntry.getUnSubscribeKey().toXml();
-      String qos = unSubscribeEntry.getUnSubscribeQos().toXml();
+      String qos = unSubscribeEntry.getUnSubscribeQos().serialize();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UNSUBSCRIBE, new MsgUnitRaw(key, (byte[])null, qos));
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
@@ -385,7 +385,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       MsgQueueGetEntry getEntry = (MsgQueueGetEntry)entry;
 
       String key = getEntry.getGetKey().toXml();
-      String qos = getEntry.getGetQos().toXml();
+      String qos = getEntry.getGetQos().serialize();
       if (this.securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.GET, new MsgUnitRaw(key, (byte[])null, qos));
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
@@ -424,7 +424,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       MsgQueueEraseEntry eraseEntry = (MsgQueueEraseEntry)entry;
 
       String key = eraseEntry.getEraseKey().toXml();
-      String qos = eraseEntry.getEraseQos().toXml();
+      String qos = eraseEntry.getEraseQos().serialize();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.ERASE, new MsgUnitRaw(key, (byte[])null, qos));
          MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
@@ -475,14 +475,14 @@ public final class ClientDispatchConnection extends DispatchConnection
       this.connectQosData = cqd;
       if (this.securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
           if (log.isLoggable(Level.FINE)) log.fine(ME+": TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
-          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, cqd.toXml()));
+          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, cqd.serialize()));
           String encryptedConnectQos = this.securityInterceptor.exportMessage(dataHolder).getQos();
           if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted connect request.");
           return encryptedConnectQos;
       }
       else {
           log.warning(ME+": No session security context, connect request is not encrypted");
-          return cqd.toXml();
+          return cqd.serialize();
       }
    }
 
@@ -537,7 +537,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    private void disconnect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueDisconnectEntry disconnectEntry = (MsgQueueDisconnectEntry)entry;
-      String qos = disconnectEntry.getDisconnectQos().toXml();
+      String qos = disconnectEntry.getDisconnectQos().serialize();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.DISCONNECT, new MsgUnitRaw(null, (byte[])null, qos));
          qos = securityInterceptor.exportMessage(dataHolder).getQos();

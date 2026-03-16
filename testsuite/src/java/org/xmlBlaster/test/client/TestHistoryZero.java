@@ -159,7 +159,7 @@ public class TestHistoryZero extends TestCase {
          qosWrapper.setTopicProperty(topicProp);               
       }
       
-      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.serialize());
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
       log.info("Success: Publishing of " + oid + " done");

@@ -180,7 +180,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
                msgQosData.setStateInfo(Constants.INFO_QUEUED);
                //GetReturnQos[] getReturnQosArr = new GetReturnQos[] { new GetReturnQos(glob, msgQosData) };
                //entry.setReturnObj(getReturnQosArr);
-               MsgUnit msgUnit = new MsgUnit(glob, entry.getGetKey().toXml(), new byte[0], msgQosData.toXml(), MethodName.GET);
+               MsgUnit msgUnit = new MsgUnit(glob, entry.getGetKey().toXml(), new byte[0], msgQosData.serialize(), MethodName.GET);
                MsgUnit[] getReturnQosArr = new MsgUnit[] { msgUnit };
                entry.setReturnObj(getReturnQosArr);
             }

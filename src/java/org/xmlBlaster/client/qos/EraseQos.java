@@ -107,25 +107,26 @@ public final class EraseQos
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
    public String toString() {
-      return this.queryQosData.toXml();
+      return this.queryQosData.serialize();
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * TODO: maybe this should be a toXML() Method or a toXML method should be added if needed
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
-      return this.queryQosData.toXml();
+   public String serialize() {
+      return this.queryQosData.serialize();
    }
    
    /**
-    * Converts the data into a valid XML ASCII string.
+    * Converts the data into a valid JSON ASCII string.
     * TODO: Properties might need to be added like in toXml
-    * @return An XML ASCII string
+    * @return An JSON ASCII string
     */
    public String toJson() {
       return this.queryQosData.toJson();
@@ -136,6 +137,6 @@ public final class EraseQos
     * @return An XML ASCII string
     */
    public String toXml(Properties props) {
-      return this.queryQosData.toXml((String)null, props);
+      return this.queryQosData.serialize((String)null, props);
    }
 }

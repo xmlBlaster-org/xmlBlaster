@@ -136,7 +136,7 @@ public class MsgQosTest extends TestCase {
       assertEquals("", 1, qos2.getNumDestinations());
       assertEquals("", 1, qos2.getDestinationArr().length);
 
-      String xml = qos.toXml();
+      String xml = qos.serialize();
       MsgQosData qos3 = (MsgQosData)qos.clone();
 
 

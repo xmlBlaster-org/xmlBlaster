@@ -174,7 +174,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                         DisconnectQos disconnectQos = new DisconnectQos(glob);
                         disconnectQos.deleteSubjectQueue(false);
                         glob.getAuthenticate().disconnect(this.sessionInfo.getAddressServer(), 
-                                            this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
+                                            this.sessionInfo.getSecretSessionId(), disconnectQos.serialize());
                      }
                      catch (XmlBlasterException e) {
                         if (e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED) ||

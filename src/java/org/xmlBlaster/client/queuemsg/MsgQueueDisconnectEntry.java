@@ -119,7 +119,7 @@ public final class MsgQueueDisconnectEntry extends MsgQueueEntry
     * Object[0] = qos.toXml()
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.disconnectQos.toXml() };
+      Object[] obj = { this.disconnectQos.serialize() };
       return obj;
    }
 
@@ -136,7 +136,7 @@ public final class MsgQueueDisconnectEntry extends MsgQueueEntry
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       if (this.disconnectQos != null)
-         out.write(this.disconnectQos.toXml((String)null, props).getBytes());
+         out.write(this.disconnectQos.serialize((String)null, props).getBytes());
    }
 
    /**

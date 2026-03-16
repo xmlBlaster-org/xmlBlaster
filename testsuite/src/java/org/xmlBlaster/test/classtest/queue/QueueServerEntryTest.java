@@ -161,9 +161,9 @@ public class QueueServerEntryTest extends TestCase {
          msgQosData.setFromPersistenceStore(true);
          msgQosData.setLifeTime(4000L);
          msgQosData.setRemainingLifeStatic(6000L);
-         MsgUnit msgUnit  = new MsgUnit(key.toXml(), content, msgQosData.toXml());
+         MsgUnit msgUnit  = new MsgUnit(key.toXml(), content, msgQosData.serialize());
 
-         log.fine("Testing" + msgQosData.toXml());
+         log.fine("Testing" + msgQosData.serialize());
 
          SessionName receiver = new SessionName(glob, "receiver1");
          String subscriptionId = "subid";
@@ -208,7 +208,7 @@ public class QueueServerEntryTest extends TestCase {
          }
          MsgQosData retMsgQosData = updateEntry.getMsgQosData();
 
-         log.fine("Received" + retMsgQosData.toXml());
+         log.fine("Received" + retMsgQosData.serialize());
 
          // check message unit:
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());
@@ -290,9 +290,9 @@ public class QueueServerEntryTest extends TestCase {
          msgQosData.setFromPersistenceStore(true);
          msgQosData.setLifeTime(4000L);
          msgQosData.setRemainingLifeStatic(6000L);
-         MsgUnit msgUnit  = new MsgUnit(key.toXml(), content, msgQosData.toXml());
+         MsgUnit msgUnit  = new MsgUnit(key.toXml(), content, msgQosData.serialize());
 
-         log.fine("Testing" + msgQosData.toXml());
+         log.fine("Testing" + msgQosData.serialize());
 
          org.xmlBlaster.engine.ServerScope global = new org.xmlBlaster.engine.ServerScope();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
@@ -326,7 +326,7 @@ public class QueueServerEntryTest extends TestCase {
          }
          MsgQosData retMsgQosData = historyEntry.getMsgQosData();
 
-         log.fine("Received" + retMsgQosData.toXml());
+         log.fine("Received" + retMsgQosData.serialize());
 
          // check message unit:
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());

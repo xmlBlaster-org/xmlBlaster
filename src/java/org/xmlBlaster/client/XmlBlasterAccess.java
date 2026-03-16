@@ -1278,7 +1278,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       MsgUnit[] msgUnitArr = null;
       msgUnitArr = this.synchronousCache.get(getKey, getQos);
-      if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"CacheDump: msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.toXml() + this.synchronousCache.toXml(""));
+      if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"CacheDump: msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.serialize() + this.synchronousCache.toXml(""));
       //not found in this.synchronousCache
       if(msgUnitArr == null) {
          msgUnitArr = get(getKey, getQos);  //get messages from xmlBlaster (synchronous)
@@ -1483,7 +1483,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          return this.updateListener.update(cbSessionId, updateKey, content, updateQos); // deliver the update to our client
       }
       else {
-         log.severe(getLogId()+"Ignoring unexpected update message as client has not registered a callback: " + updateKey.toXml() + "" + updateQos.toXml());
+         log.severe(getLogId()+"Ignoring unexpected update message as client has not registered a callback: " + updateKey.toXml() + "" + updateQos.serialize());
       }
 
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
@@ -1834,7 +1834,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             return new String[] { "unSubscribe '"+url+"' did not match any subscription" };
          }
          for (int i=0; i<usrq.length; i++) {
-            ret[i] = usrq[i].toXml();
+            ret[i] = usrq[i].serialize();
          }
          return ret;
       }
@@ -1850,7 +1850,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          SubscribeKey usk = new SubscribeKey(glob, url);
          SubscribeReturnQos srq = subscribe(usk, new SubscribeQos(glob, I_QueryQosFactory.parse(glob, qos)));
          if (srq == null) return "";
-         return srq.toXml();
+         return srq.serialize();
       }
       catch (XmlBlasterException e) {
          throw new Exception(e.toString());
@@ -1871,7 +1871,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          for (int i=0; i<msgs.length; i++) {
             tmpList.add("  "+msgs[i].getKeyData().toXml());
             tmpList.add("  "+msgs[i].getContentStr());
-            tmpList.add("  "+msgs[i].getQosData().toXml());
+            tmpList.add("  "+msgs[i].getQosData().serialize());
          }
          return (String[])tmpList.toArray(new String[tmpList.size()]);
       }
@@ -1892,7 +1892,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             return new String[] { "erase('"+url+"') did not match any topic, nothing is erased." };
          }
          for (int i=0; i<erq.length; i++) {
-            ret[i] = erq[i].toXml();
+            ret[i] = erq[i].serialize();
          }
          return ret;
       }
@@ -2000,35 +2000,35 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                MsgQueuePublishEntry pe = (MsgQueuePublishEntry)entry;
                tmpList.add("  "+pe.getMsgUnit().getKeyData().toXml());
                tmpList.add("  "+pe.getMsgUnit().getContentStr());
-               tmpList.add("  "+pe.getMsgUnit().getQosData().toXml());
+               tmpList.add("  "+pe.getMsgUnit().getQosData().serialize());
             }
             else if (entry instanceof MsgQueueConnectEntry) {
             	MsgQueueConnectEntry pe = (MsgQueueConnectEntry)entry;
-                tmpList.add("  "+pe.getConnectQosData().toXml());
+                tmpList.add("  "+pe.getConnectQosData().serialize());
             }
             else if (entry instanceof MsgQueueDisconnectEntry) {
             	MsgQueueDisconnectEntry pe = (MsgQueueDisconnectEntry)entry;
-                tmpList.add("  "+pe.getDisconnectQos().toXml());
+                tmpList.add("  "+pe.getDisconnectQos().serialize());
             }
             else if (entry instanceof MsgQueueEraseEntry) {
             	MsgQueueEraseEntry pe = (MsgQueueEraseEntry)entry;
                 tmpList.add("  "+pe.getEraseKey().toXml());
-                tmpList.add("  "+pe.getEraseQos().toXml());
+                tmpList.add("  "+pe.getEraseQos().serialize());
             }
             else if (entry instanceof MsgQueueGetEntry) {
             	MsgQueueGetEntry pe = (MsgQueueGetEntry)entry;
                 tmpList.add("  "+pe.getGetKey().toXml());
-                tmpList.add("  "+pe.getGetQos().toXml());
+                tmpList.add("  "+pe.getGetQos().serialize());
             }
             else if (entry instanceof MsgQueueSubscribeEntry) {
             	MsgQueueSubscribeEntry pe = (MsgQueueSubscribeEntry)entry;
                 tmpList.add("  "+pe.getSubscribeKeyData().toXml());
-                tmpList.add("  "+pe.getSubscribeQosData().toXml());
+                tmpList.add("  "+pe.getSubscribeQosData().serialize());
             }
             else if (entry instanceof MsgQueueUnSubscribeEntry) {
             	MsgQueueUnSubscribeEntry pe = (MsgQueueUnSubscribeEntry)entry;
                 tmpList.add("  "+pe.getUnSubscribeKey().toXml());
-                tmpList.add("  "+pe.getUnSubscribeQos().toXml());
+                tmpList.add("  "+pe.getUnSubscribeQos().serialize());
             }
             else {
                tmpList.add("Unsupported message queue entry '" + entry.getClass().getName() + "'");
@@ -2188,7 +2188,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
          ConnectReturnQos connectReturnQos = xmlBlasterAccess.connect(null, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info("UPDATE: Receiving asynchronous callback message " + updateKey.toXml() + "\n" + updateQos.toXml());
+                  log.info("UPDATE: Receiving asynchronous callback message " + updateKey.toXml() + "\n" + updateQos.serialize());
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
@@ -2196,7 +2196,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             log.info("Successfully connected to xmlBlaster");
          }
          else {
-            log.info("We continue in fail safe mode: " + connectReturnQos.toXml());
+            log.info("We continue in fail safe mode: " + connectReturnQos.serialize());
          }
 
          {
@@ -2205,13 +2205,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             SubscribeKey sk = new SubscribeKey(glob, oid);
             SubscribeQos sq = new SubscribeQos(glob);
             SubscribeReturnQos subRet = xmlBlasterAccess.subscribe(sk, sq);
-            log.info("Subscribed for " + sk.toXml() + "\n" + sq.toXml() + " return:\n" + subRet.toXml());
+            log.info("Subscribed for " + sk.toXml() + "\n" + sq.serialize() + " return:\n" + subRet.serialize());
 
             log.info("Hit a key to publish '" + oid + "'");
             try { System.in.read(); } catch(java.io.IOException e) {}
             MsgUnit msgUnit = new MsgUnit(glob, "<key oid='"+oid+"'/>", "Hi".getBytes(), "<qos><persistent>true</persistent></qos>");
             PublishReturnQos publishReturnQos = xmlBlasterAccess.publish(msgUnit);
-            log.info("Successfully published message to xmlBlaster, msg=" + msgUnit.toXml() + "\n returned QoS=" + publishReturnQos.toXml());
+            log.info("Successfully published message to xmlBlaster, msg=" + msgUnit.toXml() + "\n returned QoS=" + publishReturnQos.serialize());
             try { Thread.sleep(1000L); } catch( InterruptedException i) {} // wait for update
 
             {
@@ -2265,14 +2265,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
             UnSubscribeQos uq = new UnSubscribeQos(glob);
             UnSubscribeReturnQos[] unSubRet = xmlBlasterAccess.unSubscribe(uk, uq);
-            log.info("UnSubscribed for " + uk.toXml() + "\n" + uq.toXml() + " return:\n" + unSubRet[0].toXml());
+            log.info("UnSubscribed for " + uk.toXml() + "\n" + uq.serialize() + " return:\n" + unSubRet[0].serialize());
 
             log.info("Hit a key to erase on topic " + oid);
             try { System.in.read(); } catch(java.io.IOException e) {}
             EraseKey ek = new EraseKey(glob, oid);
             EraseQos eq = new EraseQos(glob);
             EraseReturnQos[] er = xmlBlasterAccess.erase(ek, eq);
-            log.info("Erased for " + ek.toXml() + "\n" + eq.toXml() + " return:\n" + er[0].toXml());
+            log.info("Erased for " + ek.toXml() + "\n" + eq.serialize() + " return:\n" + er[0].serialize());
          }
 
          int numPublish = 10;
@@ -2282,7 +2282,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
             MsgUnit msgUnit = new MsgUnit(glob, "<key oid=''/>", ("Hi #"+(ii+1)).getBytes(), "<qos><persistent>true</persistent></qos>");
             PublishReturnQos publishReturnQos = xmlBlasterAccess.publish(msgUnit);
-            log.info("Successfully published message #" + (ii+1) + " to xmlBlaster, msg=" + msgUnit.toXml() + "\n returned QoS=" + publishReturnQos.toXml());
+            log.info("Successfully published message #" + (ii+1) + " to xmlBlaster, msg=" + msgUnit.toXml() + "\n returned QoS=" + publishReturnQos.serialize());
          }
 
          log.info("Hit a key to disconnect ...");

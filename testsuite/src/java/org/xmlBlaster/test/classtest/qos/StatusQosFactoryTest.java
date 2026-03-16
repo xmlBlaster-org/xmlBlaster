@@ -131,7 +131,7 @@ public class StatusQosFactoryTest extends TestCase {
             "</qos>\n";
 
          StatusQosData qos = factory.readObject(xml);
-         String newXml = qos.toXml(null, null, true);
+         String newXml = qos.serialize(null, null, true);
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
          String json = jsonFactory.writeObject(qos, "", null, true);
@@ -175,7 +175,7 @@ public class StatusQosFactoryTest extends TestCase {
 	         Properties props = new java.util.Properties();
             props.setProperty("propsKey", "propsValue");
             props.setProperty("aKey2", "Blub"); // same key as XML - different value
-	         String newXml = qos.toXml(null, props, true);
+	         String newXml = qos.serialize(null, props, true);
 	         log.info("New XML=" + newXml);
 	         qos = f.readObject(newXml);
 	         assertProperties(qos);

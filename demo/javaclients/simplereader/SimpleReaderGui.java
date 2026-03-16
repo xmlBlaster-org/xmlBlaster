@@ -205,7 +205,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 									contentStr.length(), false))
 							.append(": - - -\n").append(contentStr)
 							.append("\n - - - updateQos: - - -")
-							.append(updateQos.getData().toXml("", props))
+							.append(updateQos.getData().serialize("", props))
 							.append("\n - - - end - - -\n");
 					sb.insert(
 							" - - - ".length(),
@@ -276,7 +276,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 				UnSubscribeKey key = new UnSubscribeKey(xmlBlaster.getGlobal(),
 						this.subscribeReturnQos.getSubscriptionId());
 				UnSubscribeQos qos = new UnSubscribeQos(xmlBlaster.getGlobal());
-				xmlBlaster.unSubscribe(key.toXml(), qos.toXml());
+				xmlBlaster.unSubscribe(key.toXml(), qos.serialize());
 				System.out.println(ME + " unSubscribe from "
 						+ this.subscribeReturnQos.getSubscriptionId());
 				this.subscribeReturnQos = null;
@@ -293,7 +293,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 					"XPATH");
 			SubscribeQos qos = new SubscribeQos(xmlBlaster.getGlobal());
 			this.subscribeReturnQos = xmlBlaster.subscribe(key.toXml(),
-					qos.toXml());
+					qos.serialize());
 			System.out.println(ME + " subscribe on " + text + "  ->  "
 					+ this.subscribeReturnQos.getSubscriptionId());
 		} catch (Exception ex) {

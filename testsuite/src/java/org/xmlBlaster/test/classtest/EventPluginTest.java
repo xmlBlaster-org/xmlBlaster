@@ -333,7 +333,7 @@ public class EventPluginTest extends TestCase implements I_Callback {
     * @throws XmlBlasterException
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      log.info(updateQos.toXml());
+      log.info(updateQos.serialize());
       return "OK";
    }
    

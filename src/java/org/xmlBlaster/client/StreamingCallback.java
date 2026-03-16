@@ -377,7 +377,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
          // TODO Check if this exception really should be thrown: I think it shall not be thrown since it is an exception
          // which occured when publishing and this is the information that the update should return
          if (exProp != null)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_INTERNALERROR, "update", "An exception occured on a chunk when updating. " + updQos.toXml());
+            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_INTERNALERROR, "update", "An exception occured on a chunk when updating. " + updQos.serialize());
          isLastChunk = isLastChunk(updQos);
          
          synchronized(this) {

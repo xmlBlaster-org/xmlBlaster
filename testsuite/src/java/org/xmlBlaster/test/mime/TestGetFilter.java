@@ -150,7 +150,7 @@ public class TestGetFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.serialize());
          assertTrue("Expected one returned message", msgUnits!=null);
          assertTrue("Expected exactly one returned message", msgUnits.length==1);
          assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
@@ -175,7 +175,7 @@ public class TestGetFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.serialize());
          assertTrue("Expected one returned message", msgUnits!=null);
          assertEquals("Expected no returned message", 0, msgUnits.length);
          log.info("Success: Got no message.");
@@ -197,7 +197,7 @@ public class TestGetFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.serialize());
          fail("get() message should throw an XmlBlasterException, but it didn't happen");
       } catch(XmlBlasterException e) {
          log.info("SUCCESS: We expected an XmlBlasterException: " + e.getMessage());

@@ -81,22 +81,22 @@ public final class UnSubscribeReturnQos
    }
 
    /**
-    * @see #toXml(String)
+    * @see #serialize(String)
     */
-   public String toXml() {
-      return toXml((String)null);
+   public String serialize() {
+      return serialize((String)null);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * @param extraOffset indenting of tags for nice output
-    * @return The XML representation
+    * @return The XML/JSON representation
     */
-   public String toXml(String extraOffset) {
-      return this.statusQosData.toXml(extraOffset, (Properties)null);
+   public String serialize(String extraOffset) {
+      return this.statusQosData.serialize(extraOffset, (Properties)null);
    }
 
    public String toString() {
-      return toXml(null);
+      return serialize(null);
    }
 }

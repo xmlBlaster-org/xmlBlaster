@@ -140,7 +140,7 @@ public class HelloWorld3 implements I_Callback
                    " clientProperty myAge=" + myAge + " from xmlBlaster");
 
       UpdateReturnQos uq = new UpdateReturnQos(glob);
-      return uq.toXml();
+      return uq.serialize();
    }
 
    /**

@@ -57,6 +57,6 @@ public final class UnSubscribeQosServer
    }
 
    public String toXml(String extraOffset) {
-      return this.queryQosData.toXml(extraOffset);
+      return this.queryQosData.serialize(extraOffset);
    }
 }

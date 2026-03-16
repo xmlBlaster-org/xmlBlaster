@@ -133,7 +133,7 @@ public class EraseTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            SubscribeReturnQos srq = bilboCon.subscribe(sk.toXml(), sq.toXml());
+            SubscribeReturnQos srq = bilboCon.subscribe(sk.toXml(), sq.serialize());
          }
 
          System.err.println("->Publish to avalon ...");
@@ -156,7 +156,7 @@ public class EraseTest extends TestCase {
          EraseKey ek = new EraseKey(glob, oid);
          ek.setDomain(domain);
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.serialize());
          assertEquals("Erase", 1, arr.length);
 
          try { Thread.sleep(2000); } catch( InterruptedException i) {}

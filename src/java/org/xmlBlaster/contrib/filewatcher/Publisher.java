@@ -480,7 +480,7 @@ public class Publisher implements I_Timeout {
       
       MsgQosData msgQosData = I_MsgQosFactory.parse(this.global, origQos);
       MsgQosData preparedMsgQosData = replSourceEngine.preparePubQos(msgQosData);
-      return preparedMsgQosData.toXml();
+      return preparedMsgQosData.serialize();
    }
    
    /**

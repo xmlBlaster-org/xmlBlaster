@@ -198,8 +198,8 @@ public class TestAdminGet extends TestCase implements I_Callback
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
       MsgUnit msgUnit = null;
-      if (counter > -1) msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
-      else  msgUnit = new MsgUnit(xmlKey, "", qosWrapper.toXml());
+      if (counter > -1) msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.serialize());
+      else  msgUnit = new MsgUnit(xmlKey, "", qosWrapper.serialize());
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
       log.info("Success: Publishing of " + oid + " done");
@@ -273,7 +273,7 @@ public class TestAdminGet extends TestCase implements I_Callback
                         " state=" + updateQos.getState() +
                         " content=" + cont);
       log.info("further log for receiving update of a message cbSessionId=" + cbSessionId +
-                     updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
+                     updateKey.toXml() + "\n" + new String(content) + updateQos.serialize());
       log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
       return "OK";
    }

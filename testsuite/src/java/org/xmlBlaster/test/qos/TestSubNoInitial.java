@@ -141,7 +141,7 @@ public class TestSubNoInitial extends TestCase implements I_Callback
       subscribeOid = null;
       SubscribeQos sk = new SubscribeQos(glob);
       sk.setWantInitialUpdate(false);
-      String qos = sk.toXml(); // "<qos><initialUpdate>false</initialUpdate></qos>";
+      String qos = sk.serialize(); // "<qos><initialUpdate>false</initialUpdate></qos>";
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info("Success: Subscribe subscription-id=" + subscribeOid + " done");

@@ -53,7 +53,7 @@ public class PublishErase
          String xmlKey = null;
          PublishQos qw = new PublishQos(glob);
          EraseQos eq = new EraseQos(glob);
-         System.out.println("qos = " + qw.toXml() );
+         System.out.println("qos = " + qw.serialize() );
          byte[] b = new byte[1024];
          long lCount = 0L;
          while(true) {
@@ -61,12 +61,12 @@ public class PublishErase
             xmlKey =  "<key oid='" + lCount +
                            "'> <topic id='aaaa'/>" +
                            "</key>";
-            con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
+            con.publish(new MsgUnit(xmlKey,b,qw.serialize()));
 
             try { Thread.sleep(5L); } catch( InterruptedException i) {}
 
             EraseKey ek = new EraseKey(glob, "" + lCount);
-            EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
+            EraseReturnQos[] er = con.erase(ek.toXml(), eq.serialize());
          
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
             if ((lCount % bulkSize) == 0) {

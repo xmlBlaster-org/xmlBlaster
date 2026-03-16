@@ -268,7 +268,7 @@ class SocketConnectorThread extends Thread {
       try {
          // starts the get request for the given oid
          msgs = connection.get(new GetKey(glob, oid, Constants.EXACT).toXml(),
-               new GetQos(glob).toXml());
+               new GetQos(glob).serialize());
       } catch (XmlBlasterException xe) {
          log.throwing(this.getClass().getName(), "run", xe);
       }

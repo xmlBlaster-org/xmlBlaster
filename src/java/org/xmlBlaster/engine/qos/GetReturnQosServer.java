@@ -38,7 +38,7 @@ public class GetReturnQosServer
    }
 
    public final String toXml(String extraOffset) {
-      return this.msgQosData.toXml(extraOffset);
+      return this.msgQosData.serialize(extraOffset);
    }
 
    public final String toString() {

@@ -255,7 +255,7 @@ public class HelloWorldPublish
                      if (MethodName.PUBLISH.equals(entries[i].getMethodName())) { 
                         MsgUnit msg = entries[i].getMsgUnit();
                         PublishReturnQos retQos = (PublishReturnQos)entries[i].getReturnObj();
-                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue: " + retQos.toXml());
+                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue: " + retQos.serialize());
                      }
                      else
                         log.info("Send asynchronously " + entries[i].getMethodName() + " message from queue");
@@ -301,7 +301,7 @@ public class HelloWorldPublish
                qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
             }
          }
-         log.info("ConnectQos is " + qos.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
+         log.info("ConnectQos is " + qos.serialize().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
          ConnectReturnQos crq = con.connect(qos, new I_Callback() {
 			public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
 				try {
@@ -318,7 +318,7 @@ public class HelloWorldPublish
 				return "";
 			}
          });  // Login to xmlBlaster, register for updates
-         log.info("Connect success as " + crq.toXml().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
+         log.info("Connect success as " + crq.serialize().replaceAll("<passwd>[^<]*</passwd>", "<passwd>***</passwd>"));
 
          String[] lines = null;
          if (contentFileLines != null && contentFileLines.length() > 0) {
@@ -430,7 +430,7 @@ public class HelloWorldPublish
                content = replacePlaceHolders(contentStr, currCounter, ts).getBytes();
             }
 
-            if (log.isLoggable(Level.FINEST)) log.finest("Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.serialize());
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             if (log.isLoggable(Level.FINEST)) log.finest("Going to publish message: " + msgUnit.toXml());
 
@@ -442,7 +442,7 @@ public class HelloWorldPublish
             }
             else {
                PublishReturnQos prq = con.publish(msgUnit);
-               if (log.isLoggable(Level.FINEST)) log.finest("Returned: " + prq.toXml());
+               if (log.isLoggable(Level.FINEST)) log.finest("Returned: " + prq.serialize());
 
                log.info("#" + currCounter + "/" + numPublish +
                          ": Got status='" + prq.getState() +
@@ -464,7 +464,7 @@ public class HelloWorldPublish
                if (domain != null) ek.setDomain(domain);
                EraseQos eq = new EraseQos(glob);
                eq.setForceDestroy(eraseForceDestroy);
-               if (log.isLoggable(Level.FINEST)) log.finest("Going to erase the topic: " + ek.toXml() + eq.toXml());
+               if (log.isLoggable(Level.FINEST)) log.finest("Going to erase the topic: " + ek.toXml() + eq.serialize());
                /*EraseReturnQos[] eraseArr =*/con.erase(ek, eq);
                log.info("Erase success");
             }

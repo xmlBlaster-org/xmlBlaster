@@ -123,7 +123,7 @@ public class DirtyReadTest extends TestCase {
          sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
          sq = new SubscribeQos(glob);
-         frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         frodoCon.subscribe(sk.toXml(), sq.serialize(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
                updateCounterFrodo++;

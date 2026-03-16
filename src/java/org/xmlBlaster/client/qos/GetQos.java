@@ -139,7 +139,7 @@ public final class GetQos
     * @return An XML ASCII string
     */
    public String toString() {
-      return this.queryQosData.toXml();
+      return this.queryQosData.serialize();
    }
    
    /**
@@ -151,17 +151,17 @@ public final class GetQos
       return this.queryQosData.toJson();
    }
 
-   public String toXml() {
-      return toXml((Properties)null);
+   public String serialize() {
+      return serialize((Properties)null);
    }
    
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @param props Formatting control, see Constants.TOXML_*
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @param props Formatting control, see Constants.TOXML_*(no effect on JSON)
+    * @return An XML/JSON ASCII string
     */
-   public String toXml(Properties props) {
-      return this.queryQosData.toXml((String)null, props);
+   public String serialize(Properties props) {
+      return this.queryQosData.serialize((String)null, props);
    }
 
    /** For testing: java org.xmlBlaster.client.qos.GetQos */
@@ -172,7 +172,7 @@ public final class GetQos
          qos.setWantContent(false);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "3.2", new Query(glob, "a<10")));
-         System.out.println(qos.toXml());
+         System.out.println(qos.serialize());
       }
       catch (Throwable e) {
          System.out.println("Test failed: " + e.toString());

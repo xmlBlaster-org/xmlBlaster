@@ -153,7 +153,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
 
       SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
-      String subQos = subQosW.toXml();
+      String subQos = subQosW.serialize();
 
       manyClients = new Client[numClients];
 

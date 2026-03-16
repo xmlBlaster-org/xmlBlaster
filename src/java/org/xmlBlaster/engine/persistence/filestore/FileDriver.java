@@ -134,7 +134,7 @@ public class FileDriver implements I_PersistenceDriver
 
       FileLocator.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml().getBytes());
       FileLocator.writeFile(path, oid, content);
-      FileLocator.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml().getBytes());
+      FileLocator.writeFile(path, oid + XMLQOS_TOKEN, qos.serialize().getBytes());
 
       if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + oid);
    }
@@ -153,7 +153,7 @@ public class FileDriver implements I_PersistenceDriver
       String oid = messageWrapper.getKeyOid();
       FileLocator.writeFile(path, oid, messageWrapper.getMsgUnit().getContent());
       // Store the sender as well:
-      FileLocator.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getMsgQosData().toXml().getBytes());
+      FileLocator.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getMsgQosData().serialize().getBytes());
       if (log.isLoggable(Level.FINE)) log.fine("Successfully updated store " + messageWrapper.getKeyOid());
    }
 

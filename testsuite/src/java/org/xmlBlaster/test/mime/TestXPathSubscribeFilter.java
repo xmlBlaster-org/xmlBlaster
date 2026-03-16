@@ -125,14 +125,14 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          SubscribeQos qos = new SubscribeQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
          
-         subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
+         subscribeOid = con.subscribe("<key oid='MSG'/>", qos.serialize()).getSubscriptionId();
          subscriberTable.put(subscribeOid, new Integer(0));
          log.info("Success: Subscribe subscription-id=" + subscribeOid + " done");
          // One culture subscriber
          qos = new SubscribeQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='culture']"));
          
-         subscribeOid2 = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
+         subscribeOid2 = con.subscribe("<key oid='MSG'/>", qos.serialize()).getSubscriptionId();
          subscriberTable.put(subscribeOid2, new Integer(1));
          log.info("Success: Subscribe subscription-id2=" + subscribeOid2 + " done");
 
@@ -141,7 +141,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport' or @type='culture']"));
          
          
-         subscribeOid3 = con.subscribe("<key oid='AnotherMsG'/>", qos.toXml()).getSubscriptionId();
+         subscribeOid3 = con.subscribe("<key oid='AnotherMsG'/>", qos.serialize()).getSubscriptionId();
          subscriberTable.put(subscribeOid3, new Integer(2));
          log.info("Success: Subscribe subscription-id3=" + subscribeOid3 + " done");
 
@@ -150,7 +150,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[ contains-ignore-case( recursive-text(body), 'needle')]"));
          
          
-         subscribeOid4 = con.subscribe("<key oid='AnotherMsG'/>", qos.toXml()).getSubscriptionId();
+         subscribeOid4 = con.subscribe("<key oid='AnotherMsG'/>", qos.serialize()).getSubscriptionId();
          subscriberTable.put(subscribeOid4, new Integer(3));
          log.info("Success: Subscribe subscription-id4=" + subscribeOid4 + " done");
          

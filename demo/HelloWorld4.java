@@ -108,7 +108,7 @@ public class HelloWorld4
                      if (MethodName.PUBLISH.equals(entries[i].getMethodName())) { 
                         MsgUnit msg = entries[i].getMsgUnit();
                         PublishReturnQos retQos = (PublishReturnQos)entries[i].getReturnObj();
-                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue: " + retQos.toXml());
+                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue: " + retQos.serialize());
                      }
                      else
                         log.info("Send asynchronously " + entries[i].getMethodName() + " message from queue");

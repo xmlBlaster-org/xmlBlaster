@@ -168,7 +168,7 @@ public class TestPriorizedDispatchPlugin extends TestCase {
          String content = "" + msgSequenceNumber;
          PublishQos pq = new PublishQos(glob);
          pq.setPriority(prio);
-         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.serialize()));
          log.info("SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " content=" + content + " returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
@@ -182,7 +182,7 @@ public class TestPriorizedDispatchPlugin extends TestCase {
       try {
          SubscribeKey sk = new SubscribeKey(glob, oid);
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.serialize());
          log.info("SUCCESS subscribe to '" + oid + "' returned state=" + srq.getState());
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());
@@ -365,7 +365,7 @@ public class TestPriorizedDispatchPlugin extends TestCase {
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
-         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.serialize()));
          log.info("SUCCESS publish new configuration '" + oid + "' returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());

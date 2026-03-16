@@ -92,7 +92,7 @@ public class AllProtocols implements I_Callback
 
             GetKey gk = new GetKey(con.getGlobal(), "AllProtocols");
             GetQos gq = new GetQos(con.getGlobal());
-            MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+            MsgUnit[] msgs = con.get(gk.toXml(), gq.serialize());
             GetReturnQos grq = new GetReturnQos(con.getGlobal(), msgs[0].getQos());
 
             log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
@@ -101,7 +101,7 @@ public class AllProtocols implements I_Callback
 
             SubscribeKey sk = new SubscribeKey(con.getGlobal(), "AllProtocols");
             SubscribeQos sq = new SubscribeQos(con.getGlobal());
-            SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+            SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.serialize());
 
 
             msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
@@ -115,11 +115,11 @@ public class AllProtocols implements I_Callback
 
             UnSubscribeKey uk = new UnSubscribeKey(con.getGlobal(), subRet.getSubscriptionId());
             UnSubscribeQos uq = new UnSubscribeQos(con.getGlobal());
-            UnSubscribeReturnQos[] urq = con.unSubscribe(uk.toXml(), uq.toXml());
+            UnSubscribeReturnQos[] urq = con.unSubscribe(uk.toXml(), uq.serialize());
 
             EraseKey ek = new EraseKey(con.getGlobal(), "AllProtocols");
             EraseQos eq = new EraseQos(con.getGlobal());
-            EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
+            EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.serialize());
 
             DisconnectQos dq = new DisconnectQos(con.getGlobal());
             con.disconnect(dq);
@@ -148,7 +148,7 @@ public class AllProtocols implements I_Callback
                    " content=" + new String(content) + " from xmlBlaster");
 
       UpdateReturnQos uq = new UpdateReturnQos(updateKey.getGlobal());
-      return uq.toXml();
+      return uq.serialize();
    }
 
    /**

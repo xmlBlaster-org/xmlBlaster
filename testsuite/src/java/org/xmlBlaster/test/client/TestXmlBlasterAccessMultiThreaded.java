@@ -182,7 +182,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
                       "   </TestXmlBlasterAccessMultiThreaded-AGENT>" +
                       "</key>";
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
-      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.serialize());
 
       con.publish(msgUnit);
       log.info("Success: Publishing of " + oid + " content='" + content + "' done");

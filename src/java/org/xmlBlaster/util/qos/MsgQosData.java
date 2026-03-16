@@ -689,26 +689,40 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @return internal state of the message QoS as a XML ASCII string
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @return internal state of the message QoS as a XML/JSON ASCII string
     */
-   public String toXml() {
-      return toXml((String)null, (Properties)null);
+   public String serialize() {
+      return serialize((String)null, (Properties)null);
    }
 
-   public String toXml(String extraOffset) {
-      return toXml(extraOffset, (Properties)null);
+   /**
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @return internal state of the message QoS as a XML/JSON ASCII string
+    */
+   public String serialize(String extraOffset) {
+      return serialize(extraOffset, (Properties)null);
    }
    
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @param forceReadable If true, any base64 is decoded to be more human readable 
-    * @return internal state of the message QoS as a XML ASCII string
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @return internal state of the message QoS as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset, Properties props) {
+   public String serialize(String extraOffset, Properties props) {
       return this.factory.writeObject(this, extraOffset, props);
    }
 
@@ -744,7 +758,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
    
    public String toString() {
-	   return toXml();
+	   return serialize();
    }
 
    public static void main(String[] args) {

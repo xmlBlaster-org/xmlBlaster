@@ -283,7 +283,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                       "</key>";
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
-      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
+      MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.serialize());
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
       log.info("Success: Publishing of " + oid + " done");
@@ -393,7 +393,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                         " state=" + updateQos.getState() +
                         " content=" + cont);
       log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions), further log for receiving update of a message cbSessionId=" + cbSessionId +
-                     updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
+                     updateKey.toXml() + "\n" + new String(content) + updateQos.serialize());
       return "OK";
    }
 

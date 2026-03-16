@@ -75,6 +75,6 @@ public final class EraseQosServer
    }
 
    public String toXml(String extraOffset) {
-      return this.queryQosData.toXml(extraOffset);
+      return this.queryQosData.serialize(extraOffset);
    }
 }

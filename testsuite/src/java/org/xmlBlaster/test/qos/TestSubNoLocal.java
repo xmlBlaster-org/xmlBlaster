@@ -105,7 +105,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
             SubscribeQos qos = new SubscribeQos(glob);
             qos.setWantLocal(false);
             this.updateInterceptor1 = new MsgInterceptor(glob, log, null); // Collect received msgs
-            SubscribeReturnQos ret = this.connection.subscribe(key.toXml(), qos.toXml(), this.updateInterceptor1);
+            SubscribeReturnQos ret = this.connection.subscribe(key.toXml(), qos.serialize(), this.updateInterceptor1);
             subscribeId1 = ret.getSubscriptionId();
          }
          {
@@ -113,7 +113,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
             SubscribeQos qos = new SubscribeQos(glob);
             qos.setWantLocal(true);
             this.updateInterceptor2 = new MsgInterceptor(glob, log, null); // Collect received msgs
-            SubscribeReturnQos ret = connection.subscribe(key.toXml(), qos.toXml(), this.updateInterceptor2);
+            SubscribeReturnQos ret = connection.subscribe(key.toXml(), qos.serialize(), this.updateInterceptor2);
             subscribeId2 = ret.getSubscriptionId();
          }
       } catch(XmlBlasterException e) {

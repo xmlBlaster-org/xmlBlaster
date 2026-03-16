@@ -186,7 +186,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
                if (!onPreSend(sessionId, methodName, connectQos.getData(), type)) {
             	   return false;
                }
-               ret = this.access.connect(connectQos, cb).toXml();
+               ret = this.access.connect(connectQos, cb).serialize();
             }
             else {
                ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
@@ -195,7 +195,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
                }
                // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
                ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), cb);
-               if (tmp != null) ret = tmp.toXml("  ");
+               if (tmp != null) ret = tmp.serialize("  ");
                else ret = "";
             }
             writeResponse(methodName, ret);
@@ -228,7 +228,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             }
             if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publish: " + msgUnit.toXml());
             PublishReturnQos ret = this.access.publish(msgUnit);
-            writeResponse(methodName, (ret != null)?ret.toXml("  "):null);
+            writeResponse(methodName, (ret != null)?ret.serialize("  "):null);
             return true;
          }
          if (MethodName.PUBLISH_ARR.equals(methodName)) {
@@ -243,7 +243,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             }
             PublishReturnQos[] ret = this.access.publishArr(msgs);
             String[] retStr = new String[ret.length];
-            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].serialize("    ");
             writeResponse(methodName, retStr);
             return true;
          }
@@ -265,7 +265,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
             if (!onPreSend(sessionId, methodName, ret.getData(), type)) {
               return false;
             }
-            writeResponse(methodName, ret.toXml("    "));
+            writeResponse(methodName, ret.serialize("    "));
             return true;
          }
          if (MethodName.UNSUBSCRIBE.equals(methodName)) {
@@ -275,7 +275,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
               if (!onPreSend(sessionId, methodName, ret[i].getData(), type)) {
                 return false;
               }
-              retStr[i] = ret[i].toXml("    ");
+              retStr[i] = ret[i].serialize("    ");
             }
             writeResponse(methodName, retStr);
             return true;
@@ -287,7 +287,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
               if (!onPreSend(sessionId, methodName, ret[i].getData(), type)) {
                 return false;
               }
-              retStr[i] = ret[i].toXml("    ");
+              retStr[i] = ret[i].serialize("    ");
             }
             writeResponse(methodName, retStr);
             return true;

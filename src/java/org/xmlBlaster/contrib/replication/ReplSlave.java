@@ -535,7 +535,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       // individualInfo object.
       new ClientPropertiesInfo(subQos.getData().getClientProperties(),
             individualInfo);
-      session.subscribe(this.dataTopic, subQos.toXml());
+      session.subscribe(this.dataTopic, subQos.serialize());
       synchronized (this.initSync) {
          setStatus(STATUS_INITIAL);
       }
@@ -958,7 +958,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                            ReplicationConstants.END_OF_TRANSITION);
                if (endMsg == null) {
                   log.warning("the message unit with qos='"
-                        + msgUnit.getQosData().toXml() + "' and key '"
+                        + msgUnit.getQosData().serialize() + "' and key '"
                         + msgUnit.getKey() + "'  for client '"
                         + this.slaveSessionId
                         + "' has no 'replKey' Attribute defined.");

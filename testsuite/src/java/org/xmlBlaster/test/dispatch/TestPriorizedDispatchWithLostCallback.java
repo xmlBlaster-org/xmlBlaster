@@ -154,7 +154,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          String content = "" + msgSequenceNumber;
          PublishQos pq = new PublishQos(glob);
          pq.setPriority(prio);
-         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.serialize()));
          log.info("SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
@@ -173,8 +173,8 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          String oid = "__cmd:sysprop/?" + configKey;
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
-         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
-         log.info("SUCCESS publish '" + oid + "' " + pq.toXml() + ", returned state=" + rq.getState());
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.serialize()));
+         log.info("SUCCESS publish '" + oid + "' " + pq.serialize() + ", returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
@@ -188,7 +188,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       try {
          SubscribeKey sk = new SubscribeKey(glob, oid);
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.serialize());
          log.info("SUCCESS subscribe to '" + oid + "' returned state=" + srq.getState());
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());

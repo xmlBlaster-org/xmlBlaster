@@ -305,7 +305,7 @@ public class TestLogin extends TestCase implements I_Callback
    {
       log.info("Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState() +
                " rcvTime=" + updateQos.getRcvTimestamp().toString());
-      log.info("Receiving update of a message " + updateKey.getOid() + updateQos.toXml());
+      log.info("Receiving update of a message " + updateKey.getOid() + updateQos.serialize());
       numReceived++;
       return "";
    }

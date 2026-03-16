@@ -117,7 +117,7 @@ public class TestSubMultiSubscribe extends TestCase
             if (aq != null) {
                qos.addAccessFilter(aq);
             }
-            SubscribeReturnQos ret = this.connection.subscribe(key.toXml(), qos.toXml());
+            SubscribeReturnQos ret = this.connection.subscribe(key.toXml(), qos.serialize());
             log.info("Subscribe #" + i + " state=" + ret.getState() + " subscriptionId=" + ret.getSubscriptionId());
             if (subscribeId == null) {
                subscribeId = ret.getSubscriptionId();

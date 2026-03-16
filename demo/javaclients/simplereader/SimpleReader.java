@@ -85,7 +85,7 @@ public class SimpleReader implements I_Callback  {
       try {
          SubscribeKey key = new SubscribeKey(glob, _key, "XPATH");
          SubscribeQos qos = new SubscribeQos(glob);
-         xmlBlaster.subscribe(key.toXml(), qos.toXml());
+         xmlBlaster.subscribe(key.toXml(), qos.serialize());
       }
       catch( Exception ex ) {
          System.err.println("error-error-error-error >>>"+ex.toString());

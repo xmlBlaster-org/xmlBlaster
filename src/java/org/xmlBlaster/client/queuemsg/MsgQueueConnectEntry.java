@@ -117,7 +117,7 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     * Object[0] = qos.toXml()
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.connectQosData.toXml() };
+      Object[] obj = { this.connectQosData.serialize() };
       return obj;
    }
 
@@ -135,7 +135,7 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       //TODO final boolean noSecurity = (props!=null) && props.containsKey("noSecurity");//Constants.TOXML_FLAG_NOSECURITY)
       if (this.connectQosData != null)
-         out.write(this.connectQosData.toXml((String)null, props).getBytes());
+         out.write(this.connectQosData.serialize((String)null, props).getBytes());
    }
    
    /**

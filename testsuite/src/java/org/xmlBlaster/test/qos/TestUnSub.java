@@ -222,7 +222,7 @@ public class TestUnSub extends TestCase implements I_Callback
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
-      assertTrue("returned publishOid: " + publishReturnQos.toXml(), 0 != publishOid.length());
+      assertTrue("returned publishOid: " + publishReturnQos.serialize(), 0 != publishOid.length());
    }
 
    /**
@@ -239,7 +239,7 @@ public class TestUnSub extends TestCase implements I_Callback
       try {
          SubscribeKey sk = new SubscribeKey(glob, oid);
          SubscribeQos sq = new SubscribeQos(glob);
-         subRet = senderConnection.subscribe(sk.toXml(), sq.toXml());
+         subRet = senderConnection.subscribe(sk.toXml(), sq.serialize());
          log.info("testSubscribeUnSubscribeOid() subscribed to " + subRet.getSubscriptionId());
       }
       catch (XmlBlasterException e) {
@@ -251,7 +251,7 @@ public class TestUnSub extends TestCase implements I_Callback
          // !! Here we unsubscribe with the oid instead of using the subId !!
          UnSubscribeKey uk = new UnSubscribeKey(glob, oid);
          UnSubscribeQos uq = new UnSubscribeQos(glob);
-         UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.toXml());
+         UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.serialize());
          log.info("testSubscribeUnSubscribeOid() unSubscribed");
          assertEquals("Return wrong", 1, urq.length);
          assertEquals("SubId wrong", subRet.getSubscriptionId(), urq[0].getSubscriptionId());
@@ -274,7 +274,7 @@ public class TestUnSub extends TestCase implements I_Callback
       try {
          SubscribeKey sk = new SubscribeKey(glob, "SomeDummySubscribe");
          SubscribeQos sq = new SubscribeQos(glob);
-         subRet = senderConnection.subscribe(sk.toXml(), sq.toXml());
+         subRet = senderConnection.subscribe(sk.toXml(), sq.serialize());
          log.info("testSubscribeUnSubscribeEmpty() subscribed to " + subRet.getSubscriptionId());
       }
       catch (XmlBlasterException e) {
@@ -285,7 +285,7 @@ public class TestUnSub extends TestCase implements I_Callback
       try {
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
-         UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.toXml());
+         UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.serialize());
          log.info("testSubscribeUnSubscribeEmpty() unSubscribed");
          assertEquals("Return wrong", 1, urq.length);
          assertEquals("SubId wrong", subRet.getSubscriptionId(), urq[0].getSubscriptionId());

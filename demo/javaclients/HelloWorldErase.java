@@ -58,9 +58,9 @@ public class HelloWorldErase
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
          log.info("============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
-         log.info("ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.serialize());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
-         log.info("Connect success as " + crq.toXml());
+         log.info("Connect success as " + crq.serialize());
 
          if (interactive) {
             log.info("Hit a key to erase");
@@ -80,7 +80,7 @@ public class HelloWorldErase
          }
          EraseReturnQos[] eraseArr = con.erase(ek, eq);
          for (int i=0; i < eraseArr.length; i++) {
-            log.info(eraseArr[i].toXml());
+            log.info(eraseArr[i].serialize());
          }
          log.info("Erased " + eraseArr.length + " topics");
 

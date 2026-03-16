@@ -173,7 +173,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
             cbAddr.setDispatchPlugin(dispatcherPlugin);
          this.connectQos.addCallbackAddress(cbAddr);
       }
-      log.info("Connecting with qos '" + this.connectQos.toXml() + "'");
+      log.info("Connecting with qos '" + this.connectQos.serialize() + "'");
       this.con = this.glob.getXmlBlasterAccess();
       this.con.connect(this.connectQos, this);
 
@@ -253,7 +253,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
             PublishQos pubQos = new PublishQos(this.glob);
             ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(pubQos.getData().getClientProperties(), null);
             InfoHelper.fillInfoWithEntriesFromMap(tmpInfo, attrMap);
-            qos = pubQos.toXml();
+            qos = pubQos.serialize();
          }
          else {
             qos = "<qos/>";
@@ -261,7 +261,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       }
       PublishKey pubKey = new PublishKey(this.glob, oid);
       MsgUnit msg = new MsgUnit(this.glob, pubKey.toXml(), message, qos);
-      return this.con.publish(msg).toXml();
+      return this.con.publish(msg).serialize();
    }
 
    public boolean registerAlertListener(I_Update update, Map attrs) throws Exception {

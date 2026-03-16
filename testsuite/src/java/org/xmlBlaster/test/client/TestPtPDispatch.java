@@ -73,7 +73,7 @@ public class TestPtPDispatch extends TestCase {
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob, "src_" + this.subjectName, passwd); // == "<qos>...</qos>";
-         if (log.isLoggable(Level.FINE)) log.fine("setUp: connectQos '" + connectQos.toXml() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("setUp: connectQos '" + connectQos.serialize() + "'");
          con.connect(connectQos, null);  // Login to xmlBlaster, register for updates
 
       }

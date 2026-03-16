@@ -62,7 +62,7 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     * @return An XML ASCII string
     */
    public String toString() {
-      return toXml();
+      return serialize();
    }
 
    /**
@@ -113,8 +113,8 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     * The default is to include the security string
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String toXml() {
-      return toXml(null, null);
+   public final String serialize() {
+      return serialize(null, null);
    }
 
    /**
@@ -123,7 +123,7 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String toXml(String extraOffset, Properties props) {
+   public final String serialize(String extraOffset, Properties props) {
       return this.factory.writeObject(this, extraOffset, props);
    }
 

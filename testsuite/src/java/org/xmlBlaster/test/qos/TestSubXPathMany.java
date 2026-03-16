@@ -131,15 +131,15 @@ public class TestSubXPathMany extends TestCase {
          try {
             EraseKey ek = new EraseKey(glob, "command-navigation");
             EraseQos eq = new EraseQos(glob);
-            con1.erase(ek.toXml(), eq.toXml());
+            con1.erase(ek.toXml(), eq.serialize());
 
             ek = new EraseKey(glob, "command-radar-1");
             eq = new EraseQos(glob);
-            con1.erase(ek.toXml(), eq.toXml());
+            con1.erase(ek.toXml(), eq.serialize());
 
             ek = new EraseKey(glob, "dummyTestSubXPathMany");
             eq = new EraseQos(glob);
-            con1.erase(ek.toXml(), eq.toXml());
+            con1.erase(ek.toXml(), eq.serialize());
          }
          catch (XmlBlasterException e) {
             fail("doPublish failed: " + e.toString());
@@ -159,16 +159,16 @@ public class TestSubXPathMany extends TestCase {
       try {
          SubscribeKey sk = new SubscribeKey(glob, "//key[@oid = 'command-navigation']", Constants.XPATH);
          SubscribeQos sq = new SubscribeQos(glob);
-         con1.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con1.subscribe(sk.toXml(), sq.serialize()).getSubscriptionId();
 
          String xpath2 = "//key[starts-with(@oid,'command-radar')]";
          sk = new SubscribeKey(glob, xpath2, Constants.XPATH);
          sq = new SubscribeQos(glob);
-         con2.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con2.subscribe(sk.toXml(), sq.serialize()).getSubscriptionId();
 
          sk = new SubscribeKey(glob, xpath2, Constants.XPATH);
          sq = new SubscribeQos(glob);
-         con3.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con3.subscribe(sk.toXml(), sq.serialize()).getSubscriptionId();
       }
       catch (XmlBlasterException e) {
          fail("doPublish failed: " + e.toString());
@@ -184,19 +184,19 @@ public class TestSubXPathMany extends TestCase {
       try {
          PublishKey pk = new PublishKey(glob, "command-navigation", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.serialize());
          con1.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "command-radar-1", "text/plain", "1.0");
          pq = new PublishQos(glob);
-         msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.serialize());
          con1.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "dummyTestSubXPathMany", "text/plain", "1.0");
          pq = new PublishQos(glob);
-         msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.serialize());
          con1.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
       }

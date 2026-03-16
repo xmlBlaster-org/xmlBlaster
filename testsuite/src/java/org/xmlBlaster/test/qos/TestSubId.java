@@ -130,7 +130,7 @@ public class TestSubId extends TestCase implements I_Callback
                   "client/someOtherUser/session/1" +
                   "-" + myCounter;
          sq.setSubscriptionId(sentSubscribeId);
-         senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
+         senderConnection.subscribe(xmlKey, sq.serialize()).getSubscriptionId();
          fail("Illegal subscriptionId should throw an exception");
          
       } catch(XmlBlasterException e) {
@@ -159,7 +159,7 @@ public class TestSubId extends TestCase implements I_Callback
          sq.setSubscriptionId(sentSubscribeId);
          numReceived = 0;
          this.subscribeId = null;
-         this.subscribeId = senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
+         this.subscribeId = senderConnection.subscribe(xmlKey, sq.serialize()).getSubscriptionId();
          assertEquals("Sent sentSubscribeId= " + sentSubscribeId + " The returned subscriptionId=" + subscribeId + " is wrong", sentSubscribeId, subscribeId);
          log.info("Success: Subscribe on " + subscribeId + " done");
          
@@ -226,7 +226,7 @@ public class TestSubId extends TestCase implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
-      log.info("sentSubscribeId=" + sentSubscribeId + ":" + updateQos.toXml());
+      log.info("sentSubscribeId=" + sentSubscribeId + ":" + updateQos.serialize());
 
       if (updateQos.isErased()) {
          return "";

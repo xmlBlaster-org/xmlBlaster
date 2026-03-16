@@ -273,7 +273,7 @@ public class ConnectQosTest extends TestCase {
          I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
 
          ConnectQosData qos = factory.readObject(xml); // parse
-         String newXml = qos.toXml();                  // dump
+         String newXml = qos.serialize();                  // dump
          qos = factory.readObject(newXml);             // parse again
          String json = jsonFactory.writeObject(qos, null, null);
          qos = jsonFactory.readObject(json);
@@ -284,7 +284,7 @@ public class ConnectQosTest extends TestCase {
          ClientQueueProperty prop = qos.getClientQueueProperty();
          assertEquals("", "RAM", prop.getType());
          assertEquals("", "1.0", prop.getVersion());
-         System.out.println(qos.toXml());
+         System.out.println(qos.serialize());
          System.out.println(jsonFactory.writeObject(qos, null, null));
 
       }
@@ -313,7 +313,7 @@ public class ConnectQosTest extends TestCase {
          I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
          I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
          ConnectQosData qos = factory.readObject(xml); // parse
-         String newXml = qos.toXml();                  // dump
+         String newXml = qos.serialize();                  // dump
          qos = factory.readObject(newXml);             // parse again
          String json = jsonFactory.writeObject(qos, null, null);
          qos = jsonFactory.readObject(json);
@@ -376,7 +376,7 @@ public class ConnectQosTest extends TestCase {
          ConnectQos qos = new ConnectQos(g);
          qos.setUserId(g.getId());
          assertEquals("Wrong user id", loginName, qos.getSecurityQos().getUserId());
-         assertTrue("Wrong password, expected '" + passwd + "': " + qos.toXml(), qos.toXml().indexOf(passwd) > 0);
+         assertTrue("Wrong password, expected '" + passwd + "': " + qos.serialize(), qos.serialize().indexOf(passwd) > 0);
          //System.out.println("ConnectQos=" + qos.toXml(""));
       }
       catch (XmlBlasterException e) {

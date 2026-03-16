@@ -144,29 +144,42 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     * The size in bytes of the data in XML form. 
     */
    public int size() {
-      return toXml().length();
+      return serialize().length();
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string. <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    * factory.writeObject() method of a SAX or JSON factory
     * <br>
-    * @return internal state of the status as a XML ASCII string
+    * @return internal state of the status as a XML/JSON ASCII string
     */
-   public String toXml() {
-      return toXml((String)null, (Properties)null);
+   public String serialize() {
+      return serialize((String)null, (Properties)null);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string. <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    * factory.writeObject() method of a SAX or JSON factory
     * <br>
-    * @param extraOffset indenting of tags for nice output
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
     * @return internal state of the status as a XML ASCII string
     */
-   public String toXml(String extraOffset, Properties props) {
+   public String serialize(String extraOffset, Properties props) {
       return factory.writeObject(this, extraOffset, props);
    }
 
-   public String toXml(String extraOffset, Properties props, boolean dumpClientProperties) {
+   /**
+    * Dump state of this object into a XML/JSON ASCII string. <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    * factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @param dumpClientProperties If true, the clientProperties will be serialized as well 
+    * @return internal state of the status as a XML ASCII string
+    */
+   public String serialize(String extraOffset, Properties props, boolean dumpClientProperties) {
       return factory.writeObject(this, extraOffset, props, dumpClientProperties);
    }
 
@@ -187,7 +200,7 @@ public final class StatusQosData extends QosData implements java.io.Serializable
    }
    
    public String toString() {
-	   return toXml();
+	   return serialize();
    }
    
    /**

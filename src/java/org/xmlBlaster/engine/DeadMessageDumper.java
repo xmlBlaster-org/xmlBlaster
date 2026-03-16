@@ -286,7 +286,7 @@ public class DeadMessageDumper implements I_Plugin {
          to.close();
       }
       catch (Throwable e) {
-         log.severe("Dumping of message failed: " + updateQos.toXml() + updateKey.toXml() + new String(content));
+         log.severe("Dumping of message failed: " + updateQos.serialize() + updateKey.toXml() + new String(content));
       }
    }
 

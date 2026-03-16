@@ -295,6 +295,6 @@ public final class PublishQosServer
    }
 
    public String toXml(String extraOffset) {
-      return this.msgQosData.toXml(extraOffset);
+      return this.msgQosData.serialize(extraOffset);
    }
 }

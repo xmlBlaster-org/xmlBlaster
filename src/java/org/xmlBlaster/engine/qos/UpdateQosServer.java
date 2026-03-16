@@ -96,6 +96,6 @@ public final class UpdateQosServer
    public static String toXml(MsgQosData msgQosData, long index, long size) {
       msgQosData.setQueueIndex(index);
       msgQosData.setQueueSize(size);
-      return msgQosData.toXml();
+      return msgQosData.serialize();
    }
 }

@@ -195,7 +195,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
 
       SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
-      String subQos = subQosW.toXml();
+      String subQos = subQosW.serialize();
 
       manyClients = new Client[numClients];
 
@@ -378,7 +378,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid2 + "' queryType='EXACT'></key>";
 
       SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
-      String subQos = subQosW.toXml();
+      String subQos = subQosW.serialize();
 
       try {
          oneConnection.subscribe(subKey, subQos);
@@ -403,7 +403,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String pubKey = pubKeyW.toXml(); // "<key oid='" + publishOid2 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'></key>"
 
       PublishQos pubQosW = new PublishQos(glob);
-      String pubQos = pubQosW.toXml(); // "<qos></qos>"
+      String pubQos = pubQosW.serialize(); // "<qos></qos>"
 
       long usedBefore = getUsedServerMemory();
 

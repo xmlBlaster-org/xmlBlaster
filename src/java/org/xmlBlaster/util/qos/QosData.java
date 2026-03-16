@@ -426,26 +426,41 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @return The size in bytes of the data in XML form
     */
    public int size() {
-      return toXml().length();
+      return serialize().length();
    }
 
-   /** The literal XML string of the QoS */
-   public abstract String toXml();
+   /** The literal XML/JSON string of the QoS 
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    */
+   public abstract String serialize();
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @param forceReadable hint to dump in human readable form (avoid Base64)
     * @return internal state of the query as a XML ASCII string
     * 
     */
-   public abstract String toXml(String extraOffset, Properties props);
+   public abstract String serialize(String extraOffset, Properties props);
    
-   public String toXmlReadable() {
+   /**
+    * NOTE: currently only has effect on XML 
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @return the readable XML or unchanged JSON string
+    */
+   public String serializeReadable() {
       Properties props = new Properties();
       props.put(Constants.TOXML_FORCEREADABLE, ""+true);
-      return toXml("", props);
+      return serialize("", props);
    }
    
    /*

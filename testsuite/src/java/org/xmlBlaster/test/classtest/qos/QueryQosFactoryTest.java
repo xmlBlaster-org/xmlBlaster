@@ -143,7 +143,7 @@ public class QueryQosFactoryTest extends TestCase {
 
            "</qos>\n";
          QueryQosData qos = factory.readObject(xml);
-         String newXml = qos.toXml();
+         String newXml = qos.serialize();
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
          String newJson = jsonFactory.writeObject(qos, null, null);
@@ -239,8 +239,8 @@ public class QueryQosFactoryTest extends TestCase {
       try {
          EraseQos eraseQos = new EraseQos(glob);
          eraseQos.setForceDestroy(true);
-         System.out.println("EraseQos (XML): " + eraseQos.toXml());
-         QueryQosData qos = factory.readObject(eraseQos.toXml());
+         System.out.println("EraseQos (XML): " + eraseQos.serialize());
+         QueryQosData qos = factory.readObject(eraseQos.serialize());
          assertEquals("", true, qos.getForceDestroy());
          System.out.println("EraseQos (JSON): " + eraseQos.toJson());
          qos = jsonFactory.readObject(eraseQos.toJson());
@@ -260,7 +260,7 @@ public class QueryQosFactoryTest extends TestCase {
       
       try {
          SubscribeQos subscribeQos = createSubscribeQos();
-         String xml = subscribeQos.toXml();
+         String xml = subscribeQos.serialize();
 
          // Test XML
          System.out.println("SubscribeQos (XML): " + xml);
@@ -330,8 +330,8 @@ public class QueryQosFactoryTest extends TestCase {
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
 
-         System.out.println("GetQos: " + getQos.toXml());
-         QueryQosData qos = factory.readObject(getQos.toXml());
+         System.out.println("GetQos: " + getQos.serialize());
+         QueryQosData qos = factory.readObject(getQos.serialize());
          assertGetQos(qos);
          qos = jsonFactory.readObject(getQos.toJson());
          System.out.println("GetQos: " + getQos.toJson());
@@ -366,7 +366,7 @@ public class QueryQosFactoryTest extends TestCase {
 
       try {
           UnSubscribeQos unsubscribeQos = createUnsubscribeQos();
-          String xml = unsubscribeQos.toXml();
+          String xml = unsubscribeQos.serialize();
 
           // Test XML
           System.out.println("UnSubscribeQos (XML): " + xml);

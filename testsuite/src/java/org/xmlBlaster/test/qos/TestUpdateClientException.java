@@ -117,16 +117,16 @@ public class TestUpdateClientException extends TestCase implements I_Callback
       try {
          SubscribeQos qos = new SubscribeQos(glob);
 
-         String subscriptionId = con.subscribe("<key oid='" + msgOidWantException + "'/>", qos.toXml()).getSubscriptionId();
+         String subscriptionId = con.subscribe("<key oid='" + msgOidWantException + "'/>", qos.serialize()).getSubscriptionId();
          log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantException + " done");
 
-         subscriptionId = con.subscribe("<key oid='" + msgOidWantIllegalException + "'/>", qos.toXml()).getSubscriptionId();
+         subscriptionId = con.subscribe("<key oid='" + msgOidWantIllegalException + "'/>", qos.serialize()).getSubscriptionId();
          log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantIllegalException + " done");
 
-         subscriptionId = con.subscribe("<key oid='" + msgOidWantNPE + "'/>", qos.toXml()).getSubscriptionId();
+         subscriptionId = con.subscribe("<key oid='" + msgOidWantNPE + "'/>", qos.serialize()).getSubscriptionId();
          log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantNPE + " done");
 
-         subscriptionId = con.subscribe("<key oid='" + msgOidNormal + "'/>", qos.toXml()).getSubscriptionId();
+         subscriptionId = con.subscribe("<key oid='" + msgOidNormal + "'/>", qos.serialize()).getSubscriptionId();
          log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidNormal + " done");
 
          subscriptionId = con.subscribe("<key oid='" + Constants.OID_DEAD_LETTER + "'/>", "<qos/>").getSubscriptionId();

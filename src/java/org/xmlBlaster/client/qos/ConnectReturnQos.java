@@ -184,11 +184,11 @@ public class ConnectReturnQos {
       return this.connectQosData.getInstanceId();
    }
 
-   public final String toXml() {
-      return this.connectQosData.toXml();
+   public final String serialize() {
+      return this.connectQosData.serialize();
    }
    
-   public final String toXml(String extraOffset) {
-      return this.connectQosData.toXml(extraOffset);
+   public final String serialize(String extraOffset) {
+      return this.connectQosData.serialize(extraOffset);
    }
 }

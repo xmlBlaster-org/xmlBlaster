@@ -137,7 +137,7 @@ public final class MsgFileDumper
          FileLocator.writeFile(this.path, fileName + this.XMLKEY_TOKEN, msgUnitWrapper.getMsgKeyData().toXml().getBytes());
       }
       FileLocator.writeFile(this.path, fileName, msgUnitWrapper.getMsgUnit().getContent());
-      FileLocator.writeFile(this.path, fileName + this.XMLQOS_TOKEN, msgUnitWrapper.getMsgQosData().toXml().getBytes());
+      FileLocator.writeFile(this.path, fileName + this.XMLQOS_TOKEN, msgUnitWrapper.getMsgQosData().serialize().getBytes());
       if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + fileName);
       return getPersistenceFileName(fileName);
    }

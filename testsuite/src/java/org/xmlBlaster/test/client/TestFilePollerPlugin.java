@@ -172,7 +172,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
                         " state=" + updateQos.getState() +
                         " content=" + cont);
       log.info("further log for receiving update of a message cbSessionId=" + cbSessionId +
-                     updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
+                     updateKey.toXml() + "\n" + new String(content) + updateQos.serialize());
       log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
 
       return "OK";
@@ -559,7 +559,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          address.setCollectTime(0L);
          connQos.getClientQueueProperty().setType("RAM");
          connQos.getClientQueueProperty().setVersion("1.0");
-         return connQos.toXml();
+         return connQos.serialize();
       }
       catch (XmlBlasterException ex) {
          fail("an exception when building the connect qos: " + ex.getMessage());

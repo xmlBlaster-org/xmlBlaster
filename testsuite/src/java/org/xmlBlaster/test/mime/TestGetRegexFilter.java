@@ -152,7 +152,7 @@ public class TestGetRegexFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", regPattern));
 
-         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.serialize());
          assertTrue("Expected one returned message", msgUnits!=null);
          assertTrue("Expected exactly one returned message", msgUnits.length==1);
          assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
@@ -176,7 +176,7 @@ public class TestGetRegexFilter extends TestCase
          GetQos qos = new GetQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", regPattern));
 
-         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
+         MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.serialize());
          if (msgUnits.length > 0) log.info(msgUnits[0].toXml());
          assertTrue("Expected zero returned message", msgUnits!=null);
          assertEquals("Expected zero returned message", 0, msgUnits.length);

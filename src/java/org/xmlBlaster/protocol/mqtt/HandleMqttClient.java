@@ -480,7 +480,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             qos.addClientProperty(KEY_MAX_QOS_LEVEL, subscription.getQos());
             qos.addClientProperty(KEY_RETAIN_AS_PUBLISHED, subscription.isRetainAsPublished());
             
-            xb.subscribe(null, connectReturnQos.getSecretSessionId(), key.toXml(), qos.toXml());
+            xb.subscribe(null, connectReturnQos.getSecretSessionId(), key.toXml(), qos.serialize());
             
             int grantedQos = subscription.getQos() >= 1 ? 1 : 0;
             returnCodes[count++] = grantedQos;
@@ -591,7 +591,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
                qos.addClientProperty(prop.getKey(), prop.getValue());
             }
 
-            xb.unSubscribe(addressServer, connectReturnQos.getSecretSessionId(), key.toXml(), qos.toXml());
+            xb.unSubscribe(addressServer, connectReturnQos.getSecretSessionId(), key.toXml(), qos.serialize());
             result[i] = 0;
          } catch (Throwable e) {
             log.warning("Unsubscribe failed for topic filter " + topic + " -> " + filter);
@@ -784,7 +784,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             if (msg instanceof XbMqttPubAck && msg.getMessageId() == msgId) {
                StatusQosData qosData = new StatusQosData(glob, MethodName.UPDATE);
                qosData.setState(Constants.STATE_OK);
-               results[msgArrIdx] = new PublishReturnQos(glob, qosData).toXml();
+               results[msgArrIdx] = new PublishReturnQos(glob, qosData).serialize();
                allAckLatch.countDown();
                return true;
             }
@@ -797,7 +797,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
                allAckLatch.countDown();
                StatusQosData response = new StatusQosData(glob, MethodName.ERASE);
                response.setState(Constants.STATE_OK);
-               results[i] = new EraseReturnQos(glob, response).toXml();
+               results[i] = new EraseReturnQos(glob, response).serialize();
                continue;
             }
                
@@ -808,7 +808,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             StatusQosData status = new StatusQosData(glob, MethodName.UPDATE);
             status.setException(e);
             status.setKeyOid(msgArr[i].getKeyOid());
-            results[i] = new PublishReturnQos(glob, status).toXml();
+            results[i] = new PublishReturnQos(glob, status).serialize();
          }
       }
 
@@ -823,7 +823,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
             StatusQosData status = new StatusQosData(glob, MethodName.UPDATE);
             status.setKeyOid(msgArr[i].getKeyOid());
             status.setState(Constants.STATE_TIMEOUT);
-            results[i] = new PublishReturnQos(glob, status).toXml();
+            results[i] = new PublishReturnQos(glob, status).serialize();
          }
       }
 
@@ -907,7 +907,7 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
       } else {
          status.setState(Constants.STATE_TIMEOUT);
       }
-      return status.toXml();
+      return status.serialize();
    }
 
    @Override

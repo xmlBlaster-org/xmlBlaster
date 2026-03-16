@@ -110,7 +110,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          connectQos.addCallbackAddress(cbAddr);
          XmlBlasterAccess access = (XmlBlasterAccess)this.connGlobal.getXmlBlasterAccess();
          ConnectReturnQos retQos = access.connect(connectQos, this.updateInterceptor, withQueue);
-         log.info("connect return qos: " + retQos.toXml());
+         log.info("connect return qos: " + retQos.serialize());
          
          SubscribeQos subQos = new SubscribeQos(this.connGlobal);
          subQos.setWantInitialUpdate(false);

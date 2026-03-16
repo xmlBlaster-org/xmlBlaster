@@ -127,7 +127,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            bilboCon.subscribe(sk.toXml(), sq.toXml());
+            bilboCon.subscribe(sk.toXml(), sq.serialize());
          }
 
          {
@@ -151,7 +151,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            bilboCon2.subscribe(sk.toXml(), sq.toXml());
+            bilboCon2.subscribe(sk.toXml(), sq.serialize());
          }
 
          // First test subscribe ...
@@ -205,7 +205,7 @@ public class SubscribeTest extends TestCase {
          EraseKey ek = new EraseKey(glob, oid);
          ek.setDomain(domain);
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.serialize());
          assertEquals("Erase", 1, arr.length);
       }
       catch (XmlBlasterException e) {
@@ -281,7 +281,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            bilboCons[ii].subscribe(sk.toXml(), sq.toXml());
+            bilboCons[ii].subscribe(sk.toXml(), sq.serialize());
 
             waitOnUpdate(2000L, 1);
             try { Thread.sleep(1000); } catch( InterruptedException i) {} // wait longer to check if too many arrive
@@ -293,7 +293,7 @@ public class SubscribeTest extends TestCase {
             EraseKey ek = new EraseKey(glob, oid);
             ek.setDomain(domain);
             EraseQos eq = new EraseQos(glob);
-            EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
+            EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.serialize());
             assertEquals("Erase", 1, arr.length);
 
             // Wait on erase events

@@ -159,7 +159,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          EraseQos eq = new EraseQos(glob);
          eq.setForceDestroy(forceDestroy);
          EraseKey ek = new EraseKey(glob, this.publishOid);
-         EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] er = con.erase(ek.toXml(), eq.serialize());
          return er;
       } catch(XmlBlasterException e) {
          fail("Erase XmlBlasterException: " + e.getMessage());
@@ -233,7 +233,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, publishOid);
          SubscribeQos sq = new SubscribeQos(glob);
-         this.subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
+         this.subscribeReturnQos = con.subscribe(sk.toXml(), sq.serialize());
          log.info("Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
          log.severe("subscribe() XmlBlasterException: " + e.getMessage());
@@ -251,7 +251,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, xpath, Constants.XPATH);
          SubscribeQos sq = new SubscribeQos(glob);
-         this.subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
+         this.subscribeReturnQos = con.subscribe(sk.toXml(), sq.serialize());
          log.info("Subscribing of '" + xpath + "' done");
          return this.subscribeReturnQos.getSubscriptionId();
       } catch(XmlBlasterException e) {
@@ -270,7 +270,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          // Subscribe for the volatile message
          UnSubscribeKey sk = new UnSubscribeKey(glob, subscribeReturnQos.getSubscriptionId());
          UnSubscribeQos sq = new UnSubscribeQos(glob);
-         con.unSubscribe(sk.toXml(), sq.toXml());
+         con.unSubscribe(sk.toXml(), sq.serialize());
          log.info("UnSubscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
          log.severe("unSubscribe() XmlBlasterException: " + e.getMessage());
@@ -285,7 +285,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       try {
          GetKey gk = new GetKey(glob, "__cmd:?dump");
          GetQos gq = new GetQos(glob);
-         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         MsgUnit[] msgs = con.get(gk.toXml(), gq.serialize());
          assertEquals("Did not expect returned msg for get()", 1, msgs.length);
          return msgs[0].getContentStr();
       }

@@ -54,12 +54,12 @@ public class PublishSame
 
          String xmlKey = null;
          PublishQos qw = new PublishQos(glob);
-         System.out.println("qos = " + qw.toXml() );
+         System.out.println("qos = " + qw.serialize() );
          byte[] b = new byte[1024];
          while(true) {
             lCount++;
             xmlKey =  "<key oid='OneMessage'> <topic id='aaaa'/> </key>";
-            con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
+            con.publish(new MsgUnit(xmlKey,b,qw.serialize()));
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
             if ((lCount % bulkSize) == 0) {
                try {

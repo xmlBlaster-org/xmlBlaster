@@ -124,7 +124,7 @@ public class TestSessionReconnect extends TestCase
             addr.setSecretCbSessionId(secretCbSessionId);
             qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
 
-            log.info("First subscribe connect QoS = " + qosSub.toXml());
+            log.info("First subscribe connect QoS = " + qosSub.serialize());
             crqSub = conSub.connect(qosSub, this.updateInterceptorSub); // Login to xmlBlaster
             log.info("Connect as subscriber '" + crqSub.getSessionName() + "' success");
          }
@@ -139,7 +139,7 @@ public class TestSessionReconnect extends TestCase
          historyQos.setNumEntries(1);
          sq.setHistoryQos(historyQos);
 
-         /*SubscribeReturnQos srq = */conSub.subscribe(sk.toXml(), sq.toXml());
+         /*SubscribeReturnQos srq = */conSub.subscribe(sk.toXml(), sq.serialize());
          log.info("Subscription to '" + oid + "' done");
 
          log.info("============ STEP 2: Start publisher");
@@ -203,7 +203,7 @@ public class TestSessionReconnect extends TestCase
             qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
             qosSub.getSessionQos().setSessionName(crqSub.getSessionQos().getSessionName());
 
-            log.info("Second subscribe connect QoS = " + qosSub.toXml());
+            log.info("Second subscribe connect QoS = " + qosSub.serialize());
             ConnectReturnQos crqSub2 = conSub2.connect(qosSub, updateInterceptorSub2); // Login to xmlBlaster
             log.info("Connect as subscriber '" + crqSub2.getSessionName() + "' success");
          }

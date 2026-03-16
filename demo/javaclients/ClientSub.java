@@ -98,7 +98,7 @@ public class ClientSub implements I_Callback
             SubscribeQos qos = new SubscribeQos(glob);
 
             try {
-               subscriptionId = blasterConnection.subscribe(key.toXml(), qos.toXml()).getSubscriptionId();
+               subscriptionId = blasterConnection.subscribe(key.toXml(), qos.serialize()).getSubscriptionId();
                log.info("Subscribe done, there should be no Callback, subcriptionId=" + subscriptionId);
             } catch(XmlBlasterException e) {
                log.warning("XmlBlasterException: " + e.getMessage());
@@ -198,7 +198,7 @@ public class ClientSub implements I_Callback
       log.info("Received asynchronous callback-update " + numReceived + " with cbSessionId='" + cbSessionId + "' from xmlBlaster from publisher " + updateQos.getSender() + " (latency=" + elapsed + " milli seconds):");
       System.out.println(updateKey.toXml());
       System.out.println((new String(content)).toString());
-      System.out.println(updateQos.toXml());
+      System.out.println(updateQos.serialize());
       return "";
    }
 

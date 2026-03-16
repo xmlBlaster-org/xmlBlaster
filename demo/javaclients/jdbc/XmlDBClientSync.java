@@ -89,7 +89,7 @@ public class XmlDBClientSync
          key.wrap(wrap.toXml());
          GetQos qos = new GetQos(glob);
          // get() blocks until the query is finished ...
-         MsgUnit[] msgUnitArr = corbaConnection.get(key.toXml(), qos.toXml());
+         MsgUnit[] msgUnitArr = corbaConnection.get(key.toXml(), qos.serialize());
          if (msgUnitArr.length > 0)
             System.out.println(new String(msgUnitArr[0].getContent()));
          else

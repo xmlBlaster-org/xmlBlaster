@@ -82,7 +82,7 @@ public final class DisconnectQosServer
     * @return An XML ASCII string
     */
    public String toXml() {
-      return this.disconnectQosData.toXml();
+      return this.disconnectQosData.serialize();
    }
 }
 

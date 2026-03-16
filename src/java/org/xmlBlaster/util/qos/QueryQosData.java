@@ -489,37 +489,47 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    * factory.writeObject() method of a SAX or JSON factory
     * <br>
-    * @return internal state of the query as a XML ASCII string
+    * @return internal state of the query as a XML/JSON ASCII string
     */
-   public String toXml() {
-      return toXml((String)null, (Properties)null);
+   public String serialize() {
+      return serialize((String)null, (Properties)null);
    }
 
-   // deprecated
-   public String toXml(String extraOffset) {
+   /**
+    * Dump state of this object into a XML/JSON ASCII string. <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    * factory.writeObject() method of a SAX or JSON factory
+    * 
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @return internal state of the query as a XML/JSON ASCII string
+    */
+   public String serialize(String extraOffset) {
       Properties props = null;
       if (extraOffset != null && extraOffset.length() > 0) {
          props = new Properties();
          props.put(Constants.TOXML_EXTRAOFFSET, extraOffset);
       }
-      return toXml(extraOffset, props);
+      return serialize(extraOffset, props);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the query as a XML ASCII string
+    * Dump state of this object into a XML/JSON ASCII string. <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    * factory.writeObject() method of a SAX or JSON factory 
+    * 
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @return internal state of the query as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset, Properties props) {
+   public String serialize(String extraOffset, Properties props) {
       return factory.writeObject(this, extraOffset, props);
    }
 
    /**
     * Dump state of this object into a JSON string.
-    * <br>
     * @return internal state of the query as a JSON string
     */
    public String toJson() {
@@ -544,7 +554,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
    
    public String toString() {
-	   return toXmlReadable();
+	   return serializeReadable();
    }
 }
 

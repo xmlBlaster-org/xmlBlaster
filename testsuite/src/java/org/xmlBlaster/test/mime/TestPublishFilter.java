@@ -221,7 +221,7 @@ public class TestPublishFilter extends TestCase
       try {
          PublishQos pq = new PublishQos(glob);
          pq.addDestination(new Destination(new SessionName(glob, name)));
-         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), pq.serialize()));
          log.info("TEST 1: SUCCESS returned state=" + rq.getState());
          assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getState()));
       } catch(XmlBlasterException e) {
@@ -242,7 +242,7 @@ public class TestPublishFilter extends TestCase
       try {
          PublishQos pq = new PublishQos(glob);
          pq.addDestination(new Destination(new SessionName(glob, name)));
-         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
+         PublishReturnQos rq = con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), pq.serialize()));
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
          log.info("TEST 2: SUCCESS");
       } catch(XmlBlasterException e) {
@@ -254,7 +254,7 @@ public class TestPublishFilter extends TestCase
       try {   // see THROW_EXCEPTION_FOR_LEN=3
          PublishQos pq = new PublishQos(glob);
          pq.addDestination(new Destination(new SessionName(glob, name)));
-         con.publish(new MsgUnit("<key oid='MSG'/>", "123".getBytes(), pq.toXml()));
+         con.publish(new MsgUnit("<key oid='MSG'/>", "123".getBytes(), pq.serialize()));
          fail("publish - expected an XmlBlasterException");
       } catch(XmlBlasterException e) {
          log.warning("TEST 3: SUCCESS XmlBlasterException: " + e.getMessage());

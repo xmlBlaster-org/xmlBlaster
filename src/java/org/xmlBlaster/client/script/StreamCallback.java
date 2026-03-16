@@ -76,7 +76,7 @@ public class StreamCallback implements I_Callback {
       buf.append(this.offset).append("<sessionId>").append(cbSessionId).append("</sessionId>");
       buf.append(updateKey.toXml(this.offset + "  ")).append("\n");
       writeContent(updateQos.getContentStr(content), buf);
-      buf.append(updateQos.toXml(this.offset + "  ")).append("\n");
+      buf.append(updateQos.serialize(this.offset + "  ")).append("\n");
       buf.append(this.offset).append("</update>\n");
       synchronized (this.out) {
          try {

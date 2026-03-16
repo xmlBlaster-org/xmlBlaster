@@ -203,7 +203,7 @@ public final class TopicEntry implements I_MapEntry
          return obj;
       }
       else {
-         Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml() };
+         Object[] obj = { this.msgUnit.getQosData().serialize(), this.msgUnit.getKeyData().toXml() };
          return obj;
       }
    }

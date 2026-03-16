@@ -280,25 +280,25 @@ public final class GetReturnQos
    }
    
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @return internal state of the RequestBroker as a XML ASCII string
+    * @return internal state of the RequestBroker as a XML/JSON ASCII string
     */
-   public String toXml() {
-      return toXml((String)null);
+   public String serialize() {
+      return serialize((String)null);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the RequestBroker as a XML ASCII string
+    * @param extraOffset indenting of tags for nice output (no effect on JSON)
+    * @return internal state of the RequestBroker as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset) {
-      return this.msgQosData.toXml(extraOffset);
+   public String serialize(String extraOffset) {
+      return this.msgQosData.serialize(extraOffset);
    }
 
    public String toString() {
-      return toXml(null);
+      return serialize(null);
    }
 }

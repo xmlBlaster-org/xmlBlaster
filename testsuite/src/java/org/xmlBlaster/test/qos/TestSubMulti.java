@@ -122,13 +122,13 @@ public class TestSubMulti extends TestCase implements I_Callback
         {
           SubscribeKey key = new SubscribeKey(glob, "//key/location[@dest='agent-192.168.10.218']", "XPATH");
           SubscribeQos qos = new SubscribeQos(glob);
-          con.subscribe(key.toXml(), qos.toXml(),this);
+          con.subscribe(key.toXml(), qos.serialize(),this);
         }
 
         {
           SubscribeKey key = new SubscribeKey(glob, "//key[@contentMimeExtended='action']/location[@dest='agent-192.168.10.218' and @driver='PSD1']", "XPATH");
           SubscribeQos qos = new SubscribeQos(glob);
-          con.subscribe(key.toXml(), qos.toXml(), this);
+          con.subscribe(key.toXml(), qos.serialize(), this);
         }
       }
       catch(XmlBlasterException e) {
@@ -151,7 +151,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       PublishQos qos = new PublishQos(glob);
       senderContent = "some content";
       try {
-         MsgUnit msgUnit = new MsgUnit(key.toXml(), senderContent.getBytes(), qos.toXml());
+         MsgUnit msgUnit = new MsgUnit(key.toXml(), senderContent.getBytes(), qos.serialize());
          sentTimestamp = new Timestamp();
          publishOid = con.publish(msgUnit).getKeyOid();
          log.info("Success: Publishing done, returned oid=" + publishOid);

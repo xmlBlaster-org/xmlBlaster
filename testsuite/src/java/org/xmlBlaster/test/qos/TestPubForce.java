@@ -152,7 +152,7 @@ public class TestPubForce extends TestCase implements I_Callback
                       "</key>";
       PublishQos qosWrapper = new PublishQos(glob);
       qosWrapper.setForceUpdate(forceUpdate);
-      String qos = qosWrapper.toXml(); // == "<qos><forceUpdate/></qos>"
+      String qos = qosWrapper.serialize(); // == "<qos><forceUpdate/></qos>"
 
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);

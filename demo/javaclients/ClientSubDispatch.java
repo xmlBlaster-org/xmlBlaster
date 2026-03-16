@@ -69,7 +69,7 @@ public class ClientSubDispatch implements I_Callback
                   numReceived1++;
                   System.out.println(updateKey.toXml());
                   System.out.println((new String(content)).toString());
-                  System.out.println(updateQos.toXml());
+                  System.out.println(updateQos.serialize());
                   return "";
                }
             });
@@ -83,7 +83,7 @@ public class ClientSubDispatch implements I_Callback
                   numReceived2++;
                   System.out.println(updateKey.toXml());
                   System.out.println((new String(content)).toString());
-                  System.out.println(updateQos.toXml());
+                  System.out.println(updateQos.serialize());
                   return "";
                }
             });
@@ -156,7 +156,7 @@ public class ClientSubDispatch implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       log.severe("Received unexpected asynchronous callback-update from xmlBlaster from publisher " + updateQos.getSender() + ":");
-      log.severe(updateKey.toXml() + "\n" + updateQos.toXml());
+      log.severe(updateKey.toXml() + "\n" + updateQos.serialize());
       return "";
    }
 

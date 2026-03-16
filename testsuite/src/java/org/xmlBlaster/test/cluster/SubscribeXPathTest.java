@@ -131,7 +131,7 @@ public class SubscribeXPathTest extends TestCase {
          sk.setDomain(domain);  // set domain to allow cluster forwarding of subscription
          // without setting the domain the subscribe would just be handled by the slave connected to
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos srq = bilboCon.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos srq = bilboCon.subscribe(sk.toXml(), sq.serialize());
 
          System.err.println("->Publish to avalon ...");
          PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
@@ -155,7 +155,7 @@ public class SubscribeXPathTest extends TestCase {
          EraseKey ek = new EraseKey(glob, oid);
          ek.setDomain(domain);
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
+         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.serialize());
          assertEquals("Erase", 1, arr.length);
       }
       catch (XmlBlasterException e) {

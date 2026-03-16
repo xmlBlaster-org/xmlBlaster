@@ -172,7 +172,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       eraseQos.setForceDestroy(true);
       try {
          try {
-            EraseReturnQos[] arr = con.erase(xmlKey, eraseQos.toXml());
+            EraseReturnQos[] arr = con.erase(xmlKey, eraseQos.serialize());
 
 
             PropString defaultPlugin = new PropString("CACHE,1.0");
@@ -239,7 +239,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       try {
          publishKeyWrapper.setOid(oid);
          String content = "" + counter;
-         MsgUnit msgUnit = new MsgUnit(publishKeyWrapper.toXml(), content.getBytes(), publishQosWrapper.toXml());
+         MsgUnit msgUnit = new MsgUnit(publishKeyWrapper.toXml(), content.getBytes(), publishQosWrapper.serialize());
 
          con.publish(msgUnit);
          Util.delay(publishDelay);  // Wait some time
@@ -341,7 +341,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
             contentCounter = Integer.parseInt(cnt);
             assertEquals("Wrong counter in content", ii, contentCounter);
          } catch(NumberFormatException e) {
-            log.severe("Can't extract message number '" + new String(content) + "': " + updateQos.toXml());
+            log.severe("Can't extract message number '" + new String(content) + "': " + updateQos.serialize());
          }
 
          log.info("Update message oid=" + oid + " numReceived=" + numReceived + ", numNormalPublishReceived=" + numNormalPublishReceived + " numTailbackReceived=" + numTailbackReceived + " ...");

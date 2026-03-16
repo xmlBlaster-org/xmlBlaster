@@ -725,7 +725,7 @@ public class XmlBlasterPublisher implements
    }
 
    public String getConnectQos() {
-      return connectQos.toXml();
+      return connectQos.serialize();
    }
 
    public boolean isEraseOnDelete() {

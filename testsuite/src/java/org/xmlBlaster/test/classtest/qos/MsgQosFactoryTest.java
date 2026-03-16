@@ -252,7 +252,7 @@ public class MsgQosFactoryTest extends TestCase {
 
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData qos = factory.readObject(xml);
-         String newXml = qos.toXml();
+         String newXml = qos.serialize();
          log.info("lifeTime=" + qos.getLifeTimeProp().toXml());
          log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
@@ -630,7 +630,7 @@ public class MsgQosFactoryTest extends TestCase {
       MsgQosData msgQosData = new MsgQosData(glob, MethodName.PUBLISH);
       msgQosData.setAdministrative(true);
       assertEquals("", PriorityEnum.MAX_PRIORITY.getInt(), msgQosData.getPriority().getInt());
-      String xml = msgQosData.toXml();
+      String xml = msgQosData.serialize();
       /*
        * "<qos>\n" + "   <priority>MAX</priority>\n" + "   <administrative/>\n" +
        * "</qos>\n";

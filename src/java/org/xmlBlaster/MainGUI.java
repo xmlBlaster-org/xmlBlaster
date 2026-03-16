@@ -747,7 +747,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
          connectQos.getSessionQos().setSessionTimeout(0L);
          // TODO: Port to use "LOCAL" protocol to connect
          this.addressServer = new AddressServer(authenticate.getGlobal(), "NATIVE", authenticate.getGlobal().getId(), (java.util.Properties)null);
-         String ret = authenticate.connect(addressServer, connectQos.toXml(), null); // synchronous access only, no callback.
+         String ret = authenticate.connect(addressServer, connectQos.serialize(), null); // synchronous access only, no callback.
          ConnectReturnQos retQos = new ConnectReturnQos(authenticate.getGlobal(), ret);
          this.secretSessionId = retQos.getSecretSessionId();
          log.info("login for '" + loginName + "' successful.");

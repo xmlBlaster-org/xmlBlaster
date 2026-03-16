@@ -134,7 +134,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
       try {
          subscribeRetQos = senderConnection.subscribe(xmlKey, qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info("Receiving message with specialized update(" + updateKey.getOid() + ") ... " + updateQos.toXml());
+                  log.info("Receiving message with specialized update(" + updateKey.getOid() + ") ... " + updateQos.serialize());
 
                   if (updateQos.isErased()) {
                      return "";
