@@ -332,8 +332,8 @@ public final class SessionQos implements java.io.Serializable, Cloneable
    public void toJson(JsonGenerator gen) throws IOException {
       gen.writeStartObject();
       
-      if (this.sessionNameModified) {
-         gen.writeStringField("name", this.getSessionName().toString());
+      if (getSessionName() != null) {
+         gen.writeStringField("name", this.getSessionName().getAbsoluteName());
       }
       if (this.sessionTimeout.isModified()) {
          gen.writeNumberField("timeout", getSessionTimeout());
