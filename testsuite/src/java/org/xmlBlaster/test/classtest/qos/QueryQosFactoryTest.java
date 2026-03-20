@@ -239,8 +239,9 @@ public class QueryQosFactoryTest extends TestCase {
       try {
          EraseQos eraseQos = new EraseQos(glob);
          eraseQos.setForceDestroy(true);
-         System.out.println("EraseQos (XML): " + eraseQos.serialize());
-         QueryQosData qos = factory.readObject(eraseQos.serialize());
+         // serialize -> parse -> serialize, to guarantee that the output is xml
+         System.out.println("EraseQos (XML): " + eraseQos.toXml());
+         QueryQosData qos = factory.readObject(eraseQos.toXml());
          assertEquals("", true, qos.getForceDestroy());
          System.out.println("EraseQos (JSON): " + eraseQos.toJson());
          qos = jsonFactory.readObject(eraseQos.toJson());
@@ -330,8 +331,8 @@ public class QueryQosFactoryTest extends TestCase {
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
 
-         System.out.println("GetQos: " + getQos.serialize());
-         QueryQosData qos = factory.readObject(getQos.serialize());
+         System.out.println("GetQos: " + getQos.toXml());
+         QueryQosData qos = factory.readObject(getQos.toXml());
          assertGetQos(qos);
          qos = jsonFactory.readObject(getQos.toJson());
          System.out.println("GetQos: " + getQos.toJson());
@@ -366,7 +367,7 @@ public class QueryQosFactoryTest extends TestCase {
 
       try {
           UnSubscribeQos unsubscribeQos = createUnsubscribeQos();
-          String xml = unsubscribeQos.serialize();
+          String xml = unsubscribeQos.toXml();
 
           // Test XML
           System.out.println("UnSubscribeQos (XML): " + xml);

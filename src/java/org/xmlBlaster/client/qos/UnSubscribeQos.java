@@ -10,6 +10,7 @@ import java.util.Properties;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
@@ -113,6 +114,17 @@ public final class UnSubscribeQos
    public String toJson() {
       return this.queryQosData.toJson();
    }
+
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @deprecated this is just a helper if you always want xml, use instead:
+    * {@link org.xmlBlaster.client.qos.GetQos#serialize()}
+    * @return An XML ASCII string
+    */
+   public String toXml() {
+      I_QueryQosFactory f = glob.getQueryQosFactory("<qos/>"); // make sure we get a factory that produces xml
+      return f.writeObject(queryQosData, "", null); 
+}
 
    /**
     * Converts the data into a valid XML/JSON ASCII string.

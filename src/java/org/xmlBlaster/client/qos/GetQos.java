@@ -14,6 +14,7 @@ import org.xmlBlaster.util.qos.QuerySpecQos;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
@@ -144,13 +145,23 @@ public final class GetQos
    
    /**
     * Converts the data into a valid JSON string.
-    * TODO: Properties might need to be added like in toXml
     * @return An JSON string
     */
    public String toJson() {
       return this.queryQosData.toJson();
    }
 
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @deprecated this is just a helper if you always want xml, use instead:
+    * {@link org.xmlBlaster.client.qos.GetQos#serialize()}
+    * @return An XML ASCII string
+    */
+   public String toXml() {
+      I_QueryQosFactory f = glob.getQueryQosFactory("<qos/>"); // make sure we get a factory that produces xml
+      return f.writeObject(queryQosData, "", null); 
+}
+   
    public String serialize() {
       return serialize((Properties)null);
    }

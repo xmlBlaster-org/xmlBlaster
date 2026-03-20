@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 
 /**
  * This class encapsulates the QoS of an erase() request. 
@@ -115,7 +116,6 @@ public final class EraseQos
    }
 
    /**
-    * TODO: maybe this should be a toXML() Method or a toXML method should be added if needed
     * Converts the data into a valid XML/JSON ASCII string.
     * @return An XML/JSON ASCII string
     */
@@ -125,7 +125,6 @@ public final class EraseQos
    
    /**
     * Converts the data into a valid JSON ASCII string.
-    * TODO: Properties might need to be added like in toXml
     * @return An JSON ASCII string
     */
    public String toJson() {
@@ -134,9 +133,20 @@ public final class EraseQos
 
    /**
     * Converts the data into a valid XML ASCII string.
+    * @deprecated this is just a helper if you always want xml, use instead:
+    * {@link org.xmlBlaster.client.qos.EraseQos#serialize()}
     * @return An XML ASCII string
     */
-   public String toXml(Properties props) {
+   public String toXml() {
+      I_QueryQosFactory f = glob.getQueryQosFactory("<qos/>"); // make sure we get a factory that produces xml
+      return f.writeObject(queryQosData, "", null); 
+   }
+
+   /**
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
+    */
+   public String serialize(Properties props) {
       return this.queryQosData.serialize((String)null, props);
    }
 }
