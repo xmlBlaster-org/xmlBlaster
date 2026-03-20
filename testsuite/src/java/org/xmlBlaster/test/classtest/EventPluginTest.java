@@ -148,7 +148,7 @@ public class EventPluginTest extends TestCase implements I_Callback {
                };
          {
             Global global = new Global(args);
-            ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret"); // and here
             qos.getSessionCbQueueProperty().setMaxEntries(10L);
             qos.getSessionCbQueueProperty().setMaxEntriesCache(10L);
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
@@ -164,7 +164,7 @@ public class EventPluginTest extends TestCase implements I_Callback {
 
          Global secondGlobal = new Global(args);
          MsgInterceptor msgInterceptor = new MsgInterceptor(secondGlobal, log, null);
-         ConnectQos qos = new ConnectQos(secondGlobal, "tester/1", "secret");
+         ConnectQos qos = new ConnectQos(secondGlobal, "tester/1", "secret"); // look here
          I_XmlBlasterAccess conn2 = secondGlobal.getXmlBlasterAccess();
          conn2.connect(qos, msgInterceptor);
          SubscribeKey subKey = new SubscribeKey(secondGlobal, "__sys__Event");

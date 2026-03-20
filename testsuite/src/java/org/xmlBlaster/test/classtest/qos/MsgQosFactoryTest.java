@@ -630,7 +630,8 @@ public class MsgQosFactoryTest extends TestCase {
       MsgQosData msgQosData = new MsgQosData(glob, MethodName.PUBLISH);
       msgQosData.setAdministrative(true);
       assertEquals("", PriorityEnum.MAX_PRIORITY.getInt(), msgQosData.getPriority().getInt());
-      String xml = msgQosData.serialize();
+      MsgQosSaxFactory xmlFactory = new MsgQosSaxFactory(glob);
+      String xml =xmlFactory.writeObject(msgQosData, null, null);
       /*
        * "<qos>\n" + "   <priority>MAX</priority>\n" + "   <administrative/>\n" +
        * "</qos>\n";
@@ -638,10 +639,10 @@ public class MsgQosFactoryTest extends TestCase {
       log.info("Created administrative publish" + xml);
       assertTrue("Missing administrative in " + xml, xml.indexOf("<administrative/>") > -1);
       assertTrue("Wrong priority in " + xml, xml.indexOf("9") > -1 || xml.indexOf("MAX") > -1);
-      String json = jsonFactory.writeObject(msgQosData, "", null);
       /*
        * { "priority" : "MAX", "administrative" : true, "isPublish" : true }
        */
+      String json = jsonFactory.writeObject(msgQosData, "", null);
       log.info("Created administrative publish\n" + json);
       assertTrue("Missing administrative in " + json, json.indexOf("administrative") > -1);
       assertTrue("Wrong priority in " + json, json.indexOf("9") > -1 || json.indexOf("MAX") > -1);

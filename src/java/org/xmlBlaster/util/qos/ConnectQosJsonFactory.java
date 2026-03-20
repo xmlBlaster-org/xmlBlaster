@@ -362,8 +362,8 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
    /**
     * Dump state of this object into a JSON string. <br>
     * 
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the ConnectQos as a XML ASCII string
+    * @param extraOffset currently does nothing
+    * @return internal state of the ConnectQos as a JSON ASCII string
     */
    @Override
    public String writeObject(ConnectQosData qosData, String extraOffset, Properties props) {

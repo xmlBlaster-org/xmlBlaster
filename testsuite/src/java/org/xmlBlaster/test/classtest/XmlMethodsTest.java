@@ -52,7 +52,7 @@ public class XmlMethodsTest extends XMLTestCase {
 
    }
 
-   protected void testWriteNode() throws Exception {
+   public void testWriteNode() throws Exception {
       String txt = "<xmlBlaster>\n" +
                    "  <connect>\n" + 
                    "      <qos>\n" +

@@ -8,6 +8,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosJsonFactory;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.test.classtest.qos.ConnectQosFactoryTest;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
@@ -269,15 +270,15 @@ public class ConnectQosTest extends TestCase {
          "  </queue>\n" +
          " </qos>\n";
 
-         I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         I_ConnectQosFactory xmlFactory = glob.getConnectQosFactory(xml);
          I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
 
-         ConnectQosData qos = factory.readObject(xml); // parse
-         String newXml = qos.serialize();                  // dump
-         qos = factory.readObject(newXml);             // parse again
+         ConnectQosData qos = I_ConnectQosFactory.parse(glob, xml); // parse
+         String newXml = qos.serialize();                  // dump (serialize will produce xml, if the string comes from xml
+         qos = xmlFactory.readObject(newXml);             // parse again
          String json = jsonFactory.writeObject(qos, null, null);
-         qos = jsonFactory.readObject(json);
-         System.out.println("XML length: " + newXml.replaceAll("\\s+", "").length() + "\nJson length: " + json.replaceAll("\\s+", "").length());
+         qos = I_ConnectQosFactory.parse(glob, json);
+         System.out.println("XML length: " + newXml.replaceAll("\\s+", "").length() + "\nJson length (untrimmed): " + json.length());
 
          if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
          
@@ -310,7 +311,7 @@ public class ConnectQosTest extends TestCase {
          "   </queue>\n" +
          "</qos>\n";
 
-         I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         I_ConnectQosFactory factory = this.glob.getConnectQosFactory(xml);
          I_ConnectQosFactory jsonFactory = new ConnectQosJsonFactory(glob);
          ConnectQosData qos = factory.readObject(xml); // parse
          String newXml = qos.serialize();                  // dump
