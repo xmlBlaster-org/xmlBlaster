@@ -67,7 +67,7 @@ TODO
    <!-- C++/C user guide: http://ant-contrib.sourceforge.net/cc.html -->
    <taskdef resource="cpptasks.tasks"> <!-- cc defineset compiler linker -->
       <classpath>
-         <pathelement location="lib/ant/cpptasks.jar" /> <!-- not supported, use: ant -lib lib/ant/cpptasks.jar ... --> 
+         <pathelement location="lib/ant/cpptasks.jar" /> <!-- not supported, use: ant -lib lib/ant/cpptasks.jar ... -->
       </classpath>
    </taskdef>
    <typedef resource="cpptasks.types"/>
@@ -337,7 +337,7 @@ TODO
       <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
   </compiler>
 
-  <!-- 
+  <!--
     Standard Mac OS X PreProcessor defines:
           _GLIBCXX_DEBUG=1
           _GLIBCXX_DEBUG_PEDANTIC=1
@@ -518,7 +518,7 @@ TODO
       <echo message="Build timestamp = ${build.timestamp} version = ${version}"/>
 
       <echo message="xmlBlaster.home=${xmlBlaster.home}"/>
-      
+
       <echo message="java.specification.version=${java.specification.version}"/>
 
       <property name="JVM.target" value="${java.specification.version}" />
@@ -669,7 +669,7 @@ TODO
             <exclude name="**/client/protocol/http/j2me/XmlBlasterAccessJ2ME.java"/>
             <!-- Activate excludes to compile with JDK 1.2 -->
             <patternset id="jdk12.notcompatible.sources">
-               <!-- 
+               <!--
                <exclude name="**/jmx/**"/>
                <exclude name="**/jmxgui/**"/>
                <exclude name="**/memoryleak/**"/>
@@ -847,7 +847,7 @@ TODO
       <zipfileset src="${build.dir}/xmlBlaster.jar"
         excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
     </jar>
-    
+
     <jar destfile="${build.dir}/xmlBlaster.sar">
       <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
         includes="jboss-service.xml"
@@ -859,7 +859,7 @@ TODO
         includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
         />
     </jar>
-    
+
      <copy file="${build.dir}/xmlBlaster.sar" tofile="${lib.dir}/xmlBlaster.sar"/>
      <delete dir="${build.dir}/sar"/>
    </target>
@@ -881,7 +881,7 @@ TODO
       <zipfileset src="${build.dir}/xmlBlaster.jar"
         excludes="xmlBlaster.properties,xmlBlasterPlugins.xml"/>
     </jar>-->
-    
+
     <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
     <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
     <delete dir="${build.dir}/ra"/>
@@ -1030,8 +1030,8 @@ TODO
    <!-- =================================================================== -->
 
    <!--
-   <filelist id="j2me.preverify.cp" 
-             dir="${J2ME_HOME}/lib" 
+   <filelist id="j2me.preverify.cp"
+             dir="${J2ME_HOME}/lib"
              files="cldcapi10.jar,midpapi10.jar,${build.dir}/j2me/tmpclasses"/>
    <pathconvert targetos="${os.family}"
                 property="j2me.preverify.cp}"
@@ -1047,7 +1047,7 @@ TODO
       </not>
    </condition>
    <!-- property name="MIDlet-Jar-URL" value="http://www.xmlblaster.org/xmlBlaster/demo/j2me/SystemInfo.jar" / -->
-   <!-- Will replace the token in the SystemInfo.jad file: --> 
+   <!-- Will replace the token in the SystemInfo.jad file: -->
    <property name="MIDlet-Jar-URL" value="SystemInfo.jar" />
    <property name="MIDlet-servletUrl" value="http://server.xmlBlaster.org:8080/xmlBlaster/AppletServlet" />
 
@@ -1305,7 +1305,7 @@ TODO
                 <sysproperty key="java.compiler" value="NONE"/>
         </java>
    </target>
-         
+ 
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
@@ -1513,29 +1513,29 @@ TODO
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/client.c.socket.xml"
              out="${docbookReq.dir}/test0.html"
-             extension=".xml" 
+             extension=".xml"
              style="${docbookReq.dir}/../docbook/docbookXmlBlaster.xsl"
-             force="true">              
+             force="true">
        </style>
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/test0.html"
              out="${docbookReq.dir}/test1.html"
-             extension=".xml" 
+             extension=".xml"
              style="${docbookReq.dir}/embedSource.xsl"
-             force="true">              
+             force="true">
        </style>
     </target>
 
     <target name="docbookReq" description="Creates new html requirements from docbook doc/docbookReq/ XML files">
 
-      <style processor="trax" 
+      <style processor="trax"
              basedir="doc/requirements"
              destdir="${docbookReq.dir}"
              includes="*.xml"
              excludes="all.xml"
-             extension=".xml" 
+             extension=".xml"
              style="${docbookReq.dir}/req2Docbook.xsl"
-             force="true">              
+             force="true">
        </style>
 
       <!-- Create the errorCode listing requirement first: -->
@@ -1557,16 +1557,16 @@ TODO
       </pathconvert>
       <echo file="${docbookReq.dir}/all.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
    <files><url>${files}</url></files>]]></echo>
-      <!-- Create the overview -->                   
+      <!-- Create the overview -->
       <!--
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/all.xml"
              out="${docbookReq.dir}/requirement.html"
              extension=".html" style="${docbookReq.dir}/createOverview.xsl"
-             force="true">              
+             force="true">
          <xmlcatalog>
             <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
-         </xmlcatalog>    
+         </xmlcatalog>
        </style>
        -->
 
@@ -1574,14 +1574,14 @@ TODO
              in="${docbookReq.dir}/all.xml"
              out="${docbookReq.dir}/requirement.xml"
              extension=".xml" style="${docbookReq.dir}/createOverview.xsl"
-             force="true">              
+             force="true">
        </style>
 <!--
       <style processor="trax" basedir="${docbookReq.dir}"
              in="${docbookReq.dir}/requirement.html"
              out="${docbookReq.dir}/menu.xml"
              extension=".html" style="${docbookReq.dir}/createMenu.xsl"
-             force="true">              
+             force="true">
        </style>
 
 
@@ -1589,7 +1589,7 @@ TODO
              in="${docbookReq.dir}/requirement.html"
              out="${docbookReq.dir}/menu.xml"
              extension=".html" style="${docbookReq.dir}/createMenu.xsl"
-             force="true">              
+             force="true">
        </style>
 -->
       <!-- generate each req -->
@@ -1602,7 +1602,7 @@ TODO
              force="true">
          <xmlcatalog>
             <dtd publicId="-//OASIS//DTD DocBook XML V4.2//EN" location="doc/dtd/docbookx.dtd" />
-         </xmlcatalog>    
+         </xmlcatalog>
        </style>
       -->
    </target>
@@ -1686,7 +1686,7 @@ TODO
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
       <property name="ADD_EMAIL" value="true"/>
       <property name="ADD_JAVACLIENTS" value="true"/>
-                      
+
       <mkdir dir="${DIST_PATH}/lib"/>
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-classes.dir}" />
@@ -1904,7 +1904,7 @@ TODO
             <include name="org/xmlBlaster/client/protocol/*.class"/>
             <include name="org/xmlBlaster/client/protocol/socket/*"/>
             <include name="org/xmlBlaster/client/queuemsg/*"/>
-                
+
             <exclude name="org/xmlBlaster/client/Javascript*"/>
             <exclude name="org/xmlBlaster/client/script/*.class"/>
             <exclude name="org/xmlBlaster/client/XmlDbMessageWrapper.*"/>
@@ -1959,7 +1959,7 @@ TODO
             <include name="org/xmlBlaster/util/queuemsg/*.class"/>
             <include name="org/xmlBlaster/util/xbformat/*.class"/>
             <include name="org/xmlBlaster/util/http/*.class"/>
-                
+
             <exclude name="org/xmlBlaster/util/checkpoint/**"/>
             <exclude name="org/xmlBlaster/util/lexical/**"/>
             <exclude name="org/xmlBlaster/util/servlet/**"/>
@@ -2122,7 +2122,7 @@ TODO
       <mkdir dir="${JRE_HOME}/axbridge/bin"/>
       <delete file="${JRE_HOME}/axbridge/lib/xmlBlasterActiveX.jar"/>
       <delete file="${JRE_HOME}/axbridge/bin/XmlScriptAccess.dll"/>
-      
+
       <jar destfile="${build.dir}/xmlBlasterActiveX.jar"
            manifest="${src.java.dir}/org/xmlBlaster/client/activex/manifest.activex"
            basedir="${build.dest}"
@@ -2386,7 +2386,7 @@ TODO
          <sysincludepath location="${xerces.include.dir}" />           <!-- Since xerces 1.7.0 (inclusive xerces 2.6) -->
 
          <includepath location="${build.src.c.dir}" />   <!-- Using the C SOCKET client library -->
-         
+
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="XBL_IDL_WITH_WSTRING" value="1" if="XBL_IDL_WITH_WSTRING" />
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
@@ -2459,7 +2459,7 @@ TODO
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="${c.lib.name}" />
 
-            <!-- libsqlite.so --> 
+            <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
             <libset dir="${sqlite.lib.dir}" libs="sqlite3" if="XMLBLASTER_PERSISTENT_QUEUE_SQLITE3" />
 
@@ -3071,11 +3071,11 @@ TODO
       <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="true" failifexecutionfails="false">
          <arg line="-debug+ /unsafe /warn:4 -out:${csharp.out.exe} PInvokeCE.cs XmlBlasterAccess.cs Key.cs Qos.cs TestPinvoke.cs util/*.cs service/*.cs"/>
       </exec>
-      <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/> 
+      <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/>
    </target>
 
    <!--
-    Using mono 'mcs' for C#1 or 'gmcs' for C#2 
+    Using mono 'mcs' for C#1 or 'gmcs' for C#2
     mcs /d:"XMLBLASTER_MONO;BLA;BLUB" -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Key.cs Qos.cs Hello.cs
    -->
    <target name="csharp-mono" depends="prepare" description="Compile C# demo client" if="unix">
@@ -3085,8 +3085,8 @@ TODO
       <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="true" failifexecutionfails="false">
          <arg line="-debug+ /unsafe /warn:4 /define:'XMLBLASTER_MONO' -out:${csharp.out.exe} PInvokeCE.cs NativeC.cs client/XmlBlasterAccess.cs client/Key.cs client/Qos.cs Hello.cs util/*.cs service/*.cs"/>
       </exec>
-      <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/> 
-      <echo message="Usage: 'mono ${src.csharp.dir}/${csharp.out.exe} -dispatch/connection/plugin/socket/hostname localhost'"/> 
+      <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/>
+      <echo message="Usage: 'mono ${src.csharp.dir}/${csharp.out.exe} -dispatch/connection/plugin/socket/hostname localhost'"/>
    </target>
 
    <target name="bin-win-prepare" depends="prepare,revisionnumber">
@@ -3103,23 +3103,23 @@ TODO
             Compile a 'Debug' and a 'Release' variant and copy Relase\xerces-c_2.* to Debug\
 
          XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
-         
+
          XMLBLASTER_ZLIB=1
          zlib.include.dir=E:/zlib/include
          zlib.lib.dir=E:/zlib/lib
          zlib.lib.name=zdll
          zlib.dll.name=zlib1.dll
-         
+
          xerces.include.dir=E:/xerces-c-src_2_7_0/src
          xerces.lib.dir=E:/xerces-c-src_2_7_0/Build/Win32/VC7.1/Debug
          xerces.lib.name=xerces-c_2
          xerces.dll.name=xerces-c_2_7
-         
+
          XMLBLASTER_PERSISTENT_QUEUE=1
          XMLBLASTER_PERSISTENT_QUEUE_SQLITE3=1
          sqlite.include.dir=E:/sqlite
          sqlite.lib.dir=E:/sqlite
-         
+
          COMPILE_SOCKET_PLUGIN = 1
 
          build c-delete cpp-delete
@@ -3128,7 +3128,7 @@ TODO
          recompile c client lib with VC++ (to be C# compatible, i couldn't find out which compiler setting is wrong, but ant-dlls are not found by csharp, dumpbin.exe shows differernces)
          build csharp
        -->
-      
+
       <mkdir dir="${bin-win.dir}"/>
       <tstamp>
          <format property="touch.time" pattern="yyyy-MM-dd hh:mm aa"/>
@@ -3150,7 +3150,7 @@ Version:
    pthreads 2.8.0 (for ARM 2.8 with WINCE patch)
 
    zlib 1.2.3
-   
+
 
 
 See:
