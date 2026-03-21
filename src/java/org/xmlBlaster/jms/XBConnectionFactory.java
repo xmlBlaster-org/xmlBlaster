@@ -88,8 +88,7 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
    private final ConnectQos getConnectQos(String user, String password) throws XmlBlasterException {
       
       // ConnectQos connQos = new ConnectQos(this.global, (ConnectQosData)this.connectQos.getData().clone());
-      ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.global);
-      ConnectQos connQos = new ConnectQos(this.global, factory.readObject(this.connectQos.serialize()));
+      ConnectQos connQos = new ConnectQos(this.global, I_ConnectQosFactory.parse(this.global, this.connectQos.serialize()));
       
       if (user != null) {
          connQos.setUserId(user);

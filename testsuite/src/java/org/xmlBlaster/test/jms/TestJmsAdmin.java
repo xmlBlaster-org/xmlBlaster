@@ -121,16 +121,24 @@ public class TestJmsAdmin extends XMLTestCase {
          InitialContext ctx = new InitialContext(this.env);
          XBConnectionFactory factory = (XBConnectionFactory)ctx.lookup(CONNECTION_FACTORY);
          ConnectQos qos1 = factory.getConnectQos();
+         String original = qos.serialize();
+         String context = qos1.serialize();
 
-         if (log.isLoggable(Level.FINE)) {
+         //if (log.isLoggable(Level.FINE)) { always log this
             System.out.println("--------------------------------------");
             System.out.println(qos.serialize());
             System.out.println("--------------------------------------");
             System.out.println(qos1.serialize());
             System.out.println("--------------------------------------");
-         }
-         
-         assertXMLEqual(qos.serialize(), qos1.serialize());
+         //}
+
+         if (original.trim().startsWith("{")) {
+               // JSON → compare as plain strings HACK: this might be a bit more error prone
+            assertEquals(original, context);
+        } else {
+             // XML → use XML-aware comparison
+             assertXMLEqual(qos.serialize(), qos1.serialize());
+        }
       }
       catch (Exception ex) {
          ex.printStackTrace();
