@@ -231,7 +231,7 @@ public class TestPtDQueueRedeliver extends TestCase
    public static Test suite() {
        TestSuite suite= new TestSuite();
        String loginName = "TestPtDQueueRedeliver";
-       suite.addTest(new TestPtDQueueRedeliver(Global.instance(), "testPersistentPtp"));
+       suite.addTest(new TestPtDQueueRedeliver(new Global(), "testPersistentPtp"));
        return suite;
    }
 

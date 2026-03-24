@@ -179,7 +179,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
       this.con = null;
 
       if (this.startEmbedded) {
-         try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {} // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
       }
@@ -196,7 +196,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestReconnectSameClientOnly(Global.instance(), "testReconnectSameClientOnly"));
+       suite.addTest(new TestReconnectSameClientOnly(new Global(), "testReconnectSameClientOnly"));
        return suite;
    }
 
