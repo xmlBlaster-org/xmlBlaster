@@ -143,12 +143,9 @@ TODO
 
    <property name="test.class" value="org.xmlBlaster.test.AllTests"/>
    <property name="report.dir" value="./doc/test/report"/> <!-- junit HTML report -->
-   <property name="smallReport.dir" value="./doc/test/smallReport"/>
    <property name="report.absolutdir" value="${xmlblaster_absolute_home}/doc/test/report/html"/>
-   <property name="smallReport.absolutedir" value="${xmlblaster_absolute_home}/doc/test/smallReport/html"/>
    <!-- property name="report.htmlfile" value="${report.absolutdir}/junit-noframes.html"/ -->
    <property name="report.htmlfile" value="${report.absolutdir}/junit-noframes.html"/> <!-- frame based report is broken -->
-   <property name="smallReport.htmlfile" value="${smallReport.absolutedir}/junit-noframes.html"/>
 
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar"/>
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
@@ -435,10 +432,9 @@ TODO
       <echo message="   runTests    --> compiles and starts xmlBlaster and runs all JUNIT tests"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
       <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
-      <echo message="   runClassTests --> starts xmlBlaster and runs java classtest JUNIT tests"/>
-      <echo message="   smallReport   --> after 'runClassTests' you can generate a small HTML report"/>
-      <echo message="                     into xmlBlaster/doc/test/smallReport/html/junit-noframes.html"/>
-      <echo message="   runTestsAndReport --> does both of above"/>
+      <echo message="   runOneSuite      --> starts xmlBlaster, runs a single package of tests, stops xmlBlaster"/>
+      <echo message="   runTestsIsolated --> starts a subset of tests (qos, jms, classtestes) generate"/>
+      <echo message="                     calling report generates it in $(report.dir)"/>
       <echo message="   -Dtest.class=nameOfTestClass  runJunit --> run junit on the specifyed testclass"/>
       <echo message=""/>
       <echo message="   javadocs    --> generates the complete javadoc documentation"/>
@@ -1149,52 +1145,6 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- only run java classtests                                            -->
-   <!-- =================================================================== -->
-   <target name="runClassTests" description="only run java classtests">
-      <delete dir="${smallReport.dir}"/>
-      <delete dir="${smallReport.dir}"/>
-      <mkdir dir="${smallReport.dir}"/>
-      <mkdir dir="${smallReport.dir}/html"/>
-      <echo message="Executing the testsuite"/>
-      <echo message="  hint: if the script halts here you've most probably not added junit.jar to your ant/lib"/>
-      <junit dir="testsuite/src/java/org/xmlBlaster/test"
-             printsummary="on" haltonfailure="off"
-             haltonerror="off" showoutput="on" fork="yes">
-         <formatter type="xml"/>
-         <jvmarg value="-Djava.compiler=NONE"/>
-         <jvmarg value="-Xmx256m"/>
-         <classpath>
-            <pathelement path="lib/xmlBlaster.jar:${cp}"/>
-         </classpath>
-
-         <test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${smallReport.dir}"/>
-      </junit>
-      <echo message="See ${smallReport.dir} for results"/>
-      <echo message="Invoke target 'smallReport' for HTML report generation"/>
-   </target>
-
-   <!-- =================================================================== -->
-   <!-- generate a small report only containing class                       -->
-   <!-- =================================================================== -->
-   <target name="smallReport"
-           description="Creates a HTML report for classtests and qos.AllTests">
-
-      <echo message="Creating report to ${smallReport.dir} ..."/>
-      <echo message="NOTE: If the report generation halts here you've probably not added xalan.jar to your classpath"/>
-
-      <junitreport todir="${smallReport.dir}">
-         <fileset dir="${smallReport.dir}">
-            <include name="TEST-*.xml"/>
-         </fileset>
-
-         <report format="noframes" todir="${smallReport.dir}/html"/>
-      </junitreport>
-
-      <echo message="Small test results written to '${smallReport.htmlfile}'"/>
-   </target>
-
-   <!-- =================================================================== -->
    <!-- run junit test testcases                                            -->
    <!-- =================================================================== -->
    <target name="runJunit" description="Run all JUnit tests">
@@ -1297,6 +1247,115 @@ TODO
    <target name="runTestsAndReport" depends="runTests,report" description="Does runTests and report in one step"/>
 
    <!-- =================================================================== -->
+   <!-- Run test in a fresh xmlBlaster instance                             -->
+   <!-- This is supposed to avoid issues with state carrying over between   -->
+   <!-- test Classes                                                        -->
+   <!-- test.name is the test that will be run                              -->
+   <!-- =================================================================== -->
+   <target name="runOneSuite">
+     <echo message="Running ${test.name} with fresh xmlBlaster"/>
+
+     <parallel>
+        <!-- Start server -->
+
+        <java classname="org.xmlBlaster.Main"
+              fork="true"
+              spawn="true"
+              classpath="lib/xmlBlaster.jar">
+           <sysproperty key="java.compiler" value="NONE"/>
+           <arg line="-info true"/>
+           <arg line="-useKeyboard false"/>
+        </java>
+
+        <sequential>
+        <waitfor maxwait="10" maxwaitunit="second" timeoutproperty="xmlblaster.timeout">
+          <socket server="192.168.178.65" port="7607"/>
+        </waitfor>
+        <!-- Stop server if startup failed -->
+        <if>
+          <isset property="xmlblaster.timeout"/>
+          <then>
+            <echo message="xmlBlaster failed to start, shutting it down..."/>
+            <echo message="is xmlBlaster configured to run on a different adress than \'localhost\' and Port \'7067\'..."/>
+
+            <java classname="org.xmlBlaster.test.StopXmlBlaster"
+                  dir="${xmlblaster_absolute_home}"
+                  fork="true"
+                  classpath="lib/xmlBlaster.jar:${cp}" />
+
+            <fail message="xmlBlaster did not start within 10 seconds"/>
+          </then>
+        </if>
+        <fail if="xmlblaster.timeout">
+          xmlBlaster did not start within 10 seconds on localhost:7607
+        </fail>
+
+           <!-- Run ONE test suite -->
+           <junit dir="testsuite/src/java/org/xmlBlaster/test"
+                  printsummary="on" haltonfailure="off"
+                  haltonerror="off" showoutput="on" fork="yes">
+              <formatter type="xml"/>
+              <jvmarg value="-Djava.compiler=NONE"/>
+              <jvmarg value="-Xmx256m"/>
+              <classpath>
+                 <pathelement path="lib/xmlBlaster.jar:${cp}"/>
+              </classpath>
+              <test name="${test.name}" todir="${report.dir}"/>
+           </junit>
+
+            <echo message="Tests are done, we shutown xmlBlaster now ..."/>
+           <!-- Stop server -->
+          <java classname="org.xmlBlaster.test.StopXmlBlaster"
+                dir="${xmlblaster_absolute_home}"
+                fork="true"
+                classpath="lib/xmlBlaster.jar:${cp}" />
+        </sequential>
+
+     </parallel>
+    </target>
+
+   <!-- =================================================================== -->
+   <!-- Run restart xmlBlaster between each test                            -->
+   <!--                                                                     -->
+   <!-- =================================================================== -->
+    <target name="runTestsIsolated" depends="clean,all,c" description="run tests with a fresh restart of xmlBlaster each">
+      <delete dir="${report.dir}"/>
+      <delete dir="${report.dir}/html"/>
+      <mkdir dir="${report.dir}"/>
+      <mkdir dir="${report.dir}/html"/>
+      <echo message="Executing the testsuite"/>
+      <echo message="  hint: if the script halts here you've most probably not added junit.jar to your ant/lib"/>
+
+      <!-- first the classtests should run without xmlBlaster running -->
+      <echo message="running Classtets first without xmlBlaster running..."/>
+      <junit dir="testsuite/src/java/org/xmlBlaster/test"
+             printsummary="on" haltonfailure="off"
+             haltonerror="off" showoutput="on" fork="yes">
+         <formatter type="xml"/>
+         <jvmarg value="-Djava.compiler=NONE"/>
+         <jvmarg value="-Xmx256m"/>
+         <classpath>
+            <pathelement path="lib/xmlBlaster.jar:${cp}"/>
+         </classpath>
+         <test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/>
+      </junit>
+
+      <!-- XmlBlaster will restart between the tests listed here -->
+      <antcall target="runOneSuite">
+         <param name="test.name" value="org.xmlBlaster.test.qos.AllTests"/>
+      </antcall>
+
+      <antcall target="runOneSuite">
+         <param name="test.name" value="org.xmlBlaster.test.jms.AllTests"/>
+      </antcall>
+
+      <echo message="Tests finished"/>
+      <echo message="genereate a Testreport with: report"/>
+      <echo message="if a lot of tests fail, no database is installed or the ram based queue in xmlBlaster.properties might be disabled"/>
+      <!-- add more as needed -->
+    </target>
+
+   <!-- =================================================================== -->
    <!-- starts xmlBlaster JMX GUI                                           -->
    <!-- =================================================================== -->
    <target name="runJmxGUI" description="Run GUI that connects to jmx Server">
@@ -1305,7 +1364,7 @@ TODO
                 <sysproperty key="java.compiler" value="NONE"/>
         </java>
    </target>
- 
+
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
