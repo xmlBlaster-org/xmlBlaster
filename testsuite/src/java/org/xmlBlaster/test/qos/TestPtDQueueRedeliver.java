@@ -69,6 +69,7 @@ public class TestPtDQueueRedeliver extends TestCase
 
    /** For Junit */
    public TestPtDQueueRedeliver() {
+      // disable websocket for this test, otherwise EmbeddedXmlBlaster.startXmlBlaster(glob) might fail;
       this(new Global(), "TestPtDQueueRedeliver");
    }
 
