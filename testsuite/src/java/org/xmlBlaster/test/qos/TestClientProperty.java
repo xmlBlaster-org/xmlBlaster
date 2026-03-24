@@ -31,6 +31,10 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
+import org.xmlBlaster.util.qos.I_ConnectQosFactory;
+import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
@@ -109,9 +113,8 @@ public class TestClientProperty extends TestCase implements I_Callback
          qos.addClientProperty("twoKey", "twoValue");
          qos.addClientProperty("threeKey", new Integer(55));
          String literal = qos.serialize();
-         
-         ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
-         ConnectQosData data = factory.readObject(literal);
+
+         ConnectQosData data = I_ConnectQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
@@ -127,10 +130,9 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("twoKey", "twoValue");
       qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.serialize();
-      
-      DisconnectQosSaxFactory factory = new DisconnectQosSaxFactory(this.glob);
+
       try {
-         DisconnectQosData data = factory.readObject(literal);
+         DisconnectQosData data = I_DisconnectQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
@@ -148,9 +150,8 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.serialize();
       
-      MsgQosSaxFactory factory = new MsgQosSaxFactory(this.glob);
       try {
-         MsgQosData data = factory.readObject(literal);
+         MsgQosData data = I_MsgQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
@@ -168,9 +169,8 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.serialize();
       
-      QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
       try {
-         QueryQosData data = factory.readObject(literal);
+         QueryQosData data = I_QueryQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
@@ -188,9 +188,8 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.serialize();
       
-      ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
       try {
-         ConnectQosData data = factory.readObject(literal);
+         ConnectQosData data = I_ConnectQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
@@ -209,8 +208,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          qos.addClientProperty("threeKey", new Integer(55));
          String literal = qos.serialize();
          
-         QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
-         QueryQosData data = factory.readObject(literal);
+         QueryQosData data = I_QueryQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
@@ -227,9 +225,8 @@ public class TestClientProperty extends TestCase implements I_Callback
       qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.serialize();
       
-      QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
       try {
-         QueryQosData data = factory.readObject(literal);
+         QueryQosData data = I_QueryQosFactory.parse(this.glob, literal);
          checkValues(data.getClientProperties());
       }
       catch (XmlBlasterException ex) {
