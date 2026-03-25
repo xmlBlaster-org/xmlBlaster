@@ -118,6 +118,7 @@ TODO
    <property name="req.dir" value="./doc/requirements"/>
    <property name="docbookReq.dir" value="./doc/docbookReq"/>
    <property name="packages" value="org.xmlBlaster.*"/>
+   <property name="JUnit6.dir" value="testsuite/src/java/org/xmlBlaster/test"/>
 
    <!-- The document root of the servlet engine (deploy dir for war files): -->
    <!-- "${user.home}/jakarta-tomcat" -->
@@ -149,7 +150,7 @@ TODO
 
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar"/>
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
-   <property name="cp.core" value="lib/remotecons.jar:lib/joda-time.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz/quartz-2.3.2-full.jar:lib/commons-collections-3.2.jar"/>
+   <property name="cp.core" value="lib/remotecons.jar:lib/joda-time.jar:lib/servlet.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.4.jar:lib/quartz/quartz-2.3.2-full.jar:lib/commons-collections-3.2.jar:lib/junit-platform-console-standalone-6.0.3.jar"/>
 
    <property name="cp.xmlrpc3" value="lib/xmlrpc3/commons-logging-1.1.jar:lib/xmlrpc3/ws-commons-util-1.0.2.jar:lib/xmlrpc3/xmlrpc-client-3.1.1.jar:lib/xmlrpc3/xmlrpc-common-3.1.1.jar:lib/xmlrpc3/xmlrpc-server-3.1.1.jar"/>
    <property name="cp.other" value="lib/jakarta.mail-2.0.1.jar:lib/jakarta.activation-2.0.1.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/log4j-api-2.16.0.jar:lib/log4j-1.2-api-2.16.0.jar:lib/log4j-core-2.16.0.jar:lib/jzlib.jar"/>
@@ -432,9 +433,16 @@ TODO
       <echo message="   runTests    --> compiles and starts xmlBlaster and runs all JUNIT tests"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
       <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
+      <echo message="   runTestsAndReport --> does both of above"/>
       <echo message="   runOneSuite      --> starts xmlBlaster, runs a single package of tests, stops xmlBlaster"/>
       <echo message="   runTestsIsolated --> starts a subset of tests (qos, jms, classtestes) generate"/>
       <echo message="                     calling report generates it in $(report.dir)"/>
+      <echo message="   report6        --> after 'runTests' you can generate a HTML report"/>
+      <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
+      <echo message="   runJUnit6Test  --> starts xmlBlaster, runs a single JUnit6 test class, stops xmlBlaster"/>
+      <echo message="   runTests6      --> starts a subset of tests (qos, jms, classtestes) generate"/>
+      <echo message="                     calling report generates it in $(report.dir)"/>
+      <echo message="   testJUnit6     --> calls Junit6 with a single test"/>
       <echo message="   -Dtest.class=nameOfTestClass  runJunit --> run junit on the specifyed testclass"/>
       <echo message=""/>
       <echo message="   javadocs    --> generates the complete javadoc documentation"/>
@@ -1351,9 +1359,208 @@ TODO
 
       <echo message="Tests finished"/>
       <echo message="genereate a Testreport with: report"/>
-      <echo message="if a lot of tests fail, no database is installed or the ram based queue in xmlBlaster.properties might be disabled"/>
+      <echo message="if a lot of tests fail, no database is installed or the ram based queue in xmlBlaster.properties might be enabled"/>
       <!-- add more as needed -->
     </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Run all JUnit6 tests and restart xmlBlaster between each test       -->
+    <!--                                                                     -->
+    <!-- =================================================================== -->
+    <target name="runTests6" depends="clean,all, c">
+      <delete dir="${report.dir}"/>
+      <delete dir="${report.dir}/html"/>
+      <mkdir dir="${report.dir}"/>
+      <mkdir dir="${report.dir}/html"/>
+      <!-- Classtets first without xmlBlaster running -->
+      <echo message="running Classtets first without xmlBlaster running..."/>
+      <antcall target="testJUnit6">
+        <param name="test.className" value="org.xmlBlaster.test.classtest.AllTests"/>
+      </antcall>
+
+
+      <!-- XmlBlaster will restart between the tests listed here -->
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.qos.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.jms.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.C.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.client.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.topic.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.authentication.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.mime.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.dispatch.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.distributor.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.jdbc.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.snmp.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.persistence.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.cluster.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.j2ee.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.stress.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.jmx.AllTests"/>
+      </antcall>
+      <antcall target="runJUnit6Test">
+        <param name="test.name" value="org.xmlBlaster.test.classloader.AllTests"/>
+      </antcall>
+
+      <echo message="##############################################"/>
+      <echo message="Tests finished"/>
+      <echo message="genereate a Testreport with: 6report"/>
+      <echo message="if a lot of tests fail, no database is installed or the ram based queue in xmlBlaster.properties might be enabled"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Generate the report from JUnit6 tests                               -->
+    <!-- =================================================================== -->
+    <target name="6report">
+      <junitreport todir="${report.dir}">
+        <fileset dir="${report.dir}">
+          <include name="**/TEST-*.xml"/>
+        </fileset>
+        <report format="noframes" todir="${report.dir}/html"/>
+      </junitreport>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Start xmlBlaster and run a single JUnit6 Test                       -->
+    <!--                                                                     -->
+    <!-- =================================================================== -->
+    <target name="runJUnit6Test">
+      <echo message="##############################################"/>
+      <echo message="Running ${test.name} with fresh xmlBlaster"/>
+      <echo message="##############################################"/>
+
+      <parallel>
+        <!-- ############ Start server ################# -->
+        <java classname="org.xmlBlaster.Main"
+              fork="true"
+              spawn="true"
+              classpath="lib/xmlBlaster.jar">
+          <sysproperty key="java.compiler" value="NONE"/>
+          <arg line="-info true"/>
+          <arg line="-useKeyboard false"/>
+        </java>
+        <sequential>
+          <waitfor maxwait="10" maxwaitunit="second" timeoutproperty="xmlblaster.timeout">
+            <socket server="192.168.178.65" port="7607"/>
+          </waitfor>
+          <!-- Stop server if startup failed -->
+          <if>
+            <isset property="xmlblaster.timeout"/>
+          <then>
+              <echo message="xmlBlaster failed to start, shutting it down..."/>
+              <echo message="is xmlBlaster configured to run on a different adress than \'localhost\' and Port \'7067\'..."/>
+
+              <java classname="org.xmlBlaster.test.StopXmlBlaster"
+                    dir="${xmlblaster_absolute_home}"
+                    fork="true"
+                    classpath="lib/xmlBlaster.jar:${cp}" />
+                <fail message="xmlBlaster did not start within 10 seconds"/>
+          </then>
+          </if>
+          <fail if="xmlblaster.timeout">
+              xmlBlaster did not start within 10 seconds on localhost:7607
+          </fail>
+
+          <!-- ############ run the test ################# -->
+          <antcall target="testJUnit6">
+            <param name="test.className" value="${test.name}"/>
+          </antcall>
+
+          <!-- ############ Stop server ################## -->
+          <echo message="##############################################"/>
+          <echo message="Test is done, shutting down xmlBlaster now ..."/>
+          <echo message="##############################################"/>
+          <java classname="org.xmlBlaster.test.StopXmlBlaster"
+                dir="${xmlblaster_absolute_home}"
+                fork="true"
+                classpath="lib/xmlBlaster.jar:${cp}" />
+        </sequential>
+      </parallel>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Run a single Test with JUnit6                                       -->
+    <!-- move reports into ${report.dir}/${test.className}         -->
+    <!-- =================================================================== -->
+    <target name="testJUnit6">
+      <java classname="org.junit.platform.console.ConsoleLauncher"
+            fork="true"
+            classpath="lib/xmlBlaster.jar:${cp}"
+            dir="${JUnit6.dir}"
+            failonerror="false">
+        <classpath>
+          <!-- JUnit 6 -->
+          <pathelement location="lib/junit-platform-console-standalone-6.0.3.jar"/>
+
+          <pathelement location="${build.dest}"/>
+          <pathelement location="${lib.dir}/testsuite.jar"/>
+          <pathelement location="${build.dir}"/>
+          <pathelement path="$lib/xmlBlaster.jar:${cp}"/>
+        </classpath>
+
+
+        <!-- COMMAND -->
+        <arg value="execute"/>
+        <arg value="--select-class=${test.className}"/>
+        <!-- optional -->
+        <arg value="--details=tree"/>
+        <!-- generate results, we need to escape the java dir-->
+        <!--  either use "../../../../../../${report.dir}" or the move command -->
+        <arg line="--reports-dir tmpReport"/>
+      </java>
+      <!-- report -->
+      <move todir="${report.dir}/${test.className}">
+        <fileset dir="${JUnit6.dir}/tmpReport">
+          <include name="**/*"/>
+          <!-- match all files recursively -->
+        </fileset>
+      </move>
+      <!-- Use replaceregexp to modify ONLY the name attribute of <testsuite> -->
+      <replaceregexp byline="true">
+        <fileset dir="${report.dir}/${test.className}">
+          <include name="**/*.xml"/>
+        </fileset>
+
+      <regexp pattern='(testsuite name=")([^"]*")'/>
+
+        <substitution expression="\1${test.className} - \2"/>
+      </replaceregexp>
+      <delete dir="${JUnit6.dir}/tmpReport"/>
+    </target>
+
+
+
 
    <!-- =================================================================== -->
    <!-- starts xmlBlaster JMX GUI                                           -->

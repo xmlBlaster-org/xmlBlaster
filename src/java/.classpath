@@ -25,7 +25,7 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/joda-time.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jsr107cache-1.0.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jta-spec1_0_1.jar"/>
-	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit-platform-console-standalone-6.0.3.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jzlib.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ldbc.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mx4j-impl.jar"/>
