@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.property.PropEntry;
@@ -128,6 +129,9 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       this(glob, null, null, methodName);
    }
 
+   public MsgQosData(Global glob, QosFormatEnum qosFormat, MethodName methodName) {
+      this(glob, glob.getMsgQosFactory(qosFormat), null, methodName);
+   }
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
     * @param the XML based ASCII string

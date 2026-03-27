@@ -10,6 +10,7 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -33,6 +34,10 @@ public class ConnectQosJsonFactory implements I_ConnectQosFactory {
       this.glob = glob;
    }
    
+   public QosFormatEnum getQosFormat() {
+      return QosFormatEnum.JSON;
+   }
+
    /**
     * Parses the given Qos and returns a ConnectQosData holding the data. 
     * Parsing of connect() QoS is supported here.

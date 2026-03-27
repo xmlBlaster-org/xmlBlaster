@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
@@ -32,7 +33,7 @@ public final class StatusQosData extends QosData implements java.io.Serializable
 {
    private static final long serialVersionUID = 1L;
 
-   private transient final I_StatusQosFactory factory;
+   private transient I_StatusQosFactory factory;
 
    /** The subscription ID of a subscribe() invocation */
    private String subscriptionId;
@@ -55,6 +56,9 @@ public final class StatusQosData extends QosData implements java.io.Serializable
       this(glob, null, null, methodName);
    }
 
+   public StatusQosData(Global glob, QosFormatEnum qosFormat, MethodName methodName) {
+      this(glob, glob.getStatusQosFactory(qosFormat), null, methodName);
+   }
    /**
     * Constructs the specialized quality of service object for status informations. 
     * E.g. for a return of a subscribe() call
@@ -73,6 +77,10 @@ public final class StatusQosData extends QosData implements java.io.Serializable
    public StatusQosData(Global glob, I_StatusQosFactory factory, String serialData, MethodName methodName) {
       super(glob, serialData, methodName);
       this.factory = (factory==null) ? glob.getStatusQosFactory(serialData, methodName) : factory;
+   }
+   
+   public void setQosFormat(QosFormatEnum qosFormat) {
+      this.factory = glob.getStatusQosFactory(qosFormat);
    }
 
    /**

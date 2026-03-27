@@ -774,7 +774,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                    + "' as you have set multiSubscribe to false"
                    + (subscribeQos.isRecoveredFromPersistenceStore() ? ", recovered from persistenceStore=true" : ""));
 
-               StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
+               StatusQosData qos = new StatusQosData(glob, sessionInfo.getQosFormat(), MethodName.SUBSCRIBE);
                SubscriptionInfo i = vec.get(0);
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
@@ -883,7 +883,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          if (qos == null || qos.getSubscriptionId() == null ||  qos.getSubscriptionId().length() < 1) {
             // The cluster subId is unique in another cluster node as well e.g.: "__subId:heron-2"
-            if (qos == null) qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
+            if (qos == null) qos = new StatusQosData(glob, sessionInfo.getQosFormat(), MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
          }
          propertiesBounced = qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
@@ -946,7 +946,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             //if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
             if (log.isLoggable(Level.FINE)) log.fine("Get " + xmlKey.getOid() + " prefix=" + prefix + " on session=" + otherSessionInfo.getSessionName().getRelativeName());
             ClientProperty[] props = otherSessionInfo.getRemotePropertyArr();
-            GetReturnQosServer retQos = new GetReturnQosServer(glob, null, null);
+            GetReturnQosServer retQos = new GetReturnQosServer(glob, sessionInfo.getQosFormat(), null, null);
             for (int i=0; i<props.length; i++)
                retQos.getData().getClientProperties().put(props[i].getName(), props[i]);
             MsgUnit[] msgUnitArr = new MsgUnit[1];
@@ -1093,7 +1093,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                         continue NEXT_HISTORY; // WeakReference to cache lost and lookup failed
                      }
 
-                     GetReturnQosServer retQos = new GetReturnQosServer(glob, msgUnitWrapper.getMsgQosData(), Constants.STATE_OK);
+                     GetReturnQosServer retQos = new GetReturnQosServer(glob, sessionInfo.getQosFormat(), msgUnitWrapper.getMsgQosData(), Constants.STATE_OK);
                      byte[] cont = (getQos.getWantContent()) ? mm.getContent() : new byte[0];
                      mm = new MsgUnit(mm, null, cont, retQos.getData());
                      msgUnitList.add(mm);
@@ -1486,7 +1486,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          // Build the return values ...
          String[] oidArr = new String[subscriptionIdSet.size()];
-         StatusQosData qos = new StatusQosData(glob, MethodName.UNSUBSCRIBE);
+         StatusQosData qos = new StatusQosData(glob, sessionInfo.getQosFormat(), MethodName.UNSUBSCRIBE);
          qos.setState(Constants.STATE_OK);
          Iterator<String> it = subscriptionIdSet.iterator();
          int ii = 0;
@@ -1596,7 +1596,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     	 final boolean testResponse = false;
     	 if (testResponse) {
              log.severe("TESTING CODE IS ACTIVE");
-             StatusQosData statRetQos = new StatusQosData(glob, MethodName.PUBLISH);
+             StatusQosData statRetQos = new StatusQosData(glob, sessionInfo.getQosFormat(),MethodName.PUBLISH);
              statRetQos.setStateInfo("TEST RESPONSE ONLY!");
              statRetQos.setKeyOid(msgUnit.getKeyOid());
              statRetQos.setState(Constants.STATE_OK);
@@ -1907,7 +1907,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          }
 
          if (publishReturnQos == null) {  // assert only
-            StatusQosData qos = new StatusQosData(glob, MethodName.PUBLISH);
+            StatusQosData qos = new StatusQosData(glob, sessionInfo.getQosFormat(), MethodName.PUBLISH);
             qos.setKeyOid(msgKeyData.getOid());
             qos.setState(Constants.STATE_OK);
             publishReturnQos = new PublishReturnQos(glob, qos);
@@ -2107,7 +2107,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          // Build the return values ...
          String[] oidArr = new String[oidSet.size()];
          //oidSet.toArray(oidArr);
-         StatusQosData qos = new StatusQosData(glob, MethodName.ERASE);
+         StatusQosData qos = new StatusQosData(glob, sessionInfo.getQosFormat(), MethodName.ERASE);
          qos.setState(Constants.STATE_OK);
          Iterator it = oidSet.iterator();
          int ii = 0;

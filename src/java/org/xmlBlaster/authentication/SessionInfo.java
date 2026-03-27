@@ -45,6 +45,7 @@ import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
@@ -197,7 +198,8 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       this.startupTime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
-      this.connectQos = connectQos;
+      this.connectQos = connectQos;  // ab hier ist QosFormatEnum bekannt
+      log.info("conQos Server qosFormat = " + connectQos.getQosFormatEnum());
 
       this.msgErrorHandler = new MsgErrorHandler(glob, this);
       String type = connectQos.getSessionCbQueueProperty().getType();
@@ -266,6 +268,13 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       return !isShutdown();
    }
 
+   /**
+    * helper to quickly access qosFormat
+    * @return qosFormat that the client uses
+    */
+   public QosFormatEnum getQosFormat() {
+      return this.connectQos.getQosFormatEnum();
+   }
    /**
     * The unique name of this session instance.
     * @return Never null, for example "/xmlBlaster/node/heron/client/joe/session/-2"

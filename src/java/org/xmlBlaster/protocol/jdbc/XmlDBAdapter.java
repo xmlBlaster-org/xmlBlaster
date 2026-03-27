@@ -306,7 +306,7 @@ public class XmlDBAdapter
    private MsgUnit[] getResponseMessage(byte[] content, String contentMimeExtended)
    {
       PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", contentMimeExtended);
-      GetReturnQosServer retQos = new GetReturnQosServer(glob, null, Constants.STATE_OK);
+      GetReturnQosServer retQos = new GetReturnQosServer(glob, glob.getQosFormatEnum(), null, Constants.STATE_OK);
 
       MsgUnit mu = new MsgUnit(key.getData(), content, retQos.getData());
 

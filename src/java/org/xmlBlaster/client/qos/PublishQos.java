@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
@@ -79,6 +80,12 @@ public final class PublishQos
          this.msgQosData.getLifeTimeProp().setValue(lt, PropEntry.CREATED_BY_PROPFILE);
       }
       */
+   }
+   
+   public PublishQos(Global glob, QosFormatEnum qosFormat) {
+      this.glob = (glob==null) ? Global.instance() : glob;
+      this.msgQosData = new MsgQosData(this.glob, qosFormat, MethodName.PUBLISH); 
+      this.msgQosData.setMethod(MethodName.PUBLISH);
    }
 
    /**

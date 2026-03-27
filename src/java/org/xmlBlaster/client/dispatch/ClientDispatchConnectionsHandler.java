@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
@@ -22,6 +23,7 @@ import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -47,6 +49,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
 {
    private static Logger log = Logger.getLogger(ClientDispatchConnectionsHandler.class.getName());
    public final String ME;
+   private QosFormatEnum qosFormat = QosFormatEnum.XML;
    
    /**
     * @param dispatchManager The message queue witch i belong to
@@ -73,6 +76,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
    /**
     * If no connection is available but the message is for example save queued,
     * we can generate here valid return objects
+    * TODO: QosFormatEnum in alle Constructoren reinimpfen
     * @param state e.g. Constants.STATE_OK
     */
    public void createFakedReturnObjects(I_QueueEntry[] entries, String state, String stateInfo) throws XmlBlasterException {
@@ -82,7 +86,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          MsgQueueEntry msgQueueEntry = (MsgQueueEntry)entries[ii];
          if (!msgQueueEntry.wantReturnObj())
             continue;
-         StatusQosData statRetQos = new StatusQosData(glob, MethodName.UNKNOWN);
+         StatusQosData statRetQos = new StatusQosData(glob, this.qosFormat, MethodName.UNKNOWN);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
          statRetQos.addClientProperty(Constants.IS_FAKE_RETURN_QOS_OBJECT, true);
@@ -155,7 +159,10 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
 
          else if (MethodName.CONNECT == msgQueueEntry.getMethodName()) {
-            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData(), statRetQos);
+            ConnectQosData connectQosData = ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData();
+            this.qosFormat = connectQosData.getQosFormat();
+            statRetQos.setQosFormat(this.qosFormat);
+            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, connectQosData, statRetQos);
             if (!connectReturnQos.getSessionName().isPubSessionIdUser()) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_CONNECT_NOPUBSESS, ME,
                   "Can't find an xmlBlaster server. Try to provide the server host/port as described in " +
@@ -175,7 +182,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
             boolean asyncGetAllowed = entry.getGetQos().getData().getClientProperty(GetQos.CP_ASYNC_GET_ALLOWED, false);
             if (asyncGetAllowed) {
                statRetQos.setKeyOid(entry.getGetKey().getOid());
-               MsgQosData msgQosData = new MsgQosData(glob, MethodName.GET);
+               MsgQosData msgQosData = new MsgQosData(glob, this.qosFormat, MethodName.GET);
                msgQosData.setState(Constants.STATE_TIMEOUT);
                msgQosData.setStateInfo(Constants.INFO_QUEUED);
                //GetReturnQos[] getReturnQosArr = new GetReturnQos[] { new GetReturnQos(glob, msgQosData) };

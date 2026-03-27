@@ -1125,8 +1125,21 @@ public class Global implements Cloneable
       }
    }
 
+   /**
+    * The default is XML, set it via<br>
+    * commandline:
+    * <pre>
+    * java HelloWorld -qosFormat json
+    * java HelloWorld -qosFormat xml
+    * </pre>
+    * xmlBlaster.properties
+    * <pre>
+    * qosFormat=json
+    * qosFormat=xml
+    * </pre>
+    * @return the qosFormat set via commandline or xmlBlaster.properties
+    */
       public QosFormatEnum getQosFormatEnum() {
-         if (this.qosFormat != QosFormatEnum.UNKNOWN) return this.qosFormat;
          try {
             return QosFormatEnum.fromString(this.get("qosFormat", QosFormatEnum.XML.toString(), null, null), QosFormatEnum.XML);
          } catch (XmlBlasterException e) {
@@ -1140,14 +1153,7 @@ public class Global implements Cloneable
             this.qosFormat = qosFormat;
          }
       }
-   
-   public boolean isQosJSON() {
-      return getQosFormatEnum().isJson();
-   }
-   
-   public boolean isQosXML() {
-      return getQosFormatEnum().isJson();
-   }
+
       
    public FactoryType getFactoryType() {
       return FactoryType.lookup(this);
@@ -1187,11 +1193,9 @@ public class Global implements Cloneable
    public I_ConnectQosFactory getConnectQosFactory(String serialData) {
       if (serialData != null && !serialData.isBlank()) {
          if (JacksonUtils.isJson(serialData)) {
-            setQosFormatEnum(QosFormatEnum.JSON);
             return new ConnectQosJsonFactory(this); 
          }
-         else {
-            setQosFormatEnum(QosFormatEnum.XML);
+         else if (JacksonUtils.isXML(serialData)) { 
             return new ConnectQosSaxFactory(this);
          }
       }
@@ -1260,6 +1264,17 @@ public class Global implements Cloneable
          return new MsgQosJsonFactory(this);
       }
       else {
+         return new MsgQosSaxFactory(this);
+      }
+   }
+   
+   public I_MsgQosFactory getMsgQosFactory(QosFormatEnum qosFormat) {
+      if (qosFormat == QosFormatEnum.JSON) {
+         return new MsgQosJsonFactory(this); 
+      }
+      else if (qosFormat == QosFormatEnum.XML) {
+         return new MsgQosSaxFactory(this);
+      } else {
          return new MsgQosSaxFactory(this);
       }
    }
@@ -1365,7 +1380,19 @@ public class Global implements Cloneable
    public I_StatusQosFactory getStatusQosFactory(String serialData) {
       return getStatusQosFactory(serialData, null);
    }
-   
+
+   public I_StatusQosFactory getStatusQosFactory(QosFormatEnum qosFormat) {
+      if (qosFormat == QosFormatEnum.JSON) {
+         return new StatusQosJsonFactory(this); 
+      }
+      else if (qosFormat == QosFormatEnum.XML) {
+         return new StatusQosSaxFactory(this);
+      } else {
+         // TODO: what about clientporperties!
+         return new StatusQosQuickParseFactory(this);
+      }
+   }
+
    /**
     * Return a factory parsing QoS XML strings from publish() and update() messages.
     * 

@@ -11,6 +11,8 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.JacksonUtils;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -48,8 +50,11 @@ public final class ConnectQosServer
    private boolean allowExceptionsThrownToClient = true;
    
    private boolean inhibitDispatcherActiveOnConnect = false;
+   
+   private QosFormatEnum qosFormat = QosFormatEnum.XML;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
+      this.qosFormat = glob.getQosFormatEnum();
       this.connectQosData = connectQosData;
       // better keep it for forwarding etc.
       //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
@@ -57,6 +62,12 @@ public final class ConnectQosServer
 
    public ConnectQosServer(Global glob, String qos) throws XmlBlasterException {
       // this.connectQosData = glob.getConnectQosFactory().readObject(qos);
+      this.qosFormat = glob.getQosFormatEnum();
+      if (JacksonUtils.isJson(qos)) {
+         this.qosFormat = QosFormatEnum.JSON;
+      } else if (JacksonUtils.isXML(qos)) {
+         this.qosFormat = QosFormatEnum.XML;
+      }
       this.connectQosData = I_ConnectQosFactory.parse(glob, qos);
    }
 
@@ -78,6 +89,10 @@ public final class ConnectQosServer
       aClone.setAddressServer(getAddressServer());
 
       return aClone;
+   }
+
+   public QosFormatEnum getQosFormatEnum() {
+      return this.connectQosData.getQosFormat();
    }
 
    public ConnectQosData getData() {

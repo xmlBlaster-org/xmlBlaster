@@ -41,6 +41,7 @@ import org.xmlBlaster.engine.queuemsg.TopicEntry;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
@@ -57,6 +58,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -268,7 +270,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             toUnreferenced(true, publishQosServer.isFromPersistenceStore());
          }
          else {
-            toAlive();
+            toAlive(); // TODO: hier qosFormat übergeben?
          }
       }
 
@@ -556,7 +558,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       PublishReturnQos publishReturnQos = null;
       MsgQosData msgQosData = null;
 
-      StatusQosData qos = new StatusQosData(serverScope, MethodName.PUBLISH);
+      StatusQosData qos = new StatusQosData(serverScope, publisherSessionInfo.getQosFormat(), MethodName.PUBLISH);
+
       qos.setKeyOid(this.uniqueKey);
       qos.setState(Constants.STATE_OK);
       qos.setRcvTimestamp(publishQosServer.getRcvTimestamp());
@@ -2168,10 +2171,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                         log.finer("Don't send ERASE notify for topic " + getId() + " to subscriber " + sub.getSessionName() + " as want notify==false");
                      continue;
                   }
-
+                  QosFormatEnum qosFormat = sub.getSessionInfo().getQosFormat();
                   org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(serverScope,
                                                             Constants.EVENT_OID_ERASEDTOPIC/*+":"+getUniqueKey()*/, "text/plain", "1.0");
-                  org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(serverScope);
+                  org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(serverScope, qosFormat);
                   pq.setState(Constants.STATE_ERASED);
                   pq.setVolatile(true);
                   pq.setSender(sessionName);

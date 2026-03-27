@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 //import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -29,6 +30,8 @@ public interface I_ConnectQosFactory
     */
    ConnectQosData readObject(String qos) throws XmlBlasterException;
 
+   QosFormatEnum getQosFormat();
+   
    /**
     * Parses the given Qos and returns a ConnectQosData holding the data. 
     * Parsing of connect() QoS is supported here.

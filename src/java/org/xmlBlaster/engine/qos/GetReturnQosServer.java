@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
@@ -24,8 +25,8 @@ public class GetReturnQosServer
 {
    private final MsgQosData msgQosData;
 
-   public GetReturnQosServer(Global glob, MsgQosData msgQosData, String state) {
-      this.msgQosData = (msgQosData == null) ? new MsgQosData(glob, MethodName.GET) : msgQosData;
+   public GetReturnQosServer(Global glob, QosFormatEnum qosFormat, MsgQosData msgQosData, String state) {
+      this.msgQosData = (msgQosData == null) ? new MsgQosData(glob, qosFormat, MethodName.GET) : msgQosData;
       this.msgQosData.setState((state == null) ? Constants.STATE_OK : state);
    }
 
