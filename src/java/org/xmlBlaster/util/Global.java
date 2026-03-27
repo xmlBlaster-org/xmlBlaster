@@ -156,6 +156,10 @@ public class Global implements Cloneable
    /** This will be replaced by build.xml with the compiling JDK version */
    private String buildJavaVersion = "@build.java.version@";
 
+   /** Default format to use for factories */
+   private QosFormatEnum qosFormat = QosFormatEnum.UNKNOWN;
+
+
    protected String ME = "Global";
    protected String ip_addr = null;
    protected String id = "";
@@ -1110,23 +1114,41 @@ public class Global implements Cloneable
       public static FactoryType lookup(Global glob) {
          if (glob == null)
             glob = Global.instance();
-         final String DEFAULT_FORMAT = "xml";
-         String qosFormat = DEFAULT_FORMAT;
-         try {
-            qosFormat = glob.get("qosFormat", DEFAULT_FORMAT, null, null);
-         } catch (XmlBlasterException e) {
-            e.printStackTrace();
-         }
-         if (DEFAULT_FORMAT.equals(qosFormat)) {
+         QosFormatEnum qosFormat = glob.getQosFormatEnum();
+         if (qosFormat.isXml()) {
             return FactoryType.SAX;
          }
-         else if ("json".equals(qosFormat)) {
+         else if (qosFormat.isJson()) {
             return FactoryType.JACKSON;
          }
          return FactoryType.SAX;         
       }
    }
+
+      public QosFormatEnum getQosFormatEnum() {
+         if (this.qosFormat != QosFormatEnum.UNKNOWN) return this.qosFormat;
+         try {
+            return QosFormatEnum.fromString(this.get("qosFormat", QosFormatEnum.XML.toString(), null, null), QosFormatEnum.XML);
+         } catch (XmlBlasterException e) {
+            e.printStackTrace();
+            return QosFormatEnum.XML;
+         }
+   }
+      
+      public void setQosFormatEnum(QosFormatEnum qosFormat) {
+         if (qosFormat != null) {
+            this.qosFormat = qosFormat;
+         }
+      }
    
+   public boolean isQosJSON() {
+      return getQosFormatEnum().isJson();
+   }
+   
+   public boolean isQosXML() {
+      return getQosFormatEnum().isJson();
+   }
+      
    public FactoryType getFactoryType() {
       return FactoryType.lookup(this);
    }
@@ -1165,9 +1187,11 @@ public class Global implements Cloneable
    public I_ConnectQosFactory getConnectQosFactory(String serialData) {
       if (serialData != null && !serialData.isBlank()) {
          if (JacksonUtils.isJson(serialData)) {
+            setQosFormatEnum(QosFormatEnum.JSON);
             return new ConnectQosJsonFactory(this); 
          }
          else {
+            setQosFormatEnum(QosFormatEnum.XML);
             return new ConnectQosSaxFactory(this);
          }
       }

@@ -4,7 +4,7 @@ package org.xmlBlaster.util;
  * -qosFormat json
  */
 public enum QosFormatEnum {
-   JSON, XML;
+   JSON, XML, UNKNOWN;
 
    /**
     * Create enum from string (case-insensitive)
