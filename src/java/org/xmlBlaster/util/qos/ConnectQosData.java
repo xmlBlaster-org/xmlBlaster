@@ -48,7 +48,6 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    private final String ME = "ConnectQosData";
    protected transient I_ConnectQosFactory factory;
    private ConnectionStateEnum initialConnectionState = ConnectionStateEnum.UNDEF;
-   private QosFormatEnum connectionQosFormat = QosFormatEnum.XML;
 
    /** 
     * PtP messages wanted? True is default
@@ -138,7 +137,6 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       super(glob, serialData, org.xmlBlaster.util.def.MethodName.CONNECT);
       // this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.factory = (factory == null) ? this.glob.getConnectQosFactory(serialData) : factory;
-      this.connectionQosFormat = this.factory.getQosFormat();
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side
    }
@@ -168,12 +166,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
 
-   public QosFormatEnum getQosFormat() {
-      return qosFormat;
+   public QosFormatEnum getConnectionQosFormat() {
+      return this.factory.getQosFormat();
    }
 
-   public void setQosFormat(QosFormatEnum qosFormat) {
-      this.qosFormat = qosFormat;
+   public void setConnectionQosFormat(QosFormatEnum qosFormat) {
+      this.factory = glob.getConnectQosFactory(qosFormat);
    }
 
    /**
