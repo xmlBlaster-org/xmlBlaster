@@ -30,6 +30,9 @@ public interface I_ConnectQosFactory
     */
    ConnectQosData readObject(String qos) throws XmlBlasterException;
 
+   /*
+    * The qosFormat this factory uses.
+    */
    QosFormatEnum getQosFormat();
    
    /**

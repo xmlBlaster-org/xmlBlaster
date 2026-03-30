@@ -54,7 +54,7 @@ public final class ConnectQosServer
    private QosFormatEnum qosFormat = QosFormatEnum.XML;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
-      this.qosFormat = glob.getQosFormatEnum();
+      this.qosFormat = glob.getDefaultQosFormat();
       this.connectQosData = connectQosData;
       // better keep it for forwarding etc.
       //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
@@ -62,7 +62,7 @@ public final class ConnectQosServer
 
    public ConnectQosServer(Global glob, String qos) throws XmlBlasterException {
       // this.connectQosData = glob.getConnectQosFactory().readObject(qos);
-      this.qosFormat = glob.getQosFormatEnum();
+      this.qosFormat = glob.getDefaultQosFormat();
       if (JacksonUtils.isJson(qos)) {
          this.qosFormat = QosFormatEnum.JSON;
       } else if (JacksonUtils.isXML(qos)) {
@@ -76,7 +76,7 @@ public final class ConnectQosServer
     * @param glob Use the new Global for the returned clone
     */
    public ConnectQosServer getClone(Global newGlob) throws XmlBlasterException {
-      ConnectQosServer aClone = new ConnectQosServer(newGlob, toXml());
+      ConnectQosServer aClone = new ConnectQosServer(newGlob, serialize());
       CallbackAddress[] cbArr = getSessionCbQueueProperty().getCallbackAddresses();
       CallbackAddress[] aCloneCbArr = aClone.getSessionCbQueueProperty().getCallbackAddresses(); 
       for (int ii=0; cbArr!=null && ii<cbArr.length && aCloneCbArr != null && ii<aCloneCbArr.length; ii++) {
@@ -91,8 +91,8 @@ public final class ConnectQosServer
       return aClone;
    }
 
-   public QosFormatEnum getQosFormatEnum() {
-      return this.connectQosData.getQosFormat();
+   public QosFormatEnum getConnectionQosFormat() {
+      return this.connectQosData.getConnectionQosFormat();
    }
 
    public ConnectQosData getData() {
@@ -370,35 +370,35 @@ public final class ConnectQosServer
     * @return An XML ASCII string
     */
    public String toString() {
-      return toXml();
+      return serialize();
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the connect QoS as a XML ASCII string
+    * @param extraOffset indenting of tags for nice output, ignored in JSON
+    * @return internal state of the connect QoS as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset) {
+   public String serialize(String extraOffset) {
       return this.connectQosData.serialize(extraOffset);
    }
 
    /**
-    * Dump state of this object into a XML ASCII string.
+    * Dump state of this object into a XML/JSON ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @param flag For example Constants.TOXML_NOSECURITY
-    * @return internal state of the connect QoS as a XML ASCII string
+    * @return internal state of the connect QoS as a XML/JSON ASCII string
     */
-   public String toXml(String extraOffset, Properties props) {
+   public String serialize(String extraOffset, Properties props) {
       return this.connectQosData.serialize(extraOffset, props);
    }
 
    /**
-    * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * Converts the data into a valid XML/JSON ASCII string.
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
+   public String serialize() {
       return this.connectQosData.serialize();
    }
 

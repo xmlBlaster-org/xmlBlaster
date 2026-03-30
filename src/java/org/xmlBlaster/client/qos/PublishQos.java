@@ -67,7 +67,9 @@ public final class PublishQos
    }
 
    /**
-    * Default constructor for transient messages.
+    * Default constructor for transient messages. <br>
+    * <b>WARNING:</b> uses default qosFormat, should only be used for 
+    * publishing from Client to Server.
     */
    public PublishQos(Global glob) {
       this.glob = (glob==null) ? Global.instance() : glob;
@@ -81,7 +83,13 @@ public final class PublishQos
       }
       */
    }
-   
+
+   /**
+    * Default constructor for transient messages. <br>
+    * TODO: enforce usage of this in all serve to client connection Calls
+    * @param glob
+    * @param qosFormat Set the serial format to XML or JSON.
+    */
    public PublishQos(Global glob, QosFormatEnum qosFormat) {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.msgQosData = new MsgQosData(this.glob, qosFormat, MethodName.PUBLISH); 

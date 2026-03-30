@@ -199,7 +199,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;  // ab hier ist QosFormatEnum bekannt
-      log.info("conQos Server qosFormat = " + connectQos.getQosFormatEnum());
+      log.info("conQos Server qosFormat = " + connectQos.getConnectionQosFormat());
 
       this.msgErrorHandler = new MsgErrorHandler(glob, this);
       String type = connectQos.getSessionCbQueueProperty().getType();
@@ -270,10 +270,11 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    /**
     * helper to quickly access qosFormat
+    * It is determined by the <code>connectQos</code> Field
     * @return qosFormat that the client uses
     */
-   public QosFormatEnum getQosFormat() {
-      return this.connectQos.getQosFormatEnum();
+   public QosFormatEnum getConnectionQosFormat() {
+      return this.connectQos.getConnectionQosFormat();
    }
    /**
     * The unique name of this session instance.
@@ -778,7 +779,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (props == null) props = new Properties();
       props.put(Constants.TOXML_NOSECURITY, ""+true);
       if (connectQos != null) {
-         sb.append(connectQos.toXml(extraOffset+Constants.INDENT, props));
+         sb.append(connectQos.serialize(extraOffset+Constants.INDENT, props));
       }
 
       ServerDispatchManager dispatchManager = this.dispatchManager;
@@ -800,7 +801,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    //=========== Enforced by I_AdminSession ================
    public String getQos() {
-      return (this.connectQos == null) ? "" : this.connectQos.toXml();
+      return (this.connectQos == null) ? "" : this.connectQos.serialize();
    }
 
    public final boolean isCallbackConfigured() {

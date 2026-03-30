@@ -558,7 +558,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       PublishReturnQos publishReturnQos = null;
       MsgQosData msgQosData = null;
 
-      StatusQosData qos = new StatusQosData(serverScope, publisherSessionInfo.getQosFormat(), MethodName.PUBLISH);
+      StatusQosData qos = new StatusQosData(serverScope, publisherSessionInfo.getConnectionQosFormat(), MethodName.PUBLISH);
 
       qos.setKeyOid(this.uniqueKey);
       qos.setState(Constants.STATE_OK);
@@ -2171,7 +2171,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                         log.finer("Don't send ERASE notify for topic " + getId() + " to subscriber " + sub.getSessionName() + " as want notify==false");
                      continue;
                   }
-                  QosFormatEnum qosFormat = sub.getSessionInfo().getQosFormat();
+                  QosFormatEnum qosFormat = sub.getSessionInfo().getConnectionQosFormat();
                   org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(serverScope,
                                                             Constants.EVENT_OID_ERASEDTOPIC/*+":"+getUniqueKey()*/, "text/plain", "1.0");
                   org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(serverScope, qosFormat);

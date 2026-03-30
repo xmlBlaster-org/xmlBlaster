@@ -43,6 +43,9 @@ public final class SessionQos implements java.io.Serializable, Cloneable
    /** Clear on login all other sessions of this user (for recovery reasons) "session.clearSessions false" */
    private PropBoolean clearSessions = new PropBoolean(false);
 
+   //TODO: private connectionQosFormat =
+   //      Does this make sense here?
+
    /**
     * If reconnectSameClientOnly=true a client with a given publicSessionId
     * can only reconnect to xmlBlaster if it is the the client instance which

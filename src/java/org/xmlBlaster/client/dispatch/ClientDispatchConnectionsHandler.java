@@ -49,7 +49,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
 {
    private static Logger log = Logger.getLogger(ClientDispatchConnectionsHandler.class.getName());
    public final String ME;
-   private QosFormatEnum qosFormat = QosFormatEnum.XML;
+   private QosFormatEnum connectionQosFormat = QosFormatEnum.XML;
    
    /**
     * @param dispatchManager The message queue witch i belong to
@@ -86,7 +86,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          MsgQueueEntry msgQueueEntry = (MsgQueueEntry)entries[ii];
          if (!msgQueueEntry.wantReturnObj())
             continue;
-         StatusQosData statRetQos = new StatusQosData(glob, this.qosFormat, MethodName.UNKNOWN);
+         StatusQosData statRetQos = new StatusQosData(glob, this.connectionQosFormat, MethodName.UNKNOWN);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
          statRetQos.addClientProperty(Constants.IS_FAKE_RETURN_QOS_OBJECT, true);
@@ -160,8 +160,8 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
 
          else if (MethodName.CONNECT == msgQueueEntry.getMethodName()) {
             ConnectQosData connectQosData = ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData();
-            this.qosFormat = connectQosData.getQosFormat();
-            statRetQos.setQosFormat(this.qosFormat);
+            this.connectionQosFormat = connectQosData.getConnectionQosFormat();
+            statRetQos.setQosFormat(this.connectionQosFormat);
             ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, connectQosData, statRetQos);
             if (!connectReturnQos.getSessionName().isPubSessionIdUser()) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_CONNECT_NOPUBSESS, ME,
@@ -182,7 +182,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
             boolean asyncGetAllowed = entry.getGetQos().getData().getClientProperty(GetQos.CP_ASYNC_GET_ALLOWED, false);
             if (asyncGetAllowed) {
                statRetQos.setKeyOid(entry.getGetKey().getOid());
-               MsgQosData msgQosData = new MsgQosData(glob, this.qosFormat, MethodName.GET);
+               MsgQosData msgQosData = new MsgQosData(glob, this.connectionQosFormat, MethodName.GET);
                msgQosData.setState(Constants.STATE_TIMEOUT);
                msgQosData.setStateInfo(Constants.INFO_QUEUED);
                //GetReturnQos[] getReturnQosArr = new GetReturnQos[] { new GetReturnQos(glob, msgQosData) };

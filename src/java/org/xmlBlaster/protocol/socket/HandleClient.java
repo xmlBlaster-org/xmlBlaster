@@ -215,7 +215,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          if (receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
                log.info("########################################################");
-               log.info("global qosFormat before connection = " + glob.getQosFormatEnum());
+               log.info("global qosFormat before connection = " + glob.getDefaultQosFormat());
                log.info("########################################################");
 
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
@@ -223,7 +223,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                if (socket == null) return; // Is possible when EOF arrived inbetween
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                log.info("########################################################");
-               log.info("conQos qosFormat after connection = " + conQos.getQosFormatEnum());
+               log.info("conQos qosFormat after connection = " + conQos.getConnectionQosFormat());
                log.info("########################################################");
                if (conQos.getSecurityQos() == null)
                   throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");

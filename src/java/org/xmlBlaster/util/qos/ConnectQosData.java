@@ -48,7 +48,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    private final String ME = "ConnectQosData";
    protected transient I_ConnectQosFactory factory;
    private ConnectionStateEnum initialConnectionState = ConnectionStateEnum.UNDEF;
-   private QosFormatEnum qosFormat = QosFormatEnum.XML;
+   private QosFormatEnum connectionQosFormat = QosFormatEnum.XML;
 
    /** 
     * PtP messages wanted? True is default
@@ -131,21 +131,26 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * NOTE: The security plugin is not initialized, use loadClientPlugin() to do it
     *
     * @param factory The factory which knows how to serialize and parse me
-    * @param serialData The XML based ASCII string (syntax is described in requirement interface.connect)
+    * @param serialData The XML/JSON based ASCII string (syntax is described in requirement interface.connect)
     * @param nodeId The node id with stripped special characters (see Global#getStrippedId)
     */
    public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) throws XmlBlasterException {
       super(glob, serialData, org.xmlBlaster.util.def.MethodName.CONNECT);
       // this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.factory = (factory == null) ? this.glob.getConnectQosFactory(serialData) : factory;
-      this.qosFormat = this.factory.getQosFormat();
+      this.connectionQosFormat = this.factory.getQosFormat();
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side
    }
 
    /**
-    * Constructor for cluster server. 
-    * <p />
+    * Constructor for cluster server.<br> 
+    * NOTE: This Constructor will use make the Server use the default qosFormat.
+    * set in global. Setting the connectionQosFormat via one of the methods listed 
+    * below<br>
+    * {@link ConnectQosData#setConnectionQosFormat(QosFormatEnum)}<br>
+    * {@link ConnectQosData#ConnectQosData(Global, I_ConnectQosFactory, String, NodeId)}
+    * 
     * @param nodeId The the unique cluster node id, supports configuration per node
     */
    public ConnectQosData(Global glob, NodeId nodeId) throws XmlBlasterException {
@@ -839,6 +844,16 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       return serialize(extraOffset, (Properties)null);
    }
 
+   /**
+    * Dump state of this object into a XML/JSON ASCII string.
+    * <br>
+    * <b>Warning</b>: To reliably get XML or JSON use the corresponding
+    *  factory.writeObject() method of a SAX or JSON factory
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @param flag For example Constants.TOXML_NOSECURITY
+    * @return internal state of the connect QoS as a XML/JSON ASCII string
+    */
    public String serialize(String extraOffset, Properties props) {
       return this.factory.writeObject(this, extraOffset, props);
    }

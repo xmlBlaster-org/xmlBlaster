@@ -1409,7 +1409,7 @@ public class ReplManagerPlugin extends GlobalInfo implements
          return false;
       CallbackAddress cbAddr = connQos.getData().getCurrentCallbackAddress();
       if (cbAddr == null) {
-         log.info("entry '" + connQos.toXml()
+         log.info("entry '" + connQos.serialize()
                + "' has no callback address defined");
          return false;
       }
@@ -1457,7 +1457,7 @@ public class ReplManagerPlugin extends GlobalInfo implements
 
       if (!hasUsAsDispatchPlugin(connQos))
          return;
-      log.fine("Connecting with qos : " + connQos.toXml());
+      log.fine("Connecting with qos : " + connQos.serialize());
       String sessionName = e.getSessionInfo().getSessionName()
             .getRelativeName();
       log.info("addition of session for '" + sessionName + "' occured");

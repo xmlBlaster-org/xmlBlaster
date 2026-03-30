@@ -1101,32 +1101,11 @@ public class Global implements Cloneable
       return this.queryKeyFactory;
    }
 
-   
    /**
-    * supported factory types for switching between Sax(XML) and Jackson(JSON)
-    * parsing
-    */
-   public enum FactoryType {
-      SAX,
-      JACKSON,
-      QUICKPARSE; // not yet implemented
-      
-      public static FactoryType lookup(Global glob) {
-         if (glob == null)
-            glob = Global.instance();
-         QosFormatEnum qosFormat = glob.getQosFormatEnum();
-         if (qosFormat.isXml()) {
-            return FactoryType.SAX;
-         }
-         else if (qosFormat.isJson()) {
-            return FactoryType.JACKSON;
-         }
-         return FactoryType.SAX;         
-      }
-   }
-
-   /**
-    * The default is XML, set it via<br>
+    * The Format used to serialize qos objects, set it via commandline or properties.
+    * A server will always reply to the client in the qosFormat they chose.<br>
+    * If no format is applied, it will default to XML.<br>
+    * Set the format Via:<br>
     * commandline:
     * <pre>
     * java HelloWorld -qosFormat json
@@ -1139,7 +1118,7 @@ public class Global implements Cloneable
     * </pre>
     * @return the qosFormat set via commandline or xmlBlaster.properties
     */
-      public QosFormatEnum getQosFormatEnum() {
+      public QosFormatEnum getDefaultQosFormat() {
          try {
             return QosFormatEnum.fromString(this.get("qosFormat", QosFormatEnum.XML.toString(), null, null), QosFormatEnum.XML);
          } catch (XmlBlasterException e) {
@@ -1147,14 +1126,37 @@ public class Global implements Cloneable
             return QosFormatEnum.XML;
          }
    }
-      
+
       public void setQosFormatEnum(QosFormatEnum qosFormat) {
          if (qosFormat != null) {
             this.qosFormat = qosFormat;
          }
       }
 
-      
+      /**
+       * Derives which factory to use From QosFormat
+       * supported factory types for switching between Sax(XML) and Jackson(JSON)
+       * parsing
+       */
+      public enum FactoryType {
+         SAX,
+         JACKSON,
+         QUICKPARSE; // not yet implemented
+         
+         public static FactoryType lookup(Global glob) {
+            if (glob == null)
+               glob = Global.instance();
+            QosFormatEnum qosFormat = glob.getDefaultQosFormat();
+            if (qosFormat.isXml()) {
+               return FactoryType.SAX;
+            }
+            else if (qosFormat.isJson()) {
+               return FactoryType.JACKSON;
+            }
+            return FactoryType.SAX;         
+         }
+      }
+
    public FactoryType getFactoryType() {
       return FactoryType.lookup(this);
    }
@@ -1202,6 +1204,16 @@ public class Global implements Cloneable
       return getConnectQosFactory();
    }
 
+   public I_ConnectQosFactory getConnectQosFactory(QosFormatEnum qosFormat) {
+      if (qosFormat == QosFormatEnum.JSON) {
+         return new ConnectQosJsonFactory(this);
+      }
+      else if (qosFormat == QosFormatEnum.XML) {
+         return new ConnectQosSaxFactory(this);
+      } else {
+         return new ConnectQosSaxFactory(this);
+      }
+   }
    /**
     * Return a factory parsing QoS XML or JSON strings from disconnect() requests.
     * according to the command line arguments set (default XML).
@@ -1267,7 +1279,7 @@ public class Global implements Cloneable
          return new MsgQosSaxFactory(this);
       }
    }
-   
+
    public I_MsgQosFactory getMsgQosFactory(QosFormatEnum qosFormat) {
       if (qosFormat == QosFormatEnum.JSON) {
          return new MsgQosJsonFactory(this); 

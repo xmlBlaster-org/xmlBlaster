@@ -254,7 +254,7 @@ final public class Authenticate implements I_RunlevelListener
       // [1] Try reconnecting with secret sessionId
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Entering connect(sessionName=" + connectQos.getSessionName().getAbsoluteName() + ")"); // " secretSessionId=" + secretSessionId + ")");
-         if (log.isLoggable(Level.FINEST)) log.finest("ConnectQos=" + connectQos.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("ConnectQos=" + connectQos.serialize());
 
          // Get or create the secretSessionId (we respect a user supplied secretSessionId) ...
          if (secretSessionId == null || secretSessionId.length() < 2) {
@@ -374,7 +374,7 @@ final public class Authenticate implements I_RunlevelListener
          // Get suitable SecurityManager and context ...
          securityMgr = plgnLdr.getManager(connectQos.getClientPluginType(), connectQos.getClientPluginVersion());
          if (securityMgr == null) {
-            log.warning("Access is denied, there is no security manager configured for this connect QoS: " + connectQos.toXml());
+            log.warning("Access is denied, there is no security manager configured for this connect QoS: " + connectQos.serialize());
             throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "There is no security manager configured with the given connect QoS");
          }
          sessionCtx = securityMgr.reserveSession(secretSessionId);  // always creates a new I_Session instance
@@ -485,7 +485,7 @@ final public class Authenticate implements I_RunlevelListener
             }
             else {
                // Create the new sessionInfo instance
-               if (log.isLoggable(Level.FINE)) log.fine("connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.serialize() + "'");
                sessionInfo.init(subjectInfo, sessionCtx, connectQos);
                synchronized(this.sessionInfoMap) {
                   this.sessionInfoMap.put(secretSessionId, sessionInfo);
