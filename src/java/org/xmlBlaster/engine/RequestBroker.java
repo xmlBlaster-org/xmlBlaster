@@ -965,7 +965,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             for(int i=0; i<raw.length; i++) {
                // byte[] cont = (getQos.getWantContent()) ? raw[i].getContent() : new byte[0];
                // msgUnitArr[i] = new MsgUnit(key, cont, raw[i].getQos());
-               msgUnitArr[i] = new MsgUnit(raw[i], null, new byte[0], null);
+               msgUnitArr[i] = new MsgUnit(raw[i], null, new byte[0], sessionInfo.getConnectionQosFormat());
             }
             return msgUnitArr;
          }
@@ -1121,6 +1121,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       }
    }
 
+   // TODO: is this client specific?
    public void updateInternalUserList() throws XmlBlasterException {
       // "__sys__UserList";
       if (this.publishUserList && this.state == ALIVE) {
@@ -1513,8 +1514,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (msgQosData.isErased()) {
          String eraseKey = msgQosData.getClientProperty("__eraseKey", updateKey.toXml());
          QueryKeyData key = glob.getQueryKeyFactory().readObject(eraseKey);
-         String eraseQos = msgQosData.getClientProperty("__eraseQos", "<qos/>");
+         String eraseQos = msgQosData.getClientProperty("__eraseQos", "<qos/>"); // this will always be xml
          EraseQosServer qos = new EraseQosServer(glob, eraseQos);
+         qos.setQosFormat(sessionInfo.getConnectionQosFormat()); // the client might need JSON
          String[] ret = erase(sessionInfo, key, qos, true);
          if (ret != null && ret.length > 0)
             return ret[0];
@@ -2039,7 +2041,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          if (log.isLoggable(Level.FINER)) log.finer("Entering " + (isClusterUpdate?"cluster update message ":"") +
                 "erase(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                 "', query='" + xmlKey.getQueryString() + "') client '" + sessionInfo.getLoginName() + "' ...");
-         if (log.isLoggable(Level.FINEST)) log.finest("Entering " + (isClusterUpdate?"cluster update message ":"") + xmlKey.toXml() + eraseQos.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("Entering " + (isClusterUpdate?"cluster update message ":"") + xmlKey.toXml() + eraseQos.serialize());
 
          String[] oids = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
          Set oidSet = new HashSet(oids.length);  // for return values (TODO: change to TreeSet to maintain order)

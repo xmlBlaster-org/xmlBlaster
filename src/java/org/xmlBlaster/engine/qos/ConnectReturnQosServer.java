@@ -1,6 +1,7 @@
 package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.qos.SessionQos;
@@ -34,6 +35,10 @@ public final class ConnectReturnQosServer {
 
    public ConnectQosData getData() {
       return this.connectQosData;
+   }
+
+   public QosFormatEnum getConnectionQosFormat() {
+      return this.connectQosData.getConnectionQosFormat();
    }
 
    public String toXml() {

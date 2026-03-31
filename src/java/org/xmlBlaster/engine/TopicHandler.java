@@ -2187,7 +2187,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   if (eraseKey != null) // To have all attributes for cluster slaves getting forwarded the erase
                      pq.addClientProperty("__eraseKey", eraseKey.toXml());
                   if (eraseQos != null) // To have all attributes for cluster slaves getting forwarded the erase
-                     pq.addClientProperty("__eraseQos", eraseQos.toXml());
+                     pq.addClientProperty("__eraseQos", eraseQos.serialize());
                   if (i==0) {
                      TopicProperty topicProperty = new TopicProperty(serverScope);
                      //topicProperty.setDestroyDelay(destroyDelay);

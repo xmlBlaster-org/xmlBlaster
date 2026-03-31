@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -420,6 +421,9 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       }
       return false;
    }
+
+   public abstract void setQosFormat(QosFormatEnum qosFormat);
+
 
    /**
     * The data size for persistence

@@ -253,6 +253,8 @@ public final class CbDispatchConnection extends DispatchConnection
             MsgUnit mu = msgUnitWrapper.getMsgUnit();
             //MsgUnit mu = entry.getMsgUnit(); throws unwanted exception if meat==null (forceDestroy)
             MsgQosData msgQosData = (MsgQosData)mu.getQosData().clone();
+            // send messages in Client Format
+            msgQosData.setQosFormat(this.session.getConnectQos().getConnectionQosFormat());
             msgQosData.setTopicProperty(null);
             msgQosData.setState(entry.getState());
             msgQosData.setSubscriptionId(entry.getSubscriptionId());

@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.property.PropBoolean;
 
 
@@ -45,6 +46,10 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
    public DisconnectQosData(Global glob, I_DisconnectQosFactory factory, String serialData) {
       super(glob, serialData, org.xmlBlaster.util.def.MethodName.DISCONNECT);
       this.factory = (factory == null) ? this.glob.getDisconnectQosFactory(serialData) : factory;
+   }
+
+   public void setQosFormat(QosFormatEnum qosFormat) {
+      this.factory = glob.getDisconnectQosFactory(qosFormat);
    }
 
    /**

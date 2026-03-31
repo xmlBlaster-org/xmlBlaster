@@ -111,6 +111,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       this.driver.connectLowlevel((Address)super.address);
       if (super.address.getPingInterval() > 0) {
          //spanPingTimer(1, true); // Could deadlock as it uses complete dispatch framework with its synchronized?
+         // pinging the server in XML should always be fine (even if the client uses JSON)
          this.driver.ping("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");  // Try a low level ping
       }
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Connected low level to " + super.address.toString());

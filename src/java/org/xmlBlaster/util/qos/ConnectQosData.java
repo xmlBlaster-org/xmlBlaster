@@ -138,6 +138,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       // this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.factory = (factory == null) ? this.glob.getConnectQosFactory(serialData) : factory;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
+      //TODO: this SessionQos should could also contatain QosFormat info....
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side
    }
 
@@ -174,6 +175,10 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       this.factory = glob.getConnectQosFactory(qosFormat);
    }
 
+   @Override
+   public void setQosFormat(QosFormatEnum qosFormat) {
+      this.setConnectionQosFormat(qosFormat);
+   }
    /**
     * The subjectQueue is exactly one instance for a subjectId (a loginName), it
     * is used to hold the PtP messages send to this subject.

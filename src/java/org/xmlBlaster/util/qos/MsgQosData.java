@@ -158,6 +158,9 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       this.factory = (factory == null) ? this.glob.getMsgQosFactory(serialData) : factory;
    }
 
+   public void setQosFormat(QosFormatEnum qosFormat) {
+      this.factory = glob.getMsgQosFactory(qosFormat);
+   }
    /**
     * @see #isSubscribable()
     */

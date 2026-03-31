@@ -1258,6 +1258,25 @@ public class Global implements Cloneable
    }
    
    /**
+   * Return a factory parsing QoS strings from disconnect() requests.
+   * 
+   * @param qosFormat used to determine the correct factory implementation
+   * @return factory implementation suitable for parsing `serialData`
+   * 
+   * @see org.xmlBlaster.util.qos.I_DisconnectQosFactory#parse(Global, String)
+   */
+  public I_DisconnectQosFactory getDisconnectQosFactory(QosFormatEnum qosFormat) {
+     if (qosFormat == QosFormatEnum.JSON) {
+        return new DisconnectQosJsonFactory(this); 
+     }
+     else if (qosFormat == QosFormatEnum.XML) {
+        return new DisconnectQosSaxFactory(this);
+     } else {
+        return new DisconnectQosSaxFactory(this);
+     }
+  }
+
+   /**
     * Return a factory parsing QoS XML strings from publish() and update() messages.
     * according to the command line arguments set (default XML).
     * <pre>
@@ -1335,7 +1354,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    * Return a factory parsing QoS XML/JSON strings from publish() and update() messages.
     * 
     * @param serialData used to determine the correct factory implementation
     * @return factory implementation suitable for parsing `serialData`
@@ -1352,6 +1371,24 @@ public class Global implements Cloneable
          }
       }
       return getQueryQosFactory();
+   }
+
+   /**
+    * Return a factory parsing QoS XML/JSON strings from publish() and update() messages.
+    * 
+    * @param qosFormat determine the correct factory implementation
+    * @return factory implementation suitable for parsing and serializing in `qosFormat`
+    */
+   public I_QueryQosFactory getQueryQosFactory(QosFormatEnum qosFormat) {
+      if (qosFormat == QosFormatEnum.JSON) {
+            return new QueryQosJsonFactory(this); 
+         }
+      else if (qosFormat == QosFormatEnum.XML) {
+         return new QueryQosSaxFactory(this);
+      } else {
+         // TODO: what about clientporperties!
+         return new QueryQosSaxFactory(this);
+      }
    }
 
    /**

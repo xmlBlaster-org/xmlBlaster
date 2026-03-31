@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.Constants;
@@ -113,6 +114,13 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       this.containsHistoryQos = (this.historyQos != null);
    }
 
+   /**
+    * change format used to serialize/parse this
+    * @param qosFormat
+    */
+   public void setQosFormat(QosFormatEnum qosFormat) {
+      this.factory = glob.getQueryQosFactory(qosFormat);
+   }
    /**
     * Allow to subscribe multiple times to the same query/oid
     * @return defaults to true

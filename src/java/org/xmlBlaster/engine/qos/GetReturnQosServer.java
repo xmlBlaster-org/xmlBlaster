@@ -26,7 +26,12 @@ public class GetReturnQosServer
    private final MsgQosData msgQosData;
 
    public GetReturnQosServer(Global glob, QosFormatEnum qosFormat, MsgQosData msgQosData, String state) {
-      this.msgQosData = (msgQosData == null) ? new MsgQosData(glob, qosFormat, MethodName.GET) : msgQosData;
+      if (msgQosData == null) {
+         this.msgQosData = new MsgQosData(glob, qosFormat, MethodName.GET);
+      } else {
+         msgQosData.setQosFormat(qosFormat);
+         this.msgQosData = msgQosData;
+      }
       this.msgQosData.setState((state == null) ? Constants.STATE_OK : state);
    }
 

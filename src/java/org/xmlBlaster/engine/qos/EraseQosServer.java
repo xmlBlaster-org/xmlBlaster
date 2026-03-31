@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
@@ -52,6 +53,10 @@ public final class EraseQosServer
       return this.queryQosData;
    }
 
+   public void setQosFormat(QosFormatEnum qosFormat) {
+      this.queryQosData.setQosFormat(qosFormat);
+   }
+
    public boolean getWantNotify() {
       return this.queryQosData.getWantNotify();
    }
@@ -70,11 +75,11 @@ public final class EraseQosServer
       return this.queryQosData.getForceDestroy();
    }
 
-   public String toXml() {
-      return toXml((String)null);
+   public String serialize() {
+      return serialize((String)null);
    }
 
-   public String toXml(String extraOffset) {
+   public String serialize(String extraOffset) {
       return this.queryQosData.serialize(extraOffset);
    }
 }

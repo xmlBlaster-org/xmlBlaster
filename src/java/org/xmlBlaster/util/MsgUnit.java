@@ -177,6 +177,33 @@ public final class MsgUnit implements java.io.Serializable
       this.keyData = (key==null) ? (KeyData)old.getKeyData().clone() : key;
       setContent( (content==null) ? old.getContent() : content);
    }
+   
+   /**
+    * Clone this message unit (but not the content). 
+    * <p>
+    *  In order to keep up with performance we don't encapsulate the content in an immutable object.
+    *  Keep in mind however that you should never (ever) change the content of a MsgUnit since
+    *  such a change would affect the messages to all other reference of this message (e.g. subscribers)
+    *  and therefore it might lead to unpredictable (and undesired) results.
+    * </p>
+    * <p>Example:</p>
+    * <pre> 
+    * byte[] content = msgUnit.getContent();
+    * content[6] = (byte)'A';  // NOT ALLOWED !
+    * </pre> 
+    * @param old       The MsgUnit to clone
+    * @param key       The new key to use, if you pass 'null' the old is shallow cloned
+    * @param content   If you pass null note that the byte[] is a reference
+    *                     to the original and you should not manipulate it
+    * @param qosFormat The new qosFormat to use, the old qos is shallow cloned
+    */
+   public MsgUnit(MsgUnit old, KeyData key, byte[] content, QosFormatEnum qosFormat) {
+      glob = old.getGlobal();
+      this.qosData = (QosData)old.getQosData().clone();
+      this.qosData.setQosFormat(qosFormat);
+      this.keyData = (key==null) ? (KeyData)old.getKeyData().clone() : key;
+      setContent( (content==null) ? old.getContent() : content);
+   }
 
   /*
    public MsgUnit(MsgUnit old, MsgKeyData key, byte[] content, MsgQosData qos) {
