@@ -50,6 +50,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -629,6 +630,8 @@ public class HandleMqttClient implements Runnable, I_CallbackDriver {
       // MQTT: session stays active on disconnect, except if expiry is 0 -> don't send a disconnectQos, just quit
       if (expireNow) {
          DisconnectQosServer qos = new DisconnectQosServer(glob);
+         QosFormatEnum connectionQosFormat = this.connectReturnQos == null ? null : this.connectReturnQos.getConnectionQosFormat();
+         qos.getData().setQosFormat(connectionQosFormat);
          try {
             authenticate.disconnect(addressServer, connectReturnQos.getSecretSessionId(), qos.toString());
          } catch (Throwable e) {

@@ -533,7 +533,7 @@ final public class Authenticate implements I_RunlevelListener
          }
          log.info(sb.toString());
          if (log.isLoggable(Level.FINEST)) log.finest(toXml());
-         if (log.isLoggable(Level.FINEST)) log.finest("Returned QoS:\n" + returnQos.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("Returned QoS:\n" + returnQos.serialize());
          if (log.isLoggable(Level.FINER)) log.finer("Leaving connect()");
 
          return returnQos;

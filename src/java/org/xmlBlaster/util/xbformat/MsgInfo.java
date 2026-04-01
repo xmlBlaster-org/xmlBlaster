@@ -19,6 +19,7 @@ import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.qos.I_StatusQosFactory;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.QosFormatEnum;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,6 +93,8 @@ public class MsgInfo {
    private I_MsgInfoParser msgInfoParser;
    
    private I_PluginConfig pluginConfig;
+   /** Currently just for handling disconnect messages */
+   private QosFormatEnum connectionQosFormat;
 
    /**
     * Transports information from receiver to response instance (Hack?)
@@ -298,6 +301,21 @@ public class MsgInfo {
     */
    public final void setRequestId(String requestId) {
       this.requestId = requestId;
+   }
+
+   /**
+    * @param qosFormat the qosFormat the Message should be serialized
+    * with, when sent to a client
+    */
+   public final void setConnectionQosFormat(QosFormatEnum qosFormat) {
+      this.connectionQosFormat = qosFormat;
+   }
+
+   /**
+    * @return qosFormat set after construction, may be null
+    */
+   public QosFormatEnum getConnectionQosFormat() {
+      return this.connectionQosFormat;
    }
 
    /**

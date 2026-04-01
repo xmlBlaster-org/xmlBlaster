@@ -206,7 +206,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void shutdown() throws XmlBlasterException {
       if (sessionId != null) {
-         try { this.authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
+         try { this.authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).serialize()); } catch(XmlBlasterException e) { }
       }
       namedPool.destroy();
       log.info("JDBC service stopped, resources released.");

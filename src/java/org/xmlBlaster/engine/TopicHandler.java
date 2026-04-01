@@ -270,7 +270,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             toUnreferenced(true, publishQosServer.isFromPersistenceStore());
          }
          else {
-            toAlive(); // TODO: hier qosFormat übergeben?
+            toAlive(publishQos.getQosFormat());
          }
       }
 
@@ -422,7 +422,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * Create or access the cached persistence storage entry of this topic.
     * @return null If no PublishQos is available to create persistent information
     */
-   private TopicEntry persistTopicEntry() throws XmlBlasterException {
+   private TopicEntry persistTopicEntry(QosFormatEnum connectionQosformat) throws XmlBlasterException {
       if (this.topicEntry == null) {
          boolean isNew = false;
          if (this.topicEntry == null) {
@@ -432,6 +432,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                return null;
             }
             MsgQosData msgQosData = new MsgQosData(serverScope, MethodName.PUBLISH);
+            msgQosData.setQosFormat(connectionQosformat);
             msgQosData.setTopicProperty(this.topicProperty);
             msgQosData.setAdministrative(true);
             msgQosData.touchRcvTimestamp();
@@ -630,7 +631,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
 
       if (!isAlive()) {
-         toAlive();
+         toAlive(publisherSessionInfo.getConnectionQosFormat());
       }
       if (this.handlerIsNewCreated) {
          // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
@@ -657,7 +658,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          msgUnitWrapper = new MsgUnitWrapper(serverScope, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
 
          if (!isAlive()) {
-             toAlive();
+             toAlive(publisherSessionInfo.getConnectionQosFormat());
          }
 
          // Forcing RAM entry temporary (reset in finally below) to avoid performance critical harddisk IO during initialization, every callback/subject/history queue put()/take() is changing the reference counter of MsgUnitWrapper. For persistent messages this needs to be written to harddisk
@@ -1105,7 +1106,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
 
       if (isUnreferenced()) {
-         toAlive();
+         toAlive(sub.getSessionInfo().getConnectionQosFormat());
       }
 
       // will be triggered by ConnectionStatusListener.toAlive() ..
@@ -1793,7 +1794,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
    }
 
-   private void toAlive() throws XmlBlasterException {
+   private void toAlive(QosFormatEnum qosFormat) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering toAlive(oldState="+getStateStr()+")");
       if (isAlive()) {
          return;
@@ -1814,7 +1815,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
       }
 
-      persistTopicEntry();
+      persistTopicEntry(qosFormat);
       initMsgDistributorPlugin();
       this.state = ALIVE;
    }
@@ -1893,7 +1894,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       // On administrative startup
       if (oldState == UNDEF || oldState == UNCONFIGURED) {
-         persistTopicEntry();
+         persistTopicEntry(QosFormatEnum.XML); // formats will be adapted when the messages get published
       }
       return notifyList;
    }

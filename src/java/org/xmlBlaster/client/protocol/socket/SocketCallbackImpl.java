@@ -21,6 +21,7 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -29,6 +30,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 
@@ -52,6 +54,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    /** A unique name for this client socket */
    private SocketUrl socketUrl;
    private CallbackAddress callbackAddress;
+   private QosFormatEnum connectionQosFormat;
    private PluginInfo pluginInfo;
    /** The socket connection to/from one client */
    protected Socket sock;
@@ -314,14 +317,17 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   conQos.getData().getCurrentCallbackAddress().setCallbackDriver(callbackSocketDriver);
                   ConnectReturnQosServer retQos = getAuthenticateCore().connect(conQos);
                   this.secretSessionId = retQos.getSecretSessionId();
+                  this.connectionQosFormat = retQos.getConnectionQosFormat();
                   receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-                  executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+                  executeResponse(receiver, retQos.serialize(), SocketUrl.SOCKET_TCP);
                }
                else if (MethodName.DISCONNECT == receiver.getMethodName()) {
                   executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                   // Note: the disconnect will call over the CbInfo our shutdown as well
                   // setting sessionId = null prevents that our shutdown calls disconnect() again.
-                  getAuthenticateCore().disconnect(getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+                  DisconnectQosData qos = new DisconnectQosData(glob, null, receiver.getQos());
+                  qos.setQosFormat(this.connectionQosFormat);
+                  getAuthenticateCore().disconnect(getAddressServer(), receiver.getSecretSessionId(), qos.serialize());
                   shutdown();
                }
                else {

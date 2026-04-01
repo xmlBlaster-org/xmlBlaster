@@ -73,7 +73,7 @@ final public class AuthenticateProtector implements I_Authenticate
          // Note: We throw away the ConnectQosServer facade and create a new one (no specific data enters the core)
          ConnectQosServer clone = xmlQos.getClone(glob);
          ConnectReturnQosServer tmp = this.authenticate.connect(clone, secretSessionId);
-         return new ConnectReturnQosServer(glob, tmp.toXml());
+         return new ConnectReturnQosServer(glob, tmp.serialize());
       }
       catch (Throwable e) {
          throw this.availabilityChecker.checkException(MethodName.CONNECT, e);
@@ -102,7 +102,7 @@ final public class AuthenticateProtector implements I_Authenticate
          //System.out.println("GOT Protector: " + connectQos_literal);
          //System.out.println("AFTER Protector: " + qos.toXml());
          ConnectReturnQosServer ret = this.authenticate.connect(qos, secretSessionId);
-         return ret.toXml();
+         return ret.serialize();
       }
       catch (Throwable e) {
          throw this.availabilityChecker.checkException(MethodName.CONNECT, e);
@@ -111,7 +111,7 @@ final public class AuthenticateProtector implements I_Authenticate
 
    public final void disconnect(AddressServer addressServer, String secretSessionId, String qos_literal) throws XmlBlasterException {
 
-      // Parse XML QoS
+      // Parse XML/JOSN QoS
       MsgUnit msgUnit = new MsgUnit(glob, null, null, qos_literal, MethodName.DISCONNECT);
       this.availabilityChecker.checkServerIsReady(null, addressServer, msgUnit, MethodName.DISCONNECT);
 

@@ -115,7 +115,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	            // if (log.isLoggable(Level.FINE)) log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
 	            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos, sessionId);
 	            if (log.isLoggable(Level.FINEST))
-	               log.finest("recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
+	               log.finest("recoverSessions: return of connect: returnConnectQos='" + ret.serialize() + "'");
 	         }
 	         else {
 	            throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the storage should be of type 'SessionEntry' but is of type'" + entries[i].getClass().getName() + "'");

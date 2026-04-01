@@ -1258,7 +1258,8 @@ public class Global implements Cloneable
    }
    
    /**
-   * Return a factory parsing QoS strings from disconnect() requests.
+   * Return a factory parsing QoS strings from disconnect() requests.<br>
+   * Default is SaxFactory
    * 
    * @param qosFormat used to determine the correct factory implementation
    * @return factory implementation suitable for parsing `serialData`

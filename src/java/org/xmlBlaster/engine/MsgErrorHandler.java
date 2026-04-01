@@ -172,6 +172,8 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                                    ": " + message);
                      try {
                         DisconnectQos disconnectQos = new DisconnectQos(glob);
+                        // use correct qosFormat when handling errors
+                        disconnectQos.getData().setQosFormat(this.sessionInfo.getConnectionQosFormat());
                         disconnectQos.deleteSubjectQueue(false);
                         glob.getAuthenticate().disconnect(this.sessionInfo.getAddressServer(), 
                                             this.sessionInfo.getSecretSessionId(), disconnectQos.serialize());

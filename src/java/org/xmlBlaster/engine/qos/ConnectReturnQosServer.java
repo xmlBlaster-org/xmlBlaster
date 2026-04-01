@@ -38,14 +38,14 @@ public final class ConnectReturnQosServer {
    }
 
    public QosFormatEnum getConnectionQosFormat() {
-      return this.connectQosData.getConnectionQosFormat();
+      return this.connectQosData == null ? null : this.connectQosData.getConnectionQosFormat();
    }
 
-   public String toXml() {
+   public String serialize() {
       return this.connectQosData.serialize();
    }
 
-   public String toXml(String extraOffset) {
+   public String serialize(String extraOffset) {
       return this.connectQosData.serialize(extraOffset);
    }
 

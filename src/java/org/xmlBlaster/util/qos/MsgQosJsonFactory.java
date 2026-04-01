@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -45,6 +46,11 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
 
    public boolean sendRemainingLife() {
       return this.sendRemainingLife;
+   }
+
+   @Override
+   public QosFormatEnum getQosFormat() {
+      return QosFormatEnum.JSON;
    }
 
    /**

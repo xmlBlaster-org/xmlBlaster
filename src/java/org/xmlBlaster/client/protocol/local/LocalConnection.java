@@ -9,12 +9,15 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -161,7 +164,10 @@ public class LocalConnection implements I_XmlBlasterConnection
       }
 
       try {
-         this.authenticate.disconnect(this.addressServer, this.sessionId, disconnectQos);
+         DisconnectQosData qos = new DisconnectQosData(glob, null ,disconnectQos);
+         QosFormatEnum connectionQosFormat = this.connectReturnQos == null ? null : this.connectReturnQos.getConnectionQosFormat();
+         qos.setQosFormat(connectionQosFormat);
+         this.authenticate.disconnect(this.addressServer, this.sessionId, qos.serialize());
       }
       catch(XmlBlasterException e) {
          log.severe(e.getMessage());

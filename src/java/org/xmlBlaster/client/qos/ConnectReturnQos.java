@@ -1,6 +1,7 @@
 package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -82,6 +83,10 @@ public class ConnectReturnQos {
     */
    public ConnectQosData getData() {
       return this.connectQosData;
+   }
+
+   public QosFormatEnum getConnectionQosFormat() {
+      return this.connectQosData == null ? null: this.connectQosData.getConnectionQosFormat();
    }
 
    public StatusQosData getStatusQosData() {

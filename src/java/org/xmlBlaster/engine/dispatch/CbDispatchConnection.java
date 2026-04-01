@@ -24,6 +24,7 @@ import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
@@ -254,7 +255,8 @@ public final class CbDispatchConnection extends DispatchConnection
             //MsgUnit mu = entry.getMsgUnit(); throws unwanted exception if meat==null (forceDestroy)
             MsgQosData msgQosData = (MsgQosData)mu.getQosData().clone();
             // send messages in Client Format
-            msgQosData.setQosFormat(this.session.getConnectQos().getConnectionQosFormat());
+            QosFormatEnum connectionQosFormat = this.session.getConnectQos() == null ? null : this.session.getConnectQos().getConnectionQosFormat();
+            msgQosData.setQosFormat(connectionQosFormat);
             msgQosData.setTopicProperty(null);
             msgQosData.setState(entry.getState());
             msgQosData.setSubscriptionId(entry.getSubscriptionId());

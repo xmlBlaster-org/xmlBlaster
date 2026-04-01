@@ -18,10 +18,12 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 
 import remotecons.RemoteServer;
 import remotecons.ifc.CommandHandlerIfc;
@@ -160,7 +162,9 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       if (isLogin) {
          if (connectRetQos != null) {
             try {
-               glob.getAuthenticate().disconnect(this.addressServer, connectRetQos.getSecretSessionId(), null);
+               QosFormatEnum connectionQosFormat = connectRetQos.getData() == null ? null : connectRetQos.getData().getConnectionQosFormat();
+               DisconnectQosData qos = new DisconnectQosData(glob, glob.getDisconnectQosFactory(connectionQosFormat));
+               glob.getAuthenticate().disconnect(this.addressServer, connectRetQos.getSecretSessionId(), qos.serialize());
             }
             catch (org.xmlBlaster.util.XmlBlasterException e) {
                log.warning(e.getMessage());

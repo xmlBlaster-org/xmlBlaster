@@ -92,7 +92,7 @@ public final class ConnectQosServer
    }
 
    public QosFormatEnum getConnectionQosFormat() {
-      return this.connectQosData.getConnectionQosFormat();
+      return this.connectQosData == null ? null : this.connectQosData.getConnectionQosFormat();
    }
 
    public ConnectQosData getData() {

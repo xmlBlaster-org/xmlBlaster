@@ -19,6 +19,7 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -29,6 +30,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
@@ -68,6 +70,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 	protected long updateResponseTimeout;
 	
 	private ConnectQosServer connectQos;
+	private QosFormatEnum connectionQosFormat;
 	private String remoteAddress = "";
 
 	public XbStompInOutBridge(Global glob, XbStompDriver driver,
@@ -336,6 +339,7 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 				}
 				ConnectReturnQosServer retQos = authenticate.connect(conQos);
 				this.connectQos = conQos;
+				this.connectionQosFormat = conQos.getConnectionQosFormat();
 				this.secretSessionId = retQos.getSecretSessionId();
 				ME = retQos.getSessionName().getRelativeName();
 
@@ -386,8 +390,10 @@ public class XbStompInOutBridge implements StompHandler, I_CallbackDriver {
 		try {
 			@SuppressWarnings("unchecked")
 			final Map headers = command.getHeaders();
-			String qos = (String) headers.get(XB_SERVER_HEADER_QOS);
-			authenticate.disconnect(null, secretSessionId, qos);
+			String qosStr = (String) headers.get(XB_SERVER_HEADER_QOS);
+			DisconnectQosData qos = new DisconnectQosData(glob, null, qosStr);
+			qos.setQosFormat(this.connectionQosFormat);
+			authenticate.disconnect(null, secretSessionId, qos.serialize());
 		} catch (XmlBlasterException e) {
 			sendExeption(command, e);
 		}

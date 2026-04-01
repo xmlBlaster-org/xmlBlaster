@@ -15,6 +15,7 @@ import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Global.FactoryType;
 import org.xmlBlaster.util.JacksonUtils;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -146,6 +147,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       super(glob);
       this.glob = glob;
 
+   }
+
+   @Override
+   public QosFormatEnum getQosFormat() {
+      return QosFormatEnum.XML;
    }
 
    /**

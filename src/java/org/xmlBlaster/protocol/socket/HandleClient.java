@@ -15,12 +15,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -28,6 +30,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
@@ -71,6 +74,8 @@ public class HandleClient extends SocketExecutor implements Runnable
    private boolean isShutdownCompletly = false;
    
    private Thread socketHandlerThread;
+
+   private QosFormatEnum clientQosFormat = QosFormatEnum.XML;
 
    /**
     * Creates an instance which serves exactly one client.
@@ -216,15 +221,12 @@ public class HandleClient extends SocketExecutor implements Runnable
             if (MethodName.CONNECT == receiver.getMethodName()) {
                log.info("########################################################");
                log.info("global qosFormat before connection = " + glob.getDefaultQosFormat());
-               log.info("########################################################");
 
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
                Socket socket = this.sock;
                if (socket == null) return; // Is possible when EOF arrived inbetween
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
-               log.info("########################################################");
-               log.info("conQos qosFormat after connection = " + conQos.getConnectionQosFormat());
-               log.info("########################################################");
+               this.clientQosFormat = conQos.getConnectionQosFormat();
                if (conQos.getSecurityQos() == null)
                   throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
                conQos.getSecurityQos().setClientIp (socket.getInetAddress().getHostAddress());
@@ -281,7 +283,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                this.addressServer.setSessionName(retQos.getSessionName());
                this.secretSessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-               executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+               executeResponse(receiver, retQos.serialize(), SocketUrl.SOCKET_TCP);
                driver.addClient(this.secretSessionId, this);
                
                // TODO: authenticate plugin may disable the dispatcher, and we enable it here again? Is ConnectQosServer a clone?
@@ -304,7 +306,10 @@ public class HandleClient extends SocketExecutor implements Runnable
                executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
-               authenticate.disconnect(getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+               DisconnectQosData qos = new DisconnectQosData(glob, null, receiver.getQos());
+               qos.setQosFormat(this.clientQosFormat);
+
+               authenticate.disconnect(getAddressServer(), receiver.getSecretSessionId(), qos.serialize());
                shutdown();
             }
          }

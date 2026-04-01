@@ -60,6 +60,7 @@ import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -198,8 +199,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       this.startupTime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
-      this.connectQos = connectQos;  // ab hier ist QosFormatEnum bekannt
-      log.info("conQos Server qosFormat = " + connectQos.getConnectionQosFormat());
+      this.connectQos = connectQos;  // from here on we know this connections qosFormat
 
       this.msgErrorHandler = new MsgErrorHandler(glob, this);
       String type = connectQos.getSessionCbQueueProperty().getType();
@@ -274,7 +274,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
     * @return qosFormat that the client uses
     */
    public QosFormatEnum getConnectionQosFormat() {
-      return this.connectQos.getConnectionQosFormat();
+      return this.connectQos == null ? null : this.connectQos.getConnectionQosFormat();
    }
    /**
     * The unique name of this session instance.
@@ -534,8 +534,9 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       log.warning(ME+": Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
       DisconnectQosServer qos = new DisconnectQosServer(glob);
       qos.deleteSubjectQueue(true);
+      qos.getData().setQosFormat(this.getConnectionQosFormat());
       try {
-         glob.getAuthenticate().disconnect(getAddressServer(), getSecretSessionId(), qos.toXml());
+         glob.getAuthenticate().disconnect(getAddressServer(), getSecretSessionId(), qos.serialize());
       } catch (XmlBlasterException e) {
          e.printStackTrace();
          log.severe(ME+": Internal problem with disconnect: " + e.toString());
@@ -1118,7 +1119,10 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    public final String killSession() throws XmlBlasterException {
 	  try {
-         glob.getAuthenticate().disconnect(getAddressServer(), securityCtx.getSecretSessionId(), "<qos/>");
+	     DisconnectQosData disconnnectQos = new DisconnectQosData(glob);
+         QosFormatEnum connectionQosFormat = sessionInfoProtector.getConnectQos() == null ? null : sessionInfoProtector.getConnectQos().getConnectionQosFormat();
+	     disconnnectQos.setQosFormat(connectionQosFormat);
+        glob.getAuthenticate().disconnect(getAddressServer(), securityCtx.getSecretSessionId(), disconnnectQos.serialize());
 	  }
 	  catch (XmlBlasterException e) {
 		 String key = getSubjectInfo().lookupSessionKey(this);

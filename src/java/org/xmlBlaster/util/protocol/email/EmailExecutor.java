@@ -438,8 +438,10 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             
             if (i==0 && msgInfos.length > 1 && MethodName.CONNECT.equals(msgInfo.getMethodName())) {
                // If multiple requests where bundled pass the others the secret session id
-               for (int k=1; k<msgInfos.length; k++)
+               for (int k=1; k<msgInfos.length; k++) {
                   msgInfos[k].setSecretSessionId(msgInfo.getSecretSessionId());
+                  msgInfos[k].setConnectionQosFormat(msgInfo.getConnectionQosFormat());
+               }
             }
          } catch (Throwable e) {
             if (log.isLoggable(Level.FINE))

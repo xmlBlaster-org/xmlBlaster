@@ -20,6 +20,7 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -29,6 +30,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.RequestReplyExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 
@@ -54,6 +56,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
    private WebSocketDriver driver;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate;
+   private QosFormatEnum clientQosFormat;
 
    
    //private String cbKey = null; // Remember the key for the Global map
@@ -152,6 +155,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
 
          if (MethodName.CONNECT == receiver.getMethodName()) {
             this.conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
+            this.clientQosFormat = this.conQos.getConnectionQosFormat();
             if (conQos.getSecurityQos() == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
             conQos.getSecurityQos().setClientIp (sock.getRemoteSocketAddress().getAddress().getHostAddress());
@@ -179,14 +183,16 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
             driver.getAddressServer().setSessionName(retQos.getSessionName());
             this.secretSessionId = retQos.getSecretSessionId();
             receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-            executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+            executeResponse(receiver, retQos.serialize(), SocketUrl.SOCKET_TCP);
          } else if (MethodName.DISCONNECT == receiver.getMethodName()) {
             this.disconnectIsCalled = true;
             log.info(this.ME+": Got DisconnectQos: Client disconnected");
             executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
             // Note: the disconnect will call over the CbInfo our shutdown as well
             // setting sessionId = null prevents that our shutdown calls disconnect() again.
-            authenticate.disconnect(driver.getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+            DisconnectQosData dQos = new DisconnectQosData(glob, null, receiver.getQos());
+            dQos.setQosFormat(this.clientQosFormat);
+            authenticate.disconnect(driver.getAddressServer(), receiver.getSecretSessionId(), dQos.serialize());
             shutdown();
          }
       }

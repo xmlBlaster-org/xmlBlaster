@@ -24,6 +24,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 
@@ -242,8 +243,9 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
                ConnectReturnQosServer retQos = this.authenticate.connect(conQos);
                //As we are a singleton there is no need to remember the secretSessionId of this client
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-               
-               String literal = retQos.toXml();
+               receiver.setConnectionQosFormat(retQos.getConnectionQosFormat());
+
+               String literal = retQos.serialize();
                if (stripSecurityQosCDATA) {
                   String qosOrig = literal;
                   String qosStripped = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosOrig, "<![CDATA[", "");
@@ -260,7 +262,9 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
                executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
-               this.authenticate.disconnect(getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+               DisconnectQosData qos = new DisconnectQosData(glob, null, receiver.getQos());
+               qos.setQosFormat(receiver.getConnectionQosFormat());
+               this.authenticate.disconnect(getAddressServer(), receiver.getSecretSessionId(), qos.serialize());
             }
          }
       }

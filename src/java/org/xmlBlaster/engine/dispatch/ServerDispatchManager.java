@@ -38,6 +38,7 @@ import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -1231,10 +1232,14 @@ public final class ServerDispatchManager implements I_DispatchManager
 
          if (sessionInfo != null) {
             try {
-               if (!sessionInfo.isShutdown())
-               glob.getAuthenticate().disconnect(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), null);
-            }
-            catch (Exception e) {
+               if (!sessionInfo.isShutdown()) {
+
+                  DisconnectQosData qos = new DisconnectQosData(glob,
+                        glob.getDisconnectQosFactory(sessionInfo.getConnectionQosFormat()));
+                  glob.getAuthenticate().disconnect(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(),
+                        qos.serialize());
+               }
+            } catch (Exception e) {
                log.severe("Disconnecting client with " + sessionInfo.toXml());
                e.printStackTrace();
             }

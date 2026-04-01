@@ -105,7 +105,7 @@ public class AuthenticateImpl {
    public String logout(String sessionId) throws XmlBlasterException
    {
    if (log.isLoggable(Level.FINER)) log.finer("Entering logout(sessionId=" + sessionId + ")");
-      authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).toXml());
+      authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).serialize());
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 

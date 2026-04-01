@@ -71,17 +71,17 @@ public final class DisconnectQosServer
 
    /**
     * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * @return An XML/JSON ASCII string
     */
    public String toString() {
-      return toXml();
+      return serialize();
    }
 
    /**
     * Converts the data into a valid XML ASCII string.
-    * @return An XML ASCII string
+    * @return An XML/JSON ASCII string
     */
-   public String toXml() {
+   public String serialize() {
       return this.disconnectQosData.serialize();
    }
 }

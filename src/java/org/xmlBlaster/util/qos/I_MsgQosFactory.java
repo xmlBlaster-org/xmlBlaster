@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.QosFormatEnum;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -58,4 +59,9 @@ public interface I_MsgQosFactory
    
    /** A human readable name of this factory */
    String getName();
+
+   /**
+    * @return the qosFormat of this Factory
+    */
+   public QosFormatEnum getQosFormat();
 }
