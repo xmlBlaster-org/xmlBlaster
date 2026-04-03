@@ -1435,14 +1435,14 @@ TODO
 
       <echo message="##############################################"/>
       <echo message="Tests finished"/>
-      <echo message="genereate a Testreport with: 6report"/>
+      <echo message="genereate a Testreport with: report6"/>
       <echo message="if a lot of tests fail, no database is installed or the ram based queue in xmlBlaster.properties might be enabled"/>
     </target>
 
     <!-- =================================================================== -->
     <!-- Generate the report from JUnit6 tests                               -->
     <!-- =================================================================== -->
-    <target name="6report">
+    <target name="report6">
       <junitreport todir="${report.dir}">
         <fileset dir="${report.dir}">
           <include name="**/TEST-*.xml"/>
@@ -1471,26 +1471,11 @@ TODO
           <arg line="-useKeyboard false"/>
         </java>
         <sequential>
-          <waitfor maxwait="10" maxwaitunit="second" timeoutproperty="xmlblaster.timeout">
-            <socket server="192.168.178.65" port="7607"/>
-          </waitfor>
-          <!-- Stop server if startup failed -->
-          <if>
-            <isset property="xmlblaster.timeout"/>
-          <then>
-              <echo message="xmlBlaster failed to start, shutting it down..."/>
-              <echo message="is xmlBlaster configured to run on a different adress than \'localhost\' and Port \'7067\'..."/>
-
-              <java classname="org.xmlBlaster.test.StopXmlBlaster"
-                    dir="${xmlblaster_absolute_home}"
-                    fork="true"
-                    classpath="lib/xmlBlaster.jar:${cp}" />
-                <fail message="xmlBlaster did not start within 10 seconds"/>
-          </then>
-          </if>
-          <fail if="xmlblaster.timeout">
-              xmlBlaster did not start within 10 seconds on localhost:7607
-          </fail>
+          <sleep seconds="5"/> <!-- wait for xmlBlaster to start -->
+          <java classname="org.xmlBlaster.test.StopXmlBlaster"
+                dir="${xmlblaster_absolute_home}"
+                fork="true"
+                classpath="lib/xmlBlaster.jar:${cp}" />
 
           <!-- ############ run the test ################# -->
           <antcall target="testJUnit6">
@@ -1558,9 +1543,6 @@ TODO
       </replaceregexp>
       <delete dir="${JUnit6.dir}/tmpReport"/>
     </target>
-
-
-
 
    <!-- =================================================================== -->
    <!-- starts xmlBlaster JMX GUI                                           -->

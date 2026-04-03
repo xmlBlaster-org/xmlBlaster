@@ -23,10 +23,6 @@ public class TestCommand extends TestCase {
    private Global connGlobal;
    private MsgInterceptor updateInterceptor;
 
-   public static void main(String[] args) {
-      junit.swingui.TestRunner.run(TestCommand.class);
-   }
-
    /**
     * Constructor for TestCommand.
     * @param arg0

@@ -5,8 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.dbwatcher;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.prefs.Preferences;
 
 
@@ -49,17 +47,6 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
     private I_DbPool dbPool;
     private Map updateMap = new HashMap(); // collects received update messages
     private DbWatcher processor;
-
-    /**
-     * Start the test. 
-     * <pre>
-     * java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.dbwatcher.TestResultSetToXmlConverter
-     * </pre>
-     * @param args Command line settings
-     */
-    public static void main(String[] args) {
-        junit.swingui.TestRunner.run(TestResultSetToXmlConverter.class);
-    }
 
     /**
      * Default ctor. 
