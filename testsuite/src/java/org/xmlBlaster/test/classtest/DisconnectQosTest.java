@@ -60,7 +60,7 @@ public class DisconnectQosTest extends TestCase {
                      </qos>
                      """);
          // print and reparse
-         qos = new DisconnectQosServer(glob, factory.readObject(qos.toXml()));
+         qos = new DisconnectQosServer(glob, factory.readObject(qos.serialize()));
          // test
          assertEquals("deleteSubjectQueue failed", false, qos.deleteSubjectQueue());
          assertEquals("clearSessions failed", true, qos.clearSessions());
@@ -71,7 +71,7 @@ public class DisconnectQosTest extends TestCase {
 
          assertNotNull(cp);
          assertEquals(true, cp.getBooleanValue());
-         String xml = qos.toXml();
+         String xml = qos.serialize();
          System.out.println("XML:\n" + xml);
 
          // parse Json

@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -202,7 +203,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       try {
          for (int ii=0; ii<numPublish; ) {
             for (int jj=0; jj<burstModePublish; jj++) {
-               arr[jj] = new MsgUnit(arr[jj], null, new String(someContent + (ii+1)).getBytes(), null);
+               arr[jj] = new MsgUnit(arr[jj], null, new String(someContent + (ii+1)).getBytes(), (QosData) null);
             }
             ii+=burstModePublish;
             if (publishOneway)
