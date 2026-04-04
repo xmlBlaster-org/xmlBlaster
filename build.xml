@@ -437,8 +437,8 @@ TODO
       <echo message="   runTestsQuick --> compiles and starts xmlBlaster and runs all JUNIT tests except cluster and stress Tests"/>
       <echo message="   -Dtest.class=nameOfTestClass runtTestWithServer --> "/>
       <echo message="                   starts xmlBlaster, runs a single package of tests, stops xmlBlaster" />
-      <echo message="   -Dtest.className=nameOfTestClass  runJunit6 --> "/>
-      <echo message="                   run junit on the specifyed testclass"/>
+      <echo message="   -Dtest.className=nameOfTestClass testJUnit6 --> "/>
+      <echo message="                   run junit on the specifyed testclass: build -Dtest.className=org.xmlBlaster.test.jms.AllTests testJUnit6"/>
       <echo message=""/>
       <echo message="   javadocs    --> generates the complete javadoc documentation"/>
       <echo message="   javadocs-client --> generates the client side javadoc documentation"/>
