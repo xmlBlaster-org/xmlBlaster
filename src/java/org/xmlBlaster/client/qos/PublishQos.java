@@ -352,7 +352,12 @@ public final class PublishQos
    public String serialize() {
       return this.msgQosData.serialize();
    }
-
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
+   
    /**
     *  For testing invoke: java org.xmlBlaster.client.PublishQos
     */

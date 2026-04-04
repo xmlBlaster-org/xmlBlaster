@@ -397,7 +397,12 @@ public final class UpdateQos
    public String serialize(String extraOffset) {
       return this.msgQosData.serialize(extraOffset);
    }
-
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
+   
    /**
     * Overwrite qosData.serialize
     * @param extraOffset

@@ -192,6 +192,11 @@ public class ConnectReturnQos {
    public final String serialize() {
       return this.connectQosData.serialize();
    }
+
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
    
    public final String serialize(String extraOffset) {
       return this.connectQosData.serialize(extraOffset);

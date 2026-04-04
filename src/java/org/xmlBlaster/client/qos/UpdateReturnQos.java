@@ -85,7 +85,12 @@ public final class UpdateReturnQos
    public String serialize(String extraOffset) {
       return this.statusQosData.serialize(extraOffset, (Properties)null);
    }
-
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
+   
    public String toString() {
       return serialize((String)null);
    }

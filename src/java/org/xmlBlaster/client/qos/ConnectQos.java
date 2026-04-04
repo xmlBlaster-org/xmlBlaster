@@ -387,6 +387,11 @@ public final class ConnectQos
    public String serialize() {
       return this.connectQosData.serialize();
    }
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
 
    /**
     * Access the security interceptor to encrypt/decrypt.

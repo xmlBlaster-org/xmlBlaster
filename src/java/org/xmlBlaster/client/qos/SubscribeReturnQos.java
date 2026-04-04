@@ -121,6 +121,16 @@ public final class SubscribeReturnQos
    public final String serialize() {
       return serialize((String)null);
    }
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
+   
+   @Deprecated // Use serialize()
+   public String toXml(String extraOffset, boolean dumpClientProperties) {
+     return serialize(extraOffset, dumpClientProperties);
+   }
 
    /**
     * Dump state of this object into a XML/JSON ASCII string.

@@ -130,7 +130,12 @@ public final class PublishReturnQos
    public final String serialize(String extraOffset) {
       return this.statusQosData.serialize(extraOffset, (Properties)null);
    }
-
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
+   
    public final String toString() {
       return serialize(null);
    }

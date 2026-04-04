@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * Parse the default security handling with loginName and password

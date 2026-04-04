@@ -383,6 +383,11 @@ public final class ConnectQosServer
       return this.connectQosData.serialize(extraOffset);
    }
 
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }
+  
    /**
     * Dump state of this object into a XML/JSON ASCII string.
     * <br>

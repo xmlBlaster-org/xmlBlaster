@@ -268,6 +268,11 @@ public final class SubscribeQos
       return this.queryQosData.serialize();
    }
    
+   @Deprecated // Use serialize()
+   public String toXml() {
+     return serialize();
+   }   
+   
    /**
     * Returns a deep clone, you can change savely all basic or immutable types
     * like boolean, String, int and also the ClientProperties and RouteInfo. 
