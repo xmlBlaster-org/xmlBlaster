@@ -219,8 +219,6 @@ public class HandleClient extends SocketExecutor implements Runnable
          // receive() processes all invocations, only connect()/disconnect() we do locally ...
          if (receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
-               log.info("########################################################");
-               log.info("global qosFormat before connection = " + glob.getDefaultQosFormat());
 
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
                Socket socket = this.sock;
@@ -243,7 +241,7 @@ public class HandleClient extends SocketExecutor implements Runnable
 
 
                // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
-               log.info(ME+": Client connected, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
+               log.info(ME+": Client connected, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort() + " qosFormat=" + glob.getDefaultQosFormat());
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
