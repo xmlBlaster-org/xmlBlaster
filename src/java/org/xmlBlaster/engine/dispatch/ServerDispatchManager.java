@@ -410,6 +410,13 @@ public final class ServerDispatchManager implements I_DispatchManager
       if (this.msgInterceptor != null)
          this.msgInterceptor.toPolling(this, oldState);
    }
+   
+   public void onPollFailed(XmlBlasterException ex) {
+      I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+      for (int i=0; i<listeners.length; i++) {
+         listeners[i].onPollFailed(this, ex);
+      }
+   }
 
    /**
     * 

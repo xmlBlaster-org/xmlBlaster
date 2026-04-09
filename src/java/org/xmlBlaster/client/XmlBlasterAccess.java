@@ -1583,6 +1583,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          this.connectionListener.reachedPolling(oldState, this);
       }
    }
+   
+   /**
+    * Call by DispatchManager when polling doesn't manage to reconnect
+    */
+   @Override
+   public void onPollFailed(I_DispatchManager dispatchManager, XmlBlasterException exception) {
+      if (this.connectionListener != null)
+         this.connectionListener.onPollFailed(exception, this);      
+   }
 
    /**
     * Workaround to transport the reason for the toDead() transition as

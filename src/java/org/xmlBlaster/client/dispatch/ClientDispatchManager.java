@@ -383,6 +383,13 @@ public final class ClientDispatchManager implements I_DispatchManager
          this.msgInterceptor.toPolling(this, oldState);
    }
 
+   public void onPollFailed(XmlBlasterException ex) {
+      I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+      for (int i=0; i<listeners.length; i++) {
+         listeners[i].onPollFailed(this, ex);
+      }
+   }
+
    /**
     * 
     * @param ex

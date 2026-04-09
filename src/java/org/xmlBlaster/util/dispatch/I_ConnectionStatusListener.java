@@ -19,6 +19,8 @@ public interface I_ConnectionStatusListener
    void toAlive(I_DispatchManager dispatchManager, ConnectionStateEnum oldState);
    void toAliveSync(I_DispatchManager dispatchManager, ConnectionStateEnum oldState);
    void toPolling(I_DispatchManager dispatchManager, ConnectionStateEnum oldState);
+   default void onPollFailed(I_DispatchManager dispatchManager, XmlBlasterException exception) {
+   }
    /**
     * @param dispatchManager
     * @param oldState

@@ -510,6 +510,11 @@ abstract public class DispatchConnection implements I_Timeout
                    e.printStackTrace();
                if (logInterval > 0 && (retryCounter % logInterval) == 0)
                   log.warning("No connection established, " + this.myId + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
+               if (e instanceof XmlBlasterException) {
+                  connectionsHandler.onPollFailed(this, (XmlBlasterException) e);
+               } else {
+                  connectionsHandler.onPollFailed(this, new XmlBlasterException(glob, ErrorCode.COMMUNICATION, ME, "Failed to reconnect remote connection", e));
+               }
                try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.severe("PANIC: " + e.toString()); }
             }
          }

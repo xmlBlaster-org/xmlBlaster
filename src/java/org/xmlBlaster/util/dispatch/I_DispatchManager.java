@@ -129,6 +129,11 @@ public interface I_DispatchManager extends I_Timeout, I_QueuePutListener {
    /** Call by DispatchConnectionsHandler on state transition */
     void toPolling(ConnectionStateEnum oldState);
 
+    /**
+     * Call when a polling cycle throws (e.g. no network connection)
+     */
+    void onPollFailed(XmlBlasterException ex);
+
    /**
     * 
     * @param ex

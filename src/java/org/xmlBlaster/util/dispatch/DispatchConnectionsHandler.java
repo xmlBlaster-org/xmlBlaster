@@ -338,6 +338,10 @@ abstract public class DispatchConnectionsHandler
       updateState(ex);
    }
 
+   final void onPollFailed(DispatchConnection con, XmlBlasterException ex) {
+      dispatchManager.onPollFailed(ex);
+   }
+
    /**
     * Handles the state transition
     * @param XmlBlasterException can be null

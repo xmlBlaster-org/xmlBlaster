@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**
@@ -84,5 +85,13 @@ public interface I_ConnectionStateListener
     * @param connectionHandler An interface which allows you to control the queue and the connection
     */
    void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
+
+   /**
+    * Invoked when XmlBlaster is currently in state POLLING, tries to reconnect, but failes,
+    * e.g. due to server not being available or network error. The connection will remain in polling
+    * state
+    */
+   default void onPollFailed(XmlBlasterException exception, I_XmlBlasterAccess connection) {
+   }
 }
 
