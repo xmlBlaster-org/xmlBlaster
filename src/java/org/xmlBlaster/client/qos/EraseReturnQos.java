@@ -88,6 +88,11 @@ public final class EraseReturnQos
    public String serialize() {
       return serialize((String)null);
    }
+   
+   @Deprecated // Use serialize()
+   public String toXml() {
+      return serialize();
+   }
 
    /**
     * Dump state of this object into a XML/JSON ASCII string.
