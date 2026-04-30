@@ -317,6 +317,15 @@ final public class Authenticate implements I_RunlevelListener
                if (secretSessionId == null || secretSessionId.length() < 2) {
                   // Keep the old secretSessionId
                   connectQos.getSessionQos().setSecretSessionId(oldSecretSessionId);
+                  if (!sessionInfoMap.containsKey(oldSecretSessionId)) {
+                     log.severe("Unexpected invalid state: client " + oldSecretSessionId + " " + info.getId() +
+                           " not found in sessionInfoMap. Inserted it as workaround;"
+                           + " connectQos=" + connectQos.toString().replace("<passwd>.*</passwd>", "...")
+                           + " forcedSecretSessionId=" + forcedSecretSessionId);
+                     synchronized (this.sessionInfoMap) {
+                        this.sessionInfoMap.put(oldSecretSessionId, info);
+                     }
+                  }
                }
                else {
                   // The CORBA driver insists in a new secretSessionId
