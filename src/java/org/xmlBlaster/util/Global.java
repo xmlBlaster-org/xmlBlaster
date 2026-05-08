@@ -321,9 +321,11 @@ public class Global implements Cloneable
       try { // since JKD 1.4:
          URL url = initLogManager(args);
          if (url != null) {
-            log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
+            if (Property.getVerbose() > 0)
+               log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
          }
-         logJvmDetails();
+         if (Property.getVerbose() > 0)
+            logJvmDetails();
       }
       catch (XmlBlasterException e) {
          System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
@@ -769,7 +771,8 @@ public class Global implements Cloneable
             URL url = initLogManager(args);
             if (url != null)
                log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
-            logJvmDetails();
+            if (Property.getVerbose() > 0)
+               logJvmDetails();
          }
          catch (XmlBlasterException e) {
             System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());

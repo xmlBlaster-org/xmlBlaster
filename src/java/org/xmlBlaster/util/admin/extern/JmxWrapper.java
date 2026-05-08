@@ -12,6 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
 
 import com.sun.jdmk.comm.AuthInfo;
@@ -449,7 +450,8 @@ public class JmxWrapper
       }
       else {
          if (supportsJconsole) {
-            log.info("JMX over RMI is switched off, for details see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+            if (Property.getVerbose() > 0)
+               log.info("JMX over RMI is switched off, for details see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
          }
       }
 

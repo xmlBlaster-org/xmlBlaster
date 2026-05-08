@@ -1469,7 +1469,18 @@ public class Property implements Cloneable {
 
       return findGivenFile(fileName);
    }
-
+   
+   /**
+    * Disable with java -Dproperty.verbose=0
+    * @return defaults to 1
+    */
+   public static int getVerbose() {
+       int verbose = DEFAULT_VERBOSE;
+       if (System.getProperty("property.verbose") != null) {
+           try { verbose = Integer.parseInt(System.getProperty("property.verbose").trim()); } catch(NumberFormatException e) { System.err.println("-property.verbose expects a number"); }
+       }
+       return verbose;
+   }
 
    /**
    * Add key/values, for example from startup command line args to
@@ -1487,9 +1498,7 @@ public class Property implements Cloneable {
       if (args == null)
          return;
 
-      if (System.getProperty("property.verbose") != null) {
-         try { verbose = Integer.parseInt(System.getProperty("property.verbose").trim()); } catch(NumberFormatException e) { System.err.println("-property.verbose expects a number"); }
-      }
+      verbose = getVerbose();
       if (properties == null) properties = new Properties();
       Properties pp = argsToProps(args);
       if (pp != null && pp.get("---help") != null) {

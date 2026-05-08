@@ -20,6 +20,8 @@ import java.util.Vector;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.property.Property;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.MalformedURLException;
@@ -228,7 +230,8 @@ public class FileLocator
    //         ret = findFileInSinglePath(path, filename);
             ret = findFileInSinglePath(null, path);
             if (ret != null) {
-               log.info("Using " + ret.toString());
+               if (Property.getVerbose() > 0)
+                  log.info("Using " + ret.toString());
                return ret;
             }
             urlStr = path;
@@ -239,7 +242,8 @@ public class FileLocator
          int schema = urlStr.indexOf("://"); // http:// or file:// or ftp://
          if (schema != -1 || urlStr.startsWith("file:")) {
             try {
-               log.info("Using " + urlStr);
+               if (Property.getVerbose() > 0)
+                  log.info("Using " + urlStr);
                return new URL(urlStr);
             } catch (MalformedURLException e) {
                log.warning("The given filename is an invalid url: " + toString());
