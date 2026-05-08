@@ -169,6 +169,7 @@ public class HandleWebSocketClient extends RequestReplyExecutor implements Runna
             
             CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
             for (int ii = 0; cbArr != null && ii < cbArr.length; ii++) {
+               initializeCb(cbArr[ii]);
                cbArr[ii].setRawAddress(this.sock.getRemoteSocketAddress().toString());//driver.getRawAddress());
                try {
                   cbArr[ii].setCallbackDriver(this);
