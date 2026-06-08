@@ -13,6 +13,7 @@ import java.util.TimeZone;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.LogManager;
 
 import org.xmlBlaster.util.Global;
 
@@ -120,14 +121,24 @@ public class XbFormatter extends Formatter {
 
    public XbFormatter(String id) {
       this.id = id + "-" + instanceCounter++;
-
       String tmp = System.getProperty("xmlBlaster/iso8601Time");
       if (tmp != null) {
          iso8601Time = Boolean.valueOf(tmp).booleanValue();
       }
       iso8601Timezone = System.getProperty("xmlBlaster/iso8601Timezone");
+      if (iso8601Timezone == null || iso8601Timezone.isBlank())
+         // logging.properties: org.xmlBlaster.util.log.XbFormatter.iso8601Timezone = UTC
+         iso8601Timezone = LogManager.getLogManager().getProperty("org.xmlBlaster.util.log.XbFormatter.iso8601Timezone");
+      if (tmp != null && !tmp.isBlank()) {
+         iso8601Timezone = tmp;
+      }
+      // java -DxmlBlaster/iso8601Fmt="yyyy-MM-dd'T'HH:mm:ss.S"
       tmp = System.getProperty("xmlBlaster/iso8601Fmt");
-      if (tmp != null)
+      if (tmp == null || tmp.isBlank()) {
+         // logging.properties: org.xmlBlaster.util.log.XbFormatter.iso8601Fmt = yyyy-MM-dd'T'HH:mm:ss.S
+         tmp = LogManager.getLogManager().getProperty("org.xmlBlaster.util.log.XbFormatter.iso8601Fmt");
+      }
+      if (tmp != null && !tmp.isBlank())
          iso8601Fmt = tmp;
 
       iso8601Formater = new SimpleDateFormat(iso8601Fmt, Locale.US);
