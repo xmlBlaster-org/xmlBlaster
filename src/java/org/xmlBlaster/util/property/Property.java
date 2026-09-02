@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.function.Function;
 
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
@@ -228,6 +230,8 @@ public class Property implements Cloneable {
    public int verbose = DEFAULT_VERBOSE;
 
    public boolean keepUnresolvedProps;
+
+   Function<String, String> decoder;
 
    /**
    * Construct a property container from supplied property file and args array.
@@ -957,7 +961,21 @@ public class Property implements Cloneable {
         // 4. Substitute dynamic variables, e.g. ${user.dir}
         String tmp = properties.getProperty("property.keepUnresolvedProps", "false");
         keepUnresolvedProps = tmp.trim().equals("true");
-        if (replaceVariables == true)
+
+        // 4.a define a decoder for encoded properties
+        tmp = properties.getProperty("property.decoderFunction", "");
+        if (!tmp.isBlank()) {
+           try {
+              Class a = Class.forName(tmp.trim());
+              Constructor<java.util.function.Function<String, String>> constr = a.getConstructor(null);
+              decoder = constr.newInstance();
+           } catch (Exception ex) {
+              throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".Error",
+                 "Unable to initialize due to wrong encoder '" + tmp + "' " + propertyFileName + ": " + ex);
+           }
+        }
+ 
+       if (replaceVariables == true)
          replaceVariables();
 
          // 5. Scan variables containing []
@@ -1090,8 +1108,11 @@ public class Property implements Cloneable {
      * @return The new value where all ${} are replaced.
      */
    private final String replaceVariable(String key, String value) throws XmlBlasterException {
+      if (decoder != null)
+         value = decoder.apply(value);
       if (!keepUnresolvedProps)
          value = replaceVariableWithException(key, value);
+      
       return replaceVariableNoException(key, value);
    }
 

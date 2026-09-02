@@ -3,6 +3,11 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current git (previous svn)
 ======================================
+
+  o 2026-09-02: michele
+   Added property property.decoderFunction which takes a class name of a Function<String,String> which
+   decodes an encoded property. Particularly useful to obfuscate passwords in xmlBlaster.properties.
+
   o 2023-11-08: marcel
    In case a PtP fails with resource.overflow the other destinations are never the less served
    XmlBlasterException getErrorCodeStr() never returns null
