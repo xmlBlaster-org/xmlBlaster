@@ -48,6 +48,7 @@ public final class SubscribeQos
     * and the SubscribeReturnQos will return the stripped clientProperty key "oid" and its value "100"
     */
    public static final String KEY_BOUNCE_CP = "_bounce:";
+   public static final String KEY_HAS_INITIAL_UPDATE_CP = "_hasInitialUpdate";
    
    /**
     * Constructor for default qos (quality of service).

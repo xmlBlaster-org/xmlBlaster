@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current git (previous svn)
 ======================================
 
+  o 2026-09-02: adrian
+   SubscribeReturnQos well known client property _hasInitialUpdate. If subscribed with wantInitialUpdate=true, but the subscribed topic
+   does not contain any history messages, _hasInitialUpdate will be set to false.
+
   o 2026-09-02: michele
    Added property property.decoderFunction which takes a class name of a Function<String,String> which
    decodes an encoded property. Particularly useful to obfuscate passwords in xmlBlaster.properties.

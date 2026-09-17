@@ -820,6 +820,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          }
 
          KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, subscribeQos.getData());
+         boolean topicHasData = false;
 
          for (int jj=0; jj<keyDataArr.length; jj++) {
             KeyData xmlKeyExact = keyDataArr[jj];
@@ -852,7 +853,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   subs = new SubscriptionInfo(glob, sessionInfo, xmlKeyExact, subscribeQos);
             }
 
-            subscribeToOid(subs, false); // fires event for subscription
+            topicHasData = subscribeToOid(subs, false) || topicHasData; // fires event for subscription
 
             if (returnOid.equals("")) returnOid = subs.getSubscriptionId();
          }
@@ -887,6 +888,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             qos.setSubscriptionId(returnOid);
          }
          propertiesBounced = qos.addClientProperties(SubscribeQos.KEY_BOUNCE_CP, subscribeQos.getData().getClientPropertyArr(), trimPrefix);
+         if (subscribeQos.getWantInitialUpdate() && !topicHasData) {
+            if (propertiesBounced == null)
+               propertiesBounced = new Properties();
+            propertiesBounced.setProperty(SubscribeQos.KEY_HAS_INITIAL_UPDATE_CP, "false");
+         }
          if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                                           "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" +
                                           sessionInfo.getId() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
@@ -1317,8 +1323,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     * @param subs
     * @param calleeIsXPathMatchCheck true The calling thread is internally to check if a Query matches a new published topic
     *        false The callee is a subscribe() thread from a client
+    * @return true if topic already exists and has data
     */
-   private void subscribeToOid(SubscriptionInfo subs, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
+   private boolean subscribeToOid(SubscriptionInfo subs, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
       SessionInfo publisherSessionInfo = null; // subs.getSessionInfo() is the wrong one
@@ -1330,6 +1337,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          // Now the MsgUnit exists and all subcription handling is done, subscribe to it -> fires update to client
          topicHandler.addSubscriber(subs, calleeIsXPathMatchCheck);
+         return topicHandler.hasHistoryEntries();
       }
       finally {
          this.glob.getTopicAccessor().release(topicHandler);
