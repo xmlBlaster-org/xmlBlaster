@@ -771,6 +771,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    public void reachedAliveSync(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      I_ConnectionStateListener connectionListener = this.connectionStateListener;
+      if (connectionListener != null) {
+    	  connectionListener.reachedAliveSync(oldState, connection);
+      }
    }
 
    /**
