@@ -17,6 +17,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.ThreadLister;
@@ -39,12 +40,15 @@ import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.DisconnectQosData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
@@ -85,6 +89,7 @@ public final class ServerDispatchManager implements I_DispatchManager
    private boolean trySyncMode = false; // true: client side queue embedding, false: server side callback queue
 
    private boolean inAliveTransition = false;
+   private boolean dropOnPollingScanWarned = false;
    private final Object ALIVE_TRANSITION_MONITOR = new Object();
 
    private int burstModeMaxEntries = -1;
@@ -409,6 +414,9 @@ public final class ServerDispatchManager implements I_DispatchManager
       // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
          this.msgInterceptor.toPolling(this, oldState);
+
+      // 3. Throw away queued messages marked with the <dropOnPolling/> QoS flag
+      dropQueuedMessagesMarkedDropOnPolling();
    }
    
    public void onPollFailed(XmlBlasterException ex) {
@@ -763,6 +771,9 @@ public final class ServerDispatchManager implements I_DispatchManager
     * @see I_QueuePutListener#putPre(I_QueueEntry[])
     */
    public boolean putPre(I_QueueEntry[] queueEntries) throws XmlBlasterException {
+      if (dropMessagesMarkedDropOnPolling(queueEntries))
+         return false; // all entries are thrown away, do not enter the queue
+
       if (!this.isSyncMode) {
     	  /*
          for (int i=0; i < queueEntries.length; i++) {
@@ -1002,6 +1013,113 @@ public final class ServerDispatchManager implements I_DispatchManager
 
    public boolean isAlive() {
       return this.dispatchConnectionsHandler.isAlive();
+   }
+
+   /**
+    * Read the &lt;dropOnPolling/&gt; QoS flag of a message which is about to be
+    * enqueued into my callback queue, or which is already sitting in it.
+    *
+    * @param queueEntry checked for the dropOnPolling QoS setting
+    * @return true if the message shall be thrown away for a receiver which is not ALIVE
+    */
+   private boolean isMarkedDropOnPolling(I_QueueEntry queueEntry) {
+      if (!(queueEntry instanceof ReferenceEntry))
+         return false;
+      try {
+         MsgUnit msgUnit = ((ReferenceEntry) queueEntry).getMsgUnitOrNull(); // dirty read, null if expired
+         if (msgUnit == null)
+            return false;
+         MsgQosData msgQosData = (MsgQosData) msgUnit.getQosData();
+         return msgQosData.isDropOnPolling();
+      }
+      catch (Throwable e) {
+         return false;
+      }
+   }
+
+   /**
+    * A message published with the &lt;dropOnPolling/&gt; QoS flag is not queued for a
+    * receiver which is currently not reachable (POLLING, DEAD or UNDEF):
+    * it is thrown away instead of waiting for a better connection.
+    * <p />
+    * Note that this is checked on enqueue only; entries which are already in the queue
+    * when the connection falls back to polling are discarded by {@link #dropQueuedMessagesMarkedDropOnPolling()}.
+    *
+    * @param queueEntries the entries which are about to be enqueued
+    * @return true if <b>all</b> entries are thrown away (put() is suppressed), false otherwise.
+    *         If only a single entry of an array is marked, the whole array is enqueued
+    *         and the marked entries are removed by the next polling transition.
+    */
+   private boolean dropMessagesMarkedDropOnPolling(I_QueueEntry[] queueEntries) {
+      if (queueEntries == null || queueEntries.length == 0)
+         return false;
+      if (isAlive()) // reachable: queue normally, the message survives others in front of it
+         return false;
+      int numDroppable = 0;
+      for (int i=0; i<queueEntries.length; i++) {
+         if (queueEntries[i] != null && isMarkedDropOnPolling(queueEntries[i]))
+            numDroppable++;
+      }
+      if (numDroppable == 0)
+         return false;
+      if (numDroppable < queueEntries.length)
+         return false; // cannot filter single entries out of an array, keep all of them
+      if (log.isLoggable(Level.FINE))
+         log.fine(ME+": Dropping " + queueEntries.length + " message(s) marked <dropOnPolling/>"
+                  + " for receiver " + getSessionName().getAbsoluteName() + " which is "
+                  + this.dispatchConnectionsHandler.getState());
+      try {
+         // The publisher must not block waiting for a return object of a discarded message
+         getDispatchConnectionsHandler().createFakedReturnObjects(queueEntries, Constants.STATE_OK, "DROPPED_ON_POLLING");
+      }
+      catch (Throwable e) {
+         log.warning(ME+": Failed to create faked return objects for dropped <dropOnPolling/> messages: " + e.toString());
+      }
+      return true;
+   }
+
+   /**
+    * Throw away all messages which are already sitting in my callback queue and which
+    * are marked with the &lt;dropOnPolling/&gt; QoS flag.
+    * <p />
+    * Called when the receiver's connection falls back from ALIVE to POLLING: such messages
+    * became obsolete and must not be delivered after the receiver recovers.
+    */
+   private void dropQueuedMessagesMarkedDropOnPolling() {
+      if (this.isShutdown)
+         return;
+      try {
+         List<I_Entry> entries = this.msgQueue.getEntries(new I_EntryFilter() {
+            public I_Entry intercept(I_Entry entry, I_Storage storage) {
+               if (entry instanceof I_QueueEntry && isMarkedDropOnPolling((I_QueueEntry) entry))
+                  return entry;
+               return null; // filter away, we are not interested in this entry
+            }
+         });
+         if (entries == null || entries.size() == 0)
+            return;
+         I_Entry[] toDrop = (I_Entry[]) entries.toArray(new I_Entry[entries.size()]);
+         this.msgQueue.removeRandom(toDrop);
+         log.info(ME+": Dropping " + toDrop.length + " queued message(s) marked <dropOnPolling/>"
+                  + " for receiver " + getSessionName().getAbsoluteName() + " which went to POLLING,"
+                  + " remaining queue entries=" + this.msgQueue.getNumOfEntries());
+      }
+      catch (XmlBlasterException e) {
+         if (ErrorCode.INTERNAL_NOTIMPLEMENTED.equals(e.getErrorCode())) {
+            if (!this.dropOnPollingScanWarned) {
+               this.dropOnPollingScanWarned = true;
+               log.warning(ME+": Can not drop queued <dropOnPolling/> messages:"
+                           + " the queue implementation does not support getEntries(): " + e.getMessage());
+            }
+         }
+         else {
+            log.warning(ME+": Failed to drop queued <dropOnPolling/> messages: " + e.getMessage());
+         }
+      }
+      catch (Throwable e) {
+         log.warning(ME+": Failed to drop queued <dropOnPolling/> messages: " + e.toString());
+         e.printStackTrace();
+      }
    }
 
    /**

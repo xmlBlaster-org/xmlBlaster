@@ -108,6 +108,16 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    public transient final static boolean DEFAULT_forceDestroy = false;
    private PropBoolean forceDestroy = new PropBoolean(DEFAULT_forceDestroy);
 
+   /**
+    * Throw the message away for a receiver which is not in ALIVE connection state.
+    * Defaults to false.
+    * <p />
+    * See {@link org.xmlBlaster.client.qos.PublishQos#setDropOnPolling(boolean)}
+    * for the detailed semantics and how it relates to a message's lifeTime and forceDestroy.
+    */
+   public transient final static boolean DEFAULT_dropOnPolling = false;
+   private PropBoolean dropOnPolling = new PropBoolean(DEFAULT_dropOnPolling);
+
    /** The priority of the message */
    private PriorityEnum priority = PriorityEnum.NORM_PRIORITY;
    private boolean priorityIsModified = false;
@@ -540,6 +550,31 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
+    * Throw the message away for a receiver which is not in ALIVE connection state.
+    * <p />
+    * See {@link org.xmlBlaster.client.qos.PublishQos#setDropOnPolling(boolean)}
+    * for the detailed semantics.
+    *
+    * @param dropOnPolling true The message is discarded when the receiver is not ALIVE<br />
+    *        false Normal queueing behavior (default)
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.dropOnPolling.html">The engine.qos.publish.dropOnPolling requirement</a>
+    */
+   public void setDropOnPolling(boolean dropOnPolling) {
+      this.dropOnPolling.setValue(dropOnPolling);
+   }
+
+   /**
+    * @return true/false, defaults to false
+    */
+   public boolean isDropOnPolling() {
+      return this.dropOnPolling.getValue();
+   }
+
+   public PropBoolean getDropOnPollingProp() {
+      return this.dropOnPolling;
+   }
+
+   /**
     * Get all the destinations of this message.
     * This should only be used with PTP style messaging<br />
     * Check <code>if (isPtp()) ...</code> before calling this method
@@ -753,6 +788,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
             newOne.lifeTime = (PropLong)this.lifeTime.clone();
             newOne.administrative = (PropBoolean)this.administrative.clone();
             newOne.forceDestroy = (PropBoolean)this.forceDestroy.clone();
+            newOne.dropOnPolling = (PropBoolean)this.dropOnPolling.clone();
          }
          return newOne;
       //}

@@ -539,6 +539,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if (name.equalsIgnoreCase("dropOnPolling")) {
+         if (!inQos)
+            return;
+         msgQosData.setDropOnPolling(true);
+         return;
+      }
+
       if (name.equalsIgnoreCase("persistent")) {
          if (!inQos)
             return;
@@ -713,6 +720,14 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if(name.equalsIgnoreCase("dropOnPolling")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            msgQosData.setDropOnPolling(Boolean.valueOf(tmp).booleanValue());
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("persistent")) {
 //       this.inIsPersistent = false;
          String tmp = character.toString().trim();
@@ -875,6 +890,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             sb.append(offset).append(" <administrative/>");
          else
             sb.append(offset).append(" <administrative>false</administrative>");
+      }
+
+      if (msgQosData.getDropOnPollingProp().isModified()) {
+         if (msgQosData.isDropOnPolling())
+            sb.append(offset).append(" <dropOnPolling/>");
+         else
+            sb.append(offset).append(" <dropOnPolling>false</dropOnPolling>");
       }
 
       if (msgQosData.getPersistentProp().isModified()) {

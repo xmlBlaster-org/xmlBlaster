@@ -232,6 +232,15 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
                }
                break;
 
+            case "dropOnPolling":
+               try {
+                  msgQosData.setDropOnPolling(parser.getBooleanValue());
+               } catch (IOException e) {
+                  log.severe("Error while parsing dropOnPolling: " + e.getMessage());
+                  JacksonUtils.skipArrayOrObject(parser);
+               }
+               break;
+
             case "persistent":
                try {
                   msgQosData.setPersistent(parser.getBooleanValue());
@@ -594,6 +603,11 @@ public class MsgQosJsonFactory implements I_MsgQosFactory {
          // administrative
          if (msgQosData.getAdministrativeProp().isModified()) {
             gen.writeBooleanField("administrative", msgQosData.isAdministrative());
+         }
+
+         // dropOnPolling
+         if (msgQosData.getDropOnPollingProp().isModified()) {
+            gen.writeBooleanField("dropOnPolling", msgQosData.isDropOnPolling());
          }
 
          // persistent

@@ -168,11 +168,26 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * Gets a copy of the entries (the messages) in the queue. If the queue
     * is modified, this copy will not be affected. This method is useful for client browsing.
-    * THIS METHOD IS NOT IMPLEMENTED
-    * @throws XmlBlasterException always
+    * <p />
+    * The returned entries are references to the live queue entries (not clones),
+    * so a caller must not modify them.
+    *
+    * @see I_Queue#getEntries(I_EntryFilter)
     */
    public ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
-      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries() is not implemented");
+      ArrayList result = new ArrayList();
+      synchronized (this) {
+         for (java.util.Iterator it = this.storage.iterator(); it.hasNext();) {
+            I_Entry entry = (I_Entry) it.next();
+            if (entryFilter != null) {
+               entry = entryFilter.intercept(entry, this);
+               if (entry == null)
+                  continue; // filtered away
+            }
+            result.add(entry);
+         }
+      }
+      return result;
    }
 
    /** For verbose logging */
