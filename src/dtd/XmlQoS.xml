@@ -70,6 +70,11 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          <forceUpdate />  <!-- An update is forced even when the content and meta data didn't change (default) -->
                           <!-- Setting this to false does not resend identical messages (performance gain) -->
 
+         <dropOnPolling /> <!-- The message is thrown away for a receiver which is not in ALIVE state. -->
+                          <!-- It is queued normally while the receiver stays reachable, but is discarded -->
+                          <!-- (also from an already filled callback queue) as soon as the receiver goes to POLLING -->
+                          <!-- Default is false (normal queueing behavior) -->
+
          <topic readonly='true' />  <!-- A final/const message which may not be changed with further updates -->
                           <!-- Default is Read/Write -->
 
@@ -235,5 +240,3 @@ xml version='1.0' encoding='ISO-8859-1' ?>
    </connect>
 
 </demo>
-
-

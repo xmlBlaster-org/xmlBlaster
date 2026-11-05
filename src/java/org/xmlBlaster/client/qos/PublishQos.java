@@ -205,6 +205,48 @@ public final class PublishQos
    }
 
    /**
+    * Throw this message away for a receiver which is not in ALIVE connection state.
+    * <p />
+    * A receiver's callback connection switches to POLLING when it becomes unreachable,
+    * and back to ALIVE when it recovers. The two existing lifecycle settings only cover
+    * the extremes:</p>
+    * <ul>
+    *   <li>lifeTime==0 and forceDestroy==true: the message is discarded as soon as it is
+    *       not <i>immediately</i> deliverable, for example because other messages are
+    *       already queued in front of it</li>
+    *   <li>lifeTime==0 and forceDestroy==false: the message is kept in memory until the
+    *       server restarts, even for a receiver which stays unreachable</li>
+    * </ul>
+    * <p />
+    * With dropOnPolling the message instead</p>
+    * <ol>
+    *   <li>is queued normally while the receiver stays ALIVE, so it survives other
+    *       messages already sitting in the callback queue</li>
+    *   <li>is discarded as soon as the receiver falls back to POLLING (or DEAD), even if
+    *       the message was already enqueued</li>
+    * </ol>
+    * <p />
+    * Useful for messages which become obsolete once a receiver is unreachable, but which
+    * should not be lost merely because the receiver was momentarily busy.
+    * <p />
+    * Defaults to false (normal queueing behavior).
+    *
+    * @see #setVolatile(boolean)
+    * @see #setForceDestroy(boolean)
+    * @see #setLifeTime(long)
+    */
+   public void setDropOnPolling(boolean dropOnPolling) {
+      this.msgQosData.setDropOnPolling(dropOnPolling);
+   }
+
+   /**
+    * @return true if the message is discarded for a receiver which is not ALIVE, defaults to false
+    */
+   public boolean isDropOnPolling() {
+      return this.msgQosData.isDropOnPolling();
+   }
+
+   /**
     * Mark a message to be persistent.
     */
    public void setPersistent(boolean persistent) {
