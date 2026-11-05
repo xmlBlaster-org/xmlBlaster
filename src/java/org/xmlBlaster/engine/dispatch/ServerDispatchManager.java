@@ -49,6 +49,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.jdbc.JdbcQueue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
@@ -1089,6 +1090,9 @@ public final class ServerDispatchManager implements I_DispatchManager
       if (this.isShutdown)
          return;
       try {
+         if (this.msgQueue instanceof JdbcQueue)
+            return; // Does not make sense for persistent queues - should never happen in practice
+
          List<I_Entry> entries = this.msgQueue.getEntries(new I_EntryFilter() {
             public I_Entry intercept(I_Entry entry, I_Storage storage) {
                if (entry instanceof I_QueueEntry && isMarkedDropOnPolling((I_QueueEntry) entry))
